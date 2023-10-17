@@ -1,0 +1,10 @@
+#!/bin/bash
+
+printf "\n============================================[ Building Application ]============================================\n\n"
+rm -r ./res
+\cp -r ../extra/* ./
+make
+if [ $? -eq 0 ]; then
+    printf "\n============================================[ Running Application ]============================================\n\n"
+    ./framework-test
+fi

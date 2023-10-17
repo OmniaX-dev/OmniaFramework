@@ -1,0 +1,14 @@
+#/bin/bash
+
+rm -r Build
+rm -r bin
+#export CXX=/usr/bin/clang++
+cmake -B bin -S ./
+cd bin
+make install
+cd ..
+if [ $? -eq 0 ]; then
+    printf "Installing includes...\n"
+    python ./tools/create_includes.py
+    printf "Done!\n"
+fi
