@@ -9,7 +9,8 @@ namespace ogfx
 	class OX3DLoader
 	{
 		public:
-			static Mesh loadFromFile(const ostd::String& filePath, const ostd::String& texturesSubPath = ""); //TODO: Handle more than only the first mesh
+			static std::vector<Mesh> loadFromFile(const ostd::String& filePath, const ostd::String& texturesSubPath = ""); //TODO: Handle more than only the first mesh
+			static Mesh loadSingleMeshFromFile(const ostd::String& filePath, const ostd::String& texturesPath = "");
 			static inline bool errorOccurred(void) { return s_error; }
 
 		private:

@@ -94,7 +94,9 @@
 		"expected": "cpp",
 		"spanstream": "cpp",
 		"stacktrace": "cpp",
-		"*.ipp": "cpp"
+		"*.ipp": "cpp",
+		"format": "cpp",
+		"stdfloat": "cpp"
 	},
 
 	"workbench.colorCustomizations": {

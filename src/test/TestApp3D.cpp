@@ -12,7 +12,7 @@ TestApp3D::TestApp3D(void)
 	window.centerMouse().hideMouseCursor();
 	camera.create(window);
 
-	tempMesh = OX3DLoader::loadFromFile("models/monkey2.ox3d", "textures");
+	tempMesh = OX3DLoader::loadSingleMeshFromFile("models/monkey2.ox3d", "textures");
 	screenPlane = Mesh::newPlaneMesh();
 	floor = Mesh::newCubeMesh();
 	lightEmitter = Mesh::newCubeMesh();

@@ -12,26 +12,27 @@ namespace ogfx
 {
 	using namespace ostd;
 
-	Mesh OX3DLoader::loadFromFile(const String& filePath, const ostd::String& texturesSubPath)
+	std::vector<Mesh> OX3DLoader::loadFromFile(const String& filePath, const ostd::String& texturesSubPath)
 	{
 		s_error = true;
-		Mesh mesh;
+		std::vector<Mesh> meshes;
 		loadRawData(filePath);
-		if (s_rawData.size() == 0) return mesh; //TODO: Error
+		if (s_rawData.size() == 0) return { }; //TODO: Error
 		serial::SerialIO reader(s_rawData, serial::SerialIO::tEndianness::BigEndian);
 		int32_t meshCount = 0;
 		StreamIndex addr = 0;
 		//Start Reading
 		reader.r_DWord(addr, meshCount);
 		addr += tTypeSize::DWORD;
-		if (meshCount < 1) return mesh; //TODO: Error
+		if (meshCount < 1) return { }; //TODO: Error
 		meshCount = 1; //TODO: Remove this. This is a manual override to force reading only the first mesh
 		for (int32_t currentMeshIndex = meshCount - 1; currentMeshIndex >= 0; currentMeshIndex--)
 		{
+			Mesh mesh;
 			int32_t vertCount = 0;
 			reader.r_DWord(addr, vertCount);
 			addr += tTypeSize::DWORD;
-			if (vertCount < 3) return mesh; //TODO: Error
+			if (vertCount < 3) return { }; //TODO: Error
 			for (uint32_t v = 0; v < vertCount; v++)
 			{
 				tVertex vertex;
@@ -59,7 +60,7 @@ namespace ogfx
 			int32_t indicesCount = 0;
 			reader.r_DWord(addr, indicesCount);
 			addr += tTypeSize::DWORD;
-			if (indicesCount < 3) return mesh; //TODO: Error
+			if (indicesCount < 3) return { }; //TODO: Error
 			for (uint32_t i = 0; i < indicesCount; i++)
 			{
 				int32_t index = 0;
@@ -79,7 +80,7 @@ namespace ogfx
 				int32_t tex_path_len = 0;
 				reader.r_DWord(addr, tex_path_len);
 				addr += tTypeSize::DWORD;
-				if (tex_path_len < 1) return mesh; //TODO: Error
+				if (tex_path_len < 1) return { }; //TODO: Error
 				StringEditor texPath_se;
 				if (texturesSubPath != "")
 					texPath_se.add(texturesSubPath).add("/");
@@ -94,7 +95,7 @@ namespace ogfx
 				int32_t tex_size = 0;
 				reader.r_DWord(addr, tex_size);
 				addr += tTypeSize::DWORD;
-				if (tex_size < 4) return mesh; //TODO: Error
+				if (tex_size < 4) return { }; //TODO: Error
 				for (uint32_t i = 0; i < tex_size; i++)
 				{
 					int8_t b = 0;
@@ -106,9 +107,19 @@ namespace ogfx
 				//mesh.textures.push_back(ResourceManager::loadTexture(&tex_data[0], tex_size, 0, 0));
 				mesh.textures.push_back(ResourceManager::loadTexture(texPath_se.str()));
 			}
+			meshes.push_back(mesh);
 		}
 		s_error = false;
 		//mesh.initialize();
+		return meshes;
+	}
+
+	Mesh OX3DLoader::loadSingleMeshFromFile(const ostd::String& filePath, const ostd::String& texturesPath)
+	{
+		Mesh mesh;
+		auto meshVec = loadFromFile(filePath, texturesPath);
+		if (meshVec.size() > 0)
+			mesh = meshVec[0];
 		return mesh;
 	}
 	
