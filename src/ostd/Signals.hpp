@@ -68,6 +68,8 @@ namespace ostd
 			static void emitSignal(uint32_t signal_id, uint8_t prio = tSignalPriority::Normal, BaseObject& userData = BaseObject::InvalidRef());
 			static void connect(BaseObject& object, uint32_t signal_id);
 
+			inline static uint32_t newCustomSignal(uint32_t sub_id) { return tBuiltinSignals::CustomSignalBase + sub_id; }
+
 		private:
 			inline static std::vector<tSignalObjPair> m_customRecievers;
 			inline static std::vector<tDelegateSignal> m_delegatedSignals;

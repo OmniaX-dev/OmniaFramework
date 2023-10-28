@@ -3,6 +3,7 @@
 #include <ostd/Utils.hpp>
 #include <unordered_map>
 #include <ostd/BaseObject.hpp>
+#include <ostd/Signals.hpp>
 #include <ogfx/RTData.hpp>
 #include <ogfx/Widgets.hpp>
 
@@ -87,7 +88,7 @@ namespace ogfx
 			inline static constexpr uint32_t OnWindowDisplay = 8;
 			inline static constexpr uint32_t TotalFrameTime = 128;
 
-			inline static const uint32_t OnProfileDataRecieved = ogfx::RTData::newCustomSignal(2200);
+			inline static const uint32_t OnProfileDataRecieved = ostd::SignalHandler::newCustomSignal(2200);
 
 			inline static void enableDebugWindow(bool enable = true) { m_debugWindowEnabled = enable; }
 	};

@@ -5,8 +5,8 @@ namespace ogfx
 {
 	using namespace ostd;
 	
-	uint32_t RTData::newCustomSignal(uint32_t sub_id)
-	{
-		return tBuiltinSignals::CustomSignalBase + sub_id;
-	}
+	// uint32_t RTData::newCustomSignal(uint32_t sub_id)
+	// {
+	// 	return tBuiltinSignals::CustomSignalBase + sub_id;
+	// }
 }

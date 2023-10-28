@@ -11,7 +11,7 @@ namespace ogfx
 		public:
 			inline static float DeltaTime { 0.0f };
 			inline static ostd::IPoint windowSize { 0, 0 };
-			static uint32_t newCustomSignal(uint32_t sub_id);
+			// static uint32_t newCustomSignal(uint32_t sub_id);
 	};
 }
 

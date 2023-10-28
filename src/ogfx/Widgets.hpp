@@ -4,6 +4,7 @@
 #include <ostd/Geometry.hpp>
 #include <ostd/Color.hpp>
 #include <ogfx/RTData.hpp>
+#include <ostd/Signals.hpp>
 
 #include <unordered_map>
 
@@ -136,7 +137,7 @@ namespace ogfx
 				inline static ostd::WidgetID s_nextWidgetID = tWidgetState::ValidWidgetBase;
 
 			protected:
-				inline static const uint32_t OnWidgetFocusGainedSignal = RTData::newCustomSignal(1200);
+				inline static const uint32_t OnWidgetFocusGainedSignal = ostd::SignalHandler::newCustomSignal(1200);
 				WidgetTheme m_theme;
 				bool m_overrideGlobalTheme { false };
 				Widget* m_parent { nullptr };
