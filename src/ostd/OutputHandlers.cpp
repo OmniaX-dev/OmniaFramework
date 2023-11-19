@@ -181,6 +181,12 @@ namespace ostd
 		std::cout << termcolor::reset;
 		return *this;
 	}
+	
+	IOutputHandler& ConsoleOutputHandler::clear(void)
+	{
+		Utils::clearConsole();
+		return *this;
+	}
 
 
 

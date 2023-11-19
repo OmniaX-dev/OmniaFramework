@@ -817,4 +817,21 @@ namespace ostd
 		if (outStream.size() == 0) return false; //TODO: Error
 		return true;
 	}
+	ByteStream Utils::stringToByteStream(const String& data)
+	{
+		ByteStream bstream;
+		for (auto& c : data)
+			bstream.push_back((int8_t)c);
+		return bstream;
+	}
+	String Utils::byteStreamToString(const ByteStream& data)
+	{
+		StringEditor out_string = "";
+		for (int64_t i = 0; i < data.size(); i++)
+		{
+			if (data[i] == 0) break;
+			out_string.add((char)data[i]);
+		}
+		return out_string.str();
+	}
 } // namespace ox

@@ -79,9 +79,11 @@ list(APPEND OGFX_SOURCE_FILES
 list(APPEND OSTD_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/BaseObject.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Color.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Console.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/DataFile.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Errors.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/File.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/FileSystem.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Geometry.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Logger.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Logic.cpp
@@ -132,6 +134,7 @@ add_compile_options(-O3 -m32 -MMD -MP -Wall -ggdb -fsanitize=address)
 if (UNIX)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath='$ORIGIN'")
 	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC X11 GL)
+	target_link_libraries(${OMNIA_STD_LIB} PUBLIC tinfo)
 endif (UNIX)
 
 target_link_libraries(${OMNIA_GFX_LIB} PUBLIC sfml-system sfml-window sfml-graphics)

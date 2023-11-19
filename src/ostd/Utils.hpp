@@ -3,6 +3,8 @@
 
 #include <ostd/Types.hpp>
 
+#include <filesystem>
+
 namespace ostd
 {
 	enum class eTimeUnits
@@ -155,8 +157,18 @@ namespace ostd
 			static void printByteStream(const ByteStream& data, StreamIndex start, uint8_t line_len, uint16_t n_rows, IOutputHandler& out, int32_t addrHighlight = -1, uint32_t highlightRange = 1, const String& title = "");
 			static bool saveByteStreamToFile(const ByteStream& stream, const String& filePath);
 			static bool loadByteStreamFromFile(const String& filePath, ByteStream& outStream);
+			static ByteStream stringToByteStream(const String& data);
+			static String byteStreamToString(const ByteStream& data);
 
+			static std::vector<std::filesystem::path> listFilesInDirectory(const String& directoryPath);
+			static std::vector<std::filesystem::path> listDirectoriesInDirectory(const String& directoryPath);
+			static std::vector<std::filesystem::path> listDirectory(const String& directoryPath);
+			static std::vector<std::filesystem::path> listFilesInDirectoryRecursive(const String& directoryPath);
+			static std::vector<std::filesystem::path> listDirectoriesInDirectoryRecursive(const String& directoryPath);
+			static std::vector<std::filesystem::path> listDirectoryRecursive(const String& directoryPath);
+			
 			static int32_t solveIntegerExpression(const String& expr);
+			static void clearConsole(void);
 
 		private:
 			inline static uint64_t s_startTime_ms;
@@ -334,6 +346,7 @@ namespace ostd
 			virtual IOutputHandler& bgcol(const Color& color) = 0;
 			virtual IOutputHandler& bgcol(String color) = 0;
 			virtual IOutputHandler& resetColors(void) = 0;
+			virtual IOutputHandler& clear(void) = 0;
 	};
 
 	class ConsoleOutputHandler : public IOutputHandler
@@ -361,6 +374,7 @@ namespace ostd
 			IOutputHandler& nl(void) override;
 			IOutputHandler& flush(void) override;
 			IOutputHandler& reset(void) override;
+			IOutputHandler& clear(void) override;
 	};
 
 	class BufferedOutputHandler : public IOutputHandler
@@ -387,7 +401,7 @@ namespace ostd
 			inline IOutputHandler& flush(void) override { return *this; }
 			inline IOutputHandler& reset(void) override { return *this; }
 
-			inline IOutputHandler& clear(void) { m_buffer = ""; return *this; }
+			inline IOutputHandler& clear(void) override { m_buffer = ""; return *this; }
 			inline const StringEditor& getBuffer(void) { return m_buffer; }
 
 		private:

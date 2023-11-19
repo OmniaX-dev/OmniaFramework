@@ -165,13 +165,6 @@ namespace ostd
 			return true;
 		}
 		
-
-		// bool SerialIO::r_Data(StreamIndex addr, ISerializable& outData)
-		// {
-		// 	if (!is_validAddr(addr, outData.getMaxSerializedSize(), nullptr)) return false;
-		// 	return outData.deserialize(m_data, addr);
-		// }
-		
 		bool SerialIO::r_ByteStream(StreamIndex addr, ByteStream& outStream)
 		{
 			if (!is_validAddr(addr, tTypeSize::ADDR)) return false;
@@ -179,6 +172,7 @@ namespace ostd
 			if (!r_Addr(addr, stream_size)) return false;
 			addr += tTypeSize::ADDR;
 			if (!is_validAddr(addr, stream_size)) return false;
+			outStream.clear();
 			outStream.reserve(stream_size);
 			for (StreamIndex j = addr; j < addr + stream_size; j++)
 				outStream.push_back(m_data[j]);
@@ -188,15 +182,54 @@ namespace ostd
 		bool SerialIO::r_ByteStream(StreamIndex addr, ByteStream& outStream, uint32_t size)
 		{
 			if (!is_validAddr(addr, size)) return false;
+			outStream.clear();
 			outStream.reserve(size);
 			for (StreamIndex j = addr; j < addr + size; j++)
 				outStream.push_back(m_data[j]);
 			return true;
 		}
 
+		bool SerialIO::r_String(StreamIndex addr, String& outString)
+		{
+			if (!is_validAddr(addr, tTypeSize::ADDR)) return false;
+			uint32_t stream_size;
+			if (!r_Addr(addr, stream_size)) return false;
+			addr += tTypeSize::ADDR;
+			if (!is_validAddr(addr, stream_size)) return false;
+			outString = "";
+			for (StreamIndex j = addr; j < addr + stream_size; j++)
+				outString += (char)(m_data[j]);
+			return true;
+		}
+
+		bool SerialIO::r_String(StreamIndex addr, String& outString, uint32_t size)
+		{
+			if (!is_validAddr(addr, size)) return false;
+			outString = "";
+			for (StreamIndex j = addr; j < addr + size; j++)
+				outString += (char)(m_data[j]);
+			return true;
+		}
+
+		bool SerialIO::r_NullTerminatedString(StreamIndex addr, String& outString)
+		{
+			outString = "";
+			int8_t c = 0;
+			if (!r_Byte(addr, c)) return false;
+			addr += tTypeSize::BYTE;
+			while (c != 0)
+			{
+				outString += (char)c;
+				if (!r_Byte(addr, c)) return false;
+				addr += tTypeSize::BYTE;
+			}
+			return true;
+		}
+
 
 		bool SerialIO::w_QWord(StreamIndex addr, QWord val)
 		{
+			m_statuWriting = true;
 			if (!is_validAddr(addr, tTypeSize::QWORD)) return false;
 			if (isLittleEndian())
 			{
@@ -226,6 +259,7 @@ namespace ostd
 		
 		bool SerialIO::w_DWord(StreamIndex addr, DWord val)
 		{
+			m_statuWriting = true;
 			if (!is_validAddr(addr, tTypeSize::DWORD)) return false;
 			if (isLittleEndian())
 			{
@@ -247,6 +281,7 @@ namespace ostd
 		
 		bool SerialIO::w_Word(StreamIndex addr, Word val)
 		{
+			m_statuWriting = true;
 			if (!is_validAddr(addr, tTypeSize::WORD)) return false;
 			if (isLittleEndian())
 			{
@@ -264,6 +299,7 @@ namespace ostd
 		
 		bool SerialIO::w_Byte(StreamIndex addr, Byte val)
 		{
+			m_statuWriting = true;
 			if (!is_validAddr(addr, tTypeSize::BYTE)) return false;
 			m_data[addr] = val;
 			return true;
@@ -271,6 +307,7 @@ namespace ostd
 		
 		bool SerialIO::w_Addr(StreamIndex addr, StreamIndex val)
 		{
+			m_statuWriting = true;
 			if (!is_validAddr(addr, tTypeSize::ADDR)) return false;
 			if (isLittleEndian())
 			{
@@ -292,6 +329,7 @@ namespace ostd
 
 		bool SerialIO::w_Float(StreamIndex addr, float val)
 		{
+			m_statuWriting = true;
 			if (!is_validAddr(addr, tTypeSize::FLOAT)) return false;
 			__float_parser fp;
 			fp.val = val;
@@ -315,6 +353,7 @@ namespace ostd
 
 		bool SerialIO::w_Double(StreamIndex addr, double val)
 		{
+			m_statuWriting = true;
 			if (!is_validAddr(addr, tTypeSize::DOUBLE)) return false;
 			__double_parser dp;
 			dp.val = val;
@@ -344,25 +383,39 @@ namespace ostd
 			return true;
 		}
 
-
-		// bool SerialIO::w_Data(StreamIndex addr, const ISerializable& data)
-		// {
-		// 	if (!is_validAddr(addr, data.getMaxSerializedSize(), &memUsage)) return false;
-		// 	auto ser = data.serialize();
-		// 	if (ser.size() == 0 || !is_validAddr(addr, ser.size(), &memUsage)) return false;
-		// 	for (uint32_t i = 0; i < ser.size(); i++)
-		// 		m_data[addr + i] = ser[i];
-		// 	return true;
-		// }
-
-		bool SerialIO::w_ByteStream(StreamIndex addr, const ByteStream& stream)
+		bool SerialIO::w_ByteStream(StreamIndex addr, const ByteStream& stream, bool store_size)
 		{
+			m_statuWriting = true;
 			uint32_t stream_size = stream.size();
-			if (!is_validAddr(addr, tTypeSize::ADDR + stream_size)) return false;
-			if (!w_Addr(addr, stream_size)) return false;
-			addr += tTypeSize::ADDR;
+			if (store_size)
+			{
+				if (!is_validAddr(addr, tTypeSize::ADDR + stream_size)) return false;
+				if (!w_Addr(addr, stream_size)) return false;
+				addr += tTypeSize::ADDR;
+			}
+			else if (!is_validAddr(addr, stream_size)) return false;
 			for (StreamIndex j = addr; j < addr + stream_size; j++)
 				m_data[j] = stream[j - addr];
+			return true;
+		}
+
+		bool SerialIO::w_String(StreamIndex addr, const String& str, bool store_size, bool null_terminate)
+		{
+			m_statuWriting = true;
+			auto stream = Utils::stringToByteStream(str);
+			uint32_t stream_size = stream.size();
+			if (store_size && !null_terminate)
+			{
+				if (!is_validAddr(addr, tTypeSize::ADDR + stream_size)) return false;
+				if (!w_Addr(addr, stream_size)) return false;
+				addr += tTypeSize::ADDR;
+			}
+			else if (!is_validAddr(addr, stream_size)) return false;
+			for (StreamIndex j = addr; j < addr + stream_size; j++)
+				m_data[j] = stream[j - addr];
+			addr += str.length() * tTypeSize::BYTE;
+			if (null_terminate)
+				if (!w_Byte(addr, 0x00)) return false;
 			return true;
 		}
 
@@ -371,12 +424,22 @@ namespace ostd
 		{
 			if ((addr + offset - 1) >= m_data.size())
 			{
-				for (uint32_t i = 0; i <= 1024; i++) //TODO: This is temporary, find better way
-					m_data.push_back(0);
+				if (isAutoResizeEnabled() && m_statuWriting)
+				{
+					for (uint32_t i = 0; i <= m_resizeAmount; i++)
+						m_data.push_back(0);
+					m_statuWriting = false;
+					return true;
+				}
+				else
+				{
+					m_statuWriting = false;
+					return false;
+				}
 			}
+			m_statuWriting = false;
 			return true;
 		}
-
 
 		void SerialIO::print(StreamIndex start, IOutputHandler& out)
 		{
@@ -386,152 +449,10 @@ namespace ostd
 				power *= 2;
 			Utils::printByteStream(m_data, start, line_len, power / line_len, out);
 		}
-
-
-
-
-		/*Byte ObjectField::getByte(String name)
+	
+		bool SerialIO::saveToFile(const String& filePath)
 		{
-			return 0;
+			return Utils::saveByteStreamToFile(getData(), filePath);
 		}
-
-		UByte ObjectField::getUByte(String name)
-		{
-			return 0;
-		}
-		
-		Word ObjectField::getWord(String name)
-		{
-			return 0;
-		}
-		
-		UWord ObjectField::getUWord(String name)
-		{
-			return 0;
-		}
-		
-		DWord ObjectField::getDWord(String name)
-		{
-			return 0;
-		}
-		
-		UDWord ObjectField::getUDWord(String name)
-		{
-			return 0;
-		}
-		
-		QWord ObjectField::getQWord(String name)
-		{
-			return 0;
-		}
-		
-		UQWord ObjectField::getUQWord(String name)
-		{
-			return 0;
-		}
-		
-		float ObjectField::getFloat(String name)
-		{
-			return 0;
-		}
-		
-		double ObjectField::getDouble(String name)
-		{
-			return 0;
-		}
-		
-		ObjectField ObjectField::getObject(String name)
-		{
-			return *this;
-		}
-
-
-
-		ByteStream OXDBuilder::stringToStream(String str)
-		{
-			if (str.length() == 0) return { 0 };
-			SerialIO sio(str.length() + tFieldType::QWord);
-			sio.w_QWord(0, str.length());
-			for (uint64_t i = 0; i < str.size(); i++)
-			{
-				char c = str[i];
-				sio.w_Byte(tFieldType::QWord + i, c);
-			}
-			return sio.getData();
-		}
-
-
-		bool OXDBuilder::Object::create(String name, uint64_t oid)
-		{
-			if (StringEditor(name).trim().str() == "") return false;
-			if (OXDBuilder::Object::s_open) return false;
-			OXDBuilder::Object::s_open = true;
-			OXDBuilder::Object::s_current = ObjectField();
-		}
-
-		ObjectField OXDBuilder::Object::get(void)
-		{
-			if (!OXDBuilder::Object::s_open) return ObjectField();
-			ObjectField obj = s_current;
-			OXDBuilder::Object::s_open = false;
-			OXDBuilder::Object::s_current = ObjectField();
-			return obj;
-		}
-
-		bool OXDBuilder::Object::newField_Byte(ObjectField& obj, String name, Byte value)
-		{
-			return false;
-		}
-
-		bool OXDBuilder::Object::newField_UByte(ObjectField& obj, String name, UByte value)
-		{
-			return false;
-		}
-
-		bool OXDBuilder::Object::newField_Word(ObjectField& obj, String name, Word value)
-		{
-			return false;
-		}
-
-		bool OXDBuilder::Object::newField_UWord(ObjectField& obj, String name, UWord value)
-		{
-			return false;
-		}
-
-		bool OXDBuilder::Object::newField_DWord(ObjectField& obj, String name, DWord value)
-		{
-			return false;
-		}
-
-		bool OXDBuilder::Object::newField_UDWord(ObjectField& obj, String name, UDWord value)
-		{
-			return false;
-		}
-
-		bool OXDBuilder::Object::newField_QWord(ObjectField& obj, String name, QWord value)
-		{
-			return false;
-		}
-
-		bool OXDBuilder::Object::newField_UQWord(ObjectField& obj, String name, UQWord value)
-		{
-			return false;
-		}
-
-		bool OXDBuilder::Object::newField_Float(ObjectField& obj, String name, float value)
-		{
-			return false;
-		}
-
-		bool OXDBuilder::Object::newField_Double(ObjectField& obj, String name, double value)
-		{
-			return false;
-		}
-
-		bool OXDBuilder::Object::newField_Object(ObjectField& obj, String name, ObjectField& value)
-		{
-			return false;
-		}*/
-		
 	} // namespace serial
-} // namesoace ox
+} // namesoace ostd
