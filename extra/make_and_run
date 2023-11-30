@@ -3,7 +3,11 @@
 printf "\n============================================[ Building Application ]============================================\n\n"
 rm -r ./res
 \cp -r ../extra/* ./
-make
+if [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    make
+elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW64_NT" ]; then
+    mingw32-make.exe
+fi
 if [ $? -eq 0 ]; then
     printf "\n============================================[ Running Application ]============================================\n\n"
     ./framework-test
