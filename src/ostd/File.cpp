@@ -24,10 +24,10 @@ namespace ostd
 		if (!file.is_open()) return *this;
 		m_buffer = { std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
 
-		m_extension = filePath.extension();
-		m_fullPath = filePath;
-		m_fullName = filePath.filename();
-		m_name = filePath.stem();
+		m_extension = filePath.extension().string();
+		m_fullPath = filePath.string();
+		m_fullName = filePath.filename().string();
+		m_name = filePath.stem().string();
 		StringEditor pathEditor(m_fullPath);
 		if (pathEditor.contains('/'))
 			m_directoryPath = pathEditor.substr(0, pathEditor.lastIndexOf('/'));

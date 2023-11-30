@@ -1,7 +1,7 @@
 #include "Utils.hpp"
 #include "Defines.hpp"
 #include <TermColor.hpp>
-#include <clip/clip.h>
+//#include <clip/clip.h>
 #include <bitset>
 #include <chrono>
 #include <algorithm>
@@ -682,7 +682,7 @@ namespace ostd
 		return std::chrono::duration_cast<std::chrono::milliseconds> (std::chrono::system_clock::now().time_since_epoch()).count() - Utils::s_startTime_ms;
 	}
 
-	bool Utils::setClipboardText(String text)
+	/*bool Utils::setClipboardText(String text)
 	{
 		return clip::set_text(text);
 	}
@@ -692,7 +692,7 @@ namespace ostd
 		String text = "";
 		if (!clip::get_text(text)) return "";
 		return text;
-	}
+	}*/
 
 	float Utils::map_value(float input, float input_start, float input_end, float output_start, float output_end)
 	{

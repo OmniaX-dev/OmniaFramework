@@ -150,8 +150,9 @@ namespace ostd
 			static String duplicateChar(unsigned char c, uint16_t count);
 			static void sleep(uint32_t __time, eTimeUnits __unit = eTimeUnits::Milliseconds);
 			static uint64_t getRunningTime_ms(void);
-			static bool setClipboardText(String text);
-			static String getClipboardText(void);
+			//TODO: Doesn't work on Windows
+			//static bool setClipboardText(String text);
+			//static String getClipboardText(void);
 			static float map_value(float input, float input_start, float input_end, float output_start, float output_end);
 			static bool loadFileFromHppResource(String output_file_path, const char* resource_buffer, unsigned int size);
 			static void printByteStream(const ByteStream& data, StreamIndex start, uint8_t line_len, uint16_t n_rows, IOutputHandler& out, int32_t addrHighlight = -1, uint32_t highlightRange = 1, const String& title = "");
