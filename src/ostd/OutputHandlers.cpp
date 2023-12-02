@@ -2,6 +2,7 @@
 #include "Color.hpp"
 #include "BaseObject.hpp"
 #include "Logger.hpp"
+#include "TextStyleParser.hpp"
 #include <TermColor.hpp>
 
 #include <iomanip>
@@ -161,6 +162,17 @@ namespace ostd
 			std::cout << std::fixed << std::setprecision(precision) << f;
 			std::cout.copyfmt(cout_state);
 		}
+		return *this;
+	}
+
+	IOutputHandler& ConsoleOutputHandler::pStyled(const String& styled)
+	{
+		return pStyled(TextStyleParser::parse(styled));
+	}
+
+	IOutputHandler& ConsoleOutputHandler::pStyled(const TextStyleParser::tStyledString& styled)
+	{
+		std::cout << styled;
 		return *this;
 	}
 	

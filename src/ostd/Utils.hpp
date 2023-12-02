@@ -2,6 +2,7 @@
 #define __DATATYPES__HPP__
 
 #include <ostd/Types.hpp>
+#include <ostd/TextStyleParser.hpp>
 
 #include <filesystem>
 
@@ -315,7 +316,7 @@ namespace ostd
 		inline static constexpr const char* Gray = "lgray";
 		inline static constexpr const char* White = "white";
 		inline static constexpr const char* onGray = "o-lgray";
-		inline static constexpr const char* OnWhite = "ob-lgray";
+		inline static constexpr const char* OnWhite = "o-white";
 	};
 
 	class Color;
@@ -340,6 +341,8 @@ namespace ostd
 			virtual IOutputHandler& pi(int64_t i) = 0;
 			virtual IOutputHandler& pf(float f, uint8_t precision = 0) = 0;
 			virtual IOutputHandler& pf(double f, uint8_t precision = 0) = 0;
+			virtual IOutputHandler& pStyled(const String& styled) = 0;
+			virtual IOutputHandler& pStyled(const TextStyleParser::tStyledString& styled) = 0;
 			virtual IOutputHandler& nl(void) = 0;
 			virtual IOutputHandler& flush(void) = 0;
 			virtual IOutputHandler& reset(void) = 0;
@@ -372,6 +375,8 @@ namespace ostd
 			IOutputHandler& pi(int64_t i) override;
 			IOutputHandler& pf(float f, uint8_t precision = 0) override;
 			IOutputHandler& pf(double f, uint8_t precision = 0) override;
+			IOutputHandler& pStyled(const String& styled) override;
+			IOutputHandler& pStyled(const TextStyleParser::tStyledString& styled) override;
 			IOutputHandler& nl(void) override;
 			IOutputHandler& flush(void) override;
 			IOutputHandler& reset(void) override;
@@ -398,6 +403,8 @@ namespace ostd
 			IOutputHandler& pi(int64_t i) override;
 			IOutputHandler& pf(float f, uint8_t precision = 0) override;
 			IOutputHandler& pf(double f, uint8_t precision = 0) override;
+			IOutputHandler& pStyled(const String& styled) override { return *this; };
+			IOutputHandler& pStyled(const TextStyleParser::tStyledString& styled) override { return *this; };
 			IOutputHandler& nl(void) override;
 			inline IOutputHandler& flush(void) override { return *this; }
 			inline IOutputHandler& reset(void) override { return *this; }
