@@ -247,6 +247,7 @@ namespace ostd
 			StringEditor& reverse(void);
 			StringEditor& replaceAll(String what, String with);
 			StringEditor& replaceFirst(String what, String with);
+			StringEditor& regexReplace(String regex_pattern, String replace_with, bool case_insensitive = false);
 
 			StringEditor& put(uint32_t index, char c);
 
@@ -341,8 +342,9 @@ namespace ostd
 			virtual IOutputHandler& pi(int64_t i) = 0;
 			virtual IOutputHandler& pf(float f, uint8_t precision = 0) = 0;
 			virtual IOutputHandler& pf(double f, uint8_t precision = 0) = 0;
-			virtual IOutputHandler& pStyled(const String& styled) = 0;
+			virtual IOutputHandler& pStyled(const StringEditor& styled) = 0;
 			virtual IOutputHandler& pStyled(const TextStyleParser::tStyledString& styled) = 0;
+			virtual IOutputHandler& pStyled(const TextStyleBuilder::IRichStringBase& styled) = 0;
 			virtual IOutputHandler& nl(void) = 0;
 			virtual IOutputHandler& flush(void) = 0;
 			virtual IOutputHandler& reset(void) = 0;
@@ -375,8 +377,9 @@ namespace ostd
 			IOutputHandler& pi(int64_t i) override;
 			IOutputHandler& pf(float f, uint8_t precision = 0) override;
 			IOutputHandler& pf(double f, uint8_t precision = 0) override;
-			IOutputHandler& pStyled(const String& styled) override;
+			IOutputHandler& pStyled(const StringEditor& styled) override;
 			IOutputHandler& pStyled(const TextStyleParser::tStyledString& styled) override;
+			IOutputHandler& pStyled(const TextStyleBuilder::IRichStringBase& styled) override;
 			IOutputHandler& nl(void) override;
 			IOutputHandler& flush(void) override;
 			IOutputHandler& reset(void) override;
@@ -403,8 +406,9 @@ namespace ostd
 			IOutputHandler& pi(int64_t i) override;
 			IOutputHandler& pf(float f, uint8_t precision = 0) override;
 			IOutputHandler& pf(double f, uint8_t precision = 0) override;
-			IOutputHandler& pStyled(const String& styled) override { return *this; };
-			IOutputHandler& pStyled(const TextStyleParser::tStyledString& styled) override { return *this; };
+			IOutputHandler& pStyled(const StringEditor& styled) override { return *this; };
+			inline IOutputHandler& pStyled(const TextStyleParser::tStyledString& styled) override { return *this; }
+			inline IOutputHandler& pStyled(const TextStyleBuilder::IRichStringBase& styled) override { return *this; };
 			IOutputHandler& nl(void) override;
 			inline IOutputHandler& flush(void) override { return *this; }
 			inline IOutputHandler& reset(void) override { return *this; }

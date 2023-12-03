@@ -1,6 +1,7 @@
 #include "Utils.hpp"
 #include <sstream>
 #include <algorithm>
+#include <boost/regex.hpp>
 
 namespace ostd
 {
@@ -147,6 +148,22 @@ namespace ostd
 		int32_t index = indexOf(what);
 		if (index == -1) return *this;
 		m_data.replace(index, what.length(), with);
+		return *this;
+	}
+
+	StringEditor& StringEditor::regexReplace(String regex_pattern, String replace_with, bool case_insensitive)
+	{
+		try
+		{
+			boost::regex rgx(regex_pattern, (case_insensitive ? boost::regex_constants::icase : boost::regex_constants::normal));
+			m_data = boost::regex_replace(m_data, rgx, replace_with);
+			return *this;
+		}
+		catch(const boost::regex_error& err)
+		{
+			std::cerr << err.what() << '\n'; //TODO: Better error handling
+			return *this;
+		}
 		return *this;
 	}
 

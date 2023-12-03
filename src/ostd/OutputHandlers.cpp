@@ -165,14 +165,20 @@ namespace ostd
 		return *this;
 	}
 
-	IOutputHandler& ConsoleOutputHandler::pStyled(const String& styled)
+	IOutputHandler& ConsoleOutputHandler::pStyled(const StringEditor& styled)
 	{
-		return pStyled(TextStyleParser::parse(styled));
+		return pStyled(TextStyleParser::parse(styled.str()));
 	}
 
 	IOutputHandler& ConsoleOutputHandler::pStyled(const TextStyleParser::tStyledString& styled)
 	{
 		std::cout << styled;
+		return *this;
+	}
+
+	IOutputHandler& ConsoleOutputHandler::pStyled(const TextStyleBuilder::IRichStringBase& styled)
+	{
+		std::cout << styled.getStyledString();
 		return *this;
 	}
 	

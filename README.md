@@ -9,7 +9,7 @@ download MSYS2 from https://www.msys2.org/ and install it
 run MSYS2, and in the terminal run:
 ```
 pacman -Syuu
-pacman -S --needed base-devel mingw-w64-ucrt-x86_64-clang mingw-w64-ucrt-x86_64-gdb mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-sfml mingw-w64-ucrt-x86_64-make
+pacman -S --needed base-devel mingw-w64-ucrt-x86_64-clang mingw-w64-ucrt-x86_64-gdb mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-sfml mingw-w64-ucrt-x86_64-make mingw-w64-ucrt-x86_64-boost
 ```
 
 **Step 3:**

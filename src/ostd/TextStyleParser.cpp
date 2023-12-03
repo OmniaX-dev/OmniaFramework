@@ -18,6 +18,16 @@ namespace ostd
 		return os << builder.getStyledString();
 	}
 
+	std::ostream &operator<<(std::ostream &os, TextStyleBuilder::Regex const &regex)
+	{ 
+		return os << regex.getStyledString();
+	}
+
+	std::ostream &operator<<(std::ostream &os, TextStyleBuilder::IRichStringBase const &rstr)
+	{ 
+		return os << rstr.getStyledString();
+	}
+
 	void TextStyleParser::tColor::convertToBackground(void)
 	{
 		StringEditor edit(consoleColor);
@@ -49,12 +59,12 @@ namespace ostd
 		return text.length() > 0 && text.length() == backgroundColors.size() && text.length() == foregroundColors.size();
 	}
 
-	TextStyleParser::tStyledString TextStyleParser::parse(const String& styledString)
+	TextStyleParser::tStyledString TextStyleParser::parse(const StringEditor& styledString)
 	{
 		return parse(styledString, ConsoleColors["black"], ConsoleColors["white"]);
 	}
 
-	TextStyleParser::tStyledString TextStyleParser::parse(const String& styledString, tColor defaultBackgorundColor, tColor defaultForegroundColor)
+	TextStyleParser::tStyledString TextStyleParser::parse(const StringEditor& styledString, tColor defaultBackgorundColor, tColor defaultForegroundColor)
 	{
 		tStyledString rstring;
 		bool insideBlock = false;
@@ -312,5 +322,58 @@ namespace ostd
 			return findit->second;
 		return TextStyleParser::ConsoleColors["black"];
 	}
+
+
+
+	
+	TextStyleBuilder::Regex& TextStyleBuilder::Regex::setRawString(const StringEditor& rawString)
+	{
+		m_rawString = rawString.str();
+		return *this;
+	}
+
+	TextStyleBuilder::Regex& TextStyleBuilder::Regex::fg(const StringEditor& regex, const StringEditor& foreground_color, bool case_insensitive)
+	{
+		String replace_pattern = "[@@ style foreground:" + foreground_color.str();
+		replace_pattern += "]$&[@@/]";
+		m_rawString = StringEditor(m_rawString).regexReplace(regex.str(), replace_pattern, case_insensitive).str();
+		return *this;
+	}
+
+	TextStyleBuilder::Regex& TextStyleBuilder::Regex::bg(const StringEditor& regex, const StringEditor& background_color, bool case_insensitive)
+	{
+		String replace_pattern = "[@@ style background:" + background_color.str();
+		replace_pattern += "]$&[@@/]";
+		m_rawString = StringEditor(m_rawString).regexReplace(regex.str(), replace_pattern, case_insensitive).str();
+		return *this;
+	}
+	
+	TextStyleBuilder::Regex& TextStyleBuilder::Regex::col(const StringEditor& regex, const StringEditor& foreground_color, const StringEditor& background_color, bool case_insensitive)
+	{
+		String replace_pattern = "[@@ style background:" + background_color.str();
+		replace_pattern += ", foreground:" + foreground_color.str();
+		replace_pattern += "]$&[@@/]";
+		m_rawString = StringEditor(m_rawString).regexReplace(regex.str(), replace_pattern, case_insensitive).str();
+		return *this;
+	}
+	
+	TextStyleParser::tStyledString TextStyleBuilder::Regex::getStyledString(void) const
+	{
+		return TextStyleParser::parse(m_rawString);
+	}
+	
+	TextStyleBuilder::Regex& TextStyleBuilder::Regex::print(void)
+	{
+		ConsoleOutputHandler out;
+		out.pStyled(m_rawString);
+		return *this;
+	}
+	
+	TextStyleBuilder::Regex& TextStyleBuilder::Regex::print(IOutputHandler& out)
+	{
+		out.pStyled(m_rawString);
+		return *this;
+	}
+	
 
 }

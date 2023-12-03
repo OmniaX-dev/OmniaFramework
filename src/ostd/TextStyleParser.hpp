@@ -5,6 +5,7 @@
 
 namespace ostd
 {
+	class StringEditor;
 	class TextStyleParser
 	{
 		public: enum class eBlockParserReturnValue { CloseBlock = 0, ValidBlock, InvalidBlock };
@@ -29,8 +30,8 @@ namespace ostd
 		};
 
 		public:
-			static tStyledString parse(const String& styledString);
-			static tStyledString parse(const String& styledString, tColor defaultBackgorundColor, tColor defaultForegroundColor);
+			static tStyledString parse(const StringEditor& styledString);
+			static tStyledString parse(const StringEditor& styledString, tColor defaultBackgorundColor, tColor defaultForegroundColor);
 
 		private:
 			static eBlockParserReturnValue parse_block(const String& blockString, tColor& outBackgroundColor, tColor& outForegroundColor);
@@ -65,7 +66,13 @@ namespace ostd
 
 	class TextStyleBuilder
 	{
-		public: class Console {
+		public: class IRichStringBase {
+			public:
+				virtual TextStyleParser::tStyledString getStyledString(void) const = 0;
+				friend std::ostream& operator<<(std::ostream&, IRichStringBase const&);
+		};
+
+		public: class Console : public IRichStringBase {
 			public:
 				Console(void);
 				Console& bg(const String& consoleColor);
@@ -87,7 +94,7 @@ namespace ostd
 				Console& print(IOutputHandler& out);
 				Console& print(void);
 
-				inline TextStyleParser::tStyledString getStyledString(void) const { return m_styledString; }
+				inline TextStyleParser::tStyledString getStyledString(void) const override { return m_styledString; }
 
 				friend std::ostream& operator<<(std::ostream&, Console const&);
 
@@ -100,6 +107,28 @@ namespace ostd
 				TextStyleParser::tColor m_foregroundColor;
 		};
 
+		public: class Regex : public IRichStringBase {
+			public:
+				inline Regex(void) { m_rawString = ""; }
+				inline Regex(const StringEditor& rawString) { setRawString(rawString); }
+				inline String getRawString(void) const { return m_rawString; }
+				Regex& setRawString(const StringEditor& rawString);
+				
+				Regex& fg(const StringEditor& regex, const StringEditor& foreground_color, bool case_insensitive = false);
+				Regex& bg(const StringEditor& regex, const StringEditor& background_color, bool case_insensitive = false);
+				Regex& col(const StringEditor& regex, const StringEditor& foreground_color, const StringEditor& background_color, bool case_insensitive = false);
+
+				TextStyleParser::tStyledString getStyledString(void) const override;
+
+				Regex& print(void);
+				Regex& print(IOutputHandler& out);
+
+				friend std::ostream& operator<<(std::ostream&, Regex const&);
+
+			private:
+				String m_rawString { "" };
+		};
+
 		//TODO:  Implement
 		// public: class FullColor {
 
@@ -107,4 +136,5 @@ namespace ostd
 	};
 
 	typedef TextStyleBuilder::Console ConsoleRichString;
+	typedef TextStyleBuilder::Regex RegexRichString;
 }
