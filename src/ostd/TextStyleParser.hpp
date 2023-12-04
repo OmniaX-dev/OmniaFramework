@@ -34,6 +34,7 @@ namespace ostd
 			static tStyledString parse(const StringEditor& styledString, tColor defaultBackgorundColor, tColor defaultForegroundColor);
 
 		private:
+			static bool test_for_block(const String& block_part);
 			static eBlockParserReturnValue parse_block(const String& blockString, tColor& outBackgroundColor, tColor& outForegroundColor);
 			static const tColor parse_color(const String& colorStr);
 
@@ -58,7 +59,7 @@ namespace ostd
 				{ "yellow", { { 255, 255, 0, 255 }, "yellow" } },
 				{ "brightyellow", { { 255, 255, 170, 255 }, "b-yellow" } },
 				{ "black", { { 0, 0, 0, 255 }, "gray" } },
-				{ "Gray", { { 50, 50, 50, 255 }, "b-gray" } },
+				{ "gray", { { 50, 50, 50, 255 }, "b-gray" } },
 				{ "brightgray", { { 150, 150, 150, 255 }, "lgray" } },
 				{ "white", { { 255, 255, 255, 255 }, "white" } }
 			};

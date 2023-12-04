@@ -170,7 +170,11 @@ namespace ostd
 			static std::vector<std::filesystem::path> listDirectoryRecursive(const String& directoryPath);
 			
 			static int32_t solveIntegerExpression(const String& expr);
+
 			static void clearConsole(void);
+			static void getConsoleSize(int32_t& outRows, int32_t& outColumns);
+			static int32_t getConsoleWidth(void);
+			static int32_t getConsoleHeight(void);
 
 		private:
 			inline static uint64_t s_startTime_ms;

@@ -31,15 +31,21 @@ namespace ostd
 	void TextStyleParser::tColor::convertToBackground(void)
 	{
 		StringEditor edit(consoleColor);
-		if (edit.startsWith("o-")) return;
-		consoleColor = "o-" + edit.str();
+		if (edit.startsWith("o-") || edit.startsWith("ob-")) return;
+		if (edit.startsWith("b-"))
+			consoleColor = "o" + edit.str();
+		else
+			consoleColor = "o-" + edit.str();
 	}
 
 	void TextStyleParser::tColor::convertToForeground(void)
 	{
 		StringEditor edit(consoleColor);
-		if (!edit.startsWith("o-")) return;
-		consoleColor = edit.substr(2);
+		if (!edit.startsWith("o-") && !edit.startsWith("ob-")) return;
+		if (edit.startsWith("ob-"))
+			consoleColor = edit.substr(3);
+		else
+			consoleColor = edit.substr(2);
 	}
 
 	void TextStyleParser::tStyledString::add(const String& str, tColor background, tColor foreground)
@@ -85,21 +91,25 @@ namespace ostd
 			{
 				if (insideBlock)
 					return tStyledString(); //TODO: Error, no nested blocks allowed
-				insideBlock = true;
-				continue;
+				if (test_for_block(StringEditor(_styledString).substr(i)))
+				{
+					insideBlock = true;
+					continue;
+				}
 			}
 			if(c == ']')
 			{
-				if (!insideBlock)
-					return tStyledString(); //TODO: Error, closing block without opeinng one
-				insideBlock = false;
-				validBlockStart = false;
-				countBlockStart = 0;
-				auto blockParseResult = parse_block(blockText, bgcol, fgcol);
-				if (blockParseResult == eBlockParserReturnValue::InvalidBlock)
-					return tStyledString(); //TODO: Error, Invalid block
-				blockText = "";
-				continue;
+				if (insideBlock)
+				{
+					insideBlock = false;
+					validBlockStart = false;
+					countBlockStart = 0;
+					auto blockParseResult = parse_block(blockText, bgcol, fgcol);
+					if (blockParseResult == eBlockParserReturnValue::InvalidBlock)
+						return tStyledString(); //TODO: Error, Invalid block
+					blockText = "";
+					continue;
+				}
 			}
 			if (!insideBlock)
 			{
@@ -126,6 +136,16 @@ namespace ostd
 			}
 		}
 		return rstring;
+	}
+
+	bool TextStyleParser::test_for_block(const String& block_part)
+	{
+		if (block_part.length() < 3) return false;
+		if (block_part.starts_with("[@@"))
+		{
+			return true;
+		}
+		return false;
 	}
 
 	TextStyleParser::eBlockParserReturnValue TextStyleParser::parse_block(const String& blockString, tColor& outBackgroundColor, tColor& outForegroundColor)

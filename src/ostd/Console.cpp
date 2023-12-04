@@ -30,10 +30,20 @@ void Utils::clearConsole(void)
 	SetConsoleCursorPosition( hStdOut, homeCoords );
 }
 
+void Utils::getConsoleSize(int32_t& outRows, int32_t& outColumns)
+{
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	int columns, rows;
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+	outColumns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+	outRows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+}
+
 #elif defined (__LINUX__) || defined(__gnu_linux__) || defined(__linux__)
 
 #include <unistd.h>
 #include <term.h>
+#include <sys/ioctl.h>
 
 void Utils::clearConsole(void)
 {
@@ -47,5 +57,28 @@ void Utils::clearConsole(void)
 	putp(tigetstr( "clear" ));
 }
 
+void Utils::getConsoleSize(int32_t& outRows, int32_t& outColumns)
+{
+	struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+	outRows = w.ws_row;
+	outColumns = w.ws_col;
+}
+
 #endif
+
+int32_t Utils::getConsoleWidth(void)
+{
+	int32_t rows = 0, cols = 0;
+	getConsoleSize(rows, cols);
+	return cols;
+}
+
+int32_t Utils::getConsoleHeight(void)
+{
+	int32_t rows = 0, cols = 0;
+	getConsoleSize(rows, cols);
+	return rows;
+}
+
 }
