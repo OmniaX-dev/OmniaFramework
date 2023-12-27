@@ -2,6 +2,7 @@
 #include "Utils.hpp"
 #include "Defines.hpp"
 #include "Signals.hpp"
+#include "IOHandlers.hpp"
 
 namespace ostd
 {
@@ -32,7 +33,7 @@ namespace ostd
 		return out;
 	}
 
-	void BaseObject::print(bool newLine, IOutputHandler* __destination) const
+	void BaseObject::print(bool newLine, OutputHandlerBase* __destination) const
 	{
 		if (__destination == nullptr)
 			std::cout << toString() << (newLine ? "\n" : "");
@@ -43,7 +44,7 @@ namespace ostd
 		}
 	}
 
-	std::string BaseObject::getObjectHeaderString(void) const
+	String BaseObject::getObjectHeaderString(void) const
 	{
 		return StringEditor(getTypeName()).add("->uid=").addi(getID()).add("/oid=").addi(getCompareOID()).add("/valid=").add(STR_BOOL(isValid())).str();
 	}
@@ -58,4 +59,4 @@ namespace ostd
 		if (m_signalsEnabled)
 			handleSignal(signal);
 	}
-} //namesoace ox
+} 

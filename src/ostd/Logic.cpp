@@ -1,5 +1,6 @@
 #include "Logic.hpp"
 #include "Utils.hpp"
+#include "String.hpp"
 #include <bits/stdc++.h>
 
 namespace ostd

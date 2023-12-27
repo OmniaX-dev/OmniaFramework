@@ -5,9 +5,11 @@
 #include <string>
 #include <iostream>
 
+#include <ostd/String.hpp>
+
 namespace ostd
 {
-	class IOutputHandler;
+	class OutputHandlerBase;
 	struct tSignal;
 	class BaseObject
 	{
@@ -31,15 +33,15 @@ namespace ostd
 			inline static BaseObject& InvalidRef(void) { return BaseObject::s_invalid_obj; } 
 			// inline static BaseObject InvalidInst(void) { return BaseObject::s_invalid_obj; }
 			
-			inline void setTypeName(std::string tn) { m_typeName = tn; }
-			inline std::string getTypeName(void) const { return m_typeName; }
-			std::string getObjectHeaderString(void) const;
+			inline void setTypeName(const StringEditor& tn) { m_typeName = tn.str(); }
+			inline String getTypeName(void) const { return m_typeName; }
+			String getObjectHeaderString(void) const;
 			
 			inline bool signalsEnabled(void) { return m_signalsEnabled; }
 			inline void enableSignals(bool e = true) { m_signalsEnabled = e; }
 
-			virtual inline std::string toString(void) const { return getObjectHeaderString(); };
-			virtual void print(bool newLine = true, IOutputHandler* __destination = nullptr) const;
+			virtual inline String toString(void) const { return getObjectHeaderString(); };
+			virtual void print(bool newLine = true, OutputHandlerBase* __destination = nullptr) const;
 
 			virtual inline void handleSignal(tSignal& signal) {  }
 			void connectSignal(uint32_t signal_id);
@@ -57,13 +59,13 @@ namespace ostd
 			uint64_t m_uid;
 			uint64_t m_oid;
 			bool m_valid;
-			std::string m_typeName;
+			String m_typeName;
 			bool m_signalsEnabled { true };
 
 			inline static uint64_t s_next_oid { 1024 };
 			static BaseObject s_invalid_obj;
 	};
-} //namesoace ox
+} 
 
 
 

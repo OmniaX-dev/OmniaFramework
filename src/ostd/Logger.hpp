@@ -15,19 +15,19 @@ namespace ostd
 		inline static const uint8_t Trace = 5;
 	};
 
-	class IOutputHandler;
+	class OutputHandlerBase;
 	class Logger
 	{
 		public:
 			static void __log_output(uint8_t log_level, String message, ...);
-			static void setOutputHandler(IOutputHandler& __destination);
+			static void setOutputHandler(OutputHandlerBase& __destination);
 			static void destroy(void);
-			static inline IOutputHandler& getOutputHandler(void) { return *m_out; }
+			static inline OutputHandlerBase& getOutputHandler(void) { return *m_out; }
 
 		private:
-			static IOutputHandler* m_out;
+			static OutputHandlerBase* m_out;
 	};
-} //namesoace ox
+} 
 
 #define OX_LOG_WARN_ENABLED 1
 #define OX_LOG_INFO_ENABLED 1

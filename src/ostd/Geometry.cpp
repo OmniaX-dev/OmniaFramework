@@ -1,7 +1,7 @@
 #include "Geometry.hpp"
 
 #include <iostream>
-#include "Utils.hpp"
+#include "String.hpp"
 
 namespace ostd
 {
@@ -13,4 +13,4 @@ namespace ostd
 	{
 		return StringEditor("{ ").addf(x).add(", ").addf(y).add(", ").addf(z).add(" }").str();
 	}
-} //namesoace ox
+} 

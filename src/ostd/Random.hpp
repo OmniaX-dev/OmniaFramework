@@ -4,7 +4,7 @@
 #include <random>
 #include <climits>
 #include <ostd/Geometry.hpp>
-#include <vendor/FastNoiseLite.hpp>
+#include <ostd/vendor/FastNoiseLite.hpp>
 
 namespace ostd
 {

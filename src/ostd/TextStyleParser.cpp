@@ -1,5 +1,6 @@
 #include "TextStyleParser.hpp"
 #include "Utils.hpp"
+#include "IOHandlers.hpp"
 
 namespace ostd
 {
@@ -8,7 +9,7 @@ namespace ostd
 		if (!str.validate()) return os;
 		ostd::ConsoleOutputHandler out;
 		for (int32_t i = 0; i < str.text.length(); i++)
-			out.col(str.backgroundColors[i].consoleColor).col(str.foregroundColors[i].consoleColor).p(str.text[i]);
+			out.bg(str.backgroundColors[i].consoleColor).fg(str.foregroundColors[i].consoleColor).pChar(str.text[i]);
 		out.reset();
 		return os;
 	}
@@ -28,31 +29,11 @@ namespace ostd
 		return os << rstr.getStyledString();
 	}
 
-	void TextStyleParser::tColor::convertToBackground(void)
-	{
-		StringEditor edit(consoleColor);
-		if (edit.startsWith("o-") || edit.startsWith("ob-")) return;
-		if (edit.startsWith("b-"))
-			consoleColor = "o" + edit.str();
-		else
-			consoleColor = "o-" + edit.str();
-	}
-
-	void TextStyleParser::tColor::convertToForeground(void)
-	{
-		StringEditor edit(consoleColor);
-		if (!edit.startsWith("o-") && !edit.startsWith("ob-")) return;
-		if (edit.startsWith("ob-"))
-			consoleColor = edit.substr(3);
-		else
-			consoleColor = edit.substr(2);
-	}
-
 	void TextStyleParser::tStyledString::add(const String& str, tColor background, tColor foreground)
 	{
 		text += str;
-		background.convertToBackground();
-		foreground.convertToForeground();
+		background.background = true;
+		foreground.background = false;
 		for (int32_t i = 0; i < str.length(); i++)
 		{
 			backgroundColors.push_back(background);
@@ -67,7 +48,7 @@ namespace ostd
 
 	TextStyleParser::tStyledString TextStyleParser::parse(const StringEditor& styledString)
 	{
-		return parse(styledString, ConsoleColors["black"], ConsoleColors["white"]);
+		return parse(styledString, convertColor("black"), convertColor("white"));
 	}
 
 	TextStyleParser::tStyledString TextStyleParser::parse(const StringEditor& styledString, tColor defaultBackgorundColor, tColor defaultForegroundColor)
@@ -76,8 +57,8 @@ namespace ostd
 		bool insideBlock = false;
 		bool validBlockStart = false;
 		int32_t countBlockStart = 0;
-		defaultBackgorundColor.convertToBackground();
-		defaultForegroundColor.convertToForeground();
+		defaultBackgorundColor.background = true;
+		defaultForegroundColor.background = false;
 		s_defaultBackgroundColor = defaultBackgorundColor;
 		s_defaultForegroundColor = defaultForegroundColor;
 		tColor fgcol = defaultForegroundColor;
@@ -138,6 +119,22 @@ namespace ostd
 		return rstring;
 	}
 
+	TextStyleParser::tColor TextStyleParser::convertColor(const StringEditor& name)
+	{
+		StringEditor colorStrEditor = name;
+		colorStrEditor.trim().toLower();
+		if (ConsoleColors::isConsoleColor(colorStrEditor))
+		{
+			auto& cc = ConsoleColors::getFromName(colorStrEditor);
+			return { cc.fullColor, cc.name, cc.background };
+		}
+		tColor col;
+		col.consoleColor = "black";
+		col.fullColor.set(colorStrEditor.str());
+		col.background = false;
+		return col;
+	}
+
 	bool TextStyleParser::test_for_block(const String& block_part)
 	{
 		if (block_part.length() < 3) return false;
@@ -175,14 +172,12 @@ namespace ostd
 				value.trim();
 				if (name.str() == "background")
 				{
-					auto col = parse_color(value.str());
-					col.convertToBackground();
+					auto col = convertColor(value.str());
 					outBackgroundColor = col;
 				}
 				else if (name.str() == "foreground")
 				{
-					auto col = parse_color(value.str());
-					col.convertToForeground();
+					auto col = convertColor(value.str());
 					outForegroundColor = col;
 				}
 				else continue; //TODO: Error, unknown style parameter
@@ -191,42 +186,27 @@ namespace ostd
 		return eBlockParserReturnValue::ValidBlock;
 	}
 
-	const TextStyleParser::tColor TextStyleParser::parse_color(const String& colorStr)
-	{
-		StringEditor colorStrEditor = colorStr;
-		colorStrEditor.trim().toLower();
-		for (auto& col : ConsoleColors)
-		{
-			if (col.first == colorStrEditor.str())
-				return col.second;
-		}
-		tColor col;
-		col.consoleColor = "black";
-		col.fullColor.set(colorStrEditor.str());
-		return col;
-	}
-
 
 	
 	TextStyleBuilder::Console::Console(void)
 	{
-		m_backgroundColor = TextStyleParser::ConsoleColors["black"];
-		m_foregroundColor = TextStyleParser::ConsoleColors["white"];
-		m_backgroundColor.convertToBackground();
-		m_foregroundColor.convertToForeground();
+		m_backgroundColor = TextStyleParser::convertColor("black");
+		m_backgroundColor.background = true;
+		m_foregroundColor = TextStyleParser::convertColor("white");
+		m_backgroundColor.background = false;
 	}
 
 	TextStyleBuilder::Console& TextStyleBuilder::Console::bg(const String& consoleColor)
 	{
 		m_backgroundColor = find_color(consoleColor);
-		m_backgroundColor.convertToBackground();
+		m_backgroundColor.background = true;
 		return *this;
 	}
 
 	TextStyleBuilder::Console& TextStyleBuilder::Console::fg(const String& consoleColor)
 	{
 		m_foregroundColor = find_color(consoleColor);
-		m_foregroundColor.convertToForeground();
+		m_foregroundColor.background = false;
 		return *this;
 	}
 
@@ -321,7 +301,7 @@ namespace ostd
 		return add(edit.str());
 	}
 
-	TextStyleBuilder::Console& TextStyleBuilder::Console::print(IOutputHandler& out)
+	TextStyleBuilder::Console& TextStyleBuilder::Console::print(OutputHandlerBase& out)
 	{
 		out.pStyled(m_styledString);
 		return *this;
@@ -336,11 +316,7 @@ namespace ostd
 
 	TextStyleParser::tColor TextStyleBuilder::Console::find_color(const String& consoleColor)
 	{
-		StringEditor edit(consoleColor);
-		edit.toLower().trim();
-		if (auto findit = TextStyleParser::ConsoleColors.find(edit.str()); findit != TextStyleParser::ConsoleColors.end())
-			return findit->second;
-		return TextStyleParser::ConsoleColors["black"];
+		return TextStyleParser::convertColor(consoleColor);
 	}
 
 
@@ -389,7 +365,7 @@ namespace ostd
 		return *this;
 	}
 	
-	TextStyleBuilder::Regex& TextStyleBuilder::Regex::print(IOutputHandler& out)
+	TextStyleBuilder::Regex& TextStyleBuilder::Regex::print(OutputHandlerBase& out)
 	{
 		out.pStyled(m_rawString);
 		return *this;

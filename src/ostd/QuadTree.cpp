@@ -106,4 +106,4 @@ namespace ostd
 			m_se->query(range, list);
 		}
 	}
-} // namespace ox
+} 

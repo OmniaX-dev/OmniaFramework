@@ -1,7 +1,11 @@
 #include "Utils.hpp"
+#include "String.hpp"
 #include "Defines.hpp"
-#include <TermColor.hpp>
-//#include <clip/clip.h>
+#include "Color.hpp"
+#include "IOHandlers.hpp"
+
+#include "vendor/TermColor.hpp"
+
 #include <bitset>
 #include <chrono>
 #include <algorithm>
@@ -13,7 +17,10 @@
 #include <iostream>
 #include <thread>
 #include <cmath>
-#include <Color.hpp>
+
+#define __get_local_time() \
+		std::time_t __cur_t = std::time(0); \
+		std::tm* __now_t = std::localtime(&__cur_t);
 
 namespace ostd
 {
@@ -140,33 +147,7 @@ namespace ostd
 		return "_MONTH_";
 	}
 
-	// Color ColorInterpolator::get(float percent)
-	// {
-	// 	if (m_colors.size() == 0) return { 0, 0, 0 };
-	// 	if (m_colors.size() == 1) return m_colors[0];
-	// 	if (percent < 0.0f) percent = 0.0f;
-	// 	else if (percent > 1.0f) percent = 1.0f;
-	// 	Color start, end;
-	// 	if (m_colors.size() == 2)
-	// 	{
-	// 		start = m_colors[0];
-	// 		end = m_colors[1];
-	// 	}
-	// 	else
-	// 	{
-	// 		float step = 1.0f / m_colors.size();
-	// 		float real_percent = Utils::map_value(percent, 0.0f, 1.0f, 0.0f)
-	// 	}
-	// 	uint8_t r = (int)std::round(std::lerp(start.r, end.r, percent));
-	// 	uint8_t g = (int)std::round(std::lerp(start.g, end.g, percent));
-	// 	uint8_t b = (int)std::round(std::lerp(start.b, end.b, percent));
-	// 	uint8_t a = (int)std::round(std::lerp(start.a, end.a, percent));
-	// 	return { r, g, b, a };
-	// }
 	
-	#define __get_local_time() \
-			std::time_t __cur_t = std::time(0); \
-			std::tm* __now_t = std::localtime(&__cur_t);
 
 	String LocalTime::getFullString(bool include_date, bool include_time, bool day_name, bool month_as_name, bool include_seconds) const
 	{
@@ -446,7 +427,7 @@ namespace ostd
 
 
 
-	uint64_t Timer::start(bool print, String name, eTimeUnits timeUnit, IOutputHandler* __destination)
+	uint64_t Timer::start(bool print, String name, eTimeUnits timeUnit, OutputHandlerBase* __destination)
 	{
 		m_timeUnit = timeUnit;
 		m_started = true;
@@ -465,11 +446,11 @@ namespace ostd
 			else
 			{
 				m_dest = __destination;
-				m_dest->nl().nl().col("magenta").p("====>   ");
-				m_dest->col("cyan").p("Starting test for [");
-				m_dest->col("green").p(m_name);
-				m_dest->col("cyan").p("]");
-				m_dest->nl().nl().col("magenta").p("   <====");
+				m_dest->nl().nl().fg("magenta").p("====>   ");
+				m_dest->fg("cyan").p("Starting test for [");
+				m_dest->fg("green").p(m_name);
+				m_dest->fg("cyan").p("]");
+				m_dest->nl().nl().fg("magenta").p("   <====");
 				m_dest->reset().nl();
 			}
 		}
@@ -535,12 +516,12 @@ namespace ostd
 			}
 			else
 			{
-				m_dest->nl().col("magenta").p("====>   ");
-				m_dest->col("cyan").p("Test for [");
-				m_dest->col("green").p(m_name);
-				m_dest->col("cyan").p("] took ");
-				m_dest->col("b-blue").pi(diff).p(unit);
-				m_dest->nl().nl().col("magenta").p("   <====");
+				m_dest->nl().fg("magenta").p("====>   ");
+				m_dest->fg("cyan").p("Test for [");
+				m_dest->fg("green").p(m_name);
+				m_dest->fg("cyan").p("] took ");
+				m_dest->fg("b-blue").p(diff).p(unit);
+				m_dest->nl().nl().fg("magenta").p("   <====");
 				m_dest->reset().nl();
 			}
 		}
@@ -681,25 +662,11 @@ namespace ostd
 	{
 		return std::chrono::duration_cast<std::chrono::milliseconds> (std::chrono::system_clock::now().time_since_epoch()).count() - Utils::s_startTime_ms;
 	}
-
-	/*bool Utils::setClipboardText(String text)
-	{
-		return clip::set_text(text);
-	}
-
-	String Utils::getClipboardText(void)
-	{
-		String text = "";
-		if (!clip::get_text(text)) return "";
-		return text;
-	}*/
-
 	float Utils::map_value(float input, float input_start, float input_end, float output_start, float output_end)
 	{
 		float slope = 1.0 * (output_end - output_start) / (input_end - input_start);
 		return output_start + round(slope * (input - input_start));
 	}
-
 	bool Utils::loadFileFromHppResource(String output_file_path, const char* resource_buffer, unsigned int size)
 	{
 		unsigned char ext_len = resource_buffer[0];
@@ -714,8 +681,7 @@ namespace ostd
 		bin.close();
 		return true;
 	}
-
-	void Utils::printByteStream(const ByteStream& data, StreamIndex start, uint8_t line_len, uint16_t n_rows, IOutputHandler& out, int32_t addrHighlight, uint32_t highlightRange, const String& title)
+	void Utils::printByteStream(const ByteStream& data, StreamIndex start, uint8_t line_len, uint16_t n_rows, OutputHandlerBase& out, int32_t addrHighlight, uint32_t highlightRange, const String& title)
 	{
 		StreamIndex end = start + (n_rows * line_len);
 		if (end > data.size()) end = data.size();
@@ -732,72 +698,52 @@ namespace ostd
 		uint8_t i = 1;
 		ByteStream tmp;
 		uint16_t linew = 1 + 1 + 6 + 1 + 1 + 2 + ((2 + 2) * line_len) + 1 + 4;
-		out.col(ConsoleCol::BrightBlue).p(Utils::duplicateChar('=', linew)).nl();
+		out.fg(ConsoleColors::BrightBlue).p(Utils::duplicateChar('=', linew)).nl();
 		if (line_len <= 0xFF)
 		{
-			out.col(ConsoleCol::BrightBlue).p("|");
-			out.col(ConsoleCol::BrightMagenta).p(titleEdit.str());
-			out.col(ConsoleCol::BrightBlue).p("|  ");
+			out.fg(ConsoleColors::BrightBlue).p("|");
+			out.fg(ConsoleColors::BrightMagenta).p(titleEdit.str());
+			out.fg(ConsoleColors::BrightBlue).p("|  ");
 			for (int32_t i = 0; i < line_len; i++)
-				out.col(ConsoleCol::Green).p(getHexStr(i, false, 1)).p("  ");
-			out.col(ConsoleCol::BrightBlue).p("|").nl();
-			out.col(ConsoleCol::BrightBlue).p(Utils::duplicateChar('=', linew)).nl();
+				out.fg(ConsoleColors::Green).p(getHexStr(i, false, 1)).p("  ");
+			out.fg(ConsoleColors::BrightBlue).p("|").nl();
+			out.fg(ConsoleColors::BrightBlue).p(Utils::duplicateChar('=', linew)).nl();
 		}
-		out.col(ConsoleCol::BrightBlue).p("| ");
-		out.col(ConsoleCol::BrightGray).p("0x");
-		out.col(ConsoleCol::BrightCyan).p(Utils::getHexStr(start, false, 4)).col(ConsoleCol::BrightBlue).p(" |  ");
-		// std::cout << termcolor::bright_blue << Utils::duplicateChar('=', linew) << "\n";
-		// std::cout << termcolor::bright_blue << "| ";
-		// std::cout << termcolor::bright_grey << "0x";
-		// std::cout << termcolor::bright_cyan << Utils::getHexStr(start, false, 4) << termcolor::bright_blue << " |  ";
+		out.fg(ConsoleColors::BrightBlue).p("| ");
+		out.fg(ConsoleColors::BrightGray).p("0x");
+		out.fg(ConsoleColors::BrightCyan).p(Utils::getHexStr(start, false, 4)).fg(ConsoleColors::BrightBlue).p(" |  ");
 		for (StreamIndex addr = start; addr < end; addr++)
 		{
 			tmp.push_back(data[addr]);
 			if (highlight && (addr >= (uint32_t)addrHighlight && addr < (uint32_t)(addrHighlight + highlightRange)))
-				out.col(ConsoleCol::Red);
+				out.fg(ConsoleColors::Red);
 			else if (data[addr] == 0)
-				out.col(ConsoleCol::BrightGray);
-				//std::cout << termcolor::bright_grey;
+				out.fg(ConsoleColors::BrightGray);
 			else
-				out.col(ConsoleCol::White);
-				//std::cout << termcolor::bright_white;
-			//std::cout << Utils::getHexStr(data[addr], false) << "  ";
+				out.fg(ConsoleColors::White);
 			out.p(Utils::getHexStr(data[addr], false)).p("  ");
 			if (i++ % line_len == 0 || addr == end - 1)
 			{
 				i = 1;
-				//std::cout << termcolor::bright_blue << "|";
-				out.col(ConsoleCol::BrightBlue).p("|");
+				out.fg(ConsoleColors::BrightBlue).p("|");
 				if (addr == end - 1) break;
 				out.nl();
-				out.col(ConsoleCol::BrightBlue).p("|");
-				out.col(ConsoleCol::BrightGray).p("  --------  ").col(ConsoleCol::BrightBlue).p("|").col(ConsoleCol::BrightGray).p("  ");
-				//std::cout << "\n";
-				//std::cout << termcolor::bright_blue << "|";
-				//std::cout << termcolor::bright_grey << "  --------  " << termcolor::bright_blue << "|" << termcolor::bright_grey << "  ";
+				out.fg(ConsoleColors::BrightBlue).p("|");
+				out.fg(ConsoleColors::BrightGray).p("  --------  ").fg(ConsoleColors::BrightBlue).p("|").fg(ConsoleColors::BrightGray).p("  ");
 				for (const auto& c : tmp)
 				{
-					//if (isprint(c)) std::cout << termcolor::bright_yellow << (char)c << termcolor::bright_grey << "   ";
-					if (isprint(c)) out.col(ConsoleCol::BrightYellow).p((char)c).col(ConsoleCol::BrightGray).p("   ");
-					else out.col(ConsoleCol::BrightGray).p(".   ");
-					//else std::cout << termcolor::bright_grey << ".   ";
+					if (isprint(c)) out.fg(ConsoleColors::BrightYellow).pChar((char)c).fg(ConsoleColors::BrightGray).p("   ");
+					else out.fg(ConsoleColors::BrightGray).p(".   ");
 				}
-				out.col(ConsoleCol::BrightBlue).p("| ");
-				//std::cout << termcolor::bright_blue << "|";
+				out.fg(ConsoleColors::BrightBlue).p("| ");
 				tmp.clear();
 				out.reset().nl();
-				out.col(ConsoleCol::BrightBlue).p("| ");
-				out.col(ConsoleCol::BrightGray).p("0x");
-				out.col(ConsoleCol::BrightCyan).p(Utils::getHexStr(addr + 1, false, 4)).col(ConsoleCol::BrightBlue).p(" |  ");
-				//std::cout << termcolor::reset;
-				//std::cout << "\n";
-				// std::cout << termcolor::bright_blue << "| ";
-				// std::cout << termcolor::bright_grey << "0x";
-				// std::cout << termcolor::bright_cyan << Utils::getHexStr(addr + 1, false, 4) << termcolor::bright_blue << " |  ";
+				out.fg(ConsoleColors::BrightBlue).p("| ");
+				out.fg(ConsoleColors::BrightGray).p("0x");
+				out.fg(ConsoleColors::BrightCyan).p(Utils::getHexStr(addr + 1, false, 4)).fg(ConsoleColors::BrightBlue).p(" |  ");
 			}
 		}
-		out.nl().col(ConsoleCol::BrightBlue).p(Utils::duplicateChar('=', linew)).nl().reset();
-		//std::cout << "\n" << termcolor::bright_blue << Utils::duplicateChar('=', linew) << "\n";
+		out.nl().fg(ConsoleColors::BrightBlue).p(Utils::duplicateChar('=', linew)).nl().reset();
 	}
 	bool Utils::saveByteStreamToFile(const ByteStream& stream, const String& filePath)
 	{
@@ -834,4 +780,4 @@ namespace ostd
 		}
 		return out_string.str();
 	}
-} // namespace ox
+} 

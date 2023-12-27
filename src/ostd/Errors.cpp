@@ -1,5 +1,6 @@
 #include "Errors.hpp"
 #include "Logger.hpp"
+#include "String.hpp"
 
 namespace ostd
 {
@@ -14,7 +15,7 @@ namespace ostd
 		return *this;
 	}
 
-	void RuntimeError::fire(const String& extraMessage, IOutputHandler* outputHandler, BaseObject& userData, int32_t _line_num, const String& _file_name)
+	void RuntimeError::fire(const String& extraMessage, OutputHandlerBase* outputHandler, BaseObject& userData, int32_t _line_num, const String& _file_name)
 	{
 		if (isInvalid() || m_errGroup == 0x0 || m_errLevel == tErrorLevel::NoError || m_errCode == 0x0) return;
 		String errorMessage = m_message + "\n";
@@ -34,7 +35,7 @@ namespace ostd
 				msgEdit.add("\n");
 		}
 		msgEdit.add(errorMessage);
-		IOutputHandler* tmpOutHndl = nullptr;
+		OutputHandlerBase* tmpOutHndl = nullptr;
 		if (outputHandler != nullptr)
 		{
 			tmpOutHndl = &Logger::getOutputHandler();

@@ -1,5 +1,7 @@
 #include "File.hpp"
 #include "Utils.hpp"
+#include "String.hpp"
+
 #include <fstream>
 #include <ios>
 #include <iterator>

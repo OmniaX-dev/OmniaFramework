@@ -8,7 +8,7 @@
 
 namespace ostd
 {
-	class IOutputHandler;
+	class OutputHandlerBase;
 
 	namespace serial
 	{
@@ -50,7 +50,7 @@ namespace ostd
 				inline uint64_t size(void) { return m_data.size(); }
 				inline ByteStream& getData(void) { return m_data; }
 
-				void print(StreamIndex start, IOutputHandler& out);
+				void print(StreamIndex start, OutputHandlerBase& out);
 				bool saveToFile(const String& filePath);
 
 				inline uint8_t getEndianness(void) const { return m_endianness; }

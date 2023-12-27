@@ -3,6 +3,7 @@
 
 #include "Utils.hpp"
 #include "Logger.hpp"
+#include "IOHandlers.hpp"
 
 namespace ostd
 {
@@ -27,14 +28,7 @@ namespace ostd
 		BaseObject::setValid(true);
 	}
 	
-	// Color::Color(const sf::Color& sfml_color)
-	// {
-	// 	set(sfml_color);
-	// 	setTypeName("ox::Color");
-	// 	BaseObject::setValid(true);
-	// }
-	
-	Color::Color(const String& color_string)
+	Color::Color(const StringEditor& color_string)
 	{
 		set(color_string);
 		setTypeName("ox::Color");
@@ -103,16 +97,7 @@ namespace ostd
 		return *this;
 	}
 	
-	// Color& Color::set(const sf::Color& sfml_color)
-	// {
-	// 	r = sfml_color.r;
-	// 	g = sfml_color.g;
-	// 	b = sfml_color.b;
-	// 	a = sfml_color.a;
-	// 	return *this;
-	// }
-	
-	Color& Color::set(const String& color_string)
+	Color& Color::set(const StringEditor& color_string)
 	{
 		StringEditor se(color_string);
 		se.trim();
@@ -169,12 +154,7 @@ namespace ostd
 		return *this;
 	}
 	
-	// sf::Color Color::sf(void) const
-	// {
-	// 	return { r, g, b, a };
-	// }
-	
-	String Color::hexString(bool include_alpha, String prefix) const
+	StringEditor Color::hexString(bool include_alpha, StringEditor prefix) const
 	{
 		String hex = "";
 		hex += Utils::getHexStr(r, false, 1);
@@ -182,11 +162,11 @@ namespace ostd
 		hex += Utils::getHexStr(b, false, 1);
 		if (include_alpha)
 			hex += Utils::getHexStr(a, false, 1);
-		hex = prefix + StringEditor(hex).toUpper().str();
+		hex = prefix.str() + StringEditor(hex).toUpper().str();
 		return hex;
 	}
 	
-	String Color::rgbString(bool include_parenthesis, bool include_alpha) const
+	StringEditor Color::rgbString(bool include_parenthesis, bool include_alpha) const
 	{
 		StringEditor rgb = "";
 		if (include_parenthesis)
@@ -221,10 +201,10 @@ namespace ostd
 	
 	String Color::toString(void) const
 	{
-		return hexString(true, "#") + " -> rgba" + rgbString(true, true);
+		return hexString(true, "#").str() + " -> rgba" + rgbString(true, true).str();
 	}
 	
-	void Color::print(bool newLine, IOutputHandler* __destination) const
+	void Color::print(bool newLine, OutputHandlerBase* __destination) const
 	{
 		if (__destination == nullptr)
 			std::cout << *this << (newLine ? "\n" : "");

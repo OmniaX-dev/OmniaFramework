@@ -78,6 +78,6 @@ namespace ostd
 
 			bool m_initialized;
 	};
-} // namespace ox
+} 
 
 #endif

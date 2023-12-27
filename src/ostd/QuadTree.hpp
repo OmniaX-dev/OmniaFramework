@@ -42,6 +42,6 @@ namespace ostd
 			un_ptr(QuadTree) m_ne;
 			un_ptr(QuadTree) m_se;
 	};
-} // namespace ox
+} 
 
 #endif

@@ -34,6 +34,6 @@ namespace ostd
 			std::vector<SineWave> waves;
 			std::vector<AdditiveWave> additiveWaves;
 	};
-} // namespace ox
+} 
 
 #endif

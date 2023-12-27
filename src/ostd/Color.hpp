@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <ostd/Types.hpp>
 #include <ostd/BaseObject.hpp>
+#include <ostd/String.hpp>
 
 namespace ostd
 {
@@ -24,8 +25,7 @@ namespace ostd
 			Color(void);
 			Color(uint8_t rgb_single_value, uint8_t alpha = 255);
 			Color(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t alpha = 255);
-			//Color(const sf::Color& sfml_color);
-			Color(const String& color_string);
+			Color(const StringEditor& color_string);
 			Color(const FloatCol& normalized_color);
 			Color(const Color& copy);
 
@@ -36,18 +36,16 @@ namespace ostd
 			Color& set(void);
 			Color& set(uint8_t rgb_single_value, uint8_t alpha = 255);
 			Color& set(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t alpha = 255);
-			//Color& set(const sf::Color& sfml_color);
-			Color& set(const String& color_string);
+			Color& set(const StringEditor& color_string);
 			Color& set(const FloatCol& normalized_color);
 
-			//sf::Color sf(void) const;
-			String hexString(bool include_alpha = false, String prefix = "0x") const;
-			String rgbString(bool include_parenthesis = true, bool include_alpha = false) const;
+			StringEditor hexString(bool include_alpha = false, StringEditor prefix = "0x") const;
+			StringEditor rgbString(bool include_parenthesis = true, bool include_alpha = false) const;
 			uint32_t asInteger(void) const;
 			FloatCol getNormalizedColor(void) const;
 
 			String toString(void) const override;
-			void print(bool newLine = true, IOutputHandler* __destination = nullptr) const override;
+			void print(bool newLine = true, OutputHandlerBase* __destination = nullptr) const override;
 			inline void invalidate(void) override {  }
 			inline void setValid(bool valid) override {  }
 
@@ -57,7 +55,7 @@ namespace ostd
 			uint8_t b;
 			uint8_t a;
 	};
-} //namesoace ox
+} 
 
 
 

@@ -1,5 +1,5 @@
 #include "Serial.hpp"
-#include "TermColor.hpp"
+#include "vendor/TermColor.hpp"
 #include "Utils.hpp"
 
 namespace ostd
@@ -441,7 +441,7 @@ namespace ostd
 			return true;
 		}
 
-		void SerialIO::print(StreamIndex start, IOutputHandler& out)
+		void SerialIO::print(StreamIndex start, OutputHandlerBase& out)
 		{
 			uint32_t line_len = 32;
 			uint64_t power = 1;

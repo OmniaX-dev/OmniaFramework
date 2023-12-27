@@ -11,4 +11,4 @@ namespace ostd
 			y += wave.evaluate(x);
 		return y;
 	}
-} // namespace ox
+} 

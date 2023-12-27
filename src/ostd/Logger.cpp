@@ -3,12 +3,12 @@
 #include <cstdarg>
 #include <cstring>
 #include <iostream>
-#include "TermColor.hpp"
-#include "Utils.hpp"
+#include "vendor/TermColor.hpp"
+#include "IOHandlers.hpp"
 
 namespace ostd
 {
-	IOutputHandler* Logger::m_out = new ConsoleOutputHandler;
+	OutputHandlerBase* Logger::m_out = new ConsoleOutputHandler;
 
 	void Logger::__log_output(uint8_t log_level, String message, ...)
 	{
@@ -25,22 +25,22 @@ namespace ostd
 		switch (log_level)
 		{
 			case tLogLevel::Fatal:
-				m_out->col("red");
+				m_out->fg(ConsoleColors::Red);
 				break;
 			case tLogLevel::Error:
-				m_out->col("b-red");
+				m_out->fg(ConsoleColors::BrightRed);
 				break;
 			case tLogLevel::Warning:
-				m_out->col("b-magenta");
+				m_out->fg(ConsoleColors::BrightMagenta);
 				break;
 			case tLogLevel::Info:
-				m_out->col("cyan");
+				m_out->fg(ConsoleColors::Cyan);
 				break;
 			case tLogLevel::Debug:
-				m_out->col("b-blue");
+				m_out->fg(ConsoleColors::BrightBlue);
 				break;
 			case tLogLevel::Trace:
-				m_out->col("green");
+				m_out->fg(ConsoleColors::Green);
 				break;
 		}
 		m_out->p(level_str[log_level]).p(buffer).reset().nl();
@@ -51,8 +51,8 @@ namespace ostd
 		delete m_out;
 	}
 
-	void Logger::setOutputHandler(IOutputHandler& __destination)
+	void Logger::setOutputHandler(OutputHandlerBase& __destination)
 	{
 		m_out = &__destination; //TODO: Destroy old (only if still default)
 	}
-} //namesoace ox
+} 

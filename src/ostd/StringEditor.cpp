@@ -1,4 +1,5 @@
 #include "Utils.hpp"
+#include "String.hpp"
 #include <sstream>
 #include <algorithm>
 #include <boost/regex.hpp>
@@ -325,4 +326,4 @@ namespace ostd
 		return out;
 	}
 
-} // namespace ox
+} 

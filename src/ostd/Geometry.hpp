@@ -8,7 +8,7 @@
 
 namespace ostd
 {
-	class IOutputHandler;
+	class OutputHandlerBase;
 	template<class T>
 	class Point
 	{
@@ -19,6 +19,10 @@ namespace ostd
 		public:
 			inline Point(void) : x(0), y(0) {}
 			inline Point(T xx, T yy) : x(xx), y(yy) {}
+				
+			inline bool  operator==(const Point<T>& op2 ) 	const	{ return (x == op2.x && y == op2.y); }
+			inline bool  operator!=(const Point<T>& op2 ) 	const	{ return (x != op2.x || y != op2.y); }
+
 			template <class T2> inline Point(Point<T2> copy)
 			{
 				x = (T2)(copy.x);
@@ -103,7 +107,7 @@ namespace ostd
 
 		//===================== Operators ======================
 		inline bool  operator==(const Vec2& op2 ) 	const	{ return (x == op2.x && y == op2.y); }
-		inline bool  operator!=(const Vec2& op2 ) 	const	{ return (x != op2.x && y != op2.y); }
+		inline bool  operator!=(const Vec2& op2 ) 	const	{ return (x != op2.x || y != op2.y); }
 		inline Vec2  operator+ (const Vec2& op2 ) 	const	{ return add(op2); }
 		inline Vec2  operator- (const Vec2& op2 ) 	const	{ return sub(op2); }
 		inline Vec2  operator+ (const float& op2) 	const	{ return add(op2, op2); }
@@ -147,7 +151,7 @@ namespace ostd
 		inline Vec2 zx(void) const { return Vec2(z, x); }
 		String toString(void) const;
 		inline bool  operator==(const Vec3& op2 ) 	const	{ return (x == op2.x && y == op2.y && op2.z == z); }
-		inline bool  operator!=(const Vec3& op2 ) 	const	{ return (x != op2.x && y != op2.y && op2.z != z); }
+		inline bool  operator!=(const Vec3& op2 ) 	const	{ return (x != op2.x || y != op2.y || op2.z != z); }
 		inline Vec3& operator+=(const Vec3& op2 ) 			{ x += op2.x; y += op2.y; z += op2.z; return *this; }
 
 		friend std::ostream& operator<<(std::ostream& out, const Vec2& val);
@@ -349,6 +353,6 @@ namespace ostd
 			float w;
 			float h;
 	};
-} // namespace ox
+} 
 
  #endif
