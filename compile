@@ -7,9 +7,43 @@ if [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     cd bin
     make
     cd ..
+    if [ $? -eq 0 ]; then
+        mkdir -p ./Release/lib
+
+        cp ./bin/libostd.so ./Release/lib
+
+        mkdir -p ./Release/include/ostd/vendor
+        find ./src/ostd  -maxdepth 1 -name "*.hpp" -exec cp {} ./Release/include/ostd \;
+        find ./src/ostd/vendor  -maxdepth 1 -name "*.hpp" -exec cp {} ./Release/include/ostd/vendor \;
+        cp -r ./licences ./Release
+
+        typeset -i build_number=$(cat build.nr)
+        ((build_number++))
+        truncate -s 0 build.nr
+        echo $build_number >> build.nr
+    fi
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW64_NT" ]; then
     cmake -B bin -S ./ -G "MinGW Makefiles"
     cd bin
     mingw32-make.exe
     cd ..
+    if [ $? -eq 0 ]; then
+        mkdir -p ./Release/lib
+
+        cp ./bin/libostd.dll ./Release/lib
+
+        cp C:/msys64/ucrt64/bin/libgcc_s_seh-1.dll ./Release/lib
+        cp C:/msys64/ucrt64/bin/libstdc++-6.dll ./Release/lib
+        cp C:/msys64/ucrt64/bin/libwinpthread-1.dll ./Release/lib
+
+        mkdir -p ./Release/include/ostd/vendor
+        find ./src/ostd  -maxdepth 1 -name "*.hpp" -exec cp {} ./Release/include/ostd \;
+        find ./src/ostd/vendor  -maxdepth 1 -name "*.hpp" -exec cp {} ./Release/include/ostd/vendor \;
+        cp -r ./licences ./Release
+
+        typeset -i build_number=$(cat build.nr)
+        ((build_number++))
+        truncate -s 0 build.nr
+        echo $build_number >> build.nr
+    fi
 fi

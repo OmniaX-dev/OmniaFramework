@@ -31,7 +31,6 @@ namespace ostd
 			inline bool compareByOID(const BaseObject& other) const { return m_oid == other.m_oid; }
 
 			inline static BaseObject& InvalidRef(void) { return BaseObject::s_invalid_obj; } 
-			// inline static BaseObject InvalidInst(void) { return BaseObject::s_invalid_obj; }
 			
 			inline void setTypeName(const StringEditor& tn) { m_typeName = tn.str(); }
 			inline String getTypeName(void) const { return m_typeName; }

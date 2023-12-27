@@ -15,7 +15,7 @@ cmake_minimum_required(VERSION 3.18)
 project(${PROJ_NAME} LANGUAGES C CXX)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 20)
-file(STRINGS "./tools/build.nr" BUILD_NUMBER)
+file(STRINGS "./build.nr" BUILD_NUMBER)
 #-----------------------------------------------------------------------------------------
 
 message("** Building ${PROJ_NAME} ${MAJOR_VER}.${MINOR_VER}.${BUILD_NUMBER}")
@@ -65,28 +65,6 @@ if (UNIX)
 	target_link_libraries(${OMNIA_STD_LIB} PUBLIC tinfo)
 endif (UNIX)
 #-----------------------------------------------------------------------------------------
-
-#BuildNumber Target
-#-----------------------------------------------------------------------------------------
-if (WIN32)
-	add_custom_command ( OUTPUT ./tools/build.nr
-		COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/inc_bnr.exe
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools/
-	)
-endif (WIN32)
-if (UNIX)
-	add_custom_command ( OUTPUT ./tools/build.nr
-		COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/inc_bnr
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools/
-	)
-endif (UNIX)
-
-add_custom_target(
-  IncBnr ALL
-  DEPENDS ./tools/build.nr
-)
-#-----------------------------------------------------------------------------------------
-
 
 #Finalize
 #-----------------------------------------------------------------------------------------
