@@ -62,7 +62,7 @@ target_include_directories(${OMNIA_STD_LIB} PUBLIC ${INCLUDE_DIRS})
 add_compile_options(-O3 -m32 -MMD -MP -Wall -ggdb -fsanitize=address)
 if (UNIX)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath='$ORIGIN'")
-	target_link_libraries(${OMNIA_STD_LIB} PUBLIC tinfo)
+	target_link_libraries(${OMNIA_STD_LIB} PUBLIC tinfo boost_regex)
 endif (UNIX)
 #-----------------------------------------------------------------------------------------
 
