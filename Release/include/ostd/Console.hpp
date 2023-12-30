@@ -19,17 +19,17 @@ namespace ostd
 			InteractiveConsole(bool clearOnStart, eMode mode = eMode::Direct);
 
 			OutputHandlerBase& bg(const ConsoleColors::tConsoleColor& color) override;
-			OutputHandlerBase& bg(const StringEditor& color) override;
+			OutputHandlerBase& bg(const String& color) override;
 			OutputHandlerBase& fg(const ConsoleColors::tConsoleColor& color) override;
-			OutputHandlerBase& fg(const StringEditor& color) override;
+			OutputHandlerBase& fg(const String& color) override;
 
 			OutputHandlerBase& pChar(char c) override;
-			OutputHandlerBase& pStyled(const StringEditor& styled) override;
+			OutputHandlerBase& pStyled(const String& styled) override;
 			OutputHandlerBase& pStyled(const TextStyleParser::tStyledString& styled) override;
 			OutputHandlerBase& pStyled(const TextStyleBuilder::IRichStringBase& styled) override;
 			OutputHandlerBase& pObject(const BaseObject& bo) override;
 
-			OutputHandlerBase& p(const StringEditor& se) override;
+			OutputHandlerBase& p(const String& se) override;
 			OutputHandlerBase& p(uint8_t i) override;
 			OutputHandlerBase& p(int8_t i) override;
 			OutputHandlerBase& p(uint16_t i) override;

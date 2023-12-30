@@ -118,7 +118,7 @@ OutputHandlerBase& InteractiveConsole::bg(const ConsoleColors::tConsoleColor& co
 	return *this;
 }
 
-OutputHandlerBase& InteractiveConsole::bg(const StringEditor& color)
+OutputHandlerBase& InteractiveConsole::bg(const String& color)
 {
 	std::cout << ConsoleColors::getFromName(color, true);
 	return *this;
@@ -130,7 +130,7 @@ OutputHandlerBase& InteractiveConsole::fg(const ConsoleColors::tConsoleColor& co
 	return *this;
 }
 
-OutputHandlerBase& InteractiveConsole::fg(const StringEditor& color)
+OutputHandlerBase& InteractiveConsole::fg(const String& color)
 {
 	std::cout << ConsoleColors::getFromName(color, false);
 	return *this;
@@ -142,9 +142,9 @@ OutputHandlerBase& InteractiveConsole::pChar(char c)
 	return *this;
 }
 
-OutputHandlerBase& InteractiveConsole::pStyled(const StringEditor& styled)
+OutputHandlerBase& InteractiveConsole::pStyled(const String& styled)
 {
-	return pStyled(TextStyleParser::parse(styled.str()));
+	return pStyled(TextStyleParser::parse(styled));
 }
 
 OutputHandlerBase& InteractiveConsole::pStyled(const TextStyleParser::tStyledString& styled)
@@ -165,7 +165,7 @@ OutputHandlerBase& InteractiveConsole::pObject(const BaseObject& bo)
 	return *this;
 }
 
-OutputHandlerBase& InteractiveConsole::p(const StringEditor& se)
+OutputHandlerBase& InteractiveConsole::p(const String& se)
 {
 	std::cout << se;
 	return *this;

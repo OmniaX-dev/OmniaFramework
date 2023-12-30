@@ -413,7 +413,7 @@ namespace ostd
 			else if (!is_validAddr(addr, stream_size)) return false;
 			for (StreamIndex j = addr; j < addr + stream_size; j++)
 				m_data[j] = stream[j - addr];
-			addr += str.length() * tTypeSize::BYTE;
+			addr += str.len() * tTypeSize::BYTE;
 			if (null_terminate)
 				if (!w_Byte(addr, 0x00)) return false;
 			return true;

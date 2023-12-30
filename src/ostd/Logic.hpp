@@ -2,7 +2,7 @@
 #define __LOGIC_HPP__
 
 #include <map>
-#include <ostd/Types.hpp>
+#include <ostd/String.hpp>
 
 namespace ostd
 {

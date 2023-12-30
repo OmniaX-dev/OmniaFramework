@@ -28,7 +28,7 @@ namespace ostd
 		BaseObject::setValid(true);
 	}
 	
-	Color::Color(const StringEditor& color_string)
+	Color::Color(const String& color_string)
 	{
 		set(color_string);
 		setTypeName("ox::Color");
@@ -97,21 +97,21 @@ namespace ostd
 		return *this;
 	}
 	
-	Color& Color::set(const StringEditor& color_string)
+	Color& Color::set(const String& color_string)
 	{
-		StringEditor se(color_string);
+		String se(color_string);
 		se.trim();
 		r = g = b = 0;
 		a = 255;
 		if (se.startsWith("#"))
 		{
-			StringEditor tmp = se.substr(1);
+			String tmp = se.new_substr(1);
 			tmp.trim();
-			se = "0x" + tmp.str();
+			se = String("0x") + tmp;
 		}
 		if (se.startsWith("0x"))
 		{
-			int64_t ic = Utils::strToInt(se.str());
+			int64_t ic = Utils::strToInt(se);
 			union uC32 {
 				uint8_t data[4];
 				uint32_t value;
@@ -154,7 +154,7 @@ namespace ostd
 		return *this;
 	}
 	
-	StringEditor Color::hexString(bool include_alpha, StringEditor prefix) const
+	String Color::hexString(bool include_alpha, String prefix) const
 	{
 		String hex = "";
 		hex += Utils::getHexStr(r, false, 1);
@@ -162,23 +162,23 @@ namespace ostd
 		hex += Utils::getHexStr(b, false, 1);
 		if (include_alpha)
 			hex += Utils::getHexStr(a, false, 1);
-		hex = prefix.str() + StringEditor(hex).toUpper().str();
+		hex = prefix + String(hex).toUpper();
 		return hex;
 	}
 	
-	StringEditor Color::rgbString(bool include_parenthesis, bool include_alpha) const
+	String Color::rgbString(bool include_parenthesis, bool include_alpha) const
 	{
-		StringEditor rgb = "";
+		String rgb = "";
 		if (include_parenthesis)
 			rgb.add("(");
-		rgb.addi(r).add(", ");
-		rgb.addi(g).add(", ");
-		rgb.addi(b);
+		rgb.add(r).add(", ");
+		rgb.add(g).add(", ");
+		rgb.add(b);
 		if (include_alpha)
-			rgb.add(", ").addi(a);
+			rgb.add(", ").add(a);
 		if (include_parenthesis)
 			rgb.add(")");
-		return rgb.str();
+		return rgb;
 	}
 	
 	uint32_t Color::asInteger(void) const
@@ -201,7 +201,7 @@ namespace ostd
 	
 	String Color::toString(void) const
 	{
-		return hexString(true, "#").str() + " -> rgba" + rgbString(true, true).str();
+		return hexString(true, "#") + " -> rgba" + rgbString(true, true);
 	}
 	
 	void Color::print(bool newLine, OutputHandlerBase* __destination) const

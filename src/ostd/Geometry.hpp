@@ -4,7 +4,7 @@
 #include <cmath>
 #include <algorithm>
 #include <cstdint>
-#include <ostd/Types.hpp>
+#include <ostd/String.hpp>
 
 namespace ostd
 {

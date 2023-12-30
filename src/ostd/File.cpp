@@ -24,18 +24,18 @@ namespace ostd
 		if (!std::filesystem::is_regular_file(filePath)) return *this;
 		std::ifstream file(filePath, std::ios::in | std::ios::binary);
 		if (!file.is_open()) return *this;
-		m_buffer = { std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
+		m_buffer.set({ std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() });
 
 		m_extension = filePath.extension().string();
 		m_fullPath = filePath.string();
 		m_fullName = filePath.filename().string();
 		m_name = filePath.stem().string();
-		StringEditor pathEditor(m_fullPath);
+		String pathEditor(m_fullPath);
 		if (pathEditor.contains('/'))
-			m_directoryPath = pathEditor.substr(0, pathEditor.lastIndexOf('/'));
+			m_directoryPath = pathEditor.new_substr(0, pathEditor.lastIndexOf('/'));
 		pathEditor = m_directoryPath;
 		if (pathEditor.contains('/'))
-			m_directoryName = pathEditor.substr(pathEditor.lastIndexOf('/') + 1);
+			m_directoryName = pathEditor.new_substr(pathEditor.lastIndexOf('/') + 1);
 		validate();
 		return *this;
 	}
@@ -43,7 +43,7 @@ namespace ostd
 	std::vector<String> TextFileBuffer::getLines(const String& separator, bool trim_tokens, bool allow_white_space_only_tokens)
 	{
 		if (!exists()) return { };
-		auto st = StringEditor(m_buffer);
+		auto st = String(m_buffer);
 		return st.tokenize(separator, trim_tokens, allow_white_space_only_tokens).getRawData();
 	}
 }

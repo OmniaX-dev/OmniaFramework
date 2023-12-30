@@ -23,14 +23,14 @@ namespace ostd
 			errorMessage += extraMessage + "\n";
 		if (userData.isValid())
 			errorMessage += "USER_DATA:\n" + userData.toString() + "\n";
-		StringEditor msgEdit = "";
+		String msgEdit = "";
 		msgEdit.add(Utils::getHexStr(m_errGroup)).add("//");
 		msgEdit.add(Utils::getHexStr(m_errCode, true, 8)).add("  ::  ");
 		if (_file_name != "")
 		{
 			msgEdit.add(_file_name).add(" ");
 			if (_line_num > 0)
-				msgEdit.add("[LINE: ").addi(_line_num).add("]\n");
+				msgEdit.add("[LINE: ").add(_line_num).add("]\n");
 			else
 				msgEdit.add("\n");
 		}
@@ -43,15 +43,15 @@ namespace ostd
 		}
 		if (m_errLevel == tErrorLevel::Warning)
 		{
-			OX_WARN(msgEdit.str());
+			OX_WARN(msgEdit);
 		}
 		else if (m_errLevel == tErrorLevel::Error)
 		{
-			OX_ERROR(msgEdit.str());
+			OX_ERROR(msgEdit);
 		}
 		else if (m_errLevel == tErrorLevel::Fatal)
 		{
-			OX_FATAL(msgEdit.str());
+			OX_FATAL(msgEdit);
 		}
 		if (tmpOutHndl != nullptr)
 			Logger::setOutputHandler(*tmpOutHndl);

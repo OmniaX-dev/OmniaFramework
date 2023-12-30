@@ -25,7 +25,7 @@ namespace ostd
 			Color(void);
 			Color(uint8_t rgb_single_value, uint8_t alpha = 255);
 			Color(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t alpha = 255);
-			Color(const StringEditor& color_string);
+			Color(const String& color_string);
 			Color(const FloatCol& normalized_color);
 			Color(const Color& copy);
 
@@ -36,11 +36,11 @@ namespace ostd
 			Color& set(void);
 			Color& set(uint8_t rgb_single_value, uint8_t alpha = 255);
 			Color& set(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t alpha = 255);
-			Color& set(const StringEditor& color_string);
+			Color& set(const String& color_string);
 			Color& set(const FloatCol& normalized_color);
 
-			StringEditor hexString(bool include_alpha = false, StringEditor prefix = "0x") const;
-			StringEditor rgbString(bool include_parenthesis = true, bool include_alpha = false) const;
+			String hexString(bool include_alpha = false, String prefix = "0x") const;
+			String rgbString(bool include_parenthesis = true, bool include_alpha = false) const;
 			uint32_t asInteger(void) const;
 			FloatCol getNormalizedColor(void) const;
 

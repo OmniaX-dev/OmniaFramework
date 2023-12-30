@@ -46,7 +46,7 @@ namespace ostd
 
 	String BaseObject::getObjectHeaderString(void) const
 	{
-		return StringEditor(getTypeName()).add("->uid=").addi(getID()).add("/oid=").addi(getCompareOID()).add("/valid=").add(STR_BOOL(isValid())).str();
+		return getTypeName().add("->uid=").add(getID()).add("/oid=").add(getCompareOID()).add("/valid=").add(STR_BOOL(isValid()));
 	}
 
 	void BaseObject::connectSignal(uint32_t signal_id)

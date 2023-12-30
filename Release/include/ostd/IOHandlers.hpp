@@ -60,46 +60,46 @@ namespace ostd
 			inline static const tConsoleColor OnBrightGray { "brightgray", { 150, 150, 150, 255 }, true};
 			inline static const tConsoleColor OnWhite { "white", { 255, 255, 255, 255 }, true};
 
-			inline static const tConsoleColor getFromName(const StringEditor& name, bool background = false) {
-				StringEditor edit = name;
+			inline static const tConsoleColor getFromName(const String& name, bool background = false) {
+				String edit = name;
 				edit.toLower().trim();
-				if (edit.str() == Red.name) return (background ? OnRed : Red);
-				if (edit.str() == BrightRed.name) return (background ? OnBrightRed : BrightRed);
-				if (edit.str() == Green.name) return (background ? OnGreen : Green);
-				if (edit.str() == BrightGreen.name) return (background ? OnBrightGreen : BrightGreen);
-				if (edit.str() == Blue.name) return (background ? OnBlue : Blue);
-				if (edit.str() == BrightBlue.name) return (background ? OnBrightBlue : BrightBlue);
-				if (edit.str() == Magenta.name) return (background ? OnMagenta : Magenta);
-				if (edit.str() == BrightMagenta.name) return (background ? OnBrightMagenta : BrightMagenta);
-				if (edit.str() == Cyan.name) return (background ? OnCyan : Cyan);
-				if (edit.str() == BrightCyan.name) return (background ? OnBrightCyan : BrightCyan);
-				if (edit.str() == Yellow.name) return (background ? OnYellow : Yellow);
-				if (edit.str() == BrightYellow.name) return (background ? OnBrightYellow : BrightYellow);
-				if (edit.str() == Black.name) return (background ? OnBlack : Black);
-				if (edit.str() == Gray.name) return (background ? OnGray : Gray);
-				if (edit.str() == BrightGray.name) return (background ? OnBrightGray : BrightGray);
-				if (edit.str() == White.name) return (background ? OnWhite : White);
+				if (edit == Red.name) return (background ? OnRed : Red);
+				if (edit == BrightRed.name) return (background ? OnBrightRed : BrightRed);
+				if (edit == Green.name) return (background ? OnGreen : Green);
+				if (edit == BrightGreen.name) return (background ? OnBrightGreen : BrightGreen);
+				if (edit == Blue.name) return (background ? OnBlue : Blue);
+				if (edit == BrightBlue.name) return (background ? OnBrightBlue : BrightBlue);
+				if (edit == Magenta.name) return (background ? OnMagenta : Magenta);
+				if (edit == BrightMagenta.name) return (background ? OnBrightMagenta : BrightMagenta);
+				if (edit == Cyan.name) return (background ? OnCyan : Cyan);
+				if (edit == BrightCyan.name) return (background ? OnBrightCyan : BrightCyan);
+				if (edit == Yellow.name) return (background ? OnYellow : Yellow);
+				if (edit == BrightYellow.name) return (background ? OnBrightYellow : BrightYellow);
+				if (edit == Black.name) return (background ? OnBlack : Black);
+				if (edit == Gray.name) return (background ? OnGray : Gray);
+				if (edit == BrightGray.name) return (background ? OnBrightGray : BrightGray);
+				if (edit == White.name) return (background ? OnWhite : White);
 				return (background ? OnBlack : Black);
 			}
-			inline static bool isConsoleColor(const StringEditor& name) {
-				StringEditor edit = name;
+			inline static bool isConsoleColor(const String& name) {
+				String edit = name;
 				edit.toLower().trim();
-				if (edit.str() == Red.name) return true;
-				if (edit.str() == BrightRed.name) return true;
-				if (edit.str() == Green.name) return true;
-				if (edit.str() == BrightGreen.name) return true;
-				if (edit.str() == Blue.name) return true;
-				if (edit.str() == BrightBlue.name) return true;
-				if (edit.str() == Magenta.name) return true;
-				if (edit.str() == BrightMagenta.name) return true;
-				if (edit.str() == Cyan.name) return true;
-				if (edit.str() == BrightCyan.name) return true;
-				if (edit.str() == Yellow.name) return true;
-				if (edit.str() == BrightYellow.name) return true;
-				if (edit.str() == Black.name) return true;
-				if (edit.str() == Gray.name) return true;
-				if (edit.str() == BrightGray.name) return true;
-				if (edit.str() == White.name) return true;
+				if (edit == Red.name) return true;
+				if (edit == BrightRed.name) return true;
+				if (edit == Green.name) return true;
+				if (edit == BrightGreen.name) return true;
+				if (edit == Blue.name) return true;
+				if (edit == BrightBlue.name) return true;
+				if (edit == Magenta.name) return true;
+				if (edit == BrightMagenta.name) return true;
+				if (edit == Cyan.name) return true;
+				if (edit == BrightCyan.name) return true;
+				if (edit == Yellow.name) return true;
+				if (edit == BrightYellow.name) return true;
+				if (edit == Black.name) return true;
+				if (edit == Gray.name) return true;
+				if (edit == BrightGray.name) return true;
+				if (edit == White.name) return true;
 				return false;
 			}
 	};
@@ -111,18 +111,18 @@ namespace ostd
 
 			inline virtual OutputHandlerBase& bg(const Color& color) { return *this; }
 			inline virtual OutputHandlerBase& bg(const ConsoleColors::tConsoleColor& color) { return *this; }
-			inline virtual OutputHandlerBase& bg(const StringEditor& color) { return *this; }
+			inline virtual OutputHandlerBase& bg(const String& color) { return *this; }
 			inline virtual OutputHandlerBase& fg(const Color& color) { return *this; }
 			inline virtual OutputHandlerBase& fg(const ConsoleColors::tConsoleColor& color) { return *this; }
-			inline virtual OutputHandlerBase& fg(const StringEditor& color) { return *this; }
+			inline virtual OutputHandlerBase& fg(const String& color) { return *this; }
 
 			inline virtual OutputHandlerBase& pChar(char c) { return *this; }
-			inline virtual OutputHandlerBase& pStyled(const StringEditor& styled) { return *this; }
+			inline virtual OutputHandlerBase& pStyled(const String& styled) { return *this; }
 			inline virtual OutputHandlerBase& pStyled(const TextStyleParser::tStyledString& styled) { return *this; }
 			inline virtual OutputHandlerBase& pStyled(const TextStyleBuilder::IRichStringBase& styled) { return *this; }
 			inline virtual OutputHandlerBase& pObject(const BaseObject& bo) { return *this; }
 
-			inline virtual OutputHandlerBase& p(const StringEditor& se) { return *this; }
+			inline virtual OutputHandlerBase& p(const String& se) { return *this; }
 			inline virtual OutputHandlerBase& p(uint8_t i) { return *this; }
 			inline virtual OutputHandlerBase& p(int8_t i) { return *this; }
 			inline virtual OutputHandlerBase& p(uint16_t i) { return *this; }
@@ -157,17 +157,17 @@ namespace ostd
 	{
 		public:
 			OutputHandlerBase& bg(const ConsoleColors::tConsoleColor& color) override;
-			OutputHandlerBase& bg(const StringEditor& color) override;
+			OutputHandlerBase& bg(const String& color) override;
 			OutputHandlerBase& fg(const ConsoleColors::tConsoleColor& color) override;
-			OutputHandlerBase& fg(const StringEditor& color) override;
+			OutputHandlerBase& fg(const String& color) override;
 
 			OutputHandlerBase& pChar(char c) override;
-			OutputHandlerBase& pStyled(const StringEditor& styled) override;
+			OutputHandlerBase& pStyled(const String& styled) override;
 			OutputHandlerBase& pStyled(const TextStyleParser::tStyledString& styled) override;
 			OutputHandlerBase& pStyled(const TextStyleBuilder::IRichStringBase& styled) override;
 			OutputHandlerBase& pObject(const BaseObject& bo) override;
 
-			OutputHandlerBase& p(const StringEditor& se) override;
+			OutputHandlerBase& p(const String& se) override;
 			OutputHandlerBase& p(uint8_t i) override;
 			OutputHandlerBase& p(int8_t i) override;
 			OutputHandlerBase& p(uint16_t i) override;

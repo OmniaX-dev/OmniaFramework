@@ -7,10 +7,10 @@ namespace ostd
 {
 	String Vec2::toString(void) const
 	{
-		return StringEditor("{ ").addf(x).add(", ").addf(y).add(" }").str();
+		return String("{ ").add(x).add(", ").add(y).add(" }");
 	}
 	String Vec3::toString(void) const
 	{
-		return StringEditor("{ ").addf(x).add(", ").addf(y).add(", ").addf(z).add(" }").str();
+		return String("{ ").add(x).add(", ").add(y).add(", ").add(z).add(" }");
 	}
 } 

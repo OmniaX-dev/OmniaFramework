@@ -8,7 +8,7 @@ namespace ostd
 	{ 
 		if (!str.validate()) return os;
 		ostd::ConsoleOutputHandler out;
-		for (int32_t i = 0; i < str.text.length(); i++)
+		for (int32_t i = 0; i < str.text.len(); i++)
 			out.bg(str.backgroundColors[i].consoleColor).fg(str.foregroundColors[i].consoleColor).pChar(str.text[i]);
 		out.reset();
 		return os;
@@ -34,7 +34,7 @@ namespace ostd
 		text += str;
 		background.background = true;
 		foreground.background = false;
-		for (int32_t i = 0; i < str.length(); i++)
+		for (int32_t i = 0; i < str.len(); i++)
 		{
 			backgroundColors.push_back(background);
 			foregroundColors.push_back(foreground);
@@ -43,15 +43,15 @@ namespace ostd
 
 	bool TextStyleParser::tStyledString::validate(void) const
 	{
-		return text.length() > 0 && text.length() == backgroundColors.size() && text.length() == foregroundColors.size();
+		return text.len() > 0 && text.len() == backgroundColors.size() && text.len() == foregroundColors.size();
 	}
 
-	TextStyleParser::tStyledString TextStyleParser::parse(const StringEditor& styledString)
+	TextStyleParser::tStyledString TextStyleParser::parse(const String& styledString)
 	{
 		return parse(styledString, convertColor("black"), convertColor("white"));
 	}
 
-	TextStyleParser::tStyledString TextStyleParser::parse(const StringEditor& styledString, tColor defaultBackgorundColor, tColor defaultForegroundColor)
+	TextStyleParser::tStyledString TextStyleParser::parse(const String& styledString, tColor defaultBackgorundColor, tColor defaultForegroundColor)
 	{
 		tStyledString rstring;
 		bool insideBlock = false;
@@ -64,15 +64,15 @@ namespace ostd
 		tColor fgcol = defaultForegroundColor;
 		tColor bgcol = defaultBackgorundColor;
 		String blockText = "";
-		String _styledString = StringEditor(styledString).trim().str();
-		for (int32_t i = 0; i < _styledString.length(); i++)
+		String _styledString = String(styledString).trim();
+		for (int32_t i = 0; i < _styledString.len(); i++)
 		{
 			char c = _styledString[i];
 			if (c == '[')
 			{
 				if (insideBlock)
 					return tStyledString(); //TODO: Error, no nested blocks allowed
-				if (test_for_block(StringEditor(_styledString).substr(i)))
+				if (test_for_block(String(_styledString).substr(i)))
 				{
 					insideBlock = true;
 					continue;
@@ -94,7 +94,7 @@ namespace ostd
 			}
 			if (!insideBlock)
 			{
-				rstring.add(StringEditor("").add(c).str(), bgcol, fgcol);
+				rstring.add(String("").addChar(c), bgcol, fgcol);
 				continue;
 			}
 			if (validBlockStart)
@@ -119,9 +119,9 @@ namespace ostd
 		return rstring;
 	}
 
-	TextStyleParser::tColor TextStyleParser::convertColor(const StringEditor& name)
+	TextStyleParser::tColor TextStyleParser::convertColor(const String& name)
 	{
-		StringEditor colorStrEditor = name;
+		String colorStrEditor = name;
 		colorStrEditor.trim().toLower();
 		if (ConsoleColors::isConsoleColor(colorStrEditor))
 		{
@@ -130,15 +130,15 @@ namespace ostd
 		}
 		tColor col;
 		col.consoleColor = "black";
-		col.fullColor.set(colorStrEditor.str());
+		col.fullColor.set(colorStrEditor);
 		col.background = false;
 		return col;
 	}
 
 	bool TextStyleParser::test_for_block(const String& block_part)
 	{
-		if (block_part.length() < 3) return false;
-		if (block_part.starts_with("[@@"))
+		if (block_part.len() < 3) return false;
+		if (block_part.startsWith("[@@"))
 		{
 			return true;
 		}
@@ -147,9 +147,9 @@ namespace ostd
 
 	TextStyleParser::eBlockParserReturnValue TextStyleParser::parse_block(const String& blockString, tColor& outBackgroundColor, tColor& outForegroundColor)
 	{
-		StringEditor blockEditor = blockString;
+		String blockEditor = blockString;
 		blockEditor.trim().toLower();
-		if (blockEditor.str() == BlockString_Close)
+		if (blockEditor == BlockString_Close)
 		{
 			outBackgroundColor = s_defaultBackgroundColor;
 			outForegroundColor = s_defaultForegroundColor;
@@ -157,27 +157,27 @@ namespace ostd
 		}
 		if (blockEditor.startsWith(BlockString_Style))
 		{
-			blockEditor = blockEditor.substr(BlockString_Style.length());
+			blockEditor = blockEditor.substr(BlockString_Style.len());
 			blockEditor.trim();
 			blockEditor.replaceAll(" ", "");
 			auto tokens = blockEditor.tokenize(",");
 			for (auto param : tokens)
 			{
-				StringEditor paramEdit = param;
+				String paramEdit = param;
 				if (!paramEdit.contains(":"))
 					continue; //TODO: Error, invalid param
-				StringEditor name = paramEdit.substr(0, paramEdit.indexOf(":"));
+				String name = paramEdit.new_substr(0, paramEdit.indexOf(":"));
 				name.trim();
-				StringEditor value = paramEdit.substr(paramEdit.indexOf(":") + 1);
+				String value = paramEdit.new_substr(paramEdit.indexOf(":") + 1);
 				value.trim();
-				if (name.str() == "background")
+				if (name == "background")
 				{
-					auto col = convertColor(value.str());
+					auto col = convertColor(value);
 					outBackgroundColor = col;
 				}
-				else if (name.str() == "foreground")
+				else if (name == "foreground")
 				{
-					auto col = convertColor(value.str());
+					auto col = convertColor(value);
 					outForegroundColor = col;
 				}
 				else continue; //TODO: Error, unknown style parameter
@@ -226,79 +226,79 @@ namespace ostd
 
 	TextStyleBuilder::Console& TextStyleBuilder::Console::add(uint8_t i)
 	{
-		StringEditor edit("");
-		edit.addi(i);
-		return add(edit.str());
+		String edit("");
+		edit.add(i);
+		return add(edit);
 	}
 
 	TextStyleBuilder::Console& TextStyleBuilder::Console::add(int8_t i)
 	{
-		StringEditor edit("");
-		edit.addi(i);
-		return add(edit.str());
+		String edit("");
+		edit.add(i);
+		return add(edit);
 	}
 
 	TextStyleBuilder::Console& TextStyleBuilder::Console::add(uint16_t i)
 	{
-		StringEditor edit("");
-		edit.addi(i);
-		return add(edit.str());
+		String edit("");
+		edit.add(i);
+		return add(edit);
 	}
 
 	TextStyleBuilder::Console& TextStyleBuilder::Console::add(int16_t i)
 	{
-		StringEditor edit("");
-		edit.addi(i);
-		return add(edit.str());
+		String edit("");
+		edit.add(i);
+		return add(edit);
 	}
 
 	TextStyleBuilder::Console& TextStyleBuilder::Console::add(uint32_t i)
 	{
-		StringEditor edit("");
-		edit.addi(i);
-		return add(edit.str());
+		String edit("");
+		edit.add(i);
+		return add(edit);
 	}
 
 	TextStyleBuilder::Console& TextStyleBuilder::Console::add(int32_t i)
 	{
-		StringEditor edit("");
-		edit.addi(i);
-		return add(edit.str());
+		String edit("");
+		edit.add(i);
+		return add(edit);
 	}
 
 	TextStyleBuilder::Console& TextStyleBuilder::Console::add(uint64_t i)
 	{
-		StringEditor edit("");
-		edit.addi(i);
-		return add(edit.str());
+		String edit("");
+		edit.add(i);
+		return add(edit);
 	}
 
 	TextStyleBuilder::Console& TextStyleBuilder::Console::add(int64_t i)
 	{
-		StringEditor edit("");
-		edit.addi(i);
-		return add(edit.str());
+		String edit("");
+		edit.add(i);
+		return add(edit);
 	}
 
 	TextStyleBuilder::Console& TextStyleBuilder::Console::add(float f)
 	{
-		StringEditor edit("");
-		edit.addf(f);
-		return add(edit.str());
+		String edit("");
+		edit.add(f);
+		return add(edit);
 	}
 
 	TextStyleBuilder::Console& TextStyleBuilder::Console::add(double f)
 	{
-		StringEditor edit("");
-		edit.addf(f);
-		return add(edit.str());
+		String edit("");
+		edit.add(f);
+		return add(edit);
 	}
 
 	TextStyleBuilder::Console& TextStyleBuilder::Console::addc(char c)
 	{
-		StringEditor edit("");
-		edit.add(c);
-		return add(edit.str());
+		String edit("");
+		edit.addChar(c);
+		return add(edit);
 	}
 
 	TextStyleBuilder::Console& TextStyleBuilder::Console::print(OutputHandlerBase& out)
@@ -322,34 +322,34 @@ namespace ostd
 
 
 	
-	TextStyleBuilder::Regex& TextStyleBuilder::Regex::setRawString(const StringEditor& rawString)
+	TextStyleBuilder::Regex& TextStyleBuilder::Regex::setRawString(const String& rawString)
 	{
-		m_rawString = rawString.str();
+		m_rawString = rawString;
 		return *this;
 	}
 
-	TextStyleBuilder::Regex& TextStyleBuilder::Regex::fg(const StringEditor& regex, const StringEditor& foreground_color, bool case_insensitive)
+	TextStyleBuilder::Regex& TextStyleBuilder::Regex::fg(const String& regex, const String& foreground_color, bool case_insensitive)
 	{
-		String replace_pattern = "[@@ style foreground:" + foreground_color.str();
+		String replace_pattern = "[@@ style foreground:" + foreground_color;
 		replace_pattern += "]$&[@@/]";
-		m_rawString = StringEditor(m_rawString).regexReplace(regex.str(), replace_pattern, case_insensitive).str();
+		m_rawString = String(m_rawString).regexReplace(regex, replace_pattern, case_insensitive);
 		return *this;
 	}
 
-	TextStyleBuilder::Regex& TextStyleBuilder::Regex::bg(const StringEditor& regex, const StringEditor& background_color, bool case_insensitive)
+	TextStyleBuilder::Regex& TextStyleBuilder::Regex::bg(const String& regex, const String& background_color, bool case_insensitive)
 	{
-		String replace_pattern = "[@@ style background:" + background_color.str();
+		String replace_pattern = "[@@ style background:" + background_color;
 		replace_pattern += "]$&[@@/]";
-		m_rawString = StringEditor(m_rawString).regexReplace(regex.str(), replace_pattern, case_insensitive).str();
+		m_rawString = String(m_rawString).regexReplace(regex, replace_pattern, case_insensitive);
 		return *this;
 	}
 	
-	TextStyleBuilder::Regex& TextStyleBuilder::Regex::col(const StringEditor& regex, const StringEditor& foreground_color, const StringEditor& background_color, bool case_insensitive)
+	TextStyleBuilder::Regex& TextStyleBuilder::Regex::col(const String& regex, const String& foreground_color, const String& background_color, bool case_insensitive)
 	{
-		String replace_pattern = "[@@ style background:" + background_color.str();
-		replace_pattern += ", foreground:" + foreground_color.str();
+		String replace_pattern = "[@@ style background:" + background_color;
+		replace_pattern += ", foreground:" + foreground_color;
 		replace_pattern += "]$&[@@/]";
-		m_rawString = StringEditor(m_rawString).regexReplace(regex.str(), replace_pattern, case_insensitive).str();
+		m_rawString = String(m_rawString).regexReplace(regex, replace_pattern, case_insensitive);
 		return *this;
 	}
 	

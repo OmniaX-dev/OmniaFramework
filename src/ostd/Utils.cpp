@@ -558,36 +558,36 @@ namespace ostd
 	}
 	bool Utils::isHex(String hex)
 	{
-		hex = StringEditor(hex).trim().toLower().str();
-		return hex.compare(0, 2, "0x") == 0 &&
-				hex.size() > 2 &&
-				hex.find_first_not_of("0123456789abcdef", 2) == std::string::npos;
+		hex = String(hex).trim().toLower();
+		return hex.cpp_str().compare(0, 2, "0x") == 0 &&
+				hex.cpp_str().size() > 2 &&
+				hex.cpp_str().find_first_not_of("0123456789abcdef", 2) == std::string::npos;
 	}
 	bool Utils::isBin(String bin)
 	{
-		bin = StringEditor(bin).trim().toLower().str();
-		return bin.compare(0, 2, "0b") == 0 &&
-				bin.size() > 2 &&
-				bin.find_first_not_of("01", 2) == std::string::npos;
+		bin = String(bin).trim().toLower();
+		return bin.cpp_str().compare(0, 2, "0b") == 0 &&
+				bin.cpp_str().size() > 2 &&
+				bin.cpp_str().find_first_not_of("01", 2) == std::string::npos;
 	}
 	bool Utils::isInt(String str)
 	{
-		str = StringEditor(str).trim().toLower().str();
+		str = String(str).trim().toLower();
 		bool isNumber = std::ranges::all_of(str.begin(), str.end(),
                   [](char c){ return isdigit(c) != 0; });
 		return Utils::isHex(str) || Utils::isBin(str) || isNumber;
 	}
 	int64_t Utils::strToInt(String str)
 	{
-		str = StringEditor(str).trim().toLower().str();
+		str = String(str).trim().toLower();
 		if (!Utils::isInt(str)) return 0;
 		int32_t base = 10;
-		if (str.rfind("0x", 0) == 0)
+		if (str.cpp_str().rfind("0x", 0) == 0)
 		{
 			str = str.substr(2);
 			base = 16;
 		}
-		else if (str.rfind("0b", 0) == 0)
+		else if (str.cpp_str().rfind("0b", 0) == 0)
 		{
 			str = str.substr(2);
 			base = 2;
@@ -597,10 +597,10 @@ namespace ostd
 	bool Utils::readFile(String fileName, std::vector<String>& outLines)
 	{
 		String line;
-		std::ifstream file(fileName);
+		std::ifstream file(fileName.cpp_str());
 		if (file.fail()) return false;
 		outLines.clear();
-		while (std::getline(file, line))
+		while (std::getline(file, line.cpp_str_ref()))
 			outLines.push_back(line);
 		return true;
 	}
@@ -673,9 +673,9 @@ namespace ostd
 		String ext = "";
 		for (unsigned char i = 0; i < ext_len; i++)
 			ext += (char)(resource_buffer[i + 1]);
-		if (StringEditor(output_file_path).trim().toLower().endsWith(ext))
+		if (String(output_file_path).trim().toLower().endsWith(ext))
 			ext = "";
-		std::fstream bin (output_file_path + ext, std::ios::out | std::ios::binary);
+		std::fstream bin (output_file_path.cpp_str() + ext.cpp_str(), std::ios::out | std::ios::binary);
 		if (!bin.is_open()) return false;
 		bin.write(resource_buffer + ext_len + 1, size - ext_len - 1);
 		bin.close();
@@ -685,14 +685,14 @@ namespace ostd
 	{
 		StreamIndex end = start + (n_rows * line_len);
 		if (end > data.size()) end = data.size();
-		StringEditor titleEdit(title);
+		String titleEdit(title);
 		if (titleEdit.len() > 12)
 			titleEdit = titleEdit.substr(0, 12);
 		else if (titleEdit.len() < 12)
 		{
 			int32_t diff = 12 - titleEdit.len();
 			for (int32_t i = 0; i < diff; i++)
-				titleEdit.add(' ');
+				titleEdit.addChar(' ');
 		}
 		bool highlight = addrHighlight >= 0;
 		uint8_t i = 1;
@@ -702,7 +702,7 @@ namespace ostd
 		if (line_len <= 0xFF)
 		{
 			out.fg(ConsoleColors::BrightBlue).p("|");
-			out.fg(ConsoleColors::BrightMagenta).p(titleEdit.str());
+			out.fg(ConsoleColors::BrightMagenta).p(titleEdit);
 			out.fg(ConsoleColors::BrightBlue).p("|  ");
 			for (int32_t i = 0; i < line_len; i++)
 				out.fg(ConsoleColors::Green).p(getHexStr(i, false, 1)).p("  ");
@@ -748,14 +748,14 @@ namespace ostd
 	bool Utils::saveByteStreamToFile(const ByteStream& stream, const String& filePath)
 	{
 		std::ofstream writeFile;
-		writeFile.open(filePath, std::ios::out | std::ios::binary);
+		writeFile.open(filePath.cpp_str(), std::ios::out | std::ios::binary);
 		writeFile.write((char*)(&stream[0]), stream.size());
 		writeFile.close();
 		return true;
 	}
 	bool Utils::loadByteStreamFromFile(const String& filePath, ByteStream& outStream)
 	{
-		std::ifstream rf(filePath, std::ios::out | std::ios::binary);
+		std::ifstream rf(filePath.cpp_str(), std::ios::out | std::ios::binary);
 		if(!rf) return false; //TODO: Error
 		uint8_t cell = 0;
 		while(rf.read((char*)&cell, sizeof(cell)))
@@ -772,12 +772,12 @@ namespace ostd
 	}
 	String Utils::byteStreamToString(const ByteStream& data)
 	{
-		StringEditor out_string = "";
+		String out_string = "";
 		for (int64_t i = 0; i < data.size(); i++)
 		{
 			if (data[i] == 0) break;
-			out_string.add((char)data[i]);
+			out_string.addChar((char)data[i]);
 		}
-		return out_string.str();
+		return out_string;
 	}
 } 

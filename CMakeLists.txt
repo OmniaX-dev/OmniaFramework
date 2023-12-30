@@ -4,6 +4,7 @@ set(PROJ_NAME omnia-framework)
 set(MAJOR_VER 0)
 set(MINOR_VER 1)
 set(OMNIA_STD_LIB ostd)
+set(TEST_TARGET ostd_test)
 set(RUN_CONFIG O_F_DEBUG)
 #-----------------------------------------------------------------------------------------
 
@@ -46,17 +47,25 @@ list(APPEND OSTD_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Serial.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/SineWave.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/StringEditor.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/String.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/TextStyleParser.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Utils.cpp
+)
+list(APPEND TEST_SOURCE_FILES
+	${CMAKE_CURRENT_LIST_DIR}/src/test.cpp
 )
 #-----------------------------------------------------------------------------------------
 
 #Targets
 #-----------------------------------------------------------------------------------------
 add_library(${OMNIA_STD_LIB} SHARED ${OSTD_SOURCE_FILES})
+add_executable(${TEST_TARGET} ${TEST_SOURCE_FILES})
 
 target_compile_definitions(${OMNIA_STD_LIB} PUBLIC ${RUN_CONFIG} BUILD_NR=${BUILD_NUMBER} MAJ_V=${MAJOR_VER} MIN_V=${MINOR_VER} VERSION_STR="${MAJOR_VER}.${MINOR_VER}.${BUILD_NUMBER}")
 target_include_directories(${OMNIA_STD_LIB} PUBLIC ${INCLUDE_DIRS})
+target_include_directories(${TEST_TARGET} PUBLIC ${INCLUDE_DIRS})
+
+target_link_libraries(${TEST_TARGET} PUBLIC ${OMNIA_STD_LIB})
 
 #TODO: Different flags for Release/Debug
 add_compile_options(-O3 -m32 -MMD -MP -Wall -ggdb -fsanitize=address)

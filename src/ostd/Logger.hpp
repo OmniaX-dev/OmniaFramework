@@ -1,7 +1,7 @@
 #ifndef __LOGGER_HPP__
 #define __LOGGER_HPP__
 
-#include <ostd/Types.hpp>
+#include <ostd/String.hpp>
 
 namespace ostd
 {

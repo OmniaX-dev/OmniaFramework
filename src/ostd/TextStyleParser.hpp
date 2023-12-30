@@ -5,7 +5,7 @@
 
 namespace ostd
 {
-	class StringEditor;
+	class String;
 	class TextStyleParser
 	{
 		public: enum class eBlockParserReturnValue { CloseBlock = 0, ValidBlock, InvalidBlock };
@@ -28,10 +28,10 @@ namespace ostd
 		};
 
 		public:
-			static tStyledString parse(const StringEditor& styledString);
-			static tStyledString parse(const StringEditor& styledString, tColor defaultBackgorundColor, tColor defaultForegroundColor);
+			static tStyledString parse(const String& styledString);
+			static tStyledString parse(const String& styledString, tColor defaultBackgorundColor, tColor defaultForegroundColor);
 
-			static tColor convertColor(const StringEditor& name);
+			static tColor convertColor(const String& name);
 
 		private:
 			static bool test_for_block(const String& block_part);
@@ -90,13 +90,13 @@ namespace ostd
 		public: class Regex : public IRichStringBase {
 			public:
 				inline Regex(void) { m_rawString = ""; }
-				inline Regex(const StringEditor& rawString) { setRawString(rawString); }
+				inline Regex(const String& rawString) { setRawString(rawString); }
 				inline String getRawString(void) const { return m_rawString; }
-				Regex& setRawString(const StringEditor& rawString);
+				Regex& setRawString(const String& rawString);
 				
-				Regex& fg(const StringEditor& regex, const StringEditor& foreground_color, bool case_insensitive = false);
-				Regex& bg(const StringEditor& regex, const StringEditor& background_color, bool case_insensitive = false);
-				Regex& col(const StringEditor& regex, const StringEditor& foreground_color, const StringEditor& background_color, bool case_insensitive = false);
+				Regex& fg(const String& regex, const String& foreground_color, bool case_insensitive = false);
+				Regex& bg(const String& regex, const String& background_color, bool case_insensitive = false);
+				Regex& col(const String& regex, const String& foreground_color, const String& background_color, bool case_insensitive = false);
 
 				TextStyleParser::tStyledString getStyledString(void) const override;
 

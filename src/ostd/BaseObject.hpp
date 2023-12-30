@@ -32,7 +32,7 @@ namespace ostd
 
 			inline static BaseObject& InvalidRef(void) { return BaseObject::s_invalid_obj; } 
 			
-			inline void setTypeName(const StringEditor& tn) { m_typeName = tn.str(); }
+			inline void setTypeName(const String& tn) { m_typeName = tn; }
 			inline String getTypeName(void) const { return m_typeName; }
 			String getObjectHeaderString(void) const;
 			

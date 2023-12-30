@@ -110,7 +110,7 @@ namespace ostd
                 }
                 int64_t tmpInt = Utils::strToInt(s);
                 //-------------------------------------------------
-                tokens.push_back(Token { Token::Type::Number, StringEditor().addi(tmpInt).str() });
+                tokens.push_back(Token { Token::Type::Number, String().add(tmpInt) });
                 --p;
             } else {
                 Token::Type t = Token::Type::Unknown;

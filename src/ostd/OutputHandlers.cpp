@@ -62,7 +62,7 @@ namespace ostd
 		return *this;
 	}
 	
-	OutputHandlerBase& ConsoleOutputHandler::bg(const StringEditor& color)
+	OutputHandlerBase& ConsoleOutputHandler::bg(const String& color)
 	{
 		std::cout << ConsoleColors::getFromName(color, true);
 		return *this;
@@ -74,7 +74,7 @@ namespace ostd
 		return *this;
 	}
 	
-	OutputHandlerBase& ConsoleOutputHandler::fg(const StringEditor& color)
+	OutputHandlerBase& ConsoleOutputHandler::fg(const String& color)
 	{
 		std::cout << ConsoleColors::getFromName(color, false);
 		return *this;
@@ -86,9 +86,9 @@ namespace ostd
 		return *this;
 	}
 	
-	OutputHandlerBase& ConsoleOutputHandler::pStyled(const StringEditor& styled)
+	OutputHandlerBase& ConsoleOutputHandler::pStyled(const String& styled)
 	{
-		return pStyled(TextStyleParser::parse(styled.str()));
+		return pStyled(TextStyleParser::parse(styled));
 	}
 	
 	OutputHandlerBase& ConsoleOutputHandler::pStyled(const TextStyleParser::tStyledString& styled)
@@ -109,7 +109,7 @@ namespace ostd
 		return *this;
 	}
 	
-	OutputHandlerBase& ConsoleOutputHandler::p(const StringEditor& se)
+	OutputHandlerBase& ConsoleOutputHandler::p(const String& se)
 	{
 		std::cout << se;
 		return *this;

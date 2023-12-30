@@ -7,7 +7,7 @@ namespace ostd
 {
 	bool LogicEvaluator::eval(String exp)
 	{
-		StringEditor se(exp);
+		String se(exp);
 		se = se.replaceAll("true", "1");
 		se = se.replaceAll("false", "0");
 		se = se.replaceAll("and", "&");
@@ -21,12 +21,12 @@ namespace ostd
 		se = se.replaceAll("!1", "0");
 		se = se.replaceAll("!0", "1");
 		se = se.trim();
-		exp = se.str();
+		exp = se;
 
 		std::stack<bool> values;
 		std::stack<eLogicOp> ops;
 		char c = 0;
-		for (unsigned int i = 0; i < exp.length(); i++)
+		for (unsigned int i = 0; i < exp.len(); i++)
 		{
 			c = exp[i];
 			if (c == ' ' || c == '#') continue;
