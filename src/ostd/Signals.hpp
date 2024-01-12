@@ -22,10 +22,12 @@ namespace ostd
 		inline static constexpr uint32_t MousePressed 			=	0x0003;
 		inline static constexpr uint32_t MouseReleased 			=	0x0004;
 		inline static constexpr uint32_t MouseMoved 			=	0x0005;
+		inline static constexpr uint32_t MouseDragged 			=	0x0006;
 
 		inline static constexpr uint32_t OnGuiEvent				=	0x2001;
 
 		inline static constexpr uint32_t WindowResized 			=	0x1001;
+		inline static constexpr uint32_t WindowClosed 			=	0x1002;
 		/*********************/
 
 		inline static constexpr uint32_t CustomSignalBase 		=	0xFF0000;
@@ -80,7 +82,9 @@ namespace ostd
 			inline static std::vector<tSignalObjPair> m_keyPressedRecievers;
 			inline static std::vector<tSignalObjPair> m_keyReleasedRecievers;
 			inline static std::vector<tSignalObjPair> m_mouseMovedRecievers;
+			inline static std::vector<tSignalObjPair> m_mouseDraggedRecievers;
 			inline static std::vector<tSignalObjPair> m_windowResizedRecievers;
+			inline static std::vector<tSignalObjPair> m_windowClosedRecievers;
 			inline static std::vector<tSignalObjPair> m_onGuiEventRecievers;
 			/************************************/
 

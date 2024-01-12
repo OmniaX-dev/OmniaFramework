@@ -8,13 +8,13 @@ namespace ostd
 {
 	String String::Tokens::next(void)
 	{
-		if (!hasNext()) return Tokens::END;
+		if (!hasNext()) return ""; //TODO: Error
 		return m_tokens[m_current_index++];
 	}
 
 	String String::Tokens::previous(void)
 	{
-		if (!hasPrevious()) return Tokens::END;
+		if (!hasPrevious()) return ""; //TODO: Error
 		return m_tokens[--m_current_index];
 	}
 
@@ -162,6 +162,20 @@ namespace ostd
 		return *this;
 	}
 	
+	String& String::fixedLength(uint32_t length, char fill_character, const String& truncate_indicator)
+	{
+		if (length < truncate_indicator.len()) return *this;
+		if (len() > length)
+		{
+			int32_t tr_len = truncate_indicator.len();
+			substr(0, length - tr_len);
+			return add(truncate_indicator);
+		}
+		else if (len() < length)
+			return addRightPadding(length, fill_character);
+		return *this;
+	}
+
 
 	String& String::addChar(char c)
 	{
@@ -326,74 +340,80 @@ namespace ostd
 		return __str.substr(start, end);
 	}
 	
+	String String::new_fixedLength(uint32_t length, char fill_character, const String& truncate_indicator) const
+	{
+		String __str = m_data;
+		return __str.fixedLength(length, fill_character, truncate_indicator);
+	}
 
-	String String::new_addChar(char c)
+
+	String String::new_addChar(char c) const
 	{
 		String __str = m_data;
 		return __str.addChar(c);
 	}
 	
-	String String::new_add(const String& se)
+	String String::new_add(const String& se) const
 	{
 		String __str = m_data;
 		return __str.add(se);
 	}
 	
-	String String::new_add(uint8_t i)
+	String String::new_add(uint8_t i) const
 	{
 		String __str = m_data;
 		return __str.add(i);
 	}
 	
-	String String::new_add(int8_t i)
+	String String::new_add(int8_t i) const
 	{
 		String __str = m_data;
 		return __str.add(i);
 	}
 	
-	String String::new_add(uint16_t i)
+	String String::new_add(uint16_t i) const
 	{
 		String __str = m_data;
 		return __str.add(i);
 	}
 	
-	String String::new_add(int16_t i)
+	String String::new_add(int16_t i) const
 	{
 		String __str = m_data;
 		return __str.add(i);
 	}
 	
-	String String::new_add(uint32_t i)
+	String String::new_add(uint32_t i) const
 	{
 		String __str = m_data;
 		return __str.add(i);
 	}
 	
-	String String::new_add(int32_t i)
+	String String::new_add(int32_t i) const
 	{
 		String __str = m_data;
 		return __str.add(i);
 	}
 	
-	String String::new_add(uint64_t i)
+	String String::new_add(uint64_t i) const
 	{
 		String __str = m_data;
 		return __str.add(i);
 	}
 	
-	String String::new_add(int64_t i)
+	String String::new_add(int64_t i) const
 	{
 		String __str = m_data;
 		return __str.add(i);
 	}
 	
-	String String::new_add(float f, uint8_t precision)
+	String String::new_add(float f, uint8_t precision) const
 	{
 		String __str = m_data;
 		return __str.add(f, precision);
 	}
 	
-	String String::new_add(double f, uint8_t precision)
+	String String::new_add(double f, uint8_t precision) const
 	{
 		String __str = m_data;
 		return __str.add(f, precision);
@@ -541,26 +561,6 @@ namespace ostd
 	{
 		return String(str1) + str;
 	}
-
-	// bool operator== (const String& str1, const char* str2)
-	// {
-	// 	return std::strcmp(str1.c_str(), str2) == 0;
-	// }
-
-	// bool operator!= (const String& str1, const char* str2)
-	// {
-	// 	return std::strcmp(str1.c_str(), str2) != 0;
-	// }
-
-	// bool operator== (const char* str1, const String& str2)
-	// {
-	// 	return std::strcmp(str1, str2.c_str()) == 0;
-	// }
-
-	// bool operator!= (const char* str1, const String& str2)
-	// {
-	// 	return std::strcmp(str1, str2.c_str()) != 0;
-	// }
 
 	std::ostream& operator<<(std::ostream& out, const String& val)
 	{

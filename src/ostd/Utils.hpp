@@ -3,6 +3,7 @@
 
 #include <ostd/Types.hpp>
 #include <ostd/TextStyleParser.hpp>
+#include <ostd/Defines.hpp>
 
 #include <filesystem>
 
@@ -164,6 +165,24 @@ namespace ostd
 			static void setConsoleCursorPosition(int32_t x, int32_t y);
 			static int32_t getConsoleWidth(void);
 			static int32_t getConsoleHeight(void);
+
+			//Array helpers
+			template<typename T>
+			static inline T* createArray(size_t size)
+			{
+				T* array = (T*)malloc(size * sizeof(T));
+				return array;
+			}
+			template<typename T>
+			static inline T* resizeArray(T* array, size_t new_size)
+			{
+				T* new_array = (T*)realloc(array, new_size * sizeof(T));
+				return new_array;
+			}
+			static inline void destroyArray(void* array)
+			{
+				free(array);
+			}
 
 		private:
 			inline static uint64_t s_startTime_ms;

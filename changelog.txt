@@ -1,0 +1,6 @@
+[0.1.1818]
+Added ostd::String::fixedLength(...) method, with corresponding 'new_fixedLength' version.
+Added "KeyboardController" class to <Console.hpp> (implemented in <Keyboard.cpp>) to handle 
+	keypresses in the console in a cross-platform way 
+Added helper functions in ostd::Utils for dealing with raw arrays
+Added more Builtin signals

@@ -2,6 +2,7 @@
 
 #include <ostd/Types.hpp>
 #include <cstring>
+#include <filesystem>
 
 namespace ostd
 {
@@ -33,9 +34,6 @@ namespace ostd
 				std::vector<String> m_tokens;
 				uint32_t m_current_index;
 
-			public:
-				inline static const cpp_string END = "%END%";
-
 				friend class String;
 		};
 		public: enum class ePaddingBehavior { ForceEvenPositive = 1, ForceEvenNegative, AllowOddExtraLeft, AllowOddExtraRight };
@@ -52,14 +50,13 @@ namespace ostd
 			inline char operator[](uint32_t index) const { return m_data[index]; }
 			inline bool operator== (const char* str2) const { return std::strcmp(c_str(), str2) == 0; }
    			inline bool operator!= (const char* str2) const { return std::strcmp(c_str(), str2) != 0; }
-			// friend bool operator== (const char* str1, const String& str2);
-   			// friend bool operator!= (const char* str1, const String& str2);
 			inline String operator+(const String& str2) const { return m_data + str2.cpp_str(); }
 			friend String operator+(const cpp_string& str1, const String& str);
 			inline String& operator+=(const String& str2) { m_data += str2.cpp_str(); return *this; }
 			inline String& operator+=(const char& c) { m_data += c; return *this; }
 			inline operator std::string() const { return m_data; }
 			inline operator const char*() const { return c_str(); }
+			inline operator std::filesystem::path() const { return cpp_str(); }
 			inline String& clr(void) { m_data = ""; return *this; }
 			inline String& set(const cpp_string& str) { m_data = str; return *this; }
 
@@ -85,6 +82,7 @@ namespace ostd
 			String& regexReplace(const String& regex_pattern, const String& replace_with, bool case_insensitive = false);
 			String& put(uint32_t index, char c);
 			String& substr(uint32_t start, int32_t end = -1);
+			String& fixedLength(uint32_t length, char fill_character = ' ', const String& truncate_indicator = "... ");
 
 			String& addChar(char c);
 			String& add(const String& se);
@@ -114,19 +112,20 @@ namespace ostd
 			String new_regexReplace(const String& regex_pattern, const String& replace_with, bool case_insensitive = false) const;
 			String new_put(uint32_t index, char c) const;
 			String new_substr(uint32_t start, int32_t end = -1) const;
+			String new_fixedLength(uint32_t length, char fill_character = ' ', const String& truncate_indicator = "... ") const;
 
-			String new_addChar(char c);
-			String new_add(const String& se);
-			String new_add(uint8_t i);
-			String new_add(int8_t i);
-			String new_add(uint16_t i);
-			String new_add(int16_t i);
-			String new_add(uint32_t i);
-			String new_add(int32_t i);
-			String new_add(uint64_t i);
-			String new_add(int64_t i);
-			String new_add(float f, uint8_t precision = 0);
-			String new_add(double f, uint8_t precision = 0);
+			String new_addChar(char c) const;
+			String new_add(const String& se) const;
+			String new_add(uint8_t i) const;
+			String new_add(int8_t i) const;
+			String new_add(uint16_t i) const;
+			String new_add(int16_t i) const;
+			String new_add(uint32_t i) const;
+			String new_add(int32_t i) const;
+			String new_add(uint64_t i) const;
+			String new_add(int64_t i) const;
+			String new_add(float f, uint8_t precision = 0) const;
+			String new_add(double f, uint8_t precision = 0) const;
 
 			//Utility
 			int64_t toInt(void) const;
@@ -259,3 +258,15 @@ namespace ostd
 	}
 
 }
+
+
+
+template <>
+struct std::hash<ostd::String>
+{
+	std::size_t operator()(const ostd::String& str) const
+	{
+		hash<std::string> hasher;
+		return hasher(str.cpp_str());
+	}
+};

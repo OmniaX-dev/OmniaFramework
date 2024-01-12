@@ -1,6 +1,7 @@
 #include <ostd/String.hpp>
 #include <ostd/IOHandlers.hpp>
 #include <ostd/Logger.hpp>
+#include <ostd/Console.hpp>
 
 ostd::ConsoleOutputHandler out;
 
@@ -41,6 +42,33 @@ int main(int argc, char** argv)
 	ostd::RegexRichString rgxrstr("Hello World");
 	rgxrstr.fg("Hello", "Blue");
 	std::cout << rgxrstr << "\n";
+
+	out.nl().nl();
+	ostd::String test_str = "Hello World, my love";
+	ostd::String test_str_2 = "HEELO";
+	ostd::String test_str_3 = "0123456789";
+	out.p("==========\n");
+	test_str.fixedLength(10, ' ', "..........");
+	test_str_2.fixedLength(10);
+	test_str_3.fixedLength(10);
+	out.p(test_str).p("|").nl();
+	out.p(test_str_2).p("|").nl();
+	out.p(test_str_3).p("|").nl();
+
+	ostd::KeyboardController keyboard;
+	keyboard.disableCommandBuffer();
+	
+	out.p("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
+	out.p("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH");
+	out.p("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+	out.p("                                                ");
+	out.p("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+
+	ostd::eKeys k = ostd::eKeys::NoKeyPressed;
+	do
+	{
+		k = keyboard.waitForKeyPress();
+	} while (k != ostd::eKeys::Escape);
 
 	return 0;
 }

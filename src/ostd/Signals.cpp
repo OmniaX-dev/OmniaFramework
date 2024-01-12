@@ -18,8 +18,12 @@ namespace ostd
 		SignalHandler::m_keyReleasedRecievers.reserve(SignalHandler::__SIGNAL_BUFFER_START_SIZE);
 		SignalHandler::m_mouseMovedRecievers.clear();
 		SignalHandler::m_mouseMovedRecievers.reserve(SignalHandler::__SIGNAL_BUFFER_START_SIZE);
+		SignalHandler::m_mouseDraggedRecievers.clear();
+		SignalHandler::m_mouseDraggedRecievers.reserve(SignalHandler::__SIGNAL_BUFFER_START_SIZE);
 		SignalHandler::m_windowResizedRecievers.clear();
 		SignalHandler::m_windowResizedRecievers.reserve(SignalHandler::__SIGNAL_BUFFER_START_SIZE);
+		SignalHandler::m_windowClosedRecievers.clear();
+		SignalHandler::m_windowClosedRecievers.reserve(SignalHandler::__SIGNAL_BUFFER_START_SIZE);
 		SignalHandler::m_delegatedSignals.clear();
 		SignalHandler::m_delegatedSignals.reserve(SignalHandler::__DELEGATED_SIGNALS_BUFFER_START_SIZE);
 		SignalHandler::m_onGuiEventRecievers.clear();
@@ -53,8 +57,12 @@ namespace ostd
 			sig_list = &m_keyReleasedRecievers;
 		else if (signal_id == tBuiltinSignals::MouseMoved)
 			sig_list = &m_mouseMovedRecievers;
+		else if (signal_id == tBuiltinSignals::MouseDragged)
+			sig_list = &m_mouseDraggedRecievers;
 		else if (signal_id == tBuiltinSignals::WindowResized)
 			sig_list = &m_windowResizedRecievers;
+		else if (signal_id == tBuiltinSignals::WindowClosed)
+			sig_list = &m_windowClosedRecievers;
 		else if (signal_id == tBuiltinSignals::OnGuiEvent)
 			sig_list = &m_onGuiEventRecievers;
 
@@ -87,8 +95,12 @@ namespace ostd
 			m_keyReleasedRecievers.push_back({ &object, signal_id });
 		else if (signal_id == tBuiltinSignals::MouseMoved)
 			m_mouseMovedRecievers.push_back({ &object, signal_id });
+		else if (signal_id == tBuiltinSignals::MouseDragged)
+			m_mouseDraggedRecievers.push_back({ &object, signal_id });
 		else if (signal_id == tBuiltinSignals::WindowResized)
 			m_windowResizedRecievers.push_back({ &object, signal_id });
+		else if (signal_id == tBuiltinSignals::WindowClosed)
+			m_windowClosedRecievers.push_back({ &object, signal_id });
 		else if (signal_id == tBuiltinSignals::OnGuiEvent)
 			m_onGuiEventRecievers.push_back({ &object, signal_id });
 		else if (signal_id > tBuiltinSignals::CustomSignalBase)

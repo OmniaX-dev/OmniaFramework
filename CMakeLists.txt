@@ -36,6 +36,7 @@ list(APPEND OSTD_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/File.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/FileSystem.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Geometry.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Keyboard.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Logger.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Logic.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/OutputHandlers.cpp
