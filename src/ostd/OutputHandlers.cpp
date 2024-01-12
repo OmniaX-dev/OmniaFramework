@@ -201,7 +201,7 @@ namespace ostd
 	
 	OutputHandlerBase& ConsoleOutputHandler::flush(void)
 	{
-		std::cout << std::endl;
+		std::cout << std::flush;
 		return *this;
 	}
 	
