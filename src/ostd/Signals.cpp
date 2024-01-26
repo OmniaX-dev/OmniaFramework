@@ -20,6 +20,8 @@ namespace ostd
 		SignalHandler::m_mouseMovedRecievers.reserve(SignalHandler::__SIGNAL_BUFFER_START_SIZE);
 		SignalHandler::m_mouseDraggedRecievers.clear();
 		SignalHandler::m_mouseDraggedRecievers.reserve(SignalHandler::__SIGNAL_BUFFER_START_SIZE);
+		SignalHandler::m_textEnteredRecievers.clear();
+		SignalHandler::m_textEnteredRecievers.reserve(SignalHandler::__SIGNAL_BUFFER_START_SIZE);
 		SignalHandler::m_windowResizedRecievers.clear();
 		SignalHandler::m_windowResizedRecievers.reserve(SignalHandler::__SIGNAL_BUFFER_START_SIZE);
 		SignalHandler::m_windowClosedRecievers.clear();
@@ -59,6 +61,8 @@ namespace ostd
 			sig_list = &m_mouseMovedRecievers;
 		else if (signal_id == tBuiltinSignals::MouseDragged)
 			sig_list = &m_mouseDraggedRecievers;
+		else if (signal_id == tBuiltinSignals::TextEntered)
+			sig_list = &m_textEnteredRecievers;
 		else if (signal_id == tBuiltinSignals::WindowResized)
 			sig_list = &m_windowResizedRecievers;
 		else if (signal_id == tBuiltinSignals::WindowClosed)
@@ -97,6 +101,8 @@ namespace ostd
 			m_mouseMovedRecievers.push_back({ &object, signal_id });
 		else if (signal_id == tBuiltinSignals::MouseDragged)
 			m_mouseDraggedRecievers.push_back({ &object, signal_id });
+		else if (signal_id == tBuiltinSignals::TextEntered)
+			m_textEnteredRecievers.push_back({ &object, signal_id });
 		else if (signal_id == tBuiltinSignals::WindowResized)
 			m_windowResizedRecievers.push_back({ &object, signal_id });
 		else if (signal_id == tBuiltinSignals::WindowClosed)
