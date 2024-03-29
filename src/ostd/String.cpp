@@ -240,7 +240,10 @@ namespace ostd
 	String& String::add(float f, uint8_t precision)
 	{
 		std::stringstream stream;
-		stream << std::fixed << std::setprecision(precision) << f;
+		if (precision != 0)
+			stream << std::fixed << std::setprecision(precision) << f;
+		else
+			stream << f;
 		cpp_string s = stream.str();
 		return add(s);
 	}
@@ -248,7 +251,10 @@ namespace ostd
 	String& String::add(double f, uint8_t precision)
 	{
 		std::stringstream stream;
-		stream << std::fixed << std::setprecision(precision) << f;
+		if (precision != 0)
+			stream << std::fixed << std::setprecision(precision) << f;
+		else
+			stream << f;
 		cpp_string s = stream.str();
 		return add(s);
 	}

@@ -42,7 +42,7 @@ namespace ostd
 		m_sw = nullptr;
 		m_ne = nullptr;
 		m_se = nullptr;
-		setTypeName("ox::QuadTree");
+		setTypeName("ostd::QuadTree");
 		setValid(true);
 	}
 

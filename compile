@@ -12,9 +12,12 @@ if [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
         mkdir -p ./Release/lib
 
         cp ./bin/libostd.so ./Release/lib
+        cp ./bin/libogfx.so ./Release/lib
 
         mkdir -p ./Release/include/ostd/vendor
+        mkdir -p ./Release/include/ogfx/
         find ./src/ostd  -maxdepth 1 -name "*.hpp" -exec cp {} ./Release/include/ostd \;
+        find ./src/ogfx  -maxdepth 1 -name "*.hpp" -exec cp {} ./Release/include/ogfx \;
         find ./src/ostd/vendor  -maxdepth 1 -name "*.hpp" -exec cp {} ./Release/include/ostd/vendor \;
         cp -r ./licences ./Release
 
@@ -37,9 +40,15 @@ elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW64_NT" ]; then
         cp C:/msys64/ucrt64/bin/libgcc_s_seh-1.dll ./Release/lib
         cp C:/msys64/ucrt64/bin/libstdc++-6.dll ./Release/lib
         cp C:/msys64/ucrt64/bin/libwinpthread-1.dll ./Release/lib
+        cp C:/msys64/ucrt64/bin/SDL2.dll ./Release/lib
+        cp C:/msys64/ucrt64/bin/SDL2_image.dll ./Release/lib
+        cp C:/msys64/ucrt64/bin/SDL2_ttf.dll ./Release/lib
+        cp C:/msys64/ucrt64/bin/SDL2_gfx.dll ./Release/lib
 
         mkdir -p ./Release/include/ostd/vendor
+        mkdir -p ./Release/include/ogfx/
         find ./src/ostd  -maxdepth 1 -name "*.hpp" -exec cp {} ./Release/include/ostd \;
+        find ./src/ogfx  -maxdepth 1 -name "*.hpp" -exec cp {} ./Release/include/ogfx \;
         find ./src/ostd/vendor  -maxdepth 1 -name "*.hpp" -exec cp {} ./Release/include/ostd/vendor \;
         cp -r ./licences ./Release
 

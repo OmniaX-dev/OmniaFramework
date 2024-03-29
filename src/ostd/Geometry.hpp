@@ -353,6 +353,56 @@ namespace ostd
 			float w;
 			float h;
 	};
+
+	template<class T>
+	class Rect
+	{
+		public:
+			Rect(void) = default;
+			inline Rect(T pos_x, T pos_y, T size_x, T size_y) : position(pos_x, pos_y), size(size_x, size_y) {  }
+			inline Rect(Point<T> pos, Point<T> _size) : position(pos), size(_size) {  }
+			template <class T2> inline Rect(Rect<T2> copy) { position = { (T2)(copy.position.x), (T2)(copy.position.y) }; size = { (T2)(copy.size.x), (T2)(copy.size.y) }; }
+
+		public:
+			Point<T> position;
+			Point<T> size;
+	};
+
+	typedef Rect<float> FRect;
+	typedef Rect<double> DRect;
+	typedef Rect<uint32_t> UIRect;
+	typedef Rect<uint64_t> UI64Rect;
+	typedef Rect<float> UI16Rect;
+	typedef Rect<uint8_t> UI8Rect;
+	typedef Rect<int32_t> IRect;
+	typedef Rect<int64_t> I64Rect;
+	typedef Rect<int16_t> I16Rect;
+	typedef Rect<int8_t> I8Rect;
+
+	template<class T>
+	class Line
+	{
+		public:
+			Line(void) = default;
+			inline Line(T x1, T y1, T x2, T y2) : p1(x1, y1), p2(x2, y2) {  }
+			inline Line(Point<T> _p1, Point<T> _p2) : p1(_p1), p2(_p2) {  }
+			template <class T2> inline Line(Line<T2> copy) { p1 = { (T2)(copy.p1.x), (T2)(copy.p1.y) }; p2 = { (T2)(copy.p2.x), (T2)(copy.p2.y) }; }
+
+		public:
+			Point<T> p1;
+			Point<T> p2;
+	};
+
+	typedef Line<float> FLine;
+	typedef Line<double> DLine;
+	typedef Line<uint32_t> UILine;
+	typedef Line<uint64_t> UI64Line;
+	typedef Line<float> UI16Line;
+	typedef Line<uint8_t> UI8Line;
+	typedef Line<int32_t> ILine;
+	typedef Line<int64_t> I64Line;
+	typedef Line<int16_t> I16Line;
+	typedef Line<int8_t> I8Line;
 } 
 
  #endif
