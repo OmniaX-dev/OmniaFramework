@@ -39,7 +39,9 @@ namespace ostd
 		public:
 			inline Timer(void) { m_started = false; m_current = 0; m_timeUnit = eTimeUnits::Nanoseconds; m_dest = nullptr; }
 			uint64_t start(bool print = true, String name = "", eTimeUnits timeUnit = eTimeUnits::Nanoseconds, OutputHandlerBase* __destination = nullptr);
+			uint64_t startCount(eTimeUnits timeUnit = eTimeUnits::Nanoseconds);
 			uint64_t end(bool print = true);
+			uint64_t endCount(void);
 
 			static uint64_t getEpoch(eTimeUnits timeUnit = eTimeUnits::Milliseconds);
 

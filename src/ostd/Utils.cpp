@@ -474,6 +474,30 @@ namespace ostd
 		return 0;
 	}
 
+	uint64_t Timer::startCount(eTimeUnits timeUnit)
+	{
+		m_timeUnit = timeUnit;
+		m_started = true;
+		switch (m_timeUnit)
+		{
+			case eTimeUnits::Nanoseconds:
+				m_current = std::chrono::duration_cast<std::chrono::nanoseconds> (std::chrono::system_clock::now().time_since_epoch()).count();
+				return m_current;
+			case eTimeUnits::Microseconds:
+				m_current = std::chrono::duration_cast<std::chrono::microseconds> (std::chrono::system_clock::now().time_since_epoch()).count();
+				return m_current;
+			case eTimeUnits::Milliseconds:
+				m_current = std::chrono::duration_cast<std::chrono::milliseconds> (std::chrono::system_clock::now().time_since_epoch()).count();
+				return m_current;
+			case eTimeUnits::Seconds:
+				m_current = std::chrono::duration_cast<std::chrono::seconds> (std::chrono::system_clock::now().time_since_epoch()).count();
+				return m_current;
+			default: m_started = false; return 0;
+		}
+		m_started = false;
+		return 0;
+	}
+
 	uint64_t Timer::end(bool print)
 	{
 		if (!m_started) return 0;
@@ -525,6 +549,31 @@ namespace ostd
 				m_dest->reset().nl();
 			}
 		}
+		return diff;
+	}
+
+	uint64_t Timer::endCount(void)
+	{
+		if (!m_started) return 0;
+		m_started = false;
+		int64_t diff;
+		switch (m_timeUnit)
+		{
+			case eTimeUnits::Nanoseconds:
+				diff = std::chrono::duration_cast<std::chrono::nanoseconds> (std::chrono::system_clock::now().time_since_epoch()).count();
+			break;
+			case eTimeUnits::Microseconds:
+				diff = std::chrono::duration_cast<std::chrono::microseconds> (std::chrono::system_clock::now().time_since_epoch()).count();
+			break;
+			case eTimeUnits::Milliseconds:
+				diff = std::chrono::duration_cast<std::chrono::milliseconds> (std::chrono::system_clock::now().time_since_epoch()).count();
+			break;
+			case eTimeUnits::Seconds:
+				diff = std::chrono::duration_cast<std::chrono::seconds> (std::chrono::system_clock::now().time_since_epoch()).count();
+			break;
+			default: return 0;
+		}
+		diff -= m_current;
 		return diff;
 	}
 
