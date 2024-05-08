@@ -61,5 +61,18 @@ namespace ostd
 			list.push_back(file.path());
 		return list;
 	}
+
+	ostd::String Utils::getHomeDirPath(void)
+	{
+		ostd::String home_path = "";
+#ifdef WINDOWS_OS
+		home_path = ostd::String(getenv("HOMEDRIVE")) + "\\" + ostd::String(getenv("HOMEPATH"));
+#elif defined(LINUX_OS)
+		home_path = ostd::String(getenv("HOME"));
+#else
+		home_path = "NULL";
+#endif
+		return home_path;
+	}
 	
 }

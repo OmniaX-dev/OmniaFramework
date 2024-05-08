@@ -157,6 +157,7 @@ namespace ostd
 			static std::vector<std::filesystem::path> listFilesInDirectoryRecursive(const String& directoryPath);
 			static std::vector<std::filesystem::path> listDirectoriesInDirectoryRecursive(const String& directoryPath);
 			static std::vector<std::filesystem::path> listDirectoryRecursive(const String& directoryPath);
+			static ostd::String getHomeDirPath(void);
 			
 			//Implemented in <ShuntingYard.cpp>
 			static int32_t solveIntegerExpression(const String& expr);
