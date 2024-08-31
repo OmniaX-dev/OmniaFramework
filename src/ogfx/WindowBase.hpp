@@ -8,6 +8,7 @@ namespace ogfx
 {
 	class WindowBase : public ostd::BaseObject
 	{
+		public: enum class eCursor { Arrow = 0, IBeam };
 		public:
 			inline WindowBase(void) {  }
 			~WindowBase(void);
@@ -17,6 +18,7 @@ namespace ogfx
 			void update(void);
 			void setSize(int32_t width, int32_t height);
 			void setTitle(const ostd::String& title);
+			void setCursor(eCursor cursor);	
 
 			inline virtual void onRender(void) {  }
 			inline virtual void onUpdate(void) {  }
@@ -27,6 +29,7 @@ namespace ogfx
 
 			inline bool isInitialized(void) const { return m_initialized; }
 			inline bool isRunning(void) const { return m_running; }
+			inline void close(void) { m_running = false; }
 			inline void hide(void) { SDL_HideWindow(m_window); }
 			inline void show(void) { SDL_ShowWindow(m_window); }
 			inline ostd::String getTitle(void) const { return m_title; }
@@ -63,6 +66,9 @@ namespace ogfx
 			bool m_deagEventEnabled { false };
 			bool m_running { false };
 			bool m_initialized { false };
+
+			SDL_Cursor* m_cursor_IBeam { nullptr };
+			SDL_Cursor* m_cursor_Arrow { nullptr };
 	};
 	class WindowResizedData : public ostd::BaseObject
 	{

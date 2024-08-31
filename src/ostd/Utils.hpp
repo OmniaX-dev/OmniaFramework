@@ -33,6 +33,39 @@ namespace ostd
 	};
 
 
+	template <class T>
+	class _Counter
+	{
+		public:
+			inline _Counter(void) { m_count = 200; m_current = 0; }
+			inline _Counter(T count, T step = 1) { m_count = count; m_current = 0; m_step = step; }
+			inline void setCount(T count) { m_count = count; m_counting = false; m_current = 0; }
+			inline T getCount(void) { return m_count; }
+			inline T getCurrent(void) { return m_current; };
+			inline T getStep(void) { return m_step; }
+			inline void start(void) { m_current = 0; m_counting = true; }
+			inline void stop(void) { m_current = 0; m_counting = false; }
+			inline bool isDone(void) { return !m_counting; }
+			inline bool isCounting(void) { return m_counting; }
+			inline void update(void)
+			{
+				if (!m_counting) return;
+				m_current += m_step;
+				if (m_current > m_count)
+					stop();
+			}
+
+		private:
+			T m_current { 0 };
+			T m_count { 200 };
+			T m_step { 1 };
+			bool m_counting { false };
+	};
+
+	typedef _Counter<uint64_t> Counter;
+	typedef _Counter<float> FloatCounter;
+	typedef _Counter<double> DoubleCounter;
+
 	class OutputHandlerBase;
 	class Timer
 	{

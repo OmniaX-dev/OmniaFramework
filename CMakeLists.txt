@@ -58,6 +58,7 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/FontUtils.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/WindowBase.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/BasicRenderer.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/RawTextInput.cpp
 )
 list(APPEND TEST_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/test.cpp
@@ -78,6 +79,7 @@ target_include_directories(${TEST_TARGET} PUBLIC ${INCLUDE_DIRS})
 
 target_link_libraries(${OMNIA_GFX_LIB} PUBLIC ${OMNIA_STD_LIB})
 target_link_libraries(${TEST_TARGET} PUBLIC ${OMNIA_STD_LIB})
+target_link_libraries(${TEST_TARGET} PUBLIC ${OMNIA_GFX_LIB})
 
 #TODO: Different flags for Release/Debug
 add_compile_options(-O3 -m32 -MMD -MP -Wall -ggdb -fsanitize=address)

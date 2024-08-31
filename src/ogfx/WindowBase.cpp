@@ -5,6 +5,8 @@ namespace ogfx
 	WindowBase::~WindowBase(void)
 	{
 		onDestroy();
+		SDL_FreeCursor(m_cursor_IBeam);
+		SDL_FreeCursor(m_cursor_Arrow);
 		SDL_DestroyRenderer(m_renderer);
 		SDL_DestroyWindow(m_window);
 		// IMG_Quit();
@@ -18,7 +20,7 @@ namespace ogfx
 		m_windowWidth = width;
 		m_windowHeight = height;
 		m_title = windowTitle;
-		if (SDL_Init(SDL_INIT_VIDEO) != 0)
+		if (SDL_Init(SDL_INIT_VIDEO) != 0)	
 		{
 			printf( "SDL could not initialize! Error: %s\n", SDL_GetError() );
 			exit(1);
@@ -34,6 +36,9 @@ namespace ogfx
 		m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED);
 		SDL_SetWindowMinimumSize(m_window, m_windowWidth, m_windowHeight);
 		SDL_SetWindowTitle(m_window, m_title.c_str());
+
+		m_cursor_Arrow = SDL_CreateSystemCursor(SDL_SystemCursor::SDL_SYSTEM_CURSOR_ARROW);
+		m_cursor_IBeam = SDL_CreateSystemCursor(SDL_SystemCursor::SDL_SYSTEM_CURSOR_IBEAM);
 
 		m_initialized = true;
 		m_running = true;
@@ -87,6 +92,22 @@ namespace ogfx
 		if (!isInitialized()) return;
 		m_title = title;
 		SDL_SetWindowTitle(m_window, m_title.c_str());
+	}
+
+	void WindowBase::setCursor(eCursor cursor)
+	{
+		switch (cursor)
+		{
+			case eCursor::Arrow:
+				SDL_SetCursor(m_cursor_Arrow);
+			break;
+			case eCursor::IBeam:
+				SDL_SetCursor(m_cursor_IBeam);
+			break;
+			default:
+				SDL_SetCursor(m_cursor_Arrow);
+			break;
+		}
 	}
 
 	void WindowBase::handleEvents(void)
