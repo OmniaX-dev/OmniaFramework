@@ -36,6 +36,8 @@ elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW64_NT" ]; then
 
         cp ./bin/libostd.dll ./Release/lib
         cp ./bin/libostd.dll.a ./Release/lib
+        cp ./bin/libogfx.dll ./Release/lib
+        cp ./bin/libogfx.dll.a ./Release/lib
 
         cp C:/msys64/ucrt64/bin/libgcc_s_seh-1.dll ./Release/lib
         cp C:/msys64/ucrt64/bin/libstdc++-6.dll ./Release/lib
