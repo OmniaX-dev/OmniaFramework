@@ -539,7 +539,7 @@ namespace ostd
 			{
 				if (allow_white_space_only_tokens && __token != "")
 					tokens.m_tokens.push_back(__token.cpp_str());
-				else if (!allow_white_space_only_tokens && __token.trim() != "")
+				else if (!allow_white_space_only_tokens && __token.new_trim() != "")
 					tokens.m_tokens.push_back(__token.cpp_str());
 			}
 			sindex = eindex + delimiter.len();
@@ -555,7 +555,7 @@ namespace ostd
 		{
 			if (allow_white_space_only_tokens && __token != "")
 				tokens.m_tokens.push_back(__token.cpp_str());
-			else if (!allow_white_space_only_tokens && __token.trim() != "")
+			else if (!allow_white_space_only_tokens && __token.new_trim() != "")
 				tokens.m_tokens.push_back(__token.cpp_str());
 		}
 		return tokens;
