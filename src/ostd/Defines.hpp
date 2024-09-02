@@ -57,7 +57,7 @@
 #define MAX(n1, n2) std::max(n1, n2)
 #define MIN(n1, n2) std::min(n1, n2)
 #define PROPORTION(w, x, y) ((x * w) / y)
-#define CONVERT_1D_2D(i, width) IPoint(i % width, i / width)
+#define CONVERT_1D_2D(i, width) ostd::IPoint(i % width, i / width)
 #define CONVERT_2D_1D(x, y, width) (x + width * y)
 #define PRINT(data) std::cout << data
 #define PRINTLN(data) std::cout << data << "\n"
