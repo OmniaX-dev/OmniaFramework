@@ -182,6 +182,7 @@ namespace ostd
 			static bool loadByteStreamFromFile(const String& filePath, ByteStream& outStream);
 			static ByteStream stringToByteStream(const String& data);
 			static String byteStreamToString(const ByteStream& data);
+			static String md5(const String& str);
 
 			//Implemented in <FileSystem.cpp>
 			static std::vector<std::filesystem::path> listFilesInDirectory(const String& directoryPath);

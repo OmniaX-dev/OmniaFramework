@@ -1,6 +1,7 @@
 {
 	"C_Cpp.errorSquiggles": "enabled",
 	"files.associations": {
+		"*.dss": "python",
 		"functional": "cpp",
 		"thread": "cpp",
 		"cctype": "cpp",
@@ -96,7 +97,12 @@
 		"stacktrace": "cpp",
 		"*.ipp": "cpp",
 		"format": "cpp",
-		"stdfloat": "cpp"
+		"stdfloat": "cpp",
+		"*.inc": "cpp",
+		"text_encoding": "cpp"
+	},
+	"workbench.editorAssociations": {
+		"*.bin": "hexEditor.hexedit"
 	},
 
 	"workbench.colorCustomizations": {
@@ -157,5 +163,12 @@
 	"cmake.configureOnOpen": false,
 	"cmake.options.statusBarVisibility": "hidden",
 
-	"git.openRepositoryInParentFolders": "never"
+	"git.openRepositoryInParentFolders": "never",
+
+	"python.languageServer": "None",
+
+	"files.eol": "\r\n",
+
+	"workbench.iconTheme": "material-icon-theme",
+	"workbench.colorTheme": "Aramok's GLX Black"
 }

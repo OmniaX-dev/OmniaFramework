@@ -17,6 +17,7 @@
 #include <iostream>
 #include <thread>
 #include <cmath>
+#include <openssl/evp.h>
 
 #define __get_local_time() \
 		std::time_t __cur_t = std::time(0); \
@@ -423,7 +424,7 @@ namespace ostd
 			case 6: return "Sa";
 			default: return "Unknown day";
 		}
-	}
+	}	
 
 
 
@@ -436,7 +437,7 @@ namespace ostd
 		{
 			if (__destination == nullptr)
 			{
-				std::cout << "\n\n" << termcolor::magenta << "====>   ";
+				std::cout << "\n" << termcolor::magenta << "====>   ";
 				std::cout << termcolor::cyan << "Starting test for [";
 				std::cout << termcolor::green << m_name;
 				std::cout << termcolor::cyan << "]";
@@ -446,11 +447,11 @@ namespace ostd
 			else
 			{
 				m_dest = __destination;
-				m_dest->nl().nl().fg("magenta").p("====>   ");
+				m_dest->nl().fg("magenta").p("====>   ");
 				m_dest->fg("cyan").p("Starting test for [");
 				m_dest->fg("green").p(m_name);
 				m_dest->fg("cyan").p("]");
-				m_dest->nl().nl().fg("magenta").p("   <====");
+				m_dest->fg("magenta").p("   <====");
 				m_dest->reset().nl();
 			}
 		}
@@ -530,7 +531,7 @@ namespace ostd
 		{
 			if (m_dest == nullptr)
 			{
-				std::cout << "\n" << termcolor::magenta << "====>   ";
+				std::cout << termcolor::magenta << "====>   ";
 				std::cout << termcolor::cyan << "Test for [";
 				std::cout << termcolor::green << m_name;
 				std::cout << termcolor::cyan << "] took ";
@@ -540,7 +541,7 @@ namespace ostd
 			}
 			else
 			{
-				m_dest->nl().fg("magenta").p("====>   ");
+				m_dest->fg("magenta").p("====>   ");
 				m_dest->fg("cyan").p("Test for [");
 				m_dest->fg("green").p(m_name);
 				m_dest->fg("cyan").p("] took ");
@@ -828,5 +829,25 @@ namespace ostd
 			out_string.addChar((char)data[i]);
 		}
 		return out_string;
+	}
+
+	String Utils::md5(const String& str)
+	{
+		using namespace std;
+		EVP_MD_CTX*   context = EVP_MD_CTX_new();
+		const EVP_MD* md = EVP_md5();
+		unsigned char md_value[EVP_MAX_MD_SIZE];
+		unsigned int  md_len;
+		string        output;
+
+		EVP_DigestInit_ex2(context, md, NULL);
+		EVP_DigestUpdate(context, str.c_str(), str.len());
+		EVP_DigestFinal_ex(context, md_value, &md_len);
+		EVP_MD_CTX_free(context);
+
+		output.resize(md_len * 2);
+		for (unsigned int i = 0 ; i < md_len ; ++i)
+			std::sprintf(&output[i * 2], "%02x", md_value[i]);
+		return output;
 	}
 } 

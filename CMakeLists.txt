@@ -87,8 +87,9 @@ if (UNIX)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath='$ORIGIN'")
 	target_link_libraries(${OMNIA_STD_LIB} PUBLIC tinfo boost_regex)
 	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC xcb xcb-randr)
-endif (UNIX)
+endif (UNIX)	
 target_link_libraries(${OMNIA_GFX_LIB} PUBLIC SDL2main SDL2 SDL2_gfx SDL2_ttf)
+target_link_libraries(${OMNIA_STD_LIB} PUBLIC ssl crypto)
 #-----------------------------------------------------------------------------------------
 
 #Finalize
