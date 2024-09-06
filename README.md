@@ -36,12 +36,27 @@ open a terminal inside the root directory of the project and run this command:
 ```
 ./compile
 ```
+
 ## Build instructions - Linux (Ubuntu)
 **Step 1:**
 open a terminal and run:
 ```
 sudo apt update && sudo apt upgrade
 sudo apt install clang gdb make cmake libboost-all-dev libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-gfx-dev libxcb-randr0-dev
+```
+
+**Step 2:**
+open a terminal inside the root directory of the project and run this command:
+```
+./compile
+```
+
+## Build instructions - Linux (Fedora)
+**Step 1:**
+open a terminal and run:
+```
+sudo dnf update						
+sudo dnf install gcc gcc-c++ make clang gdb cmake clang-tools-extra boost boost-devel openssl openssl-devel SDL2 SDL2_image SDL2_mixer SDL2_ttf SDL2_gfx SDL2-devel SDL2_image-devel SDL2_mixer-devel SDL2_ttf-devel SDL2_gfx-devel 
 ```
 
 **Step 2:**

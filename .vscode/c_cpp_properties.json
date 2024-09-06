@@ -3,34 +3,24 @@
         {
             "name": "Linux",
             "includePath": [
-                "${default}",
-                "${workspaceRoot}/src/vendor/GLAD",
-                "${workspaceRoot}/src/vendor",
-                "${workspaceRoot}/src/ostd",
-                "${workspaceRoot}/src"
+                "${default}"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang++",
             "cStandard": "c17",
             "cppStandard": "c++20",
             "intelliSenseMode": "linux-clang-x64"
-                        //"compileCommands": "${workspaceFolder}/compile_commands.json"
         },
         {
             "name": "Windows",
             "includePath": [
-                "${default}",
-                "${workspaceRoot}/src/vendor/GLAD",
-                "${workspaceRoot}/src/vendor",
-                "${workspaceRoot}/src/ostd",
-                "${workspaceRoot}/src"
+                "${default}"
             ],
             "defines": [],
             "compilerPath": "C:\\msys64\\ucrt64\\bin\\clang++",
             "cStandard": "c17",
             "cppStandard": "c++20",
             "intelliSenseMode": "windows-clang-x64"
-                        //"compileCommands": "${workspaceFolder}/compile_commands.json"
         }
     ],
     "version": 4

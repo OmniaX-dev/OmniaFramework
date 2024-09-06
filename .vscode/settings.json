@@ -160,15 +160,15 @@
 	"breadcrumbs.enabled": false,
 	"workbench.tree.enableStickyScroll": false,
 
-	"cmake.configureOnOpen": false,
-	"cmake.options.statusBarVisibility": "hidden",
-
 	"git.openRepositoryInParentFolders": "never",
-
-	"python.languageServer": "None",
 
 	"files.eol": "\r\n",
 
 	"workbench.iconTheme": "material-icon-theme",
-	"workbench.colorTheme": "Aramok's GLX Black"
+	"workbench.colorTheme": "Aramok's GLX Black",
+
+
+	"python.languageServer": "None",
+	"cmake.configureOnOpen": false,
+	"cmake.options.statusBarVisibility": "hidden"
 }
