@@ -5,6 +5,7 @@
 		"ms-vscode.cpptools",
 		"ms-vscode.hexeditor",
 		"PKief.material-icon-theme",
-		"wayou.vscode-todo-highlight"
+		"wayou.vscode-todo-highlight",
+		"josetr.cmake-language-support-vscode"
 	]
 }
