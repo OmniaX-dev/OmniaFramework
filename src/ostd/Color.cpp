@@ -181,16 +181,26 @@ namespace ostd
 		return rgb;
 	}
 	
-	uint32_t Color::asInteger(void) const
+	uint32_t Color::asInteger(eColorFormat format) const
 	{
 		union uC32 {
 			uint8_t data[4];
 			uint32_t value;
 		} c32_u;
-		c32_u.data[0] = a;
-		c32_u.data[1] = b;
-		c32_u.data[2] = g;
-		c32_u.data[3] = r;
+		if (format == eColorFormat::RGBA)
+		{
+			c32_u.data[0] = a;
+			c32_u.data[1] = b;
+			c32_u.data[2] = g;
+			c32_u.data[3] = r;
+		}
+		else if (format == eColorFormat::ARGB)
+		{
+			c32_u.data[0] = r;
+			c32_u.data[1] = g;
+			c32_u.data[2] = b;
+			c32_u.data[3] = a;
+		}
 		return c32_u.value;
 	}
 	

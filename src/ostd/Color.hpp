@@ -21,6 +21,8 @@ namespace ostd
 			FloatCol(float _r, float _g, float _b, float _a) : r(_r), g(_g), b(_b), a(_a) {  }
 		};
 
+		public: enum class eColorFormat { RGBA = 0, ARGB };
+
 		public:
 			Color(void);
 			Color(uint8_t rgb_single_value, uint8_t alpha = 255);
@@ -41,7 +43,7 @@ namespace ostd
 
 			String hexString(bool include_alpha = false, String prefix = "0x") const;
 			String rgbString(bool include_parenthesis = true, bool include_alpha = false) const;
-			uint32_t asInteger(void) const;
+			uint32_t asInteger(eColorFormat format = eColorFormat::RGBA) const;
 			FloatCol getNormalizedColor(void) const;
 
 			String toString(void) const override;
