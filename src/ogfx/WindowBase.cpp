@@ -110,6 +110,13 @@ namespace ogfx
 		}
 	}
 
+
+	void WindowBase::enableResizable(bool enable)
+	{
+		SDL_SetWindowResizable(m_window, (enable ? SDL_TRUE : SDL_FALSE));
+	}
+
+
 	void WindowBase::handleEvents(void)
 	{
 		if (!m_initialized) return;
@@ -149,7 +156,7 @@ namespace ogfx
 			{
 				MouseEventData mmd = l_getMouseState();
 				if (isMouseDragEventEnabled() && mmd.button != MouseEventData::eButton::None)
-					ostd::SignalHandler::emitSignal(ostd::tBuiltinSignals::WindowClosed, ostd::tSignalPriority::RealTime, mmd);
+					ostd::SignalHandler::emitSignal(ostd::tBuiltinSignals::MouseDragged, ostd::tSignalPriority::RealTime, mmd);
 				else
 					ostd::SignalHandler::emitSignal(ostd::tBuiltinSignals::MouseMoved, ostd::tSignalPriority::RealTime, mmd);
 			}

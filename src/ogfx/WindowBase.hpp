@@ -19,6 +19,7 @@ namespace ogfx
 			void setSize(int32_t width, int32_t height);
 			void setTitle(const ostd::String& title);
 			void setCursor(eCursor cursor);	
+			void enableResizable(bool enable = true);
 
 			inline virtual void onRender(void) {  }
 			inline virtual void onUpdate(void) {  }
@@ -41,7 +42,6 @@ namespace ogfx
 			inline void enableMouseDragEvent(bool enable = true) { m_deagEventEnabled = enable; }
 			inline ostd::Color getClearColor(void) const { return m_clearColor; }
 			inline void setClearColor(const ostd::Color& color) { m_clearColor = color; }
-
 		private:
 			void handleEvents(void);
 
