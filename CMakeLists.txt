@@ -59,6 +59,7 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/WindowBase.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/BasicRenderer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/RawTextInput.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/ogfx/Image.cpp
 )
 list(APPEND TEST_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/test.cpp
@@ -88,7 +89,7 @@ if (UNIX)
 	target_link_libraries(${OMNIA_STD_LIB} PUBLIC tinfo boost_regex)
 	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC xcb xcb-randr)
 endif (UNIX)		
-target_link_libraries(${OMNIA_GFX_LIB} PUBLIC SDL2main SDL2 SDL2_gfx SDL2_ttf)
+target_link_libraries(${OMNIA_GFX_LIB} PUBLIC SDL2main SDL2 SDL2_gfx SDL2_ttf SDL2_image)
 target_link_libraries(${OMNIA_STD_LIB} PUBLIC ssl crypto)
 #-----------------------------------------------------------------------------------------
 

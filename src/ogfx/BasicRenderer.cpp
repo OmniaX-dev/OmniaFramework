@@ -1,6 +1,6 @@
 #include "BasicRenderer.hpp"
 #include "WindowBase.hpp"
-#include <SDL2/SDL2_gfxPrimitives.h>
+#include "SDLInclude.hpp"
 
 namespace ogfx
 {
@@ -22,6 +22,18 @@ namespace ogfx
 		if (!m_initialized) return;
 		m_ttfr.setFontSize(fontSize);
 	}
+
+    void BasicRenderer2D::drawImage(const ogfx::Image& image, const ostd::Vec2& position)
+    {
+        if (!m_initialized) return;
+        if (!image.isLoaded()) return;
+        SDL_Rect texr;
+        texr.x = position.x;
+        texr.y = position.y;
+        texr.w = image.getSize().x;
+        texr.h = image.getSize().y; 
+        SDL_RenderCopy(m_window->getSDLRenderer(), image.getSDLTexture(), nullptr, &texr);
+    }
 
 	void BasicRenderer2D::drawString(const ostd::String& str, const ostd::Vec2& position, const ostd::Color& color, int32_t fontSize)
 	{

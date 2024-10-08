@@ -2,6 +2,7 @@
 
 #include <ogfx/FontUtils.hpp>
 #include <ostd/Geometry.hpp>
+#include <ogfx/Image.hpp>
 
 namespace ogfx
 {
@@ -18,6 +19,8 @@ namespace ogfx
 			inline bool isInitialized(void) { return m_initialized; }
 			void setFont(const ostd::String& fontFilePath);
 			void setFontSize(int32_t fontSize);
+
+            void drawImage(const ogfx::Image& image, const ostd::Vec2& position);
 
 			void drawString(const ostd::String& str, const ostd::Vec2& position, const ostd::Color& color, int32_t fontSize = 0);
 			void drawCenteredString(const ostd::String& str, const ostd::Vec2& center, const ostd::Color& color, int32_t fontSize = 0);
