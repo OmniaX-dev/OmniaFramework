@@ -7,6 +7,7 @@
 #include <ogfx/RawTextInput.hpp>
 #include <ostd/Signals.hpp>
 
+
 ostd::ConsoleOutputHandler out;
 
 class Window : public ogfx::WindowBase
@@ -84,7 +85,10 @@ class Window : public ogfx::WindowBase
 
 int main(int argc, char** argv)
 {
-
+	out.p(STR_BOOL(ostd::Utils::md5("") == "d41d8cd98f00b204e9800998ecf8427e")).nl();
+	out.p(STR_BOOL(ostd::Utils::md5("abc") == "900150983cd24fb0d6963f7d28e17f72")).nl();
+	out.p(STR_BOOL(ostd::Utils::md5("message digest") == "f96b697d7cb7938d525a2f31aaf161d0")).nl();
+	
 	Window window;
 	window.initialize(1280, 720, "OmniaFramework - Test Window");
 	window.setClearColor({ 0, 2	, 15 });

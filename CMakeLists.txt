@@ -17,6 +17,7 @@ cmake_minimum_required(VERSION 3.18)
 project(${PROJ_NAME} LANGUAGES C CXX)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 file(STRINGS "./build.nr" BUILD_NUMBER)
 #-----------------------------------------------------------------------------------------
 
@@ -41,6 +42,7 @@ list(APPEND OSTD_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Keyboard.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Logger.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Logic.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/md5.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/OutputHandlers.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/PathFinder.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/QuadTree.cpp
@@ -90,7 +92,6 @@ if (UNIX)
 	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC xcb xcb-randr)
 endif (UNIX)		
 target_link_libraries(${OMNIA_GFX_LIB} PUBLIC SDL2main SDL2 SDL2_gfx SDL2_ttf SDL2_image)
-target_link_libraries(${OMNIA_STD_LIB} PUBLIC ssl crypto)
 #-----------------------------------------------------------------------------------------
 
 #Finalize

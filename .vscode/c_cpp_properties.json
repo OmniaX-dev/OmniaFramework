@@ -3,7 +3,8 @@
         {
             "name": "Linux",
             "includePath": [
-                "${default}"
+                "${default}",
+                "${workspaceFolder}/src"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang++",
@@ -14,7 +15,8 @@
         {
             "name": "Windows",
             "includePath": [
-                "${default}"
+                "${default}",
+                "${workspaceFolder}/src"
             ],
             "defines": [],
             "compilerPath": "C:\\msys64\\ucrt64\\bin\\clang++",

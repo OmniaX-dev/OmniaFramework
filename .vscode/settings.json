@@ -99,7 +99,9 @@
 		"format": "cpp",
 		"stdfloat": "cpp",
 		"*.inc": "cpp",
-		"text_encoding": "cpp"
+		"text_encoding": "cpp",
+		"flat_map": "cpp",
+		"flat_set": "cpp"
 	},
 	"workbench.editorAssociations": {
 		"*.bin": "hexEditor.hexedit"

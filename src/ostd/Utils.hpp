@@ -182,6 +182,8 @@ namespace ostd
 			static bool loadByteStreamFromFile(const String& filePath, ByteStream& outStream);
 			static ByteStream stringToByteStream(const String& data);
 			static String byteStreamToString(const ByteStream& data);
+
+			//Implemented in <md5.cpp>
 			static String md5(const String& str);
 
 			//Implemented in <FileSystem.cpp>
@@ -220,6 +222,11 @@ namespace ostd
 			{
 				free(array);
 			}
+
+		private:
+			static void transform(const uint8_t block[64], uint32_t state[4]);
+			static void encode(uint8_t* output, const uint32_t* input, size_t len);
+			static void decode(uint32_t* output, const uint8_t* input, size_t len);
 
 		private:
 			inline static uint64_t s_startTime_ms;

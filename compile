@@ -45,7 +45,7 @@ elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW64_NT" ]; then
         cp C:/msys64/ucrt64/bin/SDL2.dll ./Release/lib
         cp C:/msys64/ucrt64/bin/SDL2_image.dll ./Release/lib
         cp C:/msys64/ucrt64/bin/SDL2_ttf.dll ./Release/lib
-        cp C:/msys64/ucrt64/bin/SDL2_gfx.dll ./Release/lib
+        cp C:/msys64/ucrt64/bin/libSDL2_gfx-1-0-0.dll ./Release/lib
 
         mkdir -p ./Release/include/ostd/vendor
         mkdir -p ./Release/include/ogfx/
