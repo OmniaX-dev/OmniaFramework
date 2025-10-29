@@ -17,7 +17,6 @@
 #include <iostream>
 #include <thread>
 #include <cmath>
-#include <openssl/evp.h>
 
 #define __get_local_time() \
 		std::time_t __cur_t = std::time(0); \
@@ -148,7 +147,7 @@ namespace ostd
 		return "_MONTH_";
 	}
 
-	
+
 
 	String LocalTime::getFullString(bool include_date, bool include_time, bool day_name, bool month_as_name, bool include_seconds) const
 	{
@@ -175,37 +174,37 @@ namespace ostd
 		__get_local_time();
 		return __now_t->tm_hour;
 	}
-	
+
 	int32_t LocalTime::minutes(void) const
 	{
 		__get_local_time();
 		return __now_t->tm_min;
 	}
-	
+
 	int32_t LocalTime::seconds(void) const
 	{
 		__get_local_time();
 		return __now_t->tm_sec;
 	}
-	
+
 	int32_t LocalTime::day(void) const
 	{
 		__get_local_time();
 		return __now_t->tm_mday;
 	}
-	
+
 	int32_t LocalTime::month(void) const
 	{
 		__get_local_time();
 		return __now_t->tm_mon + 1;
 	}
-	
+
 	int32_t LocalTime::year(void) const
 	{
 		__get_local_time();
 		return __now_t->tm_year + 1900;
 	}
-	
+
 	int32_t LocalTime::weekDay(void) const
 	{
 		__get_local_time();
@@ -222,7 +221,7 @@ namespace ostd
 			ss << (int32_t)h;
 		return ss.str();
 	}
-	
+
 	String LocalTime::sminutes(bool leading_zero) const
 	{
 		std::ostringstream ss;
@@ -233,7 +232,7 @@ namespace ostd
 			ss << (int32_t)h;
 		return ss.str();
 	}
-	
+
 	String LocalTime::sseconds(bool leading_zero) const
 	{
 		std::ostringstream ss;
@@ -244,7 +243,7 @@ namespace ostd
 			ss << (int32_t)h;
 		return ss.str();
 	}
-	
+
 	String LocalTime::sday(bool leading_zero) const
 	{
 		std::ostringstream ss;
@@ -255,7 +254,7 @@ namespace ostd
 			ss << (int32_t)h;
 		return ss.str();
 	}
-	
+
 	String LocalTime::smonth(bool leading_zero, bool month_name) const
 	{
 		int32_t h = month();
@@ -267,7 +266,7 @@ namespace ostd
 			ss << (int32_t)h;
 		return ss.str();
 	}
-	
+
 	String LocalTime::syear(void) const
 	{
 		std::ostringstream ss;
@@ -424,7 +423,7 @@ namespace ostd
 			case 6: return "Sa";
 			default: return "Unknown day";
 		}
-	}	
+	}
 
 
 
@@ -830,4 +829,4 @@ namespace ostd
 		}
 		return out_string;
 	}
-} 
+}
