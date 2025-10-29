@@ -18,9 +18,9 @@ file(STRINGS "./other/build.nr" BUILD_NUMBER)
 
 message(STATUS "Building ${PROJ_NAME} ${MAJOR_VER}.${MINOR_VER}.${BUILD_NUMBER}")
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    message(STATUS "Debug Configuration")
+	message(STATUS "Debug Configuration")
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
-    message(STATUS "Release Configuration")
+	message(STATUS "Release Configuration")
 endif()
 
 #Sources
@@ -61,7 +61,7 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/WindowBase.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/BasicRenderer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/RawTextInput.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/ogfx/Image.cpp
+				${CMAKE_CURRENT_LIST_DIR}/src/ogfx/Image.cpp
 )
 list(APPEND TEST_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/test.cpp
@@ -84,17 +84,17 @@ target_include_directories(${OMNIA_GFX_LIB} PUBLIC ${INCLUDE_DIRS})
 target_include_directories(${TEST_TARGET} PUBLIC ${INCLUDE_DIRS})
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_compile_options(-O3 -MMD -MP -Wall -ggdb -fsanitize=address)
+	add_compile_options(-O3 -MMD -MP -Wall -ggdb -fsanitize=address)
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
-    add_compile_options(-MMD -MP -Wall)
+	add_compile_options(-MMD -MP -Wall)
 endif()
 #-----------------------------------------------------------------------------------------
 
 #Linking
 #-----------------------------------------------------------------------------------------
 if (WIN32)
-	target_link_libraries(${OMNIA_GFX_LIB} mingw32)
-    target_link_libraries(${OMNIA_STD_LIB} mingw32)
+	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC mingw32)
+	target_link_libraries(${OMNIA_STD_LIB} PUBLIC mingw32)
 endif (WIN32)
 
 target_link_libraries(${OMNIA_GFX_LIB} PUBLIC ${OMNIA_STD_LIB})
