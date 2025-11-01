@@ -19,7 +19,7 @@ namespace ostd
 		public:
 			inline Point(void) : x(0), y(0) {}
 			inline Point(T xx, T yy) : x(xx), y(yy) {}
-				
+
 			inline bool  operator==(const Point<T>& op2 ) 	const	{ return (x == op2.x && y == op2.y); }
 			inline bool  operator!=(const Point<T>& op2 ) 	const	{ return (x != op2.x || y != op2.y); }
 
@@ -34,7 +34,7 @@ namespace ostd
 	typedef Point<double> DPoint;
 	typedef Point<uint32_t> UIPoint;
 	typedef Point<uint64_t> UI64Point;
-	typedef Point<float> UI16Point;
+	typedef Point<uint16_t> UI16Point;
 	typedef Point<uint8_t> UI8Point;
 	typedef Point<int32_t> IPoint;
 	typedef Point<int64_t> I64Point;
@@ -127,7 +127,7 @@ namespace ostd
 		//======================================================
 
 	private:
-		inline float _zp(float n1) const { return (n1 == 0 ? 1 : n1); }	
+		inline float _zp(float n1) const { return (n1 == 0 ? 1 : n1); }
 
 	};
 
@@ -403,6 +403,6 @@ namespace ostd
 	typedef Line<int64_t> I64Line;
 	typedef Line<int16_t> I16Line;
 	typedef Line<int8_t> I8Line;
-} 
+}
 
  #endif
