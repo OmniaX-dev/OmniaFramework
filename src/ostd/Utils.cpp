@@ -552,10 +552,10 @@ namespace ostd
 		return diff;
 	}
 
-	uint64_t Timer::endCount(void)
+	uint64_t Timer::endCount(bool stop)
 	{
 		if (!m_started) return 0;
-		m_started = false;
+		m_started = !stop;
 		int64_t diff;
 		switch (m_timeUnit)
 		{

@@ -1,6 +1,7 @@
 #ifndef __DATATYPES__HPP__
 #define __DATATYPES__HPP__
 
+#include <cstdint>
 #include <ostd/Types.hpp>
 #include <ostd/TextStyleParser.hpp>
 #include <ostd/Defines.hpp>
@@ -74,11 +75,12 @@ namespace ostd
 			uint64_t start(bool print = true, String name = "", eTimeUnits timeUnit = eTimeUnits::Nanoseconds, OutputHandlerBase* __destination = nullptr);
 			uint64_t startCount(eTimeUnits timeUnit = eTimeUnits::Nanoseconds);
 			uint64_t end(bool print = true);
-			uint64_t endCount(void);
+			uint64_t endCount(bool stop = true);
 
 			static uint64_t getEpoch(eTimeUnits timeUnit = eTimeUnits::Milliseconds);
 
 			inline const String& getName(void) const { return m_name; }
+			inline uint64_t read(void) { if (!m_started) return 0; return endCount(false); }
 
 		private:
 			bool m_started;
@@ -194,7 +196,7 @@ namespace ostd
 			static std::vector<std::filesystem::path> listDirectoriesInDirectoryRecursive(const String& directoryPath);
 			static std::vector<std::filesystem::path> listDirectoryRecursive(const String& directoryPath);
 			static ostd::String getHomeDirPath(void);
-			
+
 			//Implemented in <ShuntingYard.cpp>
 			static int32_t solveIntegerExpression(const String& expr);
 
