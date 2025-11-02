@@ -1,7 +1,6 @@
 #include "Utils.hpp"
 #include "String.hpp"
 #include "Defines.hpp"
-#include "Color.hpp"
 #include "IOHandlers.hpp"
 
 #include "vendor/TermColor.hpp"
