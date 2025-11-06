@@ -48,7 +48,7 @@ namespace ostd
 	};
 
 	typedef std::vector<Byte> ByteStream;
-} 
+}
 
 
 

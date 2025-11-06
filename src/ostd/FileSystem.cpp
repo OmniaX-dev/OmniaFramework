@@ -23,7 +23,7 @@ namespace ostd
 		}
 		return list;
 	}
-	
+
 	std::vector<std::filesystem::path> Utils::listDirectory(const String& directoryPath)
 	{
 		std::vector<std::filesystem::path> list;
@@ -53,7 +53,7 @@ namespace ostd
 		}
 		return list;
 	}
-	
+
 	std::vector<std::filesystem::path> Utils::listDirectoryRecursive(const String& directoryPath)
 	{
 		std::vector<std::filesystem::path> list;
@@ -74,5 +74,10 @@ namespace ostd
 #endif
 		return home_path;
 	}
-	
+
+	std::filesystem::path Utils::getWorkingDirPath(void)
+	{
+		return std::filesystem::current_path();
+	}
+
 }
