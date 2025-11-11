@@ -14,7 +14,6 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <thread>
 #include <cmath>
 
 #define __get_local_time() \
@@ -686,29 +685,6 @@ namespace ostd
 		for (uint16_t i = 0; i < count; i++)
 			str = str += c;
 		return str;
-	}
-	void Utils::sleep(uint32_t __time, eTimeUnits __unit)
-	{
-		switch (__unit)
-		{
-		case eTimeUnits::Seconds:
-			std::this_thread::sleep_for(std::chrono::seconds(__time));
-			break;
-		case eTimeUnits::Milliseconds:
-			std::this_thread::sleep_for(std::chrono::milliseconds(__time));
-			break;
-		case eTimeUnits::Microseconds:
-			std::this_thread::sleep_for(std::chrono::microseconds(__time));
-			break;
-		case eTimeUnits::Nanoseconds:
-			std::this_thread::sleep_for(std::chrono::nanoseconds(__time));
-			break;
-		default: break;
-		}
-	}
-	uint64_t Utils::getRunningTime_ms(void)
-	{
-		return std::chrono::duration_cast<std::chrono::milliseconds> (std::chrono::system_clock::now().time_since_epoch()).count() - Utils::s_startTime_ms;
 	}
 	float Utils::map_value(float input, float input_start, float input_end, float output_start, float output_end)
 	{

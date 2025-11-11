@@ -54,6 +54,7 @@ list(APPEND OSTD_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/StringEditor.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/String.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/TextStyleParser.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Time.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Utils.cpp
 )
 list(APPEND OGFX_SOURCE_FILES
