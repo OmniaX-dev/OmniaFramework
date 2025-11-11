@@ -51,6 +51,7 @@ list(APPEND OSTD_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Random.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Serial.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/SineWave.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Spline.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/StringEditor.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/String.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/TextStyleParser.cpp
