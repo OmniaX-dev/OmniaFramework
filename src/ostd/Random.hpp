@@ -43,6 +43,16 @@ namespace ostd
 			}
 
 		private:
+			template <typename T>
+			inline void __swap_if_first_is_bigger(T& n1, T& n2)
+			{
+				if (n1 <= n2) return;
+				T n3 = n1;
+				n1 = n2;
+				n2 = n3;
+			}
+
+		private:
 			int64_t m_seed { 0 };
 			std::mt19937_64 m_engine;
 			FastNoiseLite m_noiseGen;
