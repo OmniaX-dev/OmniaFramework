@@ -1,7 +1,9 @@
 #include "Logic.hpp"
 #include "Utils.hpp"
 #include "String.hpp"
-// #include <bits/stdc++.h>
+#ifndef __APPLE__
+#include <bits/stdc++.h>
+#endif
 
 namespace ostd
 {
