@@ -2,7 +2,7 @@
 #-----------------------------------------------------------------------------------------
 set(PROJ_NAME omnia-framework)
 set(MAJOR_VER 0)
-set(MINOR_VER 1)
+set(MINOR_VER 2)
 #-----------------------------------------------------------------------------------------
 
 #Setup
@@ -97,16 +97,44 @@ endif()
 if (WIN32)
 	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC mingw32)
 	target_link_libraries(${OMNIA_STD_LIB} PUBLIC mingw32)
+	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC SDL2main SDL2 SDL2_gfx SDL2_ttf SDL2_image)
 endif (WIN32)
 
 target_link_libraries(${OMNIA_GFX_LIB} PUBLIC ${OMNIA_STD_LIB})
 target_link_libraries(${TEST_TARGET} PUBLIC ${OMNIA_STD_LIB})
 target_link_libraries(${TEST_TARGET} PUBLIC ${OMNIA_GFX_LIB})
 
-if (UNIX)
+if (APPLE)
+	cmake_policy(SET CMP0167 OLD)
+	find_package(Boost REQUIRED COMPONENTS regex)
+	target_link_libraries(${OMNIA_STD_LIB} PUBLIC Boost::regex)
+	find_package(PkgConfig REQUIRED)
+	pkg_check_modules(SDL2 REQUIRED sdl2)
+	pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
+	pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
+	pkg_check_modules(SDL2_GFX REQUIRED SDL2_gfx)
+	target_include_directories(${OMNIA_GFX_LIB} PUBLIC
+	    ${SDL2_INCLUDE_DIRS}
+	    ${SDL2_IMAGE_INCLUDE_DIRS}
+	    ${SDL2_TTF_INCLUDE_DIRS}
+	    ${SDL2_GFX_INCLUDE_DIRS}
+	)
+	target_link_directories(${OMNIA_GFX_LIB} PUBLIC
+	    ${SDL2_LIBRARY_DIRS}
+	    ${SDL2_IMAGE_LIBRARY_DIRS}
+	    ${SDL2_TTF_LIBRARY_DIRS}
+	    ${SDL2_GFX_LIBRARY_DIRS}
+	)
+	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC
+	    ${SDL2_LIBRARIES}
+	    ${SDL2_IMAGE_LIBRARIES}
+	    ${SDL2_TTF_LIBRARIES}
+	    ${SDL2_GFX_LIBRARIES}
+	)
+elseif (UNIX)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,'$ORIGIN',-rpath,/usr/lib,-rpath,/usr/local/lib")
 	target_link_libraries(${OMNIA_STD_LIB} PUBLIC tinfo boost_regex)
 	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC xcb xcb-randr)
-endif (UNIX)
-target_link_libraries(${OMNIA_GFX_LIB} PUBLIC SDL2main SDL2 SDL2_gfx SDL2_ttf SDL2_image)
+	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC SDL2main SDL2 SDL2_gfx SDL2_ttf SDL2_image)
+endif ()
 #-----------------------------------------------------------------------------------------

@@ -6,7 +6,23 @@ set -e
 
 RELEASE_DIR=
 
-if [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+if [[ "$(uname)" == "Darwin" ]]; then
+    RELEASE_DIR=../bin/OmniaFramework_macos
+
+    # Remove old versions
+    sudo rm -rf /usr/local/include/ostd 2> /dev/null
+    sudo rm -rf /usr/local/include/ogfx 2> /dev/null
+    sudo rm -f  /usr/local/lib/libostd.dylib 2> /dev/null
+    sudo rm -f  /usr/local/lib/libogfx.dylib 2> /dev/null
+
+    # Install headers
+    sudo cp -r "$RELEASE_DIR/include/ostd" /usr/local/include/
+    sudo cp -r "$RELEASE_DIR/include/ogfx" /usr/local/include/
+
+    # Install libraries
+    sudo cp "$RELEASE_DIR/lib/libostd.dylib" /usr/local/lib/
+    sudo cp "$RELEASE_DIR/lib/libogfx.dylib" /usr/local/lib/
+elif [[ "$(uname -s)" == Linux* ]]; then
 	RELEASE_DIR=../bin/OmniaFramework_linux64
 	sudo rm -rf /usr/include/ostd 2> /dev/null
 	sudo rm -rf /usr/include/ogfx 2> /dev/null
@@ -16,7 +32,7 @@ if [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
 	sudo cp -r $RELEASE_DIR/include/ogfx /usr/include/
 	sudo cp -r $RELEASE_DIR/lib/libostd.so /usr/lib/
 	sudo cp -r $RELEASE_DIR/lib/libogfx.so /usr/lib/
-elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW64_NT" ]; then
+elif [[ "$(uname -s)" == MINGW64_NT* ]]; then
 	RELEASE_DIR=../bin/OmniaFramework_w64
 	rm -rf $MSYS_ROOT/ucrt64/include/ostd 2> /dev/null
 	rm -rf $MSYS_ROOT/ucrt64/include/ogfx 2> /dev/null

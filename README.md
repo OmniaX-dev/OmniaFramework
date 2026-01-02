@@ -115,3 +115,46 @@ cd OmniaFramework
 ```
 
 > **<u>NOTE</u>**: The same build options for the `./build` script apply here, as explained in the **Windows** section.
+
+### <u>Build instructions - MacOS</u>
+
+##### Step 1: Install HomeBrew
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+##### Step 2: Add HomeBrew to PATH
+
+After installing HomeBrew, it should automatically tell you how to add it to path, in general it should loo something. like this:
+
+- **For Apple Silicon**
+
+```bash
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+eval "$(/opt/homebrew/bin/brew shellenv)"
+```
+
+- **For Intel Mac**
+
+```bash
+echo 'eval "$(/usr/local/bin/brew shellenv)"' >> ~/.zprofile
+eval "$(/usr/local/bin/brew shellenv)"
+```
+
+##### Step 3: Install dependencies
+
+```bash
+brew install llvm gdb cmake make boost sdl2 sdl2_mixer sdl2_image sdl2_ttf sdl2_gfx pkg-config
+```
+
+##### Step 4: Build OmniaFramework
+
+```bash
+git clone https://github.com/OmniaX-dev/OmniaFramework.git
+cd OmniaFramework
+./build release
+./build install
+```
+
+> **<u>NOTE</u>**: The same build options for the `./build` script apply here, as explained in the **Windows** section.

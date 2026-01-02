@@ -79,7 +79,36 @@ void Utils::setConsoleCursorPosition(int32_t x, int32_t y)
    printf("\033[%d;%dH",x+1,y+1);
 }
 
+#elif defined(__APPLE__)
+
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <cstdio>
+
+void Utils::clearConsole(void)
+{
+    // ANSI escape sequence: clear screen + move cursor to top-left
+    std::printf("\033[2J\033[H");
+    std::fflush(stdout);
+}
+
+void Utils::getConsoleSize(int32_t& outColumns, int32_t& outRows)
+{
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    outRows = w.ws_row;
+    outColumns = w.ws_col;
+}
+
+void Utils::setConsoleCursorPosition(int32_t x, int32_t y)
+{
+    // ANSI escape sequence: move cursor to (y+1, x+1)
+    std::printf("\033[%d;%dH", y + 1, x + 1);
+    std::fflush(stdout);
+}
+
 #endif
+
 
 int32_t Utils::getConsoleWidth(void)
 {

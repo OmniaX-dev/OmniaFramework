@@ -6,12 +6,19 @@ set -e
 
 RELEASE_DIR=
 
-if [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+if [[ "$(uname)" == "Darwin" ]]; then
+    RELEASE_DIR=../bin/OmniaFramework_macos
+    mkdir -p "$RELEASE_DIR/lib"
+
+    # macOS shared libraries (.dylib)
+    cp ../bin/libostd.dylib "$RELEASE_DIR/lib"
+    cp ../bin/libogfx.dylib "$RELEASE_DIR/lib"
+elif [[ "$(uname -s)" == Linux* ]]; then
 	RELEASE_DIR=../bin/OmniaFramework_linux64
 	mkdir -p $RELEASE_DIR/lib
     cp ../bin/libostd.so $RELEASE_DIR/lib
     cp ../bin/libogfx.so $RELEASE_DIR/lib
-elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW64_NT" ]; then
+elif [[ "$(uname -s)" == MINGW64_NT* ]]; then
 	RELEASE_DIR=../bin/OmniaFramework_w64
 	mkdir -p $RELEASE_DIR/lib
     cp ../bin/libostd.dll $RELEASE_DIR/lib
