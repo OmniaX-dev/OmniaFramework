@@ -145,7 +145,7 @@ eval "$(/usr/local/bin/brew shellenv)"
 ##### Step 3: Install dependencies
 
 ```bash
-brew install llvm gdb cmake make boost sdl2 sdl2_mixer sdl2_image sdl2_ttf sdl2_gfx pkg-config
+brew install git llvm gdb cmake make boost sdl2 sdl2_mixer sdl2_image sdl2_ttf sdl2_gfx pkg-config
 ```
 
 ##### Step 4: Build OmniaFramework

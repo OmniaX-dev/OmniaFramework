@@ -11,8 +11,6 @@ else
 	NJOBS=-j$(nproc)
 fi
 
-# -j"$(sysctl -n hw.ncpu)"
-
 if [[ "$(uname -s)" == MINGW64_NT* ]]; then
     MAKE_COMMAND=mingw32-make.exe
     MAKEFILE_TYPE="MinGW Makefiles"
