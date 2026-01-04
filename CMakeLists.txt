@@ -39,6 +39,7 @@ list(APPEND OSTD_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/File.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/FileSystem.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Geometry.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Json.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Keyboard.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Logger.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Logic.cpp
@@ -114,22 +115,22 @@ if (APPLE)
 	pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
 	pkg_check_modules(SDL2_GFX REQUIRED SDL2_gfx)
 	target_include_directories(${OMNIA_GFX_LIB} PUBLIC
-	    ${SDL2_INCLUDE_DIRS}
-	    ${SDL2_IMAGE_INCLUDE_DIRS}
-	    ${SDL2_TTF_INCLUDE_DIRS}
-	    ${SDL2_GFX_INCLUDE_DIRS}
+					${SDL2_INCLUDE_DIRS}
+					${SDL2_IMAGE_INCLUDE_DIRS}
+					${SDL2_TTF_INCLUDE_DIRS}
+					${SDL2_GFX_INCLUDE_DIRS}
 	)
 	target_link_directories(${OMNIA_GFX_LIB} PUBLIC
-	    ${SDL2_LIBRARY_DIRS}
-	    ${SDL2_IMAGE_LIBRARY_DIRS}
-	    ${SDL2_TTF_LIBRARY_DIRS}
-	    ${SDL2_GFX_LIBRARY_DIRS}
+					${SDL2_LIBRARY_DIRS}
+					${SDL2_IMAGE_LIBRARY_DIRS}
+					${SDL2_TTF_LIBRARY_DIRS}
+					${SDL2_GFX_LIBRARY_DIRS}
 	)
 	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC
-	    ${SDL2_LIBRARIES}
-	    ${SDL2_IMAGE_LIBRARIES}
-	    ${SDL2_TTF_LIBRARIES}
-	    ${SDL2_GFX_LIBRARIES}
+					${SDL2_LIBRARIES}
+					${SDL2_IMAGE_LIBRARIES}
+					${SDL2_TTF_LIBRARIES}
+					${SDL2_GFX_LIBRARIES}
 	)
 elseif (UNIX)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,'$ORIGIN',-rpath,/usr/lib,-rpath,/usr/local/lib")
