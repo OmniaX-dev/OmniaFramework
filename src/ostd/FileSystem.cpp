@@ -1,4 +1,5 @@
 #include "Utils.hpp"
+#include "Logger.hpp"
 
 namespace ostd
 {
@@ -62,16 +63,16 @@ namespace ostd
 		return list;
 	}
 
-	ostd::String Utils::getHomeDirPath(void)
+	std::filesystem::path Utils::getHomeDirPath(void)
 	{
-		ostd::String home_path = "";
-#ifdef WINDOWS_OS
-		home_path = ostd::String(getenv("HOMEDRIVE")) + "\\" + ostd::String(getenv("HOMEPATH"));
-#elif defined(LINUX_OS)
-		home_path = ostd::String(getenv("HOME"));
-#else
-		home_path = "NULL";
-#endif
+		String home_path = "";
+	#ifdef WINDOWS_OS
+	    home_path = String(getenv("HOMEDRIVE")) + "\\" + String(getenv("HOMEPATH"));
+	#elif defined(LINUX_OS) || defined(MAC_OS)
+	    home_path = String(getenv("HOME"));
+	#else
+	    home_path = "NULL";
+	#endif
 		return home_path;
 	}
 
@@ -80,4 +81,50 @@ namespace ostd
 		return std::filesystem::current_path();
 	}
 
+	bool Utils::ensureDirectory(const String& path)
+	{
+	    namespace fs = std::filesystem;
+
+	    try {
+	        fs::path dir(path);
+
+	        if (!fs::exists(dir))
+	        {
+	            if (!fs::create_directories(dir))
+	            {
+	                OX_ERROR("Failed to create directory: %s", path.c_str());
+					return false;
+	            }
+	        }
+	        else if (!fs::is_directory(dir))
+	        {
+	            OX_ERROR("Path exists but is not a directory: %s", path.c_str());
+				return false;
+	        }
+	    }
+	    catch (const fs::filesystem_error& e)
+	    {
+	        OX_ERROR("Filesystem error for path '%s': %s", path.c_str(), e.what());
+			return false;
+	    }
+		return true;
+	}
+
+	bool Utils::deleteDirectory(const String& path)
+	{
+	    namespace fs = std::filesystem;
+	    try
+	    {
+	        if (fs::exists(path) && fs::is_directory(path))
+	        {
+	            fs::remove_all(path);
+				return true;
+	        }
+	    } catch (const fs::filesystem_error& e)
+	    {
+	        OX_ERROR("Failed to delete tmp folder '%s': %s", path.c_str(), e.what());
+			return false;
+	    }
+		return false;
+	}
 }

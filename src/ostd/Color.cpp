@@ -13,28 +13,28 @@ namespace ostd
 		setTypeName("ox::Color");
 		BaseObject::setValid(true);
 	}
-	
+
 	Color::Color(uint8_t rgb_single_value, uint8_t alpha)
 	{
 		set(rgb_single_value, alpha);
 		setTypeName("ox::Color");
 		BaseObject::setValid(true);
 	}
-	
+
 	Color::Color(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t alpha)
 	{
 		set(_r, _g, _b, alpha);
 		setTypeName("ox::Color");
 		BaseObject::setValid(true);
 	}
-	
+
 	Color::Color(const String& color_string)
 	{
 		set(color_string);
 		setTypeName("ox::Color");
 		BaseObject::setValid(true);
 	}
-	
+
 	Color::Color(const FloatCol& normalized_color)
 	{
 		set(normalized_color);
@@ -49,17 +49,17 @@ namespace ostd
 		b = copy.b;
 		a = copy.a;
 	}
-	
+
 	bool Color::operator==(const Color& col2)
 	{
 		return (r == col2.r && g == col2.g && b == col2.b && a == col2.a);
 	}
-	
+
 	bool Color::operator!=(const Color& col2)
 	{
 		return !(*this == col2);
 	}
-	
+
 	Color& Color::operator=(const Color& copy)
 	{
 		BaseObject::operator=(copy);
@@ -69,7 +69,7 @@ namespace ostd
 		a = copy.a;
 		return *this;
 	}
-	
+
 	Color& Color::set(void)
 	{
 		r = 0;
@@ -78,7 +78,7 @@ namespace ostd
 		a = 255;
 		return *this;
 	}
-	
+
 	Color& Color::set(uint8_t rgb_single_value, uint8_t alpha)
 	{
 		r = rgb_single_value;
@@ -87,7 +87,7 @@ namespace ostd
 		a = alpha;
 		return *this;
 	}
-	
+
 	Color& Color::set(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t alpha)
 	{
 		r = _r;
@@ -96,7 +96,7 @@ namespace ostd
 		a = alpha;
 		return *this;
 	}
-	
+
 	Color& Color::set(const String& color_string)
 	{
 		String se(color_string);
@@ -144,7 +144,7 @@ namespace ostd
 		}
 		return *this;
 	}
-	
+
 	Color& Color::set(const FloatCol& normalized_color)
 	{
 		r = static_cast<uint8_t>(std::round(normalized_color.r * 255));
@@ -153,7 +153,7 @@ namespace ostd
 		a = static_cast<uint8_t>(std::round(normalized_color.a * 255));
 		return *this;
 	}
-	
+
 	String Color::hexString(bool include_alpha, String prefix) const
 	{
 		String hex = "";
@@ -165,7 +165,7 @@ namespace ostd
 		hex = prefix + String(hex).toUpper();
 		return hex;
 	}
-	
+
 	String Color::rgbString(bool include_parenthesis, bool include_alpha) const
 	{
 		String rgb = "";
@@ -180,7 +180,7 @@ namespace ostd
 			rgb.add(")");
 		return rgb;
 	}
-	
+
 	uint32_t Color::asInteger(eColorFormat format) const
 	{
 		union uC32 {
@@ -203,17 +203,17 @@ namespace ostd
 		}
 		return c32_u.value;
 	}
-	
+
 	Color::FloatCol Color::getNormalizedColor(void) const
 	{
 		return { r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f };
 	}
-	
+
 	String Color::toString(void) const
 	{
 		return hexString(true, "#") + " -> rgba" + rgbString(true, true);
 	}
-	
+
 	void Color::print(bool newLine, OutputHandlerBase* __destination) const
 	{
 		if (__destination == nullptr)
@@ -224,5 +224,48 @@ namespace ostd
 			if (newLine) __destination->nl();
 		}
 	}
-	
-} //namesoace ox
+
+	void Color::RGBtoHSV(float r, float g, float b, float& h, float& s, float& v)
+	{
+	    float max = std::max({r, g, b});
+	    float min = std::min({r, g, b});
+	    float d = max - min;
+
+	    v = max;
+
+	    if (max == 0)
+	    {
+	        s = 0;
+	        h = 0;
+	        return;
+	    }
+
+	    s = d / max;
+
+	    if (max == r)      h = std::fmod((g - b) / d + 6.0f, 6.0f);
+	    else if (max == g) h = (b - r) / d + 2.0f;
+	    else               h = (r - g) / d + 4.0f;
+
+	    h /= 6.0f;
+	}
+
+	void Color::HSVtoRGB(float h, float s, float v, float& r, float& g, float& b)
+	{
+	    int i = static_cast<int>(h * 6);
+	    float f = h * 6 - i;
+	    float p = v * (1 - s);
+	    float q = v * (1 - f * s);
+	    float t = v * (1 - (1 - f) * s);
+
+	    switch (i % 6)
+	    {
+	        case 0: r = v, g = t, b = p; break;
+	        case 1: r = q, g = v, b = p; break;
+	        case 2: r = p, g = v, b = t; break;
+	        case 3: r = p, g = q, b = v; break;
+	        case 4: r = t, g = p, b = v; break;
+	        case 5: r = v, g = p, b = q; break;
+	    }
+	}
+
+}

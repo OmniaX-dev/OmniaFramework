@@ -7,6 +7,8 @@
 		#undef _WIN32_WINNT
 	#endif
 	#define _WIN32_WINNT 0x0501
+#elif defined(__APPLE__)
+	#define MAC_OS
 #else
 	#define LINUX_OS
 #endif

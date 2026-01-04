@@ -36,6 +36,7 @@ namespace ostd
 			//Implemented in <Time.hpp>
 			static void sleep(uint32_t __time, eTimeUnits __unit = eTimeUnits::Milliseconds);
 			static uint64_t getRunningTime_ms(void);
+			static String secondsToFormattedString(int32_t totalSeconds);
 
 			//Implemented in <md5.cpp>
 			static String md5(const String& str);
@@ -47,8 +48,10 @@ namespace ostd
 			static std::vector<std::filesystem::path> listFilesInDirectoryRecursive(const String& directoryPath);
 			static std::vector<std::filesystem::path> listDirectoriesInDirectoryRecursive(const String& directoryPath);
 			static std::vector<std::filesystem::path> listDirectoryRecursive(const String& directoryPath);
-			static ostd::String getHomeDirPath(void);
+			static std::filesystem::path getHomeDirPath(void);
 			static std::filesystem::path getWorkingDirPath(void);
+			static bool ensureDirectory(const String& path);
+			static bool deleteDirectory(const String& path);
 
 			//Implemented in <ShuntingYard.cpp>
 			static int32_t solveIntegerExpression(const String& expr);

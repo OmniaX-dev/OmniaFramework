@@ -74,4 +74,16 @@ namespace ostd
 	{
 		return std::chrono::duration_cast<std::chrono::milliseconds> (std::chrono::system_clock::now().time_since_epoch()).count() - Utils::s_startTime_ms;
 	}
+
+	String Utils::secondsToFormattedString(int32_t totalSeconds)
+	{
+			int32_t hours   = totalSeconds / 3600;
+			int32_t minutes = (totalSeconds % 3600) / 60;
+			int32_t seconds = totalSeconds % 60;
+			String fmtstr = "";
+			fmtstr.add(String("").add(hours).addLeftPadding(2, '0')).add(":");
+			fmtstr.add(String("").add(minutes).addLeftPadding(2, '0')).add(":");
+			fmtstr.add(String("").add(seconds).addLeftPadding(2, '0'));
+			return fmtstr;
+	}
 }
