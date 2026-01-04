@@ -3,7 +3,7 @@
 #include <ostd/Geometry.hpp>
 #include <ostd/String.hpp>
 #include <ostd/Color.hpp>
-#include "vendor/nlohmann/json.hpp" // IWYU pragma: keep
+#include <ostd/vendor/nlohmann/json.hpp> // IWYU pragma: keep
 
 namespace ostd
 {

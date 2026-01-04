@@ -1,3 +1,7 @@
+[0.2.1936]
+Added JsonFile class to handle Json files
+Added MidiParser class to parse Midi files
+
 [0.2.1923]
 Added MacOS support
 
@@ -6,6 +10,6 @@ Added more Builtin signals
 
 [0.1.1818]
 Added ostd::String::fixedLength(...) method, with corresponding 'new_fixedLength' version.
-Added "KeyboardController" class to <Console.hpp> (implemented in <Keyboard.cpp>) to handle 
-	keypresses in the console in a cross-platform way 
+Added "KeyboardController" class to <Console.hpp> (implemented in <Keyboard.cpp>) to handle
+	keypresses in the console in a cross-platform way
 Added helper functions in ostd::Utils for dealing with raw arrays

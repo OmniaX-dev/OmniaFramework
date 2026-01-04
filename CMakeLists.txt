@@ -30,8 +30,18 @@ list(APPEND INCLUDE_DIRS
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/vendor
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/vendor/midifile
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/vendor/nlohmann
 )
 list(APPEND OSTD_SOURCE_FILES
+	# MidiFile
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/vendor/midifile/Binasc.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/vendor/midifile/MidiEvent.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/vendor/midifile/MidiEventList.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/vendor/midifile/MidiFile.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/vendor/midifile/MidiMessage.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/vendor/midifile/Options.cpp
+
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/BaseObject.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Color.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Console.cpp
@@ -44,6 +54,7 @@ list(APPEND OSTD_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Logger.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Logic.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/md5.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Midi.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/OutputHandlers.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/PathFinder.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/QuadTree.cpp

@@ -36,9 +36,13 @@ elif [[ "$(uname -s)" == MINGW64_NT* ]]; then
 fi
 
 mkdir -p $RELEASE_DIR/include/ostd/vendor
+mkdir -p $RELEASE_DIR/include/ostd/vendor/midifile
+mkdir -p $RELEASE_DIR/include/ostd/vendor/nlohmann
 mkdir -p $RELEASE_DIR/include/ogfx/
-find ../src/ostd  -maxdepth 1 -name "*.hpp" -exec cp {} $RELEASE_DIR/include/ostd \;
-find ../src/ogfx  -maxdepth 1 -name "*.hpp" -exec cp {} $RELEASE_DIR/include/ogfx \;
-find ../src/ostd/vendor  -maxdepth 1 -name "*.hpp" -exec cp {} $RELEASE_DIR/include/ostd/vendor \;
+find ../src/ostd  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ostd \;
+find ../src/ogfx  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx \;
+find ../src/ostd/vendor  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ostd/vendor \;
+find ../src/ostd/vendor/midifile  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ostd/vendor/midifile \;
+find ../src/ostd/vendor/nlohmann  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ostd/vendor/nlohmann \;
 cp -r ../licences $RELEASE_DIR
 cp ../LICENSE $RELEASE_DIR/licences/OmniaFramework-LICENCE.txt
