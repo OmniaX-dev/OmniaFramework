@@ -135,6 +135,7 @@ namespace ostd
 			inline virtual OutputHandlerBase& p(double f, uint8_t precision = 0) { return *this; }
 
 			inline virtual OutputHandlerBase& nl(void) { return *this; }
+			inline virtual OutputHandlerBase& tab(void) { return *this; }
 			inline virtual OutputHandlerBase& flush(void) { return *this; }
 			inline virtual OutputHandlerBase& reset(void) { return *this; }
 			inline virtual OutputHandlerBase& clear(void) { return *this; }
