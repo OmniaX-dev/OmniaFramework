@@ -45,7 +45,7 @@ namespace ogfx
 
 		private:
 			ostd::ConsoleOutputHandler m_out;
-			inline static bool m_initialized { false };
+			bool m_initialized { false };
 			bool m_fontOpen { false };
 			TTF_Font* m_font { nullptr };
 			SDL_Renderer* m_renderer { nullptr };
