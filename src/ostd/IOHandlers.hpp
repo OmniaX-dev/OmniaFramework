@@ -30,7 +30,7 @@ namespace ostd
 			inline static const tConsoleColor BrightRed { "brightred", { 255, 70, 70, 255 }, false};
 			inline static const tConsoleColor Green { "green", { 0, 255, 0, 255 }, false};
 			inline static const tConsoleColor BrightGreen { "brightgreen", { 70, 255, 70, 255 }, false};
-			inline static const tConsoleColor Blue { "blue", { 0, 255, 0, 255 }, false};
+			inline static const tConsoleColor Blue { "blue", { 0, 0, 255, 255 }, false};
 			inline static const tConsoleColor BrightBlue { "brightblue", { 70, 70, 255, 255 }, false};
 			inline static const tConsoleColor Magenta { "magenta", { 255, 0, 255, 255 }, false};
 			inline static const tConsoleColor BrightMagenta { "brightmagenta", { 255, 120, 255, 255 }, false};
@@ -194,37 +194,37 @@ namespace ostd
 			inline static constexpr const char* BrightRed = "b-red";
 			inline static constexpr const char* OnRed = "o-red";
 			inline static constexpr const char* OnBrightRed = "ob-red";
-			
+
 			inline static constexpr const char* Green = "green";
 			inline static constexpr const char* BrightGreen = "b-green";
 			inline static constexpr const char* OnGreen = "o-green";
 			inline static constexpr const char* OnBrightGreen = "ob-green";
-			
+
 			inline static constexpr const char* Blue = "blue";
 			inline static constexpr const char* BrightBlue = "b-blue";
 			inline static constexpr const char* OnBlue = "o-blue";
 			inline static constexpr const char* OnBrightBlue = "ob-blue";
-			
+
 			inline static constexpr const char* Magenta = "magenta";
 			inline static constexpr const char* BrightMagenta = "b-magenta";
 			inline static constexpr const char* OnMagenta = "o-magenta";
 			inline static constexpr const char* OnBrightMagenta = "ob-magenta";
-			
+
 			inline static constexpr const char* Cyan = "cyan";
 			inline static constexpr const char* BrightCyan = "b-cyan";
 			inline static constexpr const char* OnCyan = "o-cyan";
 			inline static constexpr const char* OnBrightCyan = "ob-cyan";
-			
+
 			inline static constexpr const char* Yellow = "yellow";
 			inline static constexpr const char* BrightYellow = "b-yellow";
 			inline static constexpr const char* OnYellow = "o-yellow";
 			inline static constexpr const char* OnBrightYellow = "ob-yellow";
-			
+
 			inline static constexpr const char* Black = "gray";
 			inline static constexpr const char* BrightGray = "b-gray";
 			inline static constexpr const char* OnBlack = "o-gray";
 			inline static constexpr const char* OnBrightGray = "ob-gray";
-			
+
 			inline static constexpr const char* Gray = "lgray";
 			inline static constexpr const char* White = "white";
 			inline static constexpr const char* onGray = "o-lgray";
