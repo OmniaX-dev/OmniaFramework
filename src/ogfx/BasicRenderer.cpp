@@ -1,6 +1,5 @@
 #include "BasicRenderer.hpp"
 #include "WindowBase.hpp"
-#include "SDLInclude.hpp"
 
 namespace ogfx
 {

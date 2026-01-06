@@ -1,11 +1,10 @@
 #include "TextStyleParser.hpp"
-#include "Utils.hpp"
 #include "IOHandlers.hpp"
 
 namespace ostd
 {
 	std::ostream &operator<<(std::ostream &os, TextStyleParser::tStyledString const &str)
-	{ 
+	{
 		if (!str.validate()) return os;
 		ostd::ConsoleOutputHandler out;
 		for (int32_t i = 0; i < str.text.len(); i++)
@@ -15,17 +14,17 @@ namespace ostd
 	}
 
 	std::ostream &operator<<(std::ostream &os, TextStyleBuilder::Console const &builder)
-	{ 
+	{
 		return os << builder.getStyledString();
 	}
 
 	std::ostream &operator<<(std::ostream &os, TextStyleBuilder::Regex const &regex)
-	{ 
+	{
 		return os << regex.getStyledString();
 	}
 
 	std::ostream &operator<<(std::ostream &os, TextStyleBuilder::IRichStringBase const &rstr)
-	{ 
+	{
 		return os << rstr.getStyledString();
 	}
 
@@ -187,7 +186,7 @@ namespace ostd
 	}
 
 
-	
+
 	TextStyleBuilder::Console::Console(void)
 	{
 		m_backgroundColor = TextStyleParser::convertColor("black");
@@ -321,7 +320,7 @@ namespace ostd
 
 
 
-	
+
 	TextStyleBuilder::Regex& TextStyleBuilder::Regex::setRawString(const String& rawString)
 	{
 		m_rawString = rawString;
@@ -343,7 +342,7 @@ namespace ostd
 		m_rawString = String(m_rawString).regexReplace(regex, replace_pattern, case_insensitive);
 		return *this;
 	}
-	
+
 	TextStyleBuilder::Regex& TextStyleBuilder::Regex::col(const String& regex, const String& foreground_color, const String& background_color, bool case_insensitive)
 	{
 		String replace_pattern = "[@@ style background:" + background_color;
@@ -352,24 +351,24 @@ namespace ostd
 		m_rawString = String(m_rawString).regexReplace(regex, replace_pattern, case_insensitive);
 		return *this;
 	}
-	
+
 	TextStyleParser::tStyledString TextStyleBuilder::Regex::getStyledString(void) const
 	{
-		return TextStyleParser::parse(m_rawString);
+		return TextStyleParser::parse(m_rawString, m_defaultBackgroundColor, m_defaultForegroundColor);
 	}
-	
+
 	TextStyleBuilder::Regex& TextStyleBuilder::Regex::print(void)
 	{
 		ConsoleOutputHandler out;
 		out.pStyled(m_rawString);
 		return *this;
 	}
-	
+
 	TextStyleBuilder::Regex& TextStyleBuilder::Regex::print(OutputHandlerBase& out)
 	{
 		out.pStyled(m_rawString);
 		return *this;
 	}
-	
+
 
 }

@@ -5,6 +5,12 @@
 #include <ostd/String.hpp>
 #include <ostd/TextStyleParser.hpp>
 
+namespace ogfx
+{
+	class WindowBase;
+	class BasicRenderer2D;
+};
+
 namespace ostd
 {
 	class BaseObject;
@@ -26,6 +32,7 @@ namespace ostd
 				friend class ConsoleColors;
 			};
 		public:
+			inline static const tConsoleColor Transparent { "transparent", { 0, 0, 0, 0 }, false};
 			inline static const tConsoleColor Red { "red", { 255, 0, 0, 255 }, false};
 			inline static const tConsoleColor BrightRed { "brightred", { 255, 70, 70, 255 }, false};
 			inline static const tConsoleColor Green { "green", { 0, 255, 0, 255 }, false};
@@ -43,6 +50,7 @@ namespace ostd
 			inline static const tConsoleColor BrightGray { "brightgray", { 150, 150, 150, 255 }, false};
 			inline static const tConsoleColor White { "white", { 255, 255, 255, 255 }, false};
 
+			inline static const tConsoleColor OnTransparent { "transparent", { 0, 0, 0, 0 }, true};
 			inline static const tConsoleColor OnRed { "red", { 255, 0, 0, 255 }, true};
 			inline static const tConsoleColor OnBrightRed { "brightred", { 255, 70, 70, 255 }, true};
 			inline static const tConsoleColor OnGreen { "green", { 0, 255, 0, 255 }, true};
@@ -119,7 +127,7 @@ namespace ostd
 			inline virtual OutputHandlerBase& pChar(char c) { return *this; }
 			inline virtual OutputHandlerBase& pStyled(const String& styled) { return *this; }
 			inline virtual OutputHandlerBase& pStyled(const TextStyleParser::tStyledString& styled) { return *this; }
-			inline virtual OutputHandlerBase& pStyled(const TextStyleBuilder::IRichStringBase& styled) { return *this; }
+			inline virtual OutputHandlerBase& pStyled(TextStyleBuilder::IRichStringBase& styled) { return *this; }
 			inline virtual OutputHandlerBase& pObject(const BaseObject& bo) { return *this; }
 
 			inline virtual OutputHandlerBase& p(const String& se) { return *this; }
@@ -165,7 +173,7 @@ namespace ostd
 			OutputHandlerBase& pChar(char c) override;
 			OutputHandlerBase& pStyled(const String& styled) override;
 			OutputHandlerBase& pStyled(const TextStyleParser::tStyledString& styled) override;
-			OutputHandlerBase& pStyled(const TextStyleBuilder::IRichStringBase& styled) override;
+			OutputHandlerBase& pStyled(TextStyleBuilder::IRichStringBase& styled) override;
 			OutputHandlerBase& pObject(const BaseObject& bo) override;
 
 			OutputHandlerBase& p(const String& se) override;

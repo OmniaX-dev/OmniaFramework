@@ -1,3 +1,7 @@
+[0.2.1958]
+Added ostd::OutputHandlerBase::tab() virtual function
+Added ogfx::WindowBaseOutputHandler class
+
 [0.2.1936]
 Added JsonFile class to handle Json files
 Added MidiParser class to parse Midi files

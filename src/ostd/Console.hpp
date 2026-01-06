@@ -4,16 +4,14 @@
 #include <ostd/Geometry.hpp>
 #include <ostd/IOHandlers.hpp>
 
-#include "Defines.hpp"
 #include "String.hpp"
-   
+
 #ifndef WINDOWS_OS
 	#include <termios.h>
 #else
 	#include <conio.h>
 #endif
 #include <vector>
-#include <iostream>
 
 namespace ostd
 {
@@ -37,7 +35,7 @@ namespace ostd
 			OutputHandlerBase& pChar(char c) override;
 			OutputHandlerBase& pStyled(const String& styled) override;
 			OutputHandlerBase& pStyled(const TextStyleParser::tStyledString& styled) override;
-			OutputHandlerBase& pStyled(const TextStyleBuilder::IRichStringBase& styled) override;
+			OutputHandlerBase& pStyled(TextStyleBuilder::IRichStringBase& styled) override;
 			OutputHandlerBase& pObject(const BaseObject& bo) override;
 
 			OutputHandlerBase& p(const String& se) override;
@@ -61,10 +59,10 @@ namespace ostd
 			inline OutputHandlerBase& xy(int32_t x, int32_t y) override { m_cursorPosition = { x, y }; __set_cursor(); return *this; }
 			inline OutputHandlerBase& x(int32_t x) override { m_cursorPosition.x = x; __set_cursor(); return *this; }
 			inline OutputHandlerBase& y(int32_t y) override { m_cursorPosition.y = y; __set_cursor(); return *this; }
-			
+
 			void getConsoleSize(int32_t& outColumns, int32_t& outRows) override;
 			IPoint getConsoleSize(void) override;
-			
+
 			inline IPoint getCursorPosition(void) override { return m_cursorPosition; }
 			inline void getCursorPosition(int32_t& outX, int32_t& outY) override { outX = m_cursorPosition.x; outY = m_cursorPosition.y; }
 			inline int32_t getCursorX(void) override { return m_cursorPosition.x; }
@@ -77,7 +75,7 @@ namespace ostd
 			inline eMode getMode(void) { return m_mode; }
 
 			void update(void);
-			
+
 
 		private:
 			void __set_cursor(void);
@@ -98,9 +96,9 @@ namespace ostd
 				{ { 0, 0, 0, 255 }, "Black", true },
 				' '
 			};
-			
+
 	};
-	
+
 	enum class eKeys
 	{
 		NoKeyPressed = 0,
@@ -155,29 +153,29 @@ namespace ostd
 		public:
 			KeyboardController(void);
 			~KeyboardController(void);
-			
+
 			eKeys getPressedKey(void);
 			eKeys waitForKeyPress(void);
-			
+
 			inline String getInputString(void) { return m_cmd; }
-			
+
 			inline bool isOutputEnabled(void) { return m_output_enabled; }
 			inline void enableOutput(bool __oe = true) { m_output_enabled = __oe; }
 			inline void disableOutput(void) { enableOutput(false); }
-			
+
 			inline bool isCommandBufferEnabled(void) { return m_cmd_buffer_enabled; }
 			inline void enableCommandBuffer(bool __cbe = true) { m_cmd_buffer_enabled = __cbe; }
 			inline void disableCommandBuffer(void) { enableCommandBuffer(false); }
-			
+
 		private:
 			String getKeyBuffer(void);
 			String flushKeyBuffer(void);
-			
+
 #ifndef WINDOWS_OS
 			int kbhit(void);
 			int getch(void);
 #endif
-			
+
 
 		private:
 #ifndef WINDOWS_OS

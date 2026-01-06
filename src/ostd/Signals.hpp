@@ -4,7 +4,6 @@
 #include <ostd/Types.hpp>
 #include <ostd/BaseObject.hpp>
 #include <vector>
-#include <unordered_map>
 
 namespace ostd
 {
@@ -65,7 +64,7 @@ namespace ostd
 			inline tDelegateSignal(uint32_t _id, BaseObject& _ud) : id(_id), ud(_ud) {  }
 		};
 		public:
-			static void init(void);
+			static void init(bool allow_reinit = false);
 			static void refresh(void);
 
 			static void emitSignal(uint32_t signal_id, uint8_t prio = tSignalPriority::Normal, BaseObject& userData = BaseObject::InvalidRef());
@@ -92,8 +91,10 @@ namespace ostd
 
 			inline static constexpr uint16_t __SIGNAL_BUFFER_START_SIZE { 128 };
 			inline static constexpr uint16_t __DELEGATED_SIGNALS_BUFFER_START_SIZE { 128 };
+
+			inline static bool m_initialized { false };
 	};
-	
+
 	class WindowSizeObj : public BaseObject
 	{
 		public:

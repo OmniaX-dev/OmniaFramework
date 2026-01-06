@@ -1,7 +1,6 @@
 #pragma once
 
 #include <ostd/Color.hpp>
-#include <unordered_map>
 
 namespace ostd
 {
@@ -50,6 +49,18 @@ namespace ostd
 			public:
 				virtual TextStyleParser::tStyledString getStyledString(void) const = 0;
 				friend std::ostream& operator<<(std::ostream&, IRichStringBase const&);
+
+				inline void setDefaultBackgroundColor(TextStyleParser::tColor color) { m_defaultBackgroundColor = color; }
+				inline void setDefaultBackgroundColor(Color color) { m_defaultBackgroundColor = { color, "", true }; }
+				inline void setDefaultForegroundColor(TextStyleParser::tColor color) { m_defaultForegroundColor = color; }
+				inline void setDefaultForegroundColor(Color color) { m_defaultForegroundColor = { color, "", true }; }
+
+				inline TextStyleParser::tColor getDefaultBackgroundColor(void) { return m_defaultBackgroundColor; }
+				inline TextStyleParser::tColor getDefaultForegroundColor(void) { return m_defaultForegroundColor; }
+
+			protected:
+				TextStyleParser::tColor m_defaultBackgroundColor { { 0, 0, 0, 255 }, "black", true };
+				TextStyleParser::tColor m_defaultForegroundColor { { 255, 255, 255, 255 }, "white", false };
 		};
 
 		public: class Console : public IRichStringBase {
@@ -93,7 +104,7 @@ namespace ostd
 				inline Regex(const String& rawString) { setRawString(rawString); }
 				inline String getRawString(void) const { return m_rawString; }
 				Regex& setRawString(const String& rawString);
-				
+
 				Regex& fg(const String& regex, const String& foreground_color, bool case_insensitive = false);
 				Regex& bg(const String& regex, const String& background_color, bool case_insensitive = false);
 				Regex& col(const String& regex, const String& foreground_color, const String& background_color, bool case_insensitive = false);

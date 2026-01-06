@@ -4,8 +4,9 @@
 
 namespace ostd
 {
-	void SignalHandler::init(void)
+	void SignalHandler::init(bool allow_reinit)
 	{
+		if (m_initialized && !allow_reinit) return;
 		SignalHandler::m_customRecievers.clear();
 		SignalHandler::m_customRecievers.reserve(SignalHandler::__SIGNAL_BUFFER_START_SIZE);
 		SignalHandler::m_mousePressedRecievers.clear();
@@ -30,6 +31,7 @@ namespace ostd
 		SignalHandler::m_delegatedSignals.reserve(SignalHandler::__DELEGATED_SIGNALS_BUFFER_START_SIZE);
 		SignalHandler::m_onGuiEventRecievers.clear();
 		SignalHandler::m_onGuiEventRecievers.reserve(SignalHandler::__SIGNAL_BUFFER_START_SIZE);
+		m_initialized = true;
 	}
 
 	void SignalHandler::refresh(void)
@@ -69,7 +71,6 @@ namespace ostd
 			sig_list = &m_windowClosedRecievers;
 		else if (signal_id == tBuiltinSignals::OnGuiEvent)
 			sig_list = &m_onGuiEventRecievers;
-
 		else if (signal_id > tBuiltinSignals::CustomSignalBase)
 			sig_list = &m_customRecievers;
 		if (sig_list == nullptr)
@@ -111,7 +112,7 @@ namespace ostd
 			m_onGuiEventRecievers.push_back({ &object, signal_id });
 		else if (signal_id > tBuiltinSignals::CustomSignalBase)
 			m_customRecievers.push_back({ &object, signal_id });
-		else 
+		else
 			OX_WARN("ox::SignalHandler::connect(...): Unknown signal ID: <%d>", signal_id);
 	}
 }

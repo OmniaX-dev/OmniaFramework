@@ -182,7 +182,7 @@ OutputHandlerBase& InteractiveConsole::pStyled(const TextStyleParser::tStyledStr
 	return *this;
 }
 
-OutputHandlerBase& InteractiveConsole::pStyled(const TextStyleBuilder::IRichStringBase& styled)
+OutputHandlerBase& InteractiveConsole::pStyled(TextStyleBuilder::IRichStringBase& styled)
 {
 	std::cout << styled;
 	return *this;
@@ -301,7 +301,7 @@ OutputHandlerBase& InteractiveConsole::clear(void)
 	Utils::clearConsole();
 	return *this;
 }
-		
+
 void InteractiveConsole::getConsoleSize(int32_t& outColumns, int32_t& outRows)
 {
 	Utils::getConsoleSize(outColumns, outRows);
