@@ -25,6 +25,8 @@ namespace ostd
 	        public:
 	            inline bool operator<(const NoteEvent& other) const
 	            {
+					if (startTime == other.startTime)
+						return pitch < other.pitch;
 	                return startTime < other.startTime;
 	            }
 	            inline ostd::String toString(void) const
