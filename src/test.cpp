@@ -14,8 +14,8 @@ class Window : public ogfx::WindowBase
 {
 	public:
 		inline Window(void) : m_sigHandler(m_textInput, *this) {  }
-		inline void onInitialize(void) override	
-		{ 
+		inline void onInitialize(void) override
+		{
 			enableSignals();
 			connectSignal(ostd::tBuiltinSignals::KeyReleased);
 			connectSignal(ogfx::gui::RawTextInput::actionEventSignalID);
@@ -30,7 +30,7 @@ class Window : public ogfx::WindowBase
 			// m_textInput.setCharacterFilter(m_numCharFilter);
 			m_textInput.getTheme().extraPaddingTop = 3;
 	 	}
-			
+
 		inline void handleSignal(ostd::tSignal& signal) override
 		{
 			if (signal.ID == ostd::tBuiltinSignals::KeyReleased)
@@ -59,19 +59,19 @@ class Window : public ogfx::WindowBase
 
 		inline void onRender(void) override
 		{
-			m_textInput.render(m_gfx);	
+			m_textInput.render(m_gfx);
 		}
 
-		inline void onFixedUpdate(void) override
+		inline void onFixedUpdate(double frameTime_s) override
 		{
-			m_textInput.fixedUpdate();	
+			m_textInput.fixedUpdate();
 		}
 
 		inline void onUpdate(void) override
 		{
-			m_textInput.update	();	
+			m_textInput.update	();
 		}
-		
+
 	private:
 		ogfx::gui::RawTextInput m_textInput;
 		ogfx::BasicRenderer2D m_gfx;
@@ -88,11 +88,11 @@ int main(int argc, char** argv)
 	out.p(STR_BOOL(ostd::Utils::md5("") == "d41d8cd98f00b204e9800998ecf8427e")).nl();
 	out.p(STR_BOOL(ostd::Utils::md5("abc") == "900150983cd24fb0d6963f7d28e17f72")).nl();
 	out.p(STR_BOOL(ostd::Utils::md5("message digest") == "f96b697d7cb7938d525a2f31aaf161d0")).nl();
-	
+
 	Window window;
 	window.initialize(1280, 720, "OmniaFramework - Test Window");
 	window.setClearColor({ 0, 2	, 15 });
-	
+
 	while (window.isRunning())
 	{
 		window.update();
@@ -145,7 +145,7 @@ int main(int argc, char** argv)
 
 	// ostd::KeyboardController keyboard;
 	// keyboard.disableCommandBuffer();
-	
+
 	// out.p("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
 	// out.p("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH");
 	// out.p("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");

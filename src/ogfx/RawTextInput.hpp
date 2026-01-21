@@ -39,7 +39,7 @@ namespace ogfx
 					uint8_t extraPaddingLeft { 0 };
 
 					bool cursorBlink { true };
-					ostd::Counter cursorBlinkCounter { 1 };
+					ostd::Counter cursorBlinkCounter { 30 };
 			};
 			public: struct tDefaultThemes
 			{
@@ -54,7 +54,7 @@ namespace ogfx
 					0,						//Extra Padding Left
 
 					true,					//Cursor Blink
-					{ 1 }				//Cursor Blink Timer
+					{ 30 }				//Cursor Blink Timer
 				};
 				inline static const Theme DefaultTheme {
 					{ 120, 	120, 	180 },	//Text Color
@@ -67,7 +67,7 @@ namespace ogfx
 					0,						//Extra Padding Left
 
 					true,					//Cursor Blink
-					{ 1 }				//Cursor Blink Timer
+					{ 30 }				//Cursor Blink Timer
 				};
 			};
 			public: enum eActionEventType { None = 0, Enter, Tab };
@@ -103,7 +103,7 @@ namespace ogfx
 				virtual inline void onRender(ogfx::BasicRenderer2D& gfx) {  }
 				virtual inline void onUpdate(void) {  }
 				virtual inline void onFixedUpdate(void) {  }
-				
+
 				void setText(const ostd::String& text);
 				void appendText(const ostd::String& text);
 				void setCursorPosition(uint16_t cursorPos);
@@ -135,14 +135,14 @@ namespace ogfx
 				uint16_t m_cursorPosition { 0 };
 				bool m_cursorState { true };
 
-				ostd::Counter m_keyRepeatCounter { 80 };
+				ostd::Counter m_keyRepeatCounter { 1 };
 				char m_lastChar { 0 };
 				int32_t m_lastKeyCode { 0 };
 
 				Theme m_theme;
-				
+
 				bool m_mouseInside { false };
-			
+
 			public:
 				inline static const uint32_t actionEventSignalID { ostd::SignalHandler::newCustomSignal(11400) };
 		};

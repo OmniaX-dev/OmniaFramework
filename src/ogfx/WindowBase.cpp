@@ -1,4 +1,5 @@
 #include "WindowBase.hpp"
+#include "Time.hpp"
 
 namespace ogfx
 {
@@ -20,7 +21,7 @@ namespace ogfx
 		m_windowWidth = width;
 		m_windowHeight = height;
 		m_title = windowTitle;
-		if (SDL_Init(SDL_INIT_VIDEO) != 0)	
+		if (SDL_Init(SDL_INIT_VIDEO) != 0)
 		{
 			printf( "SDL could not initialize! Error: %s\n", SDL_GetError() );
 			exit(1);
@@ -43,6 +44,18 @@ namespace ogfx
 		m_initialized = true;
 		m_running = true;
 
+		m_fixedUpdateTImer.create(60.0, [this](double frameTime_s){
+			this->onFixedUpdate(frameTime_s);
+		});
+
+		m_fpsUpdateTimer.create(1.0, [this](double frameTime_s){
+			if (this->m_frameCount == 0) return;
+			if (this->m_frameTimeAcc == 0) return;
+			this->m_fps = (int32_t)(1.0f / (static_cast<double>(this->m_frameTimeAcc) / static_cast<double>(this->m_frameCount)));
+			this->m_frameTimeAcc = 0;
+			this->m_frameCount = 0;
+		});
+
 		setTypeName("dragon::WindowBase");
 		enableSignals(true);
 		validate();
@@ -50,34 +63,27 @@ namespace ogfx
 		onInitialize();
 	}
 
+	void WindowBase::close(void)
+	{
+			m_running = false;
+			onClose();
+			ostd::SignalHandler::emitSignal(ostd::tBuiltinSignals::WindowClosed, ostd::tSignalPriority::RealTime, *this);
+	}
+
 	void WindowBase::update(void)
 	{
 		if (!m_initialized) return;
-		Uint64 start = SDL_GetPerformanceCounter();
-		handleEvents();
+		__handle_events();
 		SDL_SetRenderDrawColor(m_renderer, m_clearColor.r, m_clearColor.g, m_clearColor.b, m_clearColor.a);
 		if (m_refreshScreen)
 			SDL_RenderClear(m_renderer);
+		m_fixedUpdateTImer.update();
 		onUpdate();
 		onRender();
 		SDL_RenderPresent(m_renderer);
-		Uint64 end = SDL_GetPerformanceCounter();
-		float elapsed = (end - start) / (float)SDL_GetPerformanceFrequency();
-		m_redrawAccumulator += elapsed;
-		if (m_redrawAccumulator >= 0.2f)
-		{
-			onFixedUpdate();
-			m_redrawAccumulator = 0.0f;
-		}
-		end = SDL_GetPerformanceCounter();
-		elapsed = (end - start) / (float)SDL_GetPerformanceFrequency();
-		m_timeAccumulator += elapsed;
-		if (m_timeAccumulator >= 0.5f)
-		{
-			onSlowUpdate();
-			m_fps = (int32_t)(1.0f / elapsed);
-			m_timeAccumulator = 0.0f;
-		}
+		m_frameTimeAcc += m_fpsUpdateClock.restart(ostd::eTimeUnits::Seconds);
+		m_frameCount++;
+		m_fpsUpdateTimer.update();
 	}
 
 	void WindowBase::setSize(int32_t width, int32_t height)
@@ -110,14 +116,12 @@ namespace ogfx
 		}
 	}
 
-
 	void WindowBase::enableResizable(bool enable)
 	{
 		SDL_SetWindowResizable(m_window, (enable ? SDL_TRUE : SDL_FALSE));
 	}
 
-
-	void WindowBase::handleEvents(void)
+	void WindowBase::__handle_events(void)
 	{
 		if (!m_initialized) return;
 		auto l_getMouseState = [this](void) -> MouseEventData {

@@ -9,6 +9,7 @@
 #include <chrono>
 #include <algorithm>
 #include <cctype>
+#include <cstdint>
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -573,6 +574,18 @@ namespace ostd
 		}
 		diff -= m_current;
 		return diff;
+	}
+
+	uint64_t Timer::restart(eTimeUnits timeUnit)
+	{
+		if (!m_started)
+		{
+			startCount(timeUnit);
+			return 0;
+		}
+		uint64_t elapsed = endCount();
+		startCount(timeUnit);
+		return elapsed;
 	}
 
 	uint64_t Timer::getEpoch(eTimeUnits timeUnit)

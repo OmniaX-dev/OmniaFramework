@@ -72,6 +72,7 @@ namespace ostd
 			uint64_t startCount(eTimeUnits timeUnit = eTimeUnits::Nanoseconds);
 			uint64_t end(bool print = true);
 			uint64_t endCount(bool stop = true);
+			uint64_t restart(eTimeUnits timeUnit = eTimeUnits::Nanoseconds);
 
 			static uint64_t getEpoch(eTimeUnits timeUnit = eTimeUnits::Milliseconds);
 

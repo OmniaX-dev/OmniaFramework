@@ -3,6 +3,7 @@
 #include <ogfx/SDLInclude.hpp>
 #include <ostd/Signals.hpp>
 #include <ostd/IOHandlers.hpp>
+#include <ostd/Time.hpp>
 
 namespace ogfx
 {
@@ -14,36 +15,35 @@ namespace ogfx
 			~WindowBase(void);
 			inline WindowBase(int32_t width, int32_t height, const ostd::String& windowTitle) { initialize(width, height, windowTitle); }
 			void initialize(int32_t width, int32_t height, const ostd::String& windowTitle);
-
+			void close(void);
 			void update(void);
 			void setSize(int32_t width, int32_t height);
 			void setTitle(const ostd::String& title);
-			void setCursor(eCursor cursor);	
+			void setCursor(eCursor cursor);
 			void enableResizable(bool enable = true);
 
 			inline virtual void onRender(void) {  }
 			inline virtual void onUpdate(void) {  }
-			inline virtual void onFixedUpdate(void) {  }
-			inline virtual void onSlowUpdate(void) {  }
+			inline virtual void onFixedUpdate(double frameTime_s) {  }
 			inline virtual void onInitialize(void) {  }
 			inline virtual void onDestroy(void) {  }
+			inline virtual void onClose(void) { }
 
 			inline bool isInitialized(void) const { return m_initialized; }
 			inline bool isRunning(void) const { return m_running; }
-			inline void close(void) { m_running = false; }
 			inline void hide(void) { SDL_HideWindow(m_window); }
 			inline void show(void) { SDL_ShowWindow(m_window); }
 			inline ostd::String getTitle(void) const { return m_title; }
 			inline int32_t getFPS(void) const { return m_fps; }
 			inline int32_t getWindowWidth(void) const { return m_windowWidth; }
 			inline int32_t getWindowHeight(void) const { return m_windowHeight; }
-			inline SDL_Renderer* getSDLRenderer(void) const { return m_renderer; }
 			inline bool isMouseDragEventEnabled(void) const { return m_deagEventEnabled; }
 			inline void enableMouseDragEvent(bool enable = true) { m_deagEventEnabled = enable; }
 			inline ostd::Color getClearColor(void) const { return m_clearColor; }
 			inline void setClearColor(const ostd::Color& color) { m_clearColor = color; }
+			inline SDL_Renderer* getSDLRenderer(void) const { return m_renderer; }
 		private:
-			void handleEvents(void);
+			void __handle_events(void);
 
 		protected:
 			ostd::ConsoleOutputHandler out;
@@ -53,15 +53,18 @@ namespace ogfx
 			bool m_refreshScreen { true };
 
 		private:
+			ostd::Color m_clearColor { 10, 10, 10, 255 };
+
 			int32_t m_windowWidth { 0 };
 			int32_t m_windowHeight { 0 };
 			ostd::String m_title { "" };
 			int32_t m_fps { 0 };
 
-			ostd::Color m_clearColor { 10, 10, 10, 255 };
-
-			float m_timeAccumulator { 0.0f };
-			float m_redrawAccumulator { 0.0f };
+			ostd::StepTimer m_fixedUpdateTImer;
+			ostd::StepTimer m_fpsUpdateTimer;
+			ostd::Timer m_fpsUpdateClock;
+			uint64_t m_frameTimeAcc { 0 };
+			int32_t m_frameCount { 0 };
 
 			bool m_deagEventEnabled { false };
 			bool m_running { false };
@@ -77,8 +80,8 @@ namespace ogfx
 			{
 				setTypeName("ogfx::WindowResizedData");
 				validate();
-			} 
-		
+			}
+
 		public:
 			int32_t new_width;
 			int32_t new_height;
