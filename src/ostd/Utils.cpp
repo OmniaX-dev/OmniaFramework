@@ -750,7 +750,6 @@ namespace ostd
 			{
 				i = 1;
 				out.fg(ConsoleColors::BrightBlue).p("|");
-				if (addr == end - 1) break;
 				out.nl();
 				out.fg(ConsoleColors::BrightBlue).p("|");
 				out.fg(ConsoleColors::BrightGray).p("  --------  ").fg(ConsoleColors::BrightBlue).p("|").fg(ConsoleColors::BrightGray).p("  ");
@@ -761,7 +760,9 @@ namespace ostd
 				}
 				out.fg(ConsoleColors::BrightBlue).p("| ");
 				tmp.clear();
-				out.reset().nl();
+				out.reset();
+				if (addr == end - 1) break;
+				out.nl();
 				out.fg(ConsoleColors::BrightBlue).p("| ");
 				out.fg(ConsoleColors::BrightGray).p("0x");
 				out.fg(ConsoleColors::BrightCyan).p(Utils::getHexStr(addr + 1, false, 4)).fg(ConsoleColors::BrightBlue).p(" |  ");
