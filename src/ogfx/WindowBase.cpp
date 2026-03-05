@@ -65,9 +65,9 @@ namespace ogfx
 
 	void WindowBase::close(void)
 	{
-			m_running = false;
-			onClose();
-			ostd::SignalHandler::emitSignal(ostd::tBuiltinSignals::WindowClosed, ostd::tSignalPriority::RealTime, *this);
+		m_running = false;
+		onClose();
+		ostd::SignalHandler::emitSignal(ostd::tBuiltinSignals::WindowClosed, ostd::tSignalPriority::RealTime, *this);
 	}
 
 	void WindowBase::update(void)

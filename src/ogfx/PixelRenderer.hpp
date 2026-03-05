@@ -1,7 +1,7 @@
 #pragma once
 
-#include "IOHandlers.hpp"
-#include "String.hpp"
+#include <ostd/IOHandlers.hpp>
+#include <ostd/String.hpp>
 #include <ostd/Color.hpp>
 #include <ogfx/SDLInclude.hpp>
 #include <unordered_map>
@@ -40,6 +40,10 @@ namespace ogfx
 			public:
 				inline Font(void) {  }
 				inline Font(const ostd::String& fontPath)
+				{
+					init(fontPath);
+				}
+				inline void init(const ostd::String& fontPath)
 				{
 					ostd::ConsoleOutputHandler out;
 					m_fontSurface = SDL_LoadBMP(fontPath.c_str());
