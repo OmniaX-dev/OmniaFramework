@@ -1,5 +1,7 @@
 #pragma once
 
+#include "IOHandlers.hpp"
+#include "String.hpp"
 #include <ostd/Color.hpp>
 #include <ogfx/SDLInclude.hpp>
 #include <unordered_map>
@@ -32,6 +34,27 @@ namespace ogfx
 				inline static constexpr int32_t CONSOLE_CHARS_V = 21;
 
 				inline static int8_t s_cursor_pos_x = 0;
+		};
+		public: class Font
+		{
+			public:
+				inline Font(void) {  }
+				inline Font(const ostd::String& fontPath)
+				{
+					ostd::ConsoleOutputHandler out;
+					m_fontSurface = SDL_LoadBMP(fontPath.c_str());
+					if (m_fontSurface == NULL)
+						out.bg(ostd::ConsoleColors::Red).p("Error loading pixel font.").reset().nl();
+					m_fontPixels = (uint32_t*)m_fontSurface->pixels;
+				}
+				inline ~Font(void)
+				{
+					SDL_FreeSurface(m_fontSurface);
+				}
+
+			public:
+				SDL_Surface* m_fontSurface { nullptr };
+				uint32_t* m_fontPixels { nullptr };
 		};
 		public:
 			inline PixelRenderer(void) { invalidate(); }
