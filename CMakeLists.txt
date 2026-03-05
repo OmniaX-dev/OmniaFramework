@@ -77,6 +77,7 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/RawTextInput.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/Image.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/WindowBaseOutputHandler.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/PixelRenderer.cpp
 )
 list(APPEND TEST_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/test.cpp
