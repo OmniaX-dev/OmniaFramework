@@ -1,6 +1,6 @@
 #include "WindowBaseOutputHandler.hpp"
 #include "BasicRenderer.hpp"
-#include "TextStyleParser.hpp"
+#include "../string/TextStyleParser.hpp"
 
 namespace ogfx
 {

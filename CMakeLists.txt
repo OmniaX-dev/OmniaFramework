@@ -2,7 +2,7 @@
 #-----------------------------------------------------------------------------------------
 set(PROJ_NAME omnia-framework)
 set(MAJOR_VER 0)
-set(MINOR_VER 2)
+set(MINOR_VER 3)
 #-----------------------------------------------------------------------------------------
 
 #Setup
@@ -42,33 +42,41 @@ list(APPEND OSTD_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/vendor/midifile/MidiMessage.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/vendor/midifile/Options.cpp
 
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/BaseObject.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Color.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Console.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Errors.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/File.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/FileSystem.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Geometry.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Json.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Keyboard.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Logger.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Logic.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/md5.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Midi.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/OutputHandlers.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/PathFinder.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/QuadTree.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/ShuntingYard.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Signals.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Random.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Serial.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/SineWave.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Spline.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/StringEditor.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/String.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/TextStyleParser.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Time.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/Utils.cpp
+	# data_types
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/data_types/BaseObject.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/data_types/Color.cpp
+
+	# io
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/io/Console.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/io/Errors.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/io/File.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/io/FileSystem.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/io/Json.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/io/Keyboard.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/io/Logger.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/io/Midi.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/io/OutputHandlers.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/io/Serial.cpp
+
+	# math
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/math/Geometry.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/math/ShuntingYard.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/math/Random.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/math/SineWave.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/math/Spline.cpp
+
+	# string
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/string/String.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/string/TextStyleParser.cpp
+
+	# utils
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/Logic.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/md5.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/PathFinder.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/QuadTree.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/Signals.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/Time.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/Utils.cpp
 )
 list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/FontUtils.cpp
@@ -101,8 +109,12 @@ target_include_directories(${TEST_TARGET} PUBLIC ${INCLUDE_DIRS})
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_compile_options(-O3 -MMD -MP -Wall -ggdb -fsanitize=address)
+	target_compile_definitions(${OMNIA_STD_LIB} PUBLIC OX_DEBUG_BUILD)
+	target_compile_definitions(${OMNIA_GFX_LIB} PUBLIC OX_DEBUG_BUILD)
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
 	add_compile_options(-MMD -MP -Wall)
+	target_compile_definitions(${OMNIA_STD_LIB} PUBLIC OX_RELEASE_BUILD)
+	target_compile_definitions(${OMNIA_GFX_LIB} PUBLIC OX_RELEASE_BUILD)
 endif()
 #-----------------------------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
 #include "RawTextInput.hpp"
 #include <ogfx/WindowBase.hpp>
-#include <ostd/Logger.hpp>
+#include <ostd/io/Logger.hpp>
 
 namespace ogfx
 {
@@ -165,7 +165,7 @@ namespace ogfx
 						if (!found)
 							parent.m_cursorPosition = text.len();
 					}
-					parent.m_cursorState = true;		
+					parent.m_cursorState = true;
 				}
 
 			}
@@ -195,7 +195,7 @@ namespace ogfx
 			m_paddingX = (4.0f * geth()) / 30.0f;
 			m_fontSize = (int32_t)(geth() * 0.66);
 			float cursor_height_scale = 0.75f;
-			
+
 			ostd::IPoint strSize { 0, 0 };
 			if (m_cursorPosition > 0 && m_text != "")
 			{
@@ -206,19 +206,19 @@ namespace ogfx
 			gfx.outlinedRect(*this, m_theme.backgroundColor, m_theme.borderColor, 2);
 			if (m_text.len() > 0)
 				gfx.drawString(m_text, getPosition() + ostd::Vec2 { m_paddingX + m_theme.extraPaddingLeft, m_paddingX + m_theme.extraPaddingTop}, m_theme.textColor, m_fontSize);
-			
+
 			if (m_cursorState || !m_theme.cursorBlink)
 				gfx.fillRect({ getx() + m_paddingX + m_theme.extraPaddingLeft + strSize.x - 1, gety() + m_paddingX + m_theme.extraPaddingTop, (float)m_theme.cursorWidth, (float)m_fontSize * cursor_height_scale }, m_theme.cursorColor);
-			  
+
 			onRender(gfx);
 		}
-		
+
 		void RawTextInput::update(void)
 		{
 			m_keyRepeatCounter.update();
 			onUpdate();
 		}
-		
+
 		void RawTextInput::fixedUpdate(void)
 		{
 			if (m_theme.cursorBlink)
