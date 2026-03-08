@@ -23,10 +23,10 @@
     #include <istream>  // istream
 #endif                  // JSON_NO_IO
 
-#include <nlohmann/detail/exceptions.hpp>
-#include <nlohmann/detail/iterators/iterator_traits.hpp>
-#include <nlohmann/detail/macro_scope.hpp>
-#include <nlohmann/detail/meta/type_traits.hpp>
+#include <ostd/vendor/nlohmann/detail/exceptions.hpp>
+#include <ostd/vendor/nlohmann/detail/iterators/iterator_traits.hpp>
+#include <ostd/vendor/nlohmann/detail/macro_scope.hpp>
+#include <ostd/vendor/nlohmann/detail/meta/type_traits.hpp>
 
 NLOHMANN_JSON_NAMESPACE_BEGIN
 namespace detail

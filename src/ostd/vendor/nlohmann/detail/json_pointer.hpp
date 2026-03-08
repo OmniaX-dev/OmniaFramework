@@ -21,11 +21,11 @@
 #include <utility> // move
 #include <vector> // vector
 
-#include <nlohmann/detail/exceptions.hpp>
-#include <nlohmann/detail/macro_scope.hpp>
-#include <nlohmann/detail/string_concat.hpp>
-#include <nlohmann/detail/string_escape.hpp>
-#include <nlohmann/detail/value_t.hpp>
+#include <ostd/vendor/nlohmann/detail/exceptions.hpp>
+#include <ostd/vendor/nlohmann/detail/macro_scope.hpp>
+#include <ostd/vendor/nlohmann/detail/string_concat.hpp>
+#include <ostd/vendor/nlohmann/detail/string_escape.hpp>
+#include <ostd/vendor/nlohmann/detail/value_t.hpp>
 
 NLOHMANN_JSON_NAMESPACE_BEGIN
 

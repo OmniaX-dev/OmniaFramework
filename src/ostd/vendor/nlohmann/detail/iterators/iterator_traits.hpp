@@ -10,9 +10,9 @@
 
 #include <iterator> // random_access_iterator_tag
 
-#include <nlohmann/detail/abi_macros.hpp>
-#include <nlohmann/detail/meta/void_t.hpp>
-#include <nlohmann/detail/meta/cpp_future.hpp>
+#include <ostd/vendor/nlohmann/detail/abi_macros.hpp>
+#include <ostd/vendor/nlohmann/detail/meta/void_t.hpp>
+#include <ostd/vendor/nlohmann/detail/meta/cpp_future.hpp>
 
 NLOHMANN_JSON_NAMESPACE_BEGIN
 namespace detail

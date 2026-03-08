@@ -19,10 +19,10 @@
 #include <utility> // move
 #include <vector> // vector
 
-#include <nlohmann/detail/input/binary_reader.hpp>
-#include <nlohmann/detail/macro_scope.hpp>
-#include <nlohmann/detail/output/output_adapters.hpp>
-#include <nlohmann/detail/string_concat.hpp>
+#include <ostd/vendor/nlohmann/detail/input/binary_reader.hpp>
+#include <ostd/vendor/nlohmann/detail/macro_scope.hpp>
+#include <ostd/vendor/nlohmann/detail/output/output_adapters.hpp>
+#include <ostd/vendor/nlohmann/detail/string_concat.hpp>
 
 NLOHMANN_JSON_NAMESPACE_BEGIN
 namespace detail

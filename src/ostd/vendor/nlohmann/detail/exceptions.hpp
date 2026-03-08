@@ -17,13 +17,13 @@
 #include <string> // to_string
 #include <vector> // vector
 
-#include <nlohmann/detail/value_t.hpp>
-#include <nlohmann/detail/string_escape.hpp>
-#include <nlohmann/detail/input/position_t.hpp>
-#include <nlohmann/detail/macro_scope.hpp>
-#include <nlohmann/detail/meta/cpp_future.hpp>
-#include <nlohmann/detail/meta/type_traits.hpp>
-#include <nlohmann/detail/string_concat.hpp>
+#include <ostd/vendor/nlohmann/detail/value_t.hpp>
+#include <ostd/vendor/nlohmann/detail/string_escape.hpp>
+#include <ostd/vendor/nlohmann/detail/input/position_t.hpp>
+#include <ostd/vendor/nlohmann/detail/macro_scope.hpp>
+#include <ostd/vendor/nlohmann/detail/meta/cpp_future.hpp>
+#include <ostd/vendor/nlohmann/detail/meta/type_traits.hpp>
+#include <ostd/vendor/nlohmann/detail/string_concat.hpp>
 
 // With -Wweak-vtables, Clang will complain about the exception classes as they
 // have no out-of-line virtual method definitions and their vtable will be

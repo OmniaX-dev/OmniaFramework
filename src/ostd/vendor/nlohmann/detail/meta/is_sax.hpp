@@ -12,9 +12,9 @@
 #include <utility> // declval
 #include <string> // string
 
-#include <nlohmann/detail/abi_macros.hpp>
-#include <nlohmann/detail/meta/detected.hpp>
-#include <nlohmann/detail/meta/type_traits.hpp>
+#include <ostd/vendor/nlohmann/detail/abi_macros.hpp>
+#include <ostd/vendor/nlohmann/detail/meta/detected.hpp>
+#include <ostd/vendor/nlohmann/detail/meta/type_traits.hpp>
 
 NLOHMANN_JSON_NAMESPACE_BEGIN
 namespace detail
