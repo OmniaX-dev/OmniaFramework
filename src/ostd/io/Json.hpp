@@ -35,6 +35,7 @@ namespace ostd
 			inline JsonFile(void) { m_loaded = false; }
 			inline JsonFile(const ostd::String& filePath) { init(filePath); }
 			bool init(const ostd::String& filePath, bool writeable = true, const json* obj = nullptr);
+			inline bool isLoaded(void) const { return m_loaded; }
 
 			template<class T> T get(const ostd::String& name);
 	     	template<class T> bool set(const ostd::String& name, T value);
