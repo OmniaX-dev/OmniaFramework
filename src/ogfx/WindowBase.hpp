@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <SDL2/SDL_surface.h>
 #include <ogfx/SDLInclude.hpp>
 #include <ostd/utils/Signals.hpp>
 #include <ostd/utils/Time.hpp>
@@ -41,6 +42,7 @@ namespace ogfx
 			void setTitle(const ostd::String& title);
 			void setCursor(eCursor cursor);
 			void enableResizable(bool enable = true);
+			void setIcon(const ostd::String& iconFilePath);
 
 			inline virtual void onRender(void) {  }
 			inline virtual void onUpdate(void) {  }

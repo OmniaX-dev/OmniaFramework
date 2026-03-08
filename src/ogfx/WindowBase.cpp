@@ -1,5 +1,7 @@
 #include "WindowBase.hpp"
 #include "../ostd/utils/Time.hpp"
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_surface.h>
 
 namespace ogfx
 {
@@ -26,12 +28,12 @@ namespace ogfx
 			printf( "SDL could not initialize! Error: %s\n", SDL_GetError() );
 			exit(1);
 		}
-		// int imgFlags = IMG_INIT_PNG;
-		// if (!(IMG_Init(imgFlags) & imgFlags))
-		// {
-		// 	printf( "SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError() );
-		// 	exit(2);
-		// }
+		int imgFlags = IMG_INIT_PNG;
+		if (!(IMG_Init(imgFlags) & imgFlags))
+		{
+			printf( "SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError() );
+			exit(2);
+		}
 		m_window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_windowWidth, m_windowHeight, SDL_WINDOW_RESIZABLE);
 		SDL_SetWindowResizable(m_window, SDL_FALSE);
 		m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED);
@@ -119,6 +121,18 @@ namespace ogfx
 	void WindowBase::enableResizable(bool enable)
 	{
 		SDL_SetWindowResizable(m_window, (enable ? SDL_TRUE : SDL_FALSE));
+	}
+
+	void WindowBase::setIcon(const ostd::String& iconFilePath)
+	{
+		SDL_Surface* appIcon = IMG_Load(iconFilePath);
+		if (appIcon == nullptr)
+		{
+			//TODO: Error
+			return;
+		}
+		SDL_SetWindowIcon(m_window, appIcon);
+		SDL_FreeSurface(appIcon);
 	}
 
 	void WindowBase::__handle_events(void)
