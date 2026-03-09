@@ -1,4 +1,5 @@
 #include "Image.hpp"
+#include "io/Logger.hpp"
 #include <SDL2/SDL_render.h>
 #include <ogfx/BasicRenderer.hpp>
 #include <ogfx/WindowBase.hpp>
@@ -16,13 +17,18 @@ namespace ogfx
 
     Image& Image::loadFromFile(const ostd::String& filePath, BasicRenderer2D& gfx)
     {
-        if (!gfx.isInitialized())
-            return *this;  //TODO: Error
-        m_sdl_texture = IMG_LoadTexture(gfx.getWindow().getSDLRenderer(), filePath.c_str());
-        SDL_QueryTexture(m_sdl_texture, nullptr, nullptr, &m_width, &m_height);
-        m_loaded = true;
-        setTypeName("ogfx::Image");
-        validate();
-        return *this;
+		if (!gfx.isInitialized())
+		    return *this;  //TODO: Error
+		m_sdl_texture = IMG_LoadTexture(gfx.getWindow().getSDLRenderer(), filePath.c_str());
+		if (!m_sdl_texture)
+		{
+			OX_ERROR("Failed to load Image: %s", IMG_GetError());
+			return *this;
+		}
+		SDL_QueryTexture(m_sdl_texture, nullptr, nullptr, &m_width, &m_height);
+		m_loaded = true;
+		setTypeName("ogfx::Image");
+		validate();
+		return *this;
     }
 }

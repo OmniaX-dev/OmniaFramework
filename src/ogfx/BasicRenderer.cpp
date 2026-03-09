@@ -1,5 +1,6 @@
 #include "BasicRenderer.hpp"
 #include "WindowBase.hpp"
+#include <SDL2/SDL_rect.h>
 
 namespace ogfx
 {
@@ -22,7 +23,7 @@ namespace ogfx
 		m_ttfr.setFontSize(fontSize);
 	}
 
-    void BasicRenderer2D::drawImage(const ogfx::Image& image, const ostd::Vec2& position)
+    void BasicRenderer2D::drawImage(const ogfx::Image& image, const ostd::Vec2& position, const ostd::Rectangle& rect)
     {
         if (!m_initialized) return;
         if (!image.isLoaded()) return;
@@ -30,8 +31,29 @@ namespace ogfx
         texr.x = position.x;
         texr.y = position.y;
         texr.w = image.getSize().x;
-        texr.h = image.getSize().y; 
-        SDL_RenderCopy(m_window->getSDLRenderer(), image.getSDLTexture(), nullptr, &texr);
+        texr.h = image.getSize().y;
+        SDL_Rect srcRect;
+        srcRect.x = rect.x;
+        srcRect.y = rect.y;
+        srcRect.w = rect.w;
+        srcRect.h = rect.w;
+        if (srcRect.x == 0 && srcRect.y == 0 && srcRect.w == 0 && srcRect.h == 0)
+        	SDL_RenderCopy(m_window->getSDLRenderer(), image.getSDLTexture(), nullptr, &texr);
+        else
+        {
+       		texr.w = srcRect.w;
+        	texr.h = srcRect.h;
+       		SDL_RenderCopy(m_window->getSDLRenderer(), image.getSDLTexture(), &srcRect, &texr);
+        }
+    }
+
+    void BasicRenderer2D::drawAnimation(const Animation& anim, const ostd::Vec2& position)
+    {
+    	if (!m_initialized) return;
+     	if (!anim.hasImage()) return;
+      	const auto& img = anim.getSpriteSheet();
+       	if (!img.isLoaded() || !img.isValid()) return;
+        drawImage(img, position, anim.getFrameRect());
     }
 
 	void BasicRenderer2D::drawString(const ostd::String& str, const ostd::Vec2& position, const ostd::Color& color, int32_t fontSize)
@@ -130,19 +152,19 @@ namespace ogfx
 		fillRect(rect, fillColor);
 		drawRect(rect, outlineColor, outlineThickness);
 	}
-	
+
 	void BasicRenderer2D::outlinedRoundRect(const ostd::Rectangle& rect, const ostd::Color& fillColor, const ostd::Color& outlineColor, int32_t radius, int32_t outlineThickness)
 	{
 		if (!m_initialized) return;
 		fillRoundRect(rect, fillColor, radius);
 		drawRoundRect(rect, outlineColor, radius, outlineThickness);
 	}
-	
+
 	void BasicRenderer2D::outlinedCircle(const ostd::Vec2& center, int32_t radius, const ostd::Color& fillColor, const ostd::Color& outlineColor, int32_t outlineThickness)
 	{
 		if (!m_initialized) return;
 		fillCircle(center, radius, fillColor);
 		drawCircle(center, radius, outlineColor, outlineThickness);
 	}
-	
+
 }

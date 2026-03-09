@@ -23,6 +23,8 @@
 // #include <ostd/Logger.hpp>
 // #include <ostd/Console.hpp>
 
+#include "Image.hpp"
+#include "utils/Utils.hpp"
 #include <ogfx/WindowBase.hpp>
 #include <ogfx/RawTextInput.hpp>
 #include <ostd/ostd.hpp>
@@ -48,6 +50,10 @@ class Window : public ogfx::WindowBase
 			m_textInput.setEventListener(m_sigHandler);
 			// m_textInput.setCharacterFilter(m_numCharFilter);
 			m_textInput.getTheme().extraPaddingTop = 3;
+
+			m_testImg.loadFromFile("res/test.png", m_gfx);
+			out.p("Image loaded: ").p(STR_BOOL(m_testImg.isLoaded())).nl();
+			out.p("              ").p(m_testImg.getSize().x).nl();
 	 	}
 
 		inline void handleSignal(ostd::tSignal& signal) override
@@ -79,6 +85,7 @@ class Window : public ogfx::WindowBase
 		inline void onRender(void) override
 		{
 			m_textInput.render(m_gfx);
+			// m_gfx.drawImage(m_testImg, { 0, 0 });´
 		}
 
 		inline void onFixedUpdate(double frameTime_s) override
@@ -88,7 +95,7 @@ class Window : public ogfx::WindowBase
 
 		inline void onUpdate(void) override
 		{
-			m_textInput.update	();
+			m_textInput.update();
 		}
 
 	private:
@@ -96,6 +103,8 @@ class Window : public ogfx::WindowBase
 		ogfx::BasicRenderer2D m_gfx;
 		ogfx::gui::RawTextInputEventListener m_sigHandler;
 		ogfx::gui::RawTextInputNumberCharacterFilter m_numCharFilter;
+
+		ogfx::Image m_testImg;
 };
 
 // void test2(const std::string& str) {}
