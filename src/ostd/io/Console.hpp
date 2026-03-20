@@ -20,7 +20,6 @@
 
 #pragma once
 
-#include <ostd/utils/Utils.hpp>
 #include <ostd/math/Geometry.hpp>
 #include <ostd/io/IOHandlers.hpp>
 #include <ostd/string/String.hpp>
@@ -34,6 +33,16 @@
 
 namespace ostd
 {
+	class BasicConsole
+	{
+		public:
+			static void clearConsole(void);
+			static void getConsoleSize(int32_t& outColumns, int32_t& outRows);
+			static void setConsoleCursorPosition(int32_t x, int32_t y);
+			static int32_t getConsoleWidth(void);
+			static int32_t getConsoleHeight(void);
+	};
+
 	class InteractiveConsole : public OutputHandlerBase
 	{
 		public: enum class eMode { Direct = 0, Buffered = 1 };

@@ -1,6 +1,5 @@
 #include "Color.hpp"
 #include <cmath>
-#include "../utils/Utils.hpp"
 #include "../io/Logger.hpp"
 #include "../io/IOHandlers.hpp"
 
@@ -110,7 +109,7 @@ namespace ostd
 		}
 		if (se.startsWith("0x"))
 		{
-			int64_t ic = Utils::strToInt(se);
+			int64_t ic = se.toInt();
 			union uC32 {
 				uint8_t data[4];
 				uint32_t value;
@@ -131,11 +130,11 @@ namespace ostd
 				OX_WARN("ox::Color::set(const String&) -> Invalid rgb string format: %s.", color_string.c_str());
 				return *this;
 			}
-			r = Utils::strToInt(tokens.next());
-			g = Utils::strToInt(tokens.next());
-			b = Utils::strToInt(tokens.next());
+			r = tokens.next().toInt();
+			g = tokens.next().toInt();
+			b = tokens.next().toInt();
 			if (tokens.hasNext())
-				a = Utils::strToInt(tokens.next());
+				a = tokens.next().toInt();
 		}
 		else
 		{
@@ -156,11 +155,11 @@ namespace ostd
 	String Color::hexString(bool include_alpha, String prefix) const
 	{
 		String hex = "";
-		hex += Utils::getHexStr(r, false, 1);
-		hex += Utils::getHexStr(g, false, 1);
-		hex += Utils::getHexStr(b, false, 1);
+		hex += String::getHexStr(r, false, 1);
+		hex += String::getHexStr(g, false, 1);
+		hex += String::getHexStr(b, false, 1);
 		if (include_alpha)
-			hex += Utils::getHexStr(a, false, 1);
+			hex += String::getHexStr(a, false, 1);
 		hex = prefix + String(hex).toUpper();
 		return hex;
 	}

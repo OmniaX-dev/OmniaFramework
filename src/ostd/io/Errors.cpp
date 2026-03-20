@@ -24,8 +24,8 @@ namespace ostd
 		if (userData.isValid())
 			errorMessage += "USER_DATA:\n" + userData.toString() + "\n";
 		String msgEdit = "";
-		msgEdit.add(Utils::getHexStr(m_errGroup)).add("//");
-		msgEdit.add(Utils::getHexStr(m_errCode, true, 8)).add("  ::  ");
+		msgEdit.add(String::getHexStr(m_errGroup)).add("//");
+		msgEdit.add(String::getHexStr(m_errCode, true, 8)).add("  ::  ");
 		if (_file_name != "")
 		{
 			msgEdit.add(_file_name).add(" ");

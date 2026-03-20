@@ -1,5 +1,5 @@
 #include "Serial.hpp"
-#include "../utils/Utils.hpp"
+#include "io/Memory.hpp"
 
 namespace ostd
 {
@@ -401,7 +401,7 @@ namespace ostd
 		bool SerialIO::w_String(StreamIndex addr, const String& str, bool store_size, bool null_terminate)
 		{
 			m_statuWriting = true;
-			auto stream = Utils::stringToByteStream(str);
+			auto stream = Memory::stringToByteStream(str);
 			uint32_t stream_size = stream.size();
 			if (store_size && !null_terminate)
 			{
@@ -446,12 +446,12 @@ namespace ostd
 			uint64_t power = 1;
 			while(power < size())
 				power *= 2;
-			Utils::printByteStream(m_data, start, line_len, power / line_len, out);
+			Memory::printByteStream(m_data, start, line_len, power / line_len, out);
 		}
 
 		bool SerialIO::saveToFile(const String& filePath)
 		{
-			return Utils::saveByteStreamToFile(getData(), filePath);
+			return Memory::saveByteStreamToFile(getData(), filePath);
 		}
 	}
 }

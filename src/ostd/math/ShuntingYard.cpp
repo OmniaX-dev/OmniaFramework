@@ -1,4 +1,4 @@
-#include "../utils/Utils.hpp"
+#include "MathUtils.hpp"
 #include "../string/String.hpp"
 #include <string>
 #include <vector>
@@ -89,13 +89,13 @@ namespace ostd
                 }
                 const auto s = std::string(b, p);
                 //--------HACKED HEXADECIMAL SUPPORT--------------
-                if (!Utils::isInt(s))
+                if (!String(s).isInt())
                 {
                     printf("Invalid character (%s)\n", s.c_str());
                     exit(0);
                     return {};
                 }
-                int64_t tmpInt = Utils::strToInt(s);
+                int64_t tmpInt = String(s).toInt();
                 //-------------------------------------------------
                 tokens.push_back(Token { Token::Type::Number, String().add(tmpInt) });
                 --p;
@@ -253,7 +253,7 @@ namespace ostd
         return queue;
     }
 
-    int32_t Utils::solveIntegerExpression(const String& expr)
+    int32_t MathUtils::solveIntegerExpression(const String& expr)
     {
         // printf("Tokenize\n");
         // printf(reportFmt, "Token", "Queue", "Stack", "");

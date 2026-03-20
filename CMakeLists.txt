@@ -57,6 +57,7 @@ list(APPEND OSTD_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/io/Midi.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/io/OutputHandlers.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/io/Serial.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/io/Memory.cpp
 
 	# math
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/math/Geometry.cpp
@@ -71,12 +72,11 @@ list(APPEND OSTD_SOURCE_FILES
 
 	# utils
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/Logic.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/md5.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/Hash.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/PathFinder.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/QuadTree.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/Signals.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/Time.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/Utils.cpp
 )
 list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/FontUtils.cpp

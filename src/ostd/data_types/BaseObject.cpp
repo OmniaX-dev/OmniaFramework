@@ -1,7 +1,6 @@
 #include "BaseObject.hpp"
 #include "../utils/Signals.hpp"
 #include "../io/IOHandlers.hpp"
-#include "../utils/Utils.hpp"
 
 namespace ostd
 {

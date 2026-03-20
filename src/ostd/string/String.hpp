@@ -24,6 +24,8 @@
 #include <filesystem>
 #include <ostd/data_types/Types.hpp>
 
+#define STR_BOOL(b) (b ? "true" : "false")
+
 namespace ostd
 {
 	class String
@@ -153,6 +155,9 @@ namespace ostd
 			float toFloat(void) const;
 			double toDouble(void) const;
 			bool isNumeric(bool decimal = false) const;
+			bool isInt(void) const;
+			bool isHex(void) const;
+			bool isBin(void) const;
 			bool contains(char c) const;
 			bool contains(const String& str) const;
 			bool startsWith(const String& str) const;
@@ -163,6 +168,10 @@ namespace ostd
 			int32_t lastIndexOf(char c) const;
 			int32_t lastIndexOf(const String& str) const;
 			Tokens tokenize(const String& delimiter = " ", bool trim_tokens = true, bool allow_white_space_only_tokens = false) const;
+
+			static String getHexStr(uint64_t value, bool prefix = true, uint8_t nbytes = 1);
+			static String getBinStr(uint64_t value, bool prefix = true, uint8_t nbytes = 1);
+			static String duplicateChar(unsigned char c, uint16_t count);
 
 			friend std::ostream& operator<<(std::ostream& out, const String& val);
 

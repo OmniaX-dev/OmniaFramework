@@ -211,4 +211,18 @@ namespace ostd
 			String monthToText(int32_t month) const override;
 			String weekDayToText(int32_t day) const override;
 	};
+
+	class Time
+	{
+		public:
+			static void startRunningTimer(void);
+			static inline const uint64_t getStartTime(void) { return s_startTime_ms; }
+			static void sleep(uint32_t __time, eTimeUnits __unit = eTimeUnits::Milliseconds);
+			static uint64_t getRunningTime_ms(void);
+			static String secondsToFormattedString(int32_t totalSeconds);
+
+		private:
+			inline static uint64_t s_startTime_ms;
+
+	};
 }

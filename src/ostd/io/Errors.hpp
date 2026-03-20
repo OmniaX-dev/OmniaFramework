@@ -22,7 +22,6 @@
 
 #include <ostd/data_types/BaseObject.hpp>
 #include <ostd/data_types/Types.hpp>
-#include <ostd/utils/Utils.hpp>
 
 #define ERROR_DATA() String(CPP_STR(__LINE__)), String(__FILE__)
 

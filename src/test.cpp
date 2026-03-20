@@ -24,7 +24,7 @@
 // #include <ostd/Console.hpp>
 
 #include "Image.hpp"
-#include "utils/Utils.hpp"
+#include "utils/Hash.hpp"
 #include <ogfx/WindowBase.hpp>
 #include <ogfx/RawTextInput.hpp>
 #include <ostd/ostd.hpp>
@@ -113,9 +113,9 @@ class Window : public ogfx::WindowBase
 
 int main(int argc, char** argv)
 {
-	out.p(STR_BOOL(ostd::Utils::md5("") == "d41d8cd98f00b204e9800998ecf8427e")).nl();
-	out.p(STR_BOOL(ostd::Utils::md5("abc") == "900150983cd24fb0d6963f7d28e17f72")).nl();
-	out.p(STR_BOOL(ostd::Utils::md5("message digest") == "f96b697d7cb7938d525a2f31aaf161d0")).nl();
+	out.p(STR_BOOL(ostd::Hash::md5("") == "d41d8cd98f00b204e9800998ecf8427e")).nl();
+	out.p(STR_BOOL(ostd::Hash::md5("abc") == "900150983cd24fb0d6963f7d28e17f72")).nl();
+	out.p(STR_BOOL(ostd::Hash::md5("message digest") == "f96b697d7cb7938d525a2f31aaf161d0")).nl();
 
 	Window window;
 	window.initialize(1280, 720, "OmniaFramework - Test Window");

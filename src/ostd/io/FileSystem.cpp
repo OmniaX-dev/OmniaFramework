@@ -301,4 +301,42 @@ namespace ostd
 			return ePathStatus::ValidNewFile;
 		return ePathStatus::Invalid;
 	}
+
+
+	bool FileSystem::readTextFile(String fileName, std::vector<String>& outLines)
+	{
+		String line;
+		std::ifstream file(fileName.cpp_str());
+		if (file.fail()) return false;
+		outLines.clear();
+		while (std::getline(file, line.cpp_str_ref()))
+			outLines.push_back(line);
+		return true;
+	}
+
+	bool FileSystem::readTextFileRaw(String fileName, String& outString)
+	{
+		std::vector<ostd::String> lines;
+		if (!readTextFile(fileName, lines))
+			return false;
+		outString.clr();
+		for (const auto& line : lines)
+			outString.add(line).add("\n");
+		return true;
+	}
+
+	bool FileSystem::loadFileFromHppResource(String output_file_path, const char* resource_buffer, unsigned int size)
+	{
+		unsigned char ext_len = resource_buffer[0];
+		String ext = "";
+		for (unsigned char i = 0; i < ext_len; i++)
+			ext += (char)(resource_buffer[i + 1]);
+		if (String(output_file_path).trim().toLower().endsWith(ext))
+			ext = "";
+		std::fstream bin (output_file_path.cpp_str() + ext.cpp_str(), std::ios::out | std::ios::binary);
+		if (!bin.is_open()) return false;
+		bin.write(resource_buffer + ext_len + 1, size - ext_len - 1);
+		bin.close();
+		return true;
+	}
 }

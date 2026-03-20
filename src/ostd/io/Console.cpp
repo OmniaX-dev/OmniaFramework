@@ -1,6 +1,5 @@
 #include "Console.hpp"
 #include "../vendor/TermColor.hpp"
-#include "../utils/Utils.hpp"
 
 namespace ostd
 {
@@ -53,7 +52,7 @@ void Utils::setConsoleCursorPosition(int32_t x, int32_t y)
 #include <term.h>
 #include <sys/ioctl.h>
 
-void Utils::clearConsole(void)
+void BasicConsole::clearConsole(void)
 {
 	if (!cur_term)
 	{
@@ -65,7 +64,7 @@ void Utils::clearConsole(void)
 	putp(tigetstr( "clear" ));
 }
 
-void Utils::getConsoleSize(int32_t& outColumns, int32_t& outRows)
+void BasicConsole::getConsoleSize(int32_t& outColumns, int32_t& outRows)
 {
 	struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
@@ -73,7 +72,7 @@ void Utils::getConsoleSize(int32_t& outColumns, int32_t& outRows)
 	outColumns = w.ws_col;
 }
 
-void Utils::setConsoleCursorPosition(int32_t x, int32_t y)
+void BasicConsole::setConsoleCursorPosition(int32_t x, int32_t y)
 {
    printf("\033[%d;%dH",x+1,y+1);
 }
@@ -84,14 +83,14 @@ void Utils::setConsoleCursorPosition(int32_t x, int32_t y)
 #include <sys/ioctl.h>
 #include <cstdio>
 
-void Utils::clearConsole(void)
+void BasicConsole::clearConsole(void)
 {
     // ANSI escape sequence: clear screen + move cursor to top-left
     std::printf("\033[2J\033[H");
     std::fflush(stdout);
 }
 
-void Utils::getConsoleSize(int32_t& outColumns, int32_t& outRows)
+void BasicConsole::getConsoleSize(int32_t& outColumns, int32_t& outRows)
 {
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
@@ -99,7 +98,7 @@ void Utils::getConsoleSize(int32_t& outColumns, int32_t& outRows)
     outColumns = w.ws_col;
 }
 
-void Utils::setConsoleCursorPosition(int32_t x, int32_t y)
+void BasicConsole::setConsoleCursorPosition(int32_t x, int32_t y)
 {
     // ANSI escape sequence: move cursor to (y+1, x+1)
     std::printf("\033[%d;%dH", y + 1, x + 1);
@@ -109,14 +108,14 @@ void Utils::setConsoleCursorPosition(int32_t x, int32_t y)
 #endif
 
 
-int32_t Utils::getConsoleWidth(void)
+int32_t BasicConsole::getConsoleWidth(void)
 {
 	int32_t rows = 0, cols = 0;
 	getConsoleSize(cols, rows);
 	return cols;
 }
 
-int32_t Utils::getConsoleHeight(void)
+int32_t BasicConsole::getConsoleHeight(void)
 {
 	int32_t rows = 0, cols = 0;
 	getConsoleSize(rows, cols);
@@ -297,19 +296,19 @@ OutputHandlerBase& InteractiveConsole::reset(void)
 
 OutputHandlerBase& InteractiveConsole::clear(void)
 {
-	Utils::clearConsole();
+	BasicConsole::clearConsole();
 	return *this;
 }
 
 void InteractiveConsole::getConsoleSize(int32_t& outColumns, int32_t& outRows)
 {
-	Utils::getConsoleSize(outColumns, outRows);
+	BasicConsole::getConsoleSize(outColumns, outRows);
 }
 
 IPoint InteractiveConsole::getConsoleSize(void)
 {
 	int32_t x = 0, y = 0;
-	Utils::getConsoleSize(x, y);
+	BasicConsole::getConsoleSize(x, y);
 	return { x, y };
 }
 
@@ -321,7 +320,7 @@ void InteractiveConsole::update(void)
 
 void InteractiveConsole::__set_cursor(void)
 {
-	Utils::setConsoleCursorPosition(m_cursorPosition.x, m_cursorPosition.y);
+	BasicConsole::setConsoleCursorPosition(m_cursorPosition.x, m_cursorPosition.y);
 }
 
 void InteractiveConsole::__construct_buffer(void)

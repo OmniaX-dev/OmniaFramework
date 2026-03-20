@@ -1,8 +1,9 @@
 #include "String.hpp"
 #include <sstream>
 #include <algorithm>
+#include <iostream>
+#include <bitset>
 #include <boost/regex.hpp>
-#include "../utils/Utils.hpp"
 
 namespace ostd
 {
@@ -431,7 +432,20 @@ namespace ostd
 	int64_t String::toInt(void) const
 	{
 		if (!isNumeric(false)) return 0;
-		return Utils::strToInt(m_data);
+		ostd::String str = String(m_data).trim().toLower();
+		if (!str.isInt()) return 0;
+		int32_t base = 10;
+		if (str.cpp_str().rfind("0x", 0) == 0)
+		{
+			str = str.substr(2);
+			base = 16;
+		}
+		else if (str.cpp_str().rfind("0b", 0) == 0)
+		{
+			str = str.substr(2);
+			base = 2;
+		}
+		return strtol(str.c_str(), NULL, base);
 	}
 
 	float String::toFloat(void) const
@@ -455,7 +469,26 @@ namespace ostd
 			iss >> std::noskipws >> f;
 			return iss.eof() && !iss.fail();
 		}
-		return Utils::isInt(m_data);
+		return isInt();
+	}
+
+	bool String::isInt(void) const
+	{
+		ostd::String str = String(m_data).trim().toLower();
+		bool isNumber = std::ranges::all_of(str.begin(), str.end(), [](char c){ return isdigit(c) != 0; });
+		return str.isHex() || str.isBin() || isNumber;
+	}
+
+	bool String::isHex(void) const
+	{
+		ostd::String hex = String(m_data).trim().toLower();
+		return hex.cpp_str().compare(0, 2, "0x") == 0 && hex.cpp_str().size() > 2 && hex.cpp_str().find_first_not_of("0123456789abcdef", 2) == std::string::npos;
+	}
+
+	bool String::isBin(void) const
+	{
+		ostd::String bin = String(m_data).trim().toLower();
+		return bin.cpp_str().compare(0, 2, "0b") == 0 && bin.cpp_str().size() > 2 && bin.cpp_str().find_first_not_of("01", 2) == std::string::npos;
 	}
 
 	bool String::contains(char c) const
@@ -559,6 +592,44 @@ namespace ostd
 				tokens.m_tokens.push_back(__token.cpp_str());
 		}
 		return tokens;
+	}
+
+	String String::getHexStr(uint64_t value, bool prefix, uint8_t nbytes)
+	{
+		union {
+			uint64_t val;
+			uint8_t bytes[8];
+		} __tmp_editor;
+		__tmp_editor.val = value;
+		if (nbytes < 1 || nbytes > 8) nbytes = 1;
+		std::ostringstream oss;
+		if (prefix) oss << "0x";
+		for (int8_t b = nbytes - 1; b >= 0; b--)
+			oss << std::setw(2) << std::setfill('0') << std::uppercase << std::hex << (int)__tmp_editor.bytes[b];
+		return oss.str();
+	}
+
+	String String::getBinStr(uint64_t value, bool prefix, uint8_t nbytes)
+	{
+		union {
+			uint64_t val;
+			uint8_t bytes[8];
+		} __tmp_editor;
+		__tmp_editor.val = value;
+		if (nbytes < 1 || nbytes > 8) nbytes = 1;
+		std::ostringstream oss;
+		if (prefix) oss << "0b ";
+		for (int8_t b = nbytes - 1; b >= 0; b--)
+			oss << std::bitset<8>((char)__tmp_editor.bytes[b]) << " ";
+		return oss.str();
+	}
+
+	String String::duplicateChar(unsigned char c, uint16_t count)
+	{
+		String str = "";
+		for (uint16_t i = 0; i < count; i++)
+			str = str += c;
+		return str;
 	}
 
 

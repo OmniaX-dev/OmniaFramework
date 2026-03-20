@@ -1,4 +1,24 @@
-#include "Utils.hpp"
+/*
+    OmniaFramework - A collection of useful functionality
+    Copyright (C) 2025  OmniaX-Dev
+
+    This file is part of OmniaFramework.
+
+    OmniaFramework is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    OmniaFramework is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#include "Hash.hpp"
 #include <string>
 #include <cstring>
 #include <cstdint>
@@ -53,7 +73,7 @@ namespace {
     }
 }
 
-ostd::String ostd::Utils::md5(const ostd::String& _str) {
+ostd::String ostd::Hash::md5(const ostd::String& _str) {
 	std::string str = _str.cpp_str();
     // Initial state (RFC 1321)
     uint32_t state[4] = {
@@ -67,7 +87,7 @@ ostd::String ostd::Utils::md5(const ostd::String& _str) {
     // Process full 64-byte chunks
     size_t i = 0;
     for (; i + 63 < inputLen; i += 64) {
-        transform(input + i, state);
+        __md5_transform(input + i, state);
     }
 
     // Buffer for remaining bytes + padding + length
@@ -84,7 +104,7 @@ ostd::String ostd::Utils::md5(const ostd::String& _str) {
     if (rem > 56) {
         // Not enough space for length: pad and process this block
         std::memset(buffer + rem, 0, 64 - rem);
-        transform(buffer, state);
+        __md5_transform(buffer, state);
         // New block with zeros up to 56
         std::memset(buffer, 0, 56);
     } else {
@@ -99,11 +119,11 @@ ostd::String ostd::Utils::md5(const ostd::String& _str) {
     }
 
     // Final transform
-    transform(buffer, state);
+    __md5_transform(buffer, state);
 
     // Output digest (little-endian)
     uint8_t digest[16];
-    encode(digest, state, 16);
+    __md5_encode(digest, state, 16);
 
     std::ostringstream oss;
     oss << std::hex << std::setfill('0');
@@ -113,14 +133,14 @@ ostd::String ostd::Utils::md5(const ostd::String& _str) {
     return oss.str();
 }
 
-void ostd::Utils::transform(const uint8_t block[64], uint32_t state[4]) {
+void ostd::Hash::__md5_transform(const uint8_t block[64], uint32_t state[4]) {
     uint32_t a = state[0];
     uint32_t b = state[1];
     uint32_t c = state[2];
     uint32_t d = state[3];
     uint32_t x[16];
 
-    decode(x, block, 64);
+    __md5_decode(x, block, 64);
 
     // Round 1
     FF(a, b, c, d, x[ 0], S11, 0xd76aa478); // 1
@@ -200,7 +220,7 @@ void ostd::Utils::transform(const uint8_t block[64], uint32_t state[4]) {
     state[3] += d;
 }
 
-void ostd::Utils::encode(uint8_t* output, const uint32_t* input, size_t len) {
+void ostd::Hash::__md5_encode(uint8_t* output, const uint32_t* input, size_t len) {
     // Convert 32-bit words to bytes (little-endian)
     for (size_t i = 0, j = 0; j < len; ++i, j += 4) {
         output[j + 0] = static_cast<uint8_t>( input[i]        & 0xFF);
@@ -210,7 +230,7 @@ void ostd::Utils::encode(uint8_t* output, const uint32_t* input, size_t len) {
     }
 }
 
-void ostd::Utils::decode(uint32_t* output, const uint8_t* input, size_t len) {
+void ostd::Hash::__md5_decode(uint32_t* output, const uint8_t* input, size_t len) {
     // Convert bytes to 32-bit words (little-endian)
     for (size_t i = 0, j = 0; j < len; ++i, j += 4) {
         output[i] =  static_cast<uint32_t>(input[j + 0])

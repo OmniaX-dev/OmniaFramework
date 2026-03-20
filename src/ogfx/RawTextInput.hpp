@@ -21,7 +21,7 @@
 #pragma once
 
 #include <ogfx/BasicRenderer.hpp>
-#include <ostd/utils/Utils.hpp>
+#include <ostd/utils/Time.hpp>
 
 namespace ogfx
 {

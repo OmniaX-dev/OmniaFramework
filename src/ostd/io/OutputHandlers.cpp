@@ -1,4 +1,3 @@
-#include "../utils/Utils.hpp"
 #include <iomanip>
 #include <iostream>
 #include "Logger.hpp"
@@ -7,6 +6,7 @@
 #include "../data_types/BaseObject.hpp"
 #include "../string/TextStyleParser.hpp"
 #include "../string/String.hpp"
+#include "io/Console.hpp"
 
 namespace ostd
 {
@@ -210,7 +210,7 @@ namespace ostd
 
 	OutputHandlerBase& ConsoleOutputHandler::clear(void)
 	{
-		Utils::clearConsole();
+		BasicConsole::clearConsole();
 		return *this;
 	}
 }

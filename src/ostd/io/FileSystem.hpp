@@ -52,5 +52,9 @@ namespace ostd
 			static bool isValidFileCreationPath(const ostd::String& filePath);
 			static bool isValidDirectoryCreationPath(const ostd::String& directoryPath);
 			static ePathStatus getPathStatus(const ostd::String& path);
+
+			static bool readTextFile(String fileName, std::vector<String>& outLines);
+			static bool readTextFileRaw(String fileName, String& outString);
+			static bool loadFileFromHppResource(String output_file_path, const char* resource_buffer, unsigned int size);
 	};
 }

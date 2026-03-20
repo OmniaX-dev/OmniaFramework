@@ -1,6 +1,6 @@
 #include "PixelRenderer.hpp"
 #include "WindowBase.hpp"
-#include "../ostd/utils/Utils.hpp"
+#include "../ostd/io/Memory.hpp"
 
 namespace ogfx
 {
@@ -107,7 +107,7 @@ namespace ogfx
 	PixelRenderer::~PixelRenderer(void)
 	{
 		if (isInvalid()) return;
-		ostd::Utils::destroyArray(m_pixels);
+		ostd::Memory::destroyArray(m_pixels);
 		SDL_DestroyTexture(m_texture);
 	}
 
@@ -117,7 +117,7 @@ namespace ogfx
 		if (!parent.isValid() || !parent.isInitialized())
 			return; //TODO: Error
 		m_parent = &parent;
-		m_pixels = ostd::Utils::createArray<uint32_t>(parent.getWindowWidth() * parent.getWindowHeight());
+		m_pixels = ostd::Memory::createArray<uint32_t>(parent.getWindowWidth() * parent.getWindowHeight());
 		m_texture = SDL_CreateTexture(parent.getSDLRenderer(), SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, parent.getWindowWidth(), parent.getWindowHeight());
 		m_windowWidth = parent.getWindowWidth();
 		m_windowHeight = parent.getWindowHeight();
@@ -132,7 +132,7 @@ namespace ogfx
 		if (isInvalid()) return;
 		if (signal.ID == ostd::tBuiltinSignals::WindowResized)
 		{
-			m_pixels = ostd::Utils::resizeArray<uint32_t>(m_pixels, m_parent->getWindowWidth() * m_parent->getWindowHeight());
+			m_pixels = ostd::Memory::resizeArray<uint32_t>(m_pixels, m_parent->getWindowWidth() * m_parent->getWindowHeight());
 			SDL_DestroyTexture(m_texture);
 			m_texture = SDL_CreateTexture(m_parent->getSDLRenderer(), SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, m_parent->getWindowWidth(), m_parent->getWindowHeight());
 			m_windowWidth = m_parent->getWindowWidth();
