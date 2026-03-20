@@ -20,7 +20,6 @@
 
 #pragma once
 
-#include <filesystem>
 #include <cstdint>
 #include <ostd/data_types/Types.hpp>
 #include <ostd/string/TextStyleParser.hpp>
@@ -60,18 +59,6 @@ namespace ostd
 
 			//Implemented in <md5.cpp>
 			static String md5(const String& str);
-
-			//Implemented in <FileSystem.cpp>
-			static std::vector<std::filesystem::path> listFilesInDirectory(const String& directoryPath);
-			static std::vector<std::filesystem::path> listDirectoriesInDirectory(const String& directoryPath);
-			static std::vector<std::filesystem::path> listDirectory(const String& directoryPath);
-			static std::vector<std::filesystem::path> listFilesInDirectoryRecursive(const String& directoryPath);
-			static std::vector<std::filesystem::path> listDirectoriesInDirectoryRecursive(const String& directoryPath);
-			static std::vector<std::filesystem::path> listDirectoryRecursive(const String& directoryPath);
-			static std::filesystem::path getHomeDirPath(void);
-			static std::filesystem::path getWorkingDirPath(void);
-			static bool ensureDirectory(const String& path);
-			static bool deleteDirectory(const String& path);
 
 			//Implemented in <ShuntingYard.cpp>
 			static int32_t solveIntegerExpression(const String& expr);

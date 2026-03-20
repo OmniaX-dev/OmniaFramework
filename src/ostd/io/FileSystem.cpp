@@ -1,9 +1,9 @@
-#include "../utils/Utils.hpp"
+#include "FileSystem.hpp"
 #include "Logger.hpp"
 
 namespace ostd
 {
-	std::vector<std::filesystem::path> Utils::listFilesInDirectory(const String& directoryPath)
+	std::vector<std::filesystem::path> FileSystem::listFilesInDirectory(const String& directoryPath)
 	{
 		std::vector<std::filesystem::path> list;
 		for (const auto& file : std::filesystem::directory_iterator(directoryPath.cpp_str()))
@@ -14,7 +14,7 @@ namespace ostd
 		return list;
 	}
 
-	std::vector<std::filesystem::path> Utils::listDirectoriesInDirectory(const String& directoryPath)
+	std::vector<std::filesystem::path> FileSystem::listDirectoriesInDirectory(const String& directoryPath)
 	{
 		std::vector<std::filesystem::path> list;
 		for (const auto& file : std::filesystem::directory_iterator(directoryPath.cpp_str()))
@@ -25,7 +25,7 @@ namespace ostd
 		return list;
 	}
 
-	std::vector<std::filesystem::path> Utils::listDirectory(const String& directoryPath)
+	std::vector<std::filesystem::path> FileSystem::listDirectory(const String& directoryPath)
 	{
 		std::vector<std::filesystem::path> list;
 		for (const auto& file : std::filesystem::directory_iterator(directoryPath.cpp_str()))
@@ -33,7 +33,7 @@ namespace ostd
 		return list;
 	}
 
-	std::vector<std::filesystem::path> Utils::listFilesInDirectoryRecursive(const String& directoryPath)
+	std::vector<std::filesystem::path> FileSystem::listFilesInDirectoryRecursive(const String& directoryPath)
 	{
 		std::vector<std::filesystem::path> list;
 		for (const auto& file : std::filesystem::recursive_directory_iterator(directoryPath.cpp_str()))
@@ -44,7 +44,7 @@ namespace ostd
 		return list;
 	}
 
-	std::vector<std::filesystem::path> Utils::listDirectoriesInDirectoryRecursive(const String& directoryPath)
+	std::vector<std::filesystem::path> FileSystem::listDirectoriesInDirectoryRecursive(const String& directoryPath)
 	{
 		std::vector<std::filesystem::path> list;
 		for (const auto& file : std::filesystem::recursive_directory_iterator(directoryPath.cpp_str()))
@@ -55,7 +55,7 @@ namespace ostd
 		return list;
 	}
 
-	std::vector<std::filesystem::path> Utils::listDirectoryRecursive(const String& directoryPath)
+	std::vector<std::filesystem::path> FileSystem::listDirectoryRecursive(const String& directoryPath)
 	{
 		std::vector<std::filesystem::path> list;
 		for (const auto& file : std::filesystem::recursive_directory_iterator(directoryPath.cpp_str()))
@@ -63,25 +63,27 @@ namespace ostd
 		return list;
 	}
 
-	std::filesystem::path Utils::getHomeDirPath(void)
+
+	std::filesystem::path FileSystem::getHomeDirPath(void)
 	{
 		String home_path = "";
-	#ifdef WINDOWS_OS
-	    home_path = String(getenv("HOMEDRIVE")) + "\\" + String(getenv("HOMEPATH"));
-	#elif defined(LINUX_OS) || defined(MAC_OS)
-	    home_path = String(getenv("HOME"));
-	#else
-	    home_path = "NULL";
-	#endif
+		#ifdef WINDOWS_OS
+		    home_path = String(getenv("HOMEDRIVE")) + "\\" + String(getenv("HOMEPATH"));
+		#elif defined(LINUX_OS) || defined(MAC_OS)
+		    home_path = String(getenv("HOME"));
+		#else
+		    home_path = "NULL";
+		#endif
 		return home_path;
 	}
 
-	std::filesystem::path Utils::getWorkingDirPath(void)
+	std::filesystem::path FileSystem::getWorkingDirPath(void)
 	{
 		return std::filesystem::current_path();
 	}
 
-	bool Utils::ensureDirectory(const String& path)
+
+	bool FileSystem::ensureDirectory(const String& path)
 	{
 	    namespace fs = std::filesystem;
 
@@ -110,7 +112,7 @@ namespace ostd
 		return true;
 	}
 
-	bool Utils::deleteDirectory(const String& path)
+	bool FileSystem::deleteDirectory(const String& path)
 	{
 	    namespace fs = std::filesystem;
 	    try
@@ -126,5 +128,48 @@ namespace ostd
 			return false;
 	    }
 		return false;
+	}
+
+
+	bool FileSystem::directoryExists(const String& directoryPath)
+	{
+		namespace fs = std::filesystem;
+	    try
+		{
+	        fs::path p(directoryPath);
+	        return fs::exists(p) && fs::is_directory(p);
+	    }
+		catch (const fs::filesystem_error&)
+		{
+	        return false;
+	    }
+	}
+
+	bool FileSystem::fileExists(const String& filePath)
+	{
+		namespace fs = std::filesystem;
+	    try
+		{
+	        fs::path p(filePath);
+	        return fs::exists(p) && !fs::is_directory(p);
+	    }
+		catch (const fs::filesystem_error&)
+		{
+	        return false;
+	    }
+	}
+
+	bool FileSystem::pathExists(const String& path)
+	{
+		namespace fs = std::filesystem;
+	    try
+		{
+	        fs::path p(path);
+	        return fs::exists(p);
+	    }
+		catch (const fs::filesystem_error&)
+		{
+	        return false;
+	    }
 	}
 }

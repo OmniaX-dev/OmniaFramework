@@ -29,6 +29,7 @@
 
 #include <ostd/io/Errors.hpp>
 #include <ostd/io/File.hpp>
+#include <ostd/io/FileSystem.hpp>
 #include <ostd/io/IOHandlers.hpp>
 #include <ostd/io/Json.hpp>
 #include <ostd/io/Logger.hpp>
