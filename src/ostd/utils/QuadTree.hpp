@@ -22,7 +22,7 @@
 
 #include <vector>
 #include <memory>
-#include <ostd/data_types/BaseObject.hpp>
+#include <ostd/data/BaseObject.hpp>
 #include <ostd/math/Geometry.hpp>
 
 namespace ostd

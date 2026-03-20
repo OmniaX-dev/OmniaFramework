@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include <ostd/data_types/BaseObject.hpp>
+#include <ostd/data/BaseObject.hpp>
 #include <ogfx/SDLInclude.hpp>
 #include <ostd/math/Geometry.hpp>
 

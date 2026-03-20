@@ -22,7 +22,7 @@
 
 #include <cstring>
 #include <filesystem>
-#include <ostd/data_types/Types.hpp>
+#include <ostd/data/Types.hpp>
 
 #define STR_BOOL(b) (b ? "true" : "false")
 

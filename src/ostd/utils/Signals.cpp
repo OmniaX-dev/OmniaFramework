@@ -1,5 +1,5 @@
 #include "Signals.hpp"
-#include "../data_types/BaseObject.hpp"
+#include "../data/BaseObject.hpp"
 #include "../io/Logger.hpp"
 
 namespace ostd

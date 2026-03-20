@@ -295,10 +295,8 @@ namespace ostd
 			return ePathStatus::ExistingDirectory;
 		if (fileExists(path))
 			return ePathStatus::ExistingFile;
-		if (isValidDirectoryCreationPath(path))
-			return ePathStatus::ValidNewDirectory;
-		if (isValidFileCreationPath(path))
-			return ePathStatus::ValidNewFile;
+		if (isValidDirectoryCreationPath(path) && isValidFileCreationPath(path))
+			return ePathStatus::ValidNewPath;
 		return ePathStatus::Invalid;
 	}
 
@@ -324,6 +322,45 @@ namespace ostd
 			outString.add(line).add("\n");
 		return true;
 	}
+
+	bool FileSystem::writeTextFile(const ostd::String& filePath, const std::vector<ostd::String>& lines, bool truncate)
+	{
+		namespace fs = std::filesystem;
+		ePathStatus status = getPathStatus(filePath);
+		if (status == ePathStatus::Invalid || status == ePathStatus::ExistingDirectory)
+		{
+			OX_ERROR("Invalid file path for writing: '%s'", filePath.c_str());
+			return false;
+		}
+		if (!ensureFile(filePath, truncate))
+		   return false;
+
+		try
+		{
+			std::ofstream ofs(filePath.cpp_str(), std::ios::app);
+			if (!ofs)
+			{
+				OX_ERROR("Failed to open file for writing: '%s'", filePath.c_str());
+				return false;
+			}
+			for (const auto& line : lines)
+				ofs << line.cpp_str() << '\n';
+			return true;
+		}
+		catch (const fs::filesystem_error& e)
+		{
+			OX_ERROR("Filesystem error writing file '%s': %s", filePath.c_str(), e.what());
+			return false;
+		}
+	}
+
+
+	bool FileSystem::writeTextFileRaw(const ostd::String& filePath, const ostd::String& lines, bool truncate)
+	{
+		auto _lines = lines.tokenize("\n", false, true).getRawData();
+		return writeTextFile(filePath, _lines, truncate);
+	}
+
 
 	bool FileSystem::loadFileFromHppResource(String output_file_path, const char* resource_buffer, unsigned int size)
 	{

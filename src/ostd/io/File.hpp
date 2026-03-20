@@ -22,8 +22,8 @@
 
 #include <filesystem>
 #include <vector>
-#include <ostd/data_types/BaseObject.hpp>
-#include <ostd/data_types/Types.hpp>
+#include <ostd/data/BaseObject.hpp>
+#include <ostd/data/Types.hpp>
 
 namespace ostd
 {

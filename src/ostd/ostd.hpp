@@ -22,10 +22,10 @@
 
 #include <ostd/utils/Defines.hpp>
 
-#include <ostd/data_types/BaseObject.hpp>
-#include <ostd/data_types/Bitfields.hpp>
-#include <ostd/data_types/Color.hpp>
-#include <ostd/data_types/Types.hpp>
+#include <ostd/data/BaseObject.hpp>
+#include <ostd/data/Bitfields.hpp>
+#include <ostd/data/Color.hpp>
+#include <ostd/data/Types.hpp>
 
 #include <ostd/io/Errors.hpp>
 #include <ostd/io/File.hpp>
@@ -33,9 +33,11 @@
 #include <ostd/io/IOHandlers.hpp>
 #include <ostd/io/Json.hpp>
 #include <ostd/io/Logger.hpp>
+#include <ostd/io/Memory.hpp>
 #include <ostd/io/Serial.hpp>
 
 #include <ostd/math/Geometry.hpp>
+#include <ostd/math/MathUtils.hpp>
 #include <ostd/math/Random.hpp>
 
 #include <ostd/string/String.hpp>
@@ -43,4 +45,3 @@
 
 #include <ostd/utils/Signals.hpp>
 #include <ostd/utils/Time.hpp>
-#include <ostd/utils/Utils.hpp>

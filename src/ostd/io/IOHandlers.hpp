@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include <ostd/data_types/Types.hpp>
+#include <ostd/data/Types.hpp>
 #include <ostd/math/Geometry.hpp>
 #include <ostd/string/String.hpp>
 #include <ostd/string/TextStyleParser.hpp>

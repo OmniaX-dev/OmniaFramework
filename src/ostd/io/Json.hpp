@@ -22,7 +22,7 @@
 
 #include <ostd/math/Geometry.hpp>
 #include <ostd/string/String.hpp>
-#include <ostd/data_types/Color.hpp>
+#include <ostd/data/Color.hpp>
 #include <ostd/vendor/nlohmann/json.hpp> // IWYU pragma: keep
 
 namespace ostd

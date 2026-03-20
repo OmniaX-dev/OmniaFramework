@@ -21,8 +21,8 @@
 #pragma once
 
 #include <cstdint>
-#include <ostd/data_types/Types.hpp>
-#include <ostd/data_types/BaseObject.hpp>
+#include <ostd/data/Types.hpp>
+#include <ostd/data/BaseObject.hpp>
 #include <ostd/string/String.hpp>
 
 namespace ostd

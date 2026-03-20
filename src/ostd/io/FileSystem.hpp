@@ -28,7 +28,7 @@ namespace ostd
 {
 	class FileSystem
 	{
-		public: enum class ePathStatus { Invalid = 0, ExistingDirectory, ValidNewDirectory, ExistingFile, ValidNewFile };
+		public: enum class ePathStatus { Invalid = 0, ExistingDirectory, ExistingFile, ValidNewPath };
 
 		public:
 			static std::vector<std::filesystem::path> listFilesInDirectory(const String& directoryPath);
@@ -55,6 +55,9 @@ namespace ostd
 
 			static bool readTextFile(String fileName, std::vector<String>& outLines);
 			static bool readTextFileRaw(String fileName, String& outString);
+			static bool writeTextFile(const ostd::String& filePath, const std::vector<ostd::String>& lines, bool truncate = true);
+			static bool writeTextFileRaw(const ostd::String& filePath, const ostd::String& lines, bool truncate = true);
+
 			static bool loadFileFromHppResource(String output_file_path, const char* resource_buffer, unsigned int size);
 	};
 }

@@ -22,7 +22,7 @@
 
 #include <ostd/io/IOHandlers.hpp>
 #include <ostd/string/String.hpp>
-#include <ostd/data_types/Color.hpp>
+#include <ostd/data/Color.hpp>
 #include <ogfx/SDLInclude.hpp>
 #include <unordered_map>
 

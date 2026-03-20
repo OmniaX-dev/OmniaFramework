@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include <ostd/data_types/Color.hpp>
+#include <ostd/data/Color.hpp>
 
 namespace ostd
 {

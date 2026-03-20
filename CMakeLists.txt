@@ -42,9 +42,9 @@ list(APPEND OSTD_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/vendor/midifile/MidiMessage.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/vendor/midifile/Options.cpp
 
-	# data_types
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/data_types/BaseObject.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/data_types/Color.cpp
+	# data
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/data/BaseObject.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/data/Color.cpp
 
 	# io
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/io/Console.cpp

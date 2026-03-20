@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ostd/data_types/Types.hpp>
+#include <ostd/data/Types.hpp>
 #include <ostd/math/Geometry.hpp>
 #include <ogfx/Image.hpp>
 

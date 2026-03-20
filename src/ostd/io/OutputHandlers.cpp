@@ -3,7 +3,7 @@
 #include "Logger.hpp"
 #include "IOHandlers.hpp"
 #include "../vendor/TermColor.hpp"
-#include "../data_types/BaseObject.hpp"
+#include "../data/BaseObject.hpp"
 #include "../string/TextStyleParser.hpp"
 #include "../string/String.hpp"
 #include "io/Console.hpp"

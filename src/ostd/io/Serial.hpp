@@ -20,9 +20,9 @@
 
 #pragma once
 
-#include <ostd/data_types/Types.hpp>
-#include <ostd/data_types/Bitfields.hpp>
-#include <ostd/data_types/BaseObject.hpp>
+#include <ostd/data/Types.hpp>
+#include <ostd/data/Bitfields.hpp>
+#include <ostd/data/BaseObject.hpp>
 
 namespace ostd
 {
