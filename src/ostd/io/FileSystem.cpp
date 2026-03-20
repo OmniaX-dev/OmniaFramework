@@ -1,5 +1,6 @@
 #include "FileSystem.hpp"
 #include "Logger.hpp"
+#include <fstream>
 
 namespace ostd
 {
@@ -68,11 +69,11 @@ namespace ostd
 	{
 		String home_path = "";
 		#ifdef WINDOWS_OS
-		    home_path = String(getenv("HOMEDRIVE")) + "\\" + String(getenv("HOMEPATH"));
+			home_path = String(getenv("HOMEDRIVE")) + "\\" + String(getenv("HOMEPATH"));
 		#elif defined(LINUX_OS) || defined(MAC_OS)
-		    home_path = String(getenv("HOME"));
+			home_path = String(getenv("HOME"));
 		#else
-		    home_path = "NULL";
+			home_path = "NULL";
 		#endif
 		return home_path;
 	}
@@ -83,50 +84,120 @@ namespace ostd
 	}
 
 
-	bool FileSystem::ensureDirectory(const String& path)
+	bool FileSystem::ensureDirectory(const String& directoryPath)
 	{
-	    namespace fs = std::filesystem;
+		namespace fs = std::filesystem;
 
-	    try {
-	        fs::path dir(path);
+		try {
+			fs::path dir(directoryPath);
 
-	        if (!fs::exists(dir))
-	        {
-	            if (!fs::create_directories(dir))
-	            {
-	                OX_ERROR("Failed to create directory: %s", path.c_str());
+			if (!fs::exists(dir))
+			{
+				if (!fs::create_directories(dir))
+				{
+					OX_ERROR("Failed to create directory: %s", directoryPath.c_str());
 					return false;
-	            }
-	        }
-	        else if (!fs::is_directory(dir))
-	        {
-	            OX_ERROR("Path exists but is not a directory: %s", path.c_str());
+				}
+			}
+			else if (!fs::is_directory(dir))
+			{
+				OX_ERROR("Path exists but is not a directory: %s", directoryPath.c_str());
 				return false;
-	        }
-	    }
-	    catch (const fs::filesystem_error& e)
-	    {
-	        OX_ERROR("Filesystem error for path '%s': %s", path.c_str(), e.what());
+			}
+		}
+		catch (const fs::filesystem_error& e)
+		{
+			OX_ERROR("Filesystem error for path '%s': %s", directoryPath.c_str(), e.what());
 			return false;
-	    }
+		}
 		return true;
 	}
 
-	bool FileSystem::deleteDirectory(const String& path)
+	bool FileSystem::deleteDirectory(const String& directoryPath)
 	{
-	    namespace fs = std::filesystem;
-	    try
-	    {
-	        if (fs::exists(path) && fs::is_directory(path))
-	        {
-	            fs::remove_all(path);
+		namespace fs = std::filesystem;
+		try
+		{
+			if (fs::exists(directoryPath) && fs::is_directory(directoryPath))
+			{
+				fs::remove_all(directoryPath);
 				return true;
-	        }
-	    } catch (const fs::filesystem_error& e)
-	    {
-	        OX_ERROR("Failed to delete tmp folder '%s': %s", path.c_str(), e.what());
+			}
+		} catch (const fs::filesystem_error& e)
+		{
+			OX_ERROR("Failed to delete folder '%s': %s", directoryPath.c_str(), e.what());
 			return false;
-	    }
+		}
+		return false;
+	}
+
+	bool FileSystem::ensureFile(const String& filePath, bool truncate)
+	{
+		namespace fs = std::filesystem;
+		try
+		{
+			fs::path p(filePath);
+			if (p.empty())
+			{
+				OX_ERROR("Invalid file path: '%s'", filePath.c_str());
+				return false;
+			}
+			fs::path parent = p.parent_path();
+			if (parent.empty() || !fs::exists(parent) || !fs::is_directory(parent))
+			{
+				OX_ERROR("Parent directory does not exist for file: '%s'", filePath.c_str());
+				return false;
+			}
+			if (fs::exists(p))
+			{
+				if (fs::is_directory(p))
+				{
+					OX_ERROR("Path exists but is a directory: '%s'", filePath.c_str());
+					return false;
+				}
+				if (!truncate)
+					return true;
+				std::ofstream ofs(p, std::ios::trunc);
+				if (!ofs)
+				{
+					OX_ERROR("Failed to truncate file: '%s'", filePath.c_str());
+					return false;
+				}
+				return true;
+			}
+			else
+			{
+				std::ofstream ofs(p);
+				if (!ofs)
+				{
+					OX_ERROR("Failed to create file: '%s'", filePath.c_str());
+					return false;
+				}
+				return true;
+			}
+		}
+		catch (const fs::filesystem_error& e)
+		{
+			OX_ERROR("Filesystem error for file '%s': %s", filePath.c_str(), e.what());
+			return false;
+		}
+	}
+
+	bool FileSystem::deleteFile(const String& filePath)
+	{
+		namespace fs = std::filesystem;
+		try
+		{
+			if (fs::exists(filePath) && !fs::is_directory(filePath))
+			{
+				fs::remove(filePath);
+				return true;
+			}
+		} catch (const fs::filesystem_error& e)
+		{
+			OX_ERROR("Failed to delete file '%s': %s", filePath.c_str(), e.what());
+			return false;
+		}
 		return false;
 	}
 
@@ -134,42 +205,100 @@ namespace ostd
 	bool FileSystem::directoryExists(const String& directoryPath)
 	{
 		namespace fs = std::filesystem;
-	    try
+		try
 		{
-	        fs::path p(directoryPath);
-	        return fs::exists(p) && fs::is_directory(p);
-	    }
+			fs::path p(directoryPath);
+			return fs::exists(p) && fs::is_directory(p);
+		}
 		catch (const fs::filesystem_error&)
 		{
-	        return false;
-	    }
+			return false;
+		}
 	}
 
 	bool FileSystem::fileExists(const String& filePath)
 	{
 		namespace fs = std::filesystem;
-	    try
+		try
 		{
-	        fs::path p(filePath);
-	        return fs::exists(p) && !fs::is_directory(p);
-	    }
+			fs::path p(filePath);
+			return fs::exists(p) && !fs::is_directory(p);
+		}
 		catch (const fs::filesystem_error&)
 		{
-	        return false;
-	    }
+			return false;
+		}
 	}
 
 	bool FileSystem::pathExists(const String& path)
 	{
 		namespace fs = std::filesystem;
-	    try
+		try
 		{
-	        fs::path p(path);
-	        return fs::exists(p);
-	    }
+			fs::path p(path);
+			return fs::exists(p);
+		}
 		catch (const fs::filesystem_error&)
 		{
-	        return false;
-	    }
+			return false;
+		}
+	}
+
+	bool FileSystem::isValidFileCreationPath(const ostd::String& filePath)
+	{
+		namespace fs = std::filesystem;
+		try
+		{
+			fs::path p(filePath);
+			if (p.empty())
+				return false;
+			fs::path parent = p.parent_path();
+			if (parent.empty())
+				return false;
+			if (!fs::exists(parent) || !fs::is_directory(parent))
+				return false;
+			if (fs::exists(p) && !fs::is_regular_file(p))
+				return false;
+			return true;
+		}
+		catch (const fs::filesystem_error&)
+		{
+			return false;
+		}
+	}
+
+	bool FileSystem::isValidDirectoryCreationPath(const ostd::String& directoryPath)
+	{
+		namespace fs = std::filesystem;
+		try {
+			fs::path p(directoryPath);
+			if (p.empty())
+				return false;
+			fs::path parent = p.parent_path();
+			if (parent.empty())
+				return false;
+			if (!fs::exists(parent) || !fs::is_directory(parent))
+				return false;
+			if (fs::exists(p))
+				return false;
+			return true;
+		}
+		catch (const fs::filesystem_error&)
+		{
+			return false;
+		}
+	}
+
+	FileSystem::ePathStatus FileSystem::getPathStatus(const ostd::String& path)
+	{
+		if (directoryExists(path))
+			return ePathStatus::ExistingDirectory;
+		if (fileExists(path))
+			return ePathStatus::ExistingFile;
+		if (isValidDirectoryCreationPath(path))
+			return ePathStatus::ValidNewDirectory;
+		if (isValidFileCreationPath(path))
+			return ePathStatus::ValidNewFile;
+		return ePathStatus::Invalid;
 	}
 }

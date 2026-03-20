@@ -28,6 +28,8 @@ namespace ostd
 {
 	class FileSystem
 	{
+		public: enum class ePathStatus { Invalid = 0, ExistingDirectory, ValidNewDirectory, ExistingFile, ValidNewFile };
+
 		public:
 			static std::vector<std::filesystem::path> listFilesInDirectory(const String& directoryPath);
 			static std::vector<std::filesystem::path> listDirectoriesInDirectory(const String& directoryPath);
@@ -39,11 +41,16 @@ namespace ostd
 			static std::filesystem::path getHomeDirPath(void);
 			static std::filesystem::path getWorkingDirPath(void);
 
-			static bool ensureDirectory(const String& path);
-			static bool deleteDirectory(const String& path);
+			static bool ensureDirectory(const String& directoryPath);
+			static bool deleteDirectory(const String& directoryPath);
+			static bool ensureFile(const String& filePath, bool truncate = true);
+			static bool deleteFile(const String& filePath);
 
 			static bool directoryExists(const String& directoryPath);
 			static bool fileExists(const String& filePath);
 			static bool pathExists(const String& path);
+			static bool isValidFileCreationPath(const ostd::String& filePath);
+			static bool isValidDirectoryCreationPath(const ostd::String& directoryPath);
+			static ePathStatus getPathStatus(const ostd::String& path);
 	};
 }
