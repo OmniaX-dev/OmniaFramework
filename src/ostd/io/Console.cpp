@@ -81,7 +81,7 @@ void BasicConsole::getConsoleSize(int32_t& outColumns, int32_t& outRows)
 
 void BasicConsole::setConsoleCursorPosition(int32_t x, int32_t y)
 {
-   printf("\033[%d;%dH",x+1,y+1);
+   printf("\033[%d;%dH",y+1,x+1);
 }
 
 IPoint BasicConsole::getConsoleCursorPosition(void)
