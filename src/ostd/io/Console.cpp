@@ -7,7 +7,7 @@ namespace ostd
 
 #include <windows.h>
 
-void Utils::clearConsole(void)
+void BasicConsole::clearConsole(void)
 {
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 	HANDLE hStdOut;
@@ -31,7 +31,7 @@ void Utils::clearConsole(void)
 	SetConsoleCursorPosition( hStdOut, homeCoords );
 }
 
-void Utils::getConsoleSize(int32_t& outColumns, int32_t& outRows)
+void BasicConsole::getConsoleSize(int32_t& outColumns, int32_t& outRows)
 {
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
@@ -39,11 +39,18 @@ void Utils::getConsoleSize(int32_t& outColumns, int32_t& outRows)
 	outRows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 }
 
-void Utils::setConsoleCursorPosition(int32_t x, int32_t y)
+void BasicConsole::setConsoleCursorPosition(int32_t x, int32_t y)
 {
    COORD coord;
    coord.X = x; coord.Y = y;
    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE),coord);
+}
+
+IPoint BasicConsole::getConsoleCursorPosition(void)
+{
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    return { csbi.dwCursorPosition.X, csbi.dwCursorPosition.Y };
 }
 
 #elif defined (__LINUX__) || defined(__gnu_linux__) || defined(__linux__)
@@ -77,6 +84,35 @@ void BasicConsole::setConsoleCursorPosition(int32_t x, int32_t y)
    printf("\033[%d;%dH",x+1,y+1);
 }
 
+IPoint BasicConsole::getConsoleCursorPosition(void)
+{
+	// Save terminal settings
+    termios oldt, newt;
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+
+    // Disable canonical mode and echo
+    newt.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+
+    // Request cursor position
+    std::printf("\033[6n");
+    std::fflush(stdout);
+
+    // Read response: ESC [ row ; col R
+    int row = 0, col = 0;
+    if (std::scanf("\033[%d;%dR", &row, &col) != 2) {
+        // Failed to parse
+        row = col = -1;
+    }
+
+    // Restore terminal settings
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+
+    // Convert to 0-based like Windows
+    return { col - 1, row - 1 };
+}
+
 #elif defined(__APPLE__)
 
 #include <unistd.h>
@@ -103,6 +139,35 @@ void BasicConsole::setConsoleCursorPosition(int32_t x, int32_t y)
     // ANSI escape sequence: move cursor to (y+1, x+1)
     std::printf("\033[%d;%dH", y + 1, x + 1);
     std::fflush(stdout);
+}
+
+IPoint BasicConsole::getConsoleCursorPosition(void)
+{
+	// Save terminal settings
+    termios oldt, newt;
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+
+    // Disable canonical mode and echo
+    newt.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+
+    // Request cursor position
+    std::printf("\033[6n");
+    std::fflush(stdout);
+
+    // Read response: ESC [ row ; col R
+    int row = 0, col = 0;
+    if (std::scanf("\033[%d;%dR", &row, &col) != 2) {
+        // Failed to parse
+        row = col = -1;
+    }
+
+    // Restore terminal settings
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+
+    // Convert to 0-based like Windows
+    return { col - 1, row - 1 };
 }
 
 #endif

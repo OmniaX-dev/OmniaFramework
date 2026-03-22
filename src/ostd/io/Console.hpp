@@ -39,6 +39,7 @@ namespace ostd
 			static void clearConsole(void);
 			static void getConsoleSize(int32_t& outColumns, int32_t& outRows);
 			static void setConsoleCursorPosition(int32_t x, int32_t y);
+			static IPoint getConsoleCursorPosition(void);
 			static int32_t getConsoleWidth(void);
 			static int32_t getConsoleHeight(void);
 	};
