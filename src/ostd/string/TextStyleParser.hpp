@@ -139,11 +139,6 @@ namespace ostd
 			private:
 				String m_rawString { "" };
 		};
-
-		//TODO:  Implement
-		// public: class FullColor {
-
-		// };
 	};
 
 	typedef TextStyleBuilder::Console ConsoleRichString;

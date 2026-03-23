@@ -212,5 +212,18 @@ namespace ostd
 			OutputHandlerBase& flush(void) override;
 			OutputHandlerBase& reset(void) override;
 			OutputHandlerBase& clear(void) override;
+
+			OutputHandlerBase& xy(IPoint position) override;
+			OutputHandlerBase& xy(int32_t x, int32_t y) override;
+			OutputHandlerBase& x(int32_t x) override;
+			OutputHandlerBase& y(int32_t y) override;
+
+			IPoint getCursorPosition(void) override;
+			void getCursorPosition(int32_t& outX, int32_t& outY) override;
+			int32_t getCursorX(void) override;
+			int32_t getCursorY(void) override;
+
+			void getConsoleSize(int32_t& outColumns, int32_t& outRows) override;
+			IPoint getConsoleSize(void) override;
 	};
 }

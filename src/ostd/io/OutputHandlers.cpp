@@ -213,4 +213,65 @@ namespace ostd
 		BasicConsole::clearConsole();
 		return *this;
 	}
+
+	OutputHandlerBase& ConsoleOutputHandler::xy(IPoint position)
+	{
+		BasicConsole::setConsoleCursorPosition(position.x, position.y);
+		return *this;
+	}
+
+	OutputHandlerBase& ConsoleOutputHandler::xy(int32_t x, int32_t y)
+	{
+		BasicConsole::setConsoleCursorPosition(x, y);
+		return *this;
+	}
+
+	OutputHandlerBase& ConsoleOutputHandler::x(int32_t x)
+	{
+		int32_t y = getCursorPosition().y;
+		return xy(x, y);
+	}
+
+	OutputHandlerBase& ConsoleOutputHandler::y(int32_t y)
+	{
+		int32_t x = getCursorPosition().x;
+		return xy(x, y);
+	}
+
+	IPoint ConsoleOutputHandler::getCursorPosition(void)
+	{
+		return BasicConsole::getConsoleCursorPosition();
+	}
+
+	void ConsoleOutputHandler::getCursorPosition(int32_t& outX, int32_t& outY)
+	{
+		auto pos = BasicConsole::getConsoleCursorPosition();;
+		outX = pos.x;
+		outY = pos.y;
+	}
+
+	int32_t ConsoleOutputHandler::getCursorX(void)
+	{
+		auto pos = BasicConsole::getConsoleCursorPosition();;
+		return pos.x;
+	}
+
+	int32_t ConsoleOutputHandler::getCursorY(void)
+	{
+		auto pos = BasicConsole::getConsoleCursorPosition();;
+		return pos.y;
+	}
+
+	void ConsoleOutputHandler::getConsoleSize(int32_t& outColumns, int32_t& outRows)
+	{
+		BasicConsole::getConsoleSize(outColumns, outRows);
+	}
+
+	IPoint ConsoleOutputHandler::getConsoleSize(void)
+	{
+		IPoint size;
+		BasicConsole::getConsoleSize(size.x, size.y);
+		return size;
+	}
+
 }
