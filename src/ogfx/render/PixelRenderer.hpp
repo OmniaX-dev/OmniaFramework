@@ -23,7 +23,7 @@
 #include <ostd/io/IOHandlers.hpp>
 #include <ostd/string/String.hpp>
 #include <ostd/data/Color.hpp>
-#include <ogfx/SDLInclude.hpp>
+#include <ogfx/utils/SDLInclude.hpp>
 #include <unordered_map>
 
 namespace ogfx

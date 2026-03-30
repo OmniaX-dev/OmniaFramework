@@ -4,6 +4,7 @@
 #include <mutex>
 #include <atomic>
 #include <optional>
+#include <ostd/utils/Defines.hpp>
 
 namespace ostd
 {

@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include <ogfx/SDLInclude.hpp>
+#include <ogfx/utils/SDLInclude.hpp>
 #include <ostd/utils/Signals.hpp>
 #include <ostd/io/IOHandlers.hpp>
 

@@ -20,8 +20,7 @@
 
 #pragma once
 
-#include <SDL2/SDL_surface.h>
-#include <ogfx/SDLInclude.hpp>
+#include <ogfx/utils/SDLInclude.hpp>
 #include <ostd/utils/Signals.hpp>
 #include <ostd/utils/Time.hpp>
 #include <ostd/io/IOHandlers.hpp>

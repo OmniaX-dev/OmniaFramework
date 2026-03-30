@@ -21,6 +21,7 @@
 #pragma once
 
 #include <cstdint>
+#include <ostd/utils/Defines.hpp>
 
 #define get_bit(__bit_field, __bit_n		) __bit_field.bits.b##__bit_n
 #define set_bit(__bit_field, __bit_n		) __bit_field.bits.b##__bit_n = true

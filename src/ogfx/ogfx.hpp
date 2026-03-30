@@ -20,12 +20,16 @@
 
 #pragma once
 
-#ifdef _WIN32
-#define SDL_MAIN_HANDLED
-#undef __linux__
-#endif
+#include <ostd/ostd.hpp>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL2_gfxPrimitives.h>
-#include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_image.h>
+#include <ogfx/gui/RawTextInput.hpp>
+#include <ogfx/gui/WindowBase.hpp>
+#include <ogfx/gui/WindowBaseOutputHandler.hpp>
+
+#include <ogfx/render/BasicRenderer.hpp>
+#include <ogfx/render/PixelRenderer.hpp>
+
+#include <ogfx/resources/Image.hpp>
+
+#include <ogfx/utils/Animation.hpp>
+#include <ogfx/utils/SDLInclude.hpp>

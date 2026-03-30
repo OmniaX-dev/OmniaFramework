@@ -1,7 +1,25 @@
+/*
+    OmniaFramework - A collection of useful functionality
+    Copyright (C) 2025  OmniaX-Dev
+
+    This file is part of OmniaFramework.
+
+    OmniaFramework is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    OmniaFramework is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include "WindowBase.hpp"
-#include "../ostd/utils/Time.hpp"
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_surface.h>
+#include "../../ostd/utils/Time.hpp"
 
 namespace ogfx
 {
@@ -12,7 +30,7 @@ namespace ogfx
 		SDL_FreeCursor(m_cursor_Arrow);
 		SDL_DestroyRenderer(m_renderer);
 		SDL_DestroyWindow(m_window);
-		// IMG_Quit();
+		IMG_Quit();
 		SDL_Quit();
 		TTF_Quit();
 	}

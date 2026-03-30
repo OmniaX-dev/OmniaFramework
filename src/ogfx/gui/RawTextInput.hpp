@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include <ogfx/BasicRenderer.hpp>
+#include <ogfx/render/BasicRenderer.hpp>
 #include <ostd/utils/Time.hpp>
 
 namespace ogfx

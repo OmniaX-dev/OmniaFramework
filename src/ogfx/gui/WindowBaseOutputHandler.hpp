@@ -22,7 +22,7 @@
 
 #include <ostd/io/IOHandlers.hpp>
 #include <ostd/string/TextStyleParser.hpp>
-#include <ogfx/BasicRenderer.hpp>
+#include <ogfx/render/BasicRenderer.hpp>
 
 namespace ogfx
 {

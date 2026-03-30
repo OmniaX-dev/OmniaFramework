@@ -21,7 +21,7 @@
 #pragma once
 
 #include <ostd/data/BaseObject.hpp>
-#include <ogfx/SDLInclude.hpp>
+#include <ogfx/utils/SDLInclude.hpp>
 #include <ostd/math/Geometry.hpp>
 
 namespace ogfx

@@ -20,10 +20,10 @@
 
 #pragma once
 
-#include "Animation.hpp"
-#include <ogfx/FontUtils.hpp>
+#include <ogfx/render/FontUtils.hpp>
+#include <ogfx/utils/Animation.hpp>
 #include <ostd/math/Geometry.hpp>
-#include <ogfx/Image.hpp>
+#include <ogfx/resources/Image.hpp>
 
 namespace ogfx
 {

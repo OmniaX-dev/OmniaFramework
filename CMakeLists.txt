@@ -79,14 +79,21 @@ list(APPEND OSTD_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/Time.cpp
 )
 list(APPEND OGFX_SOURCE_FILES
-	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/FontUtils.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/WindowBase.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/BasicRenderer.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/RawTextInput.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/Image.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/WindowBaseOutputHandler.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/PixelRenderer.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/Animation.cpp
+	# gui
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/RawTextInput.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/WindowBase.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/WindowBaseOutputHandler.cpp
+
+	# render
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/BasicRenderer.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/FontUtils.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/PixelRenderer.cpp
+
+	# resources
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/resources/Image.cpp
+
+	# utils
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/utils/Animation.cpp
 )
 list(APPEND TEST_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/test.cpp
