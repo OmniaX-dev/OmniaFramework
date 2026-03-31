@@ -19,7 +19,7 @@
 */
 
 #include "PixelRenderer.hpp"
-#include "../gui/WindowBase.hpp"
+#include "../gui/Window.hpp"
 #include "../../ostd/io/Memory.hpp"
 #include <SDL3/SDL_render.h>
 
@@ -132,7 +132,7 @@ namespace ogfx
 		SDL_DestroyTexture(m_texture);
 	}
 
-	void PixelRenderer::initialize(WindowBase& parent)
+	void PixelRenderer::initialize(WindowCore& parent)
 	{
 		if (isValid()) return; //TODO: Error
 		if (!parent.isValid() || !parent.isInitialized())

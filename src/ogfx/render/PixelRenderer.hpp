@@ -28,7 +28,7 @@
 
 namespace ogfx
 {
-	class WindowBase;
+	class WindowCore;
 	class PixelRenderer : public ostd::BaseObject
 	{
 		public: class TextRenderer
@@ -83,7 +83,7 @@ namespace ogfx
 		public:
 			inline PixelRenderer(void) { invalidate(); }
 			~PixelRenderer(void);
-			void initialize(WindowBase& parent);
+			void initialize(WindowCore& parent);
 			void handleSignal(ostd::tSignal& signal) override;
 			void updateBuffer(void);
 			void displayBuffer(void);
@@ -94,7 +94,7 @@ namespace ogfx
 		private:
 			uint32_t* m_pixels { nullptr };
 			SDL_Texture* m_texture { nullptr };
-			WindowBase* m_parent { nullptr };
+			WindowCore* m_parent { nullptr };
 			int32_t m_windowWidth { 0 };
 			int32_t m_windowHeight { 0 };
 	};

@@ -27,7 +27,7 @@
 
 namespace ogfx
 {
-	class WindowBase;
+	class WindowCore;
 	class BasicRenderer2D;
 };
 

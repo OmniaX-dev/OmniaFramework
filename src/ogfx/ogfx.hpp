@@ -23,8 +23,8 @@
 #include <ostd/ostd.hpp>
 
 #include <ogfx/gui/RawTextInput.hpp>
-#include <ogfx/gui/WindowBase.hpp>
-#include <ogfx/gui/WindowBaseOutputHandler.hpp>
+#include <ogfx/gui/Window.hpp>
+#include <ogfx/gui/WindowOutputHandler.hpp>
 
 #include <ogfx/render/BasicRenderer.hpp>
 #include <ogfx/render/PixelRenderer.hpp>

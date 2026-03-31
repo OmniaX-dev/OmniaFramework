@@ -87,8 +87,8 @@ list(APPEND OGFX_SOURCE_FILES
 
 	# gui
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/RawTextInput.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/WindowBase.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/WindowBaseOutputHandler.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/Window.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/WindowOutputHandler.cpp
 
 	# render
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/BasicRenderer.cpp
@@ -102,7 +102,8 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/utils/Animation.cpp
 )
 list(APPEND TEST_SOURCE_FILES
-	${CMAKE_CURRENT_LIST_DIR}/src/test.cpp
+	# ${CMAKE_CURRENT_LIST_DIR}/src/test/GraphicsWindowTest.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/test/GuiTest.cpp
 )
 #-----------------------------------------------------------------------------------------
 

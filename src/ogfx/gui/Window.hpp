@@ -1,0 +1,152 @@
+/*
+    OmniaFramework - A collection of useful functionality
+    Copyright (C) 2025  OmniaX-Dev
+
+    This file is part of OmniaFramework.
+
+    OmniaFramework is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    OmniaFramework is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+#include <SDL3/SDL_events.h>
+#include <ogfx/utils/SDLInclude.hpp>
+#include <ostd/utils/Signals.hpp>
+#include <ostd/utils/Time.hpp>
+#include <ostd/io/IOHandlers.hpp>
+#include <ogfx/gui/Events.hpp>
+
+namespace ogfx
+{
+	class WindowCore : public ostd::BaseObject
+	{
+		public: enum class eCursor { Arrow = 0, IBeam };
+		public:
+			inline WindowCore(void) {  }
+			virtual ~WindowCore(void);
+			inline WindowCore(int32_t width, int32_t height, const ostd::String& title) { initialize(width, height, title); }
+			void initialize(int32_t width, int32_t height, const ostd::String& title);
+			inline void mainLoop(void) { if (isInitialized()) __main_loop(); }
+			void close(void);
+			void setSize(int32_t width, int32_t height);
+			void setTitle(const ostd::String& title);
+			void setCursor(eCursor cursor);
+			void enableResizable(bool enable = true);
+			void setIcon(const ostd::String& iconFilePath);
+
+			inline bool isInitialized(void) const { return m_initialized; }
+			inline bool isRunning(void) const { return m_running; }
+			inline bool isVisible(void) const { return m_visible; }
+			inline bool isResizeable(void) const { return m_resizeable; }
+			inline void hide(void) { SDL_HideWindow(m_window); m_visible = false; }
+			inline void show(void) { SDL_ShowWindow(m_window); m_visible = true; }
+			inline ostd::String getTitle(void) const { return m_title; }
+			inline int32_t getWindowWidth(void) const { return m_windowWidth; }
+			inline int32_t getWindowHeight(void) const { return m_windowHeight; }
+			inline ostd::Color getClearColor(void) const { return m_clearColor; }
+			inline void setClearColor(const ostd::Color& color) { m_clearColor = color; }
+			inline SDL_Renderer* getSDLRenderer(void) { return m_renderer; }
+			inline void enableBlockingEvents(bool enable = true) { m_blockingEvents = enable; }
+			inline bool isBlockingEventsEnabled(void) const { return m_blockingEvents; }
+
+		protected:
+			MouseEventData get_mouse_state(void);
+			virtual void handle_events(void);
+			inline virtual void __on_event(SDL_Event& event) {  }
+			inline virtual void __on_window_init(int32_t width, int32_t height, const ostd::String& title) {  }
+			inline virtual void __on_window_destroy(void) {  }
+			inline virtual void __on_window_close(void) {  }
+			inline virtual void __main_loop(void) = 0;
+
+		private:
+			void __handle_event(SDL_Event& event);
+
+		protected:
+			SDL_Window* m_window { nullptr };
+			SDL_Renderer* m_renderer { nullptr };
+
+		private:
+			ostd::Color m_clearColor { 10, 10, 10, 255 };
+
+			int32_t m_windowWidth { 0 };
+			int32_t m_windowHeight { 0 };
+			ostd::String m_title { "" };
+
+			bool m_running { false };
+			bool m_initialized { false };
+			bool m_visible { true };
+			bool m_blockingEvents { false };
+			bool m_resizeable { true };
+
+			SDL_Cursor* m_cursor_IBeam { nullptr };
+			SDL_Cursor* m_cursor_Arrow { nullptr };
+	};
+	class GraphicsWindow : public WindowCore
+	{
+		public: enum class eCursor { Arrow = 0, IBeam };
+		public:
+			inline GraphicsWindow(void) {  }
+			inline GraphicsWindow(int32_t width, int32_t height, const ostd::String& title) { initialize(width, height, title); }
+
+			inline virtual void onRender(void) {  }
+			inline virtual void onUpdate(void) {  }
+			inline virtual void onFixedUpdate(double frameTime_s) {  }
+			inline virtual void onInitialize(void) {  }
+			inline virtual void onDestroy(void) {  }
+			inline virtual void onClose(void) { }
+			inline virtual void onSDLEvent(SDL_Event& event) { }
+
+			inline int32_t getFPS(void) const { return m_fps; }
+
+		protected:
+			void __on_window_init(int32_t width, int32_t height, const ostd::String& title) override;
+			void __on_event(SDL_Event& event) override;
+			void __on_window_destroy(void) override;
+			void __on_window_close(void) override;
+			void __main_loop(void) override;
+
+		private:
+			int32_t m_fps { 0 };
+			ostd::StepTimer m_fixedUpdateTImer;
+			ostd::StepTimer m_fpsUpdateTimer;
+			ostd::Timer m_fpsUpdateClock;
+			uint64_t m_frameTimeAcc { 0 };
+			int32_t m_frameCount { 0 };
+			bool m_refreshScreen { true };
+	};
+	namespace gui
+	{
+		class Window : public WindowCore
+		{
+			public: enum class eCursor { Arrow = 0, IBeam };
+			public:
+				inline Window(void) {  }
+				inline Window(int32_t width, int32_t height, const ostd::String& title) { initialize(width, height, title); }
+
+				inline virtual void onInitialize(void) {  }
+				inline virtual void onDestroy(void) {  }
+				inline virtual void onClose(void) {  }
+				inline virtual void onSDLEvent(SDL_Event& event) {  }
+
+			protected:
+				void __on_window_init(int32_t width, int32_t height, const ostd::String& title) override;
+				void __on_event(SDL_Event& event) override;
+				void __on_window_destroy(void) override;
+				void __on_window_close(void) override;
+				void __main_loop(void) override;
+
+			private:
+		};
+	}
+}

@@ -18,7 +18,7 @@
     along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "WindowBaseOutputHandler.hpp"
+#include "WindowOutputHandler.hpp"
 #include "../render/BasicRenderer.hpp"
 #include "../../string/TextStyleParser.hpp"
 
@@ -26,25 +26,25 @@ namespace ogfx
 {
 	using namespace ostd;
 
-	WindowBaseOutputHandler::WindowBaseOutputHandler(void)
+	GraphicsWindowOutputHandler::GraphicsWindowOutputHandler(void)
 	{
 	}
 
-	void WindowBaseOutputHandler::attachWindow(ogfx::WindowBase& window)
+	void GraphicsWindowOutputHandler::attachWindow(ogfx::GraphicsWindow& window)
 	{
 		if (m_window != nullptr) return;
 		m_window = &window;
 		m_renderer.init(window);
 	}
 
-	void WindowBaseOutputHandler::setMonospaceFont(const String& filePath)
+	void GraphicsWindowOutputHandler::setMonospaceFont(const String& filePath)
 	{
 		m_renderer.setFont(filePath);
 		m_renderer.setFontSize(m_fontSize);
 		__update_char_size();
 	}
 
-	Vec2 WindowBaseOutputHandler::getStringSize(const String& str)
+	Vec2 GraphicsWindowOutputHandler::getStringSize(const String& str)
 	{
 		Vec2 size = { 0.0f, m_charSize.y };
 		if (str.len() == 0) return size;
@@ -52,23 +52,23 @@ namespace ogfx
 		return size;
 	}
 
-	bool WindowBaseOutputHandler::isReady(void)
+	bool GraphicsWindowOutputHandler::isReady(void)
 	{
 		return m_window != nullptr && m_renderer.getTTFRenderer().hasOpenFont() && m_fontSize > 0;
 	}
 
-	void WindowBaseOutputHandler::resetCursorPosition(void)
+	void GraphicsWindowOutputHandler::resetCursorPosition(void)
 	{
 		m_curosrPosition = { 0, 0 };
 	}
 
-	void WindowBaseOutputHandler::resetColors(void)
+	void GraphicsWindowOutputHandler::resetColors(void)
 	{
 		m_foregroundColor = m_defaultForegroundColor;
 		m_backgroundColor = m_defaultBackgroundColor;
 	}
 
-	void WindowBaseOutputHandler::beginFrame(void)
+	void GraphicsWindowOutputHandler::beginFrame(void)
 	{
 		resetColors();
 		resetCursorPosition();
@@ -77,37 +77,37 @@ namespace ogfx
 
 
 
-	void WindowBaseOutputHandler::setConsoleMaxCharacters(const IPoint& size)
+	void GraphicsWindowOutputHandler::setConsoleMaxCharacters(const IPoint& size)
 	{
 		m_consoleSize = size;
 	}
 
-	void WindowBaseOutputHandler::setConsolePosition(const Vec2& pos)
+	void GraphicsWindowOutputHandler::setConsolePosition(const Vec2& pos)
 	{
 		m_consolePosition = pos;
 	}
 
-	void WindowBaseOutputHandler::setWrapMode(eWrapMode wrapMode)
+	void GraphicsWindowOutputHandler::setWrapMode(eWrapMode wrapMode)
 	{
 		m_wrapMode = wrapMode;
 	}
 
-	void WindowBaseOutputHandler::setPadding(const Rectangle& rect)
+	void GraphicsWindowOutputHandler::setPadding(const Rectangle& rect)
 	{
 		m_padding = rect;
 	}
 
-	void WindowBaseOutputHandler::setDefaultBackgorundColor(const Color& color)
+	void GraphicsWindowOutputHandler::setDefaultBackgorundColor(const Color& color)
 	{
 		m_defaultBackgroundColor = color;
 	}
 
-	void WindowBaseOutputHandler::setDefaultForegroundColor(const Color& color)
+	void GraphicsWindowOutputHandler::setDefaultForegroundColor(const Color& color)
 	{
 		m_defaultForegroundColor = color;
 	}
 
-	void WindowBaseOutputHandler::setTabWidth(uint8_t tw)
+	void GraphicsWindowOutputHandler::setTabWidth(uint8_t tw)
 	{
 		m_tabWidth = tw;
 	}
@@ -115,19 +115,19 @@ namespace ogfx
 
 
 
-	void WindowBaseOutputHandler::setFontSize(int32_t fontSize)
+	void GraphicsWindowOutputHandler::setFontSize(int32_t fontSize)
 	{
 		m_fontSize = fontSize;
 		m_renderer.setFontSize(m_fontSize);
 		__update_char_size();
 	}
 
-	int32_t WindowBaseOutputHandler::getFontSize(void)
+	int32_t GraphicsWindowOutputHandler::getFontSize(void)
 	{
 		return m_fontSize;
 	}
 
-	Vec2 WindowBaseOutputHandler::getCharacterSize(int32_t fontSize)
+	Vec2 GraphicsWindowOutputHandler::getCharacterSize(int32_t fontSize)
 	{
 		if (fontSize > 0)
 		{
@@ -137,37 +137,37 @@ namespace ogfx
 		return m_charSize;
 	}
 
-	Vec2 WindowBaseOutputHandler::getConsolePosition(void)
+	Vec2 GraphicsWindowOutputHandler::getConsolePosition(void)
 	{
 		return m_consolePosition;
 	}
 
-	WindowBaseOutputHandler::eWrapMode WindowBaseOutputHandler::getWrapMode(void)
+	GraphicsWindowOutputHandler::eWrapMode GraphicsWindowOutputHandler::getWrapMode(void)
 	{
 		return m_wrapMode;
 	}
 
-	Rectangle WindowBaseOutputHandler::getPadding(void)
+	Rectangle GraphicsWindowOutputHandler::getPadding(void)
 	{
 		return m_padding;
 	}
 
-	Color WindowBaseOutputHandler::getDefaultBackgroundColor(void)
+	Color GraphicsWindowOutputHandler::getDefaultBackgroundColor(void)
 	{
 		return m_defaultBackgroundColor;
 	}
 
-	Color WindowBaseOutputHandler::getDefaultForegroundColor(void)
+	Color GraphicsWindowOutputHandler::getDefaultForegroundColor(void)
 	{
 		return m_defaultForegroundColor;
 	}
 
-	uint8_t WindowBaseOutputHandler::getTabWidth(void)
+	uint8_t GraphicsWindowOutputHandler::getTabWidth(void)
 	{
 		return m_tabWidth;
 	}
 
-	Rectangle WindowBaseOutputHandler::getConsoleBounds(void)
+	Rectangle GraphicsWindowOutputHandler::getConsoleBounds(void)
 	{
 		float console_w = ((float)m_consoleSize.x * getCharacterSize().x) + getPadding().x + getPadding().w;
 		float console_h = ((float)m_consoleSize.y * getCharacterSize().y) + getPadding().y + getPadding().h;
@@ -177,54 +177,54 @@ namespace ogfx
 
 
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::bg(const Color& color)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::bg(const Color& color)
 	{
 		m_backgroundColor = color;
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::bg(const ConsoleColors::tConsoleColor& color)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::bg(const ConsoleColors::tConsoleColor& color)
 	{
 		m_backgroundColor = color.fullColor;
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::bg(const String& color)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::bg(const String& color)
 	{
 		m_backgroundColor = ConsoleColors::getFromName(color).fullColor;
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::fg(const Color& color)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::fg(const Color& color)
 	{
 		m_foregroundColor = color;
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::fg(const ConsoleColors::tConsoleColor& color)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::fg(const ConsoleColors::tConsoleColor& color)
 	{
 		m_foregroundColor = color.fullColor;
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::fg(const String& color)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::fg(const String& color)
 	{
 		m_foregroundColor = ConsoleColors::getFromName(color).fullColor;
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::pChar(char c)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::pChar(char c)
 	{
 		__print_string(ostd::String("").addChar(c));
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::pStyled(const String& styled)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::pStyled(const String& styled)
 	{
 		return pStyled(TextStyleParser::parse(styled, { m_backgroundColor, "", true }, { m_foregroundColor, "", false }));
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::pStyled(const TextStyleParser::tStyledString& styled)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::pStyled(const TextStyleParser::tStyledString& styled)
 	{
 		if (!styled.validate()) return *this;
 		Color oldBgCol = m_backgroundColor;
@@ -236,7 +236,7 @@ namespace ogfx
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::pStyled(TextStyleBuilder::IRichStringBase& styled)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::pStyled(TextStyleBuilder::IRichStringBase& styled)
 	{
 		auto oldBg = styled.getDefaultBackgroundColor();
 		auto oldFg = styled.getDefaultForegroundColor();
@@ -248,79 +248,79 @@ namespace ogfx
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::pObject(const BaseObject& bo)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::pObject(const BaseObject& bo)
 	{
 		__print_string(bo.toString());
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::p(const String& se)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(const String& se)
 	{
 		__print_string(se);
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::p(uint8_t i)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(uint8_t i)
 	{
 		__print_string(ostd::String("").add(i));
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::p(int8_t i)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(int8_t i)
 	{
 		__print_string(ostd::String("").add(i));
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::p(uint16_t i)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(uint16_t i)
 	{
 		__print_string(ostd::String("").add(i));
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::p(int16_t i)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(int16_t i)
 	{
 		__print_string(ostd::String("").add(i));
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::p(uint32_t i)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(uint32_t i)
 	{
 		__print_string(ostd::String("").add(i));
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::p(int32_t i)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(int32_t i)
 	{
 		__print_string(ostd::String("").add(i));
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::p(uint64_t i)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(uint64_t i)
 	{
 		__print_string(ostd::String("").add(i));
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::p(int64_t i)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(int64_t i)
 	{
 		__print_string(ostd::String("").add(i));
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::p(float f, uint8_t precision)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(float f, uint8_t precision)
 	{
 		__print_string(ostd::String("").add(f, precision));
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::p(double f, uint8_t precision)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(double f, uint8_t precision)
 	{
 		__print_string(ostd::String("").add(f, precision));
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::nl(void)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::nl(void)
 	{
 		if (m_curosrPosition.y >= getConsoleSize().y) return *this;
 		m_curosrPosition.y++;
@@ -328,7 +328,7 @@ namespace ogfx
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::tab(void)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::tab(void)
 	{
 		if (m_curosrPosition.x == 0)
 		{
@@ -343,68 +343,68 @@ namespace ogfx
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::flush(void)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::flush(void)
 	{
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::clear(void)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::clear(void)
 	{
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::reset(void)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::reset(void)
 	{
 		resetColors();
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::xy(IPoint position)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::xy(IPoint position)
 	{
 		m_curosrPosition = { (float)position.x, (float)position.y };
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::xy(int32_t x, int32_t y)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::xy(int32_t x, int32_t y)
 	{
 		m_curosrPosition = { (float)x, (float)y };
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::x(int32_t x)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::x(int32_t x)
 	{
 		m_curosrPosition.x = (float)x;
 		return *this;
 	}
 
-	WindowBaseOutputHandler& WindowBaseOutputHandler::y(int32_t y)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::y(int32_t y)
 	{
 		m_curosrPosition.y = (float)y;
 		return *this;
 	}
 
-	IPoint WindowBaseOutputHandler::getCursorPosition(void)
+	IPoint GraphicsWindowOutputHandler::getCursorPosition(void)
 	{
 		return { (int32_t)std::round(m_curosrPosition.x), (int32_t)std::round(m_curosrPosition.y) };
 	}
 
-	void WindowBaseOutputHandler::getCursorPosition(int32_t& outX, int32_t& outY)
+	void GraphicsWindowOutputHandler::getCursorPosition(int32_t& outX, int32_t& outY)
 	{
 		outX = (int32_t)std::round(m_curosrPosition.x);
 		outY = (int32_t)std::round(m_curosrPosition.y);
 	}
 
-	int32_t WindowBaseOutputHandler::getCursorX(void)
+	int32_t GraphicsWindowOutputHandler::getCursorX(void)
 	{
 		return (int32_t)std::round(m_curosrPosition.x);
 	}
 
-	int32_t WindowBaseOutputHandler::getCursorY(void)
+	int32_t GraphicsWindowOutputHandler::getCursorY(void)
 	{
 		return (int32_t)std::round(m_curosrPosition.y);
 	}
 
-	void WindowBaseOutputHandler::getConsoleSize(int32_t& outColumns, int32_t& outRows)
+	void GraphicsWindowOutputHandler::getConsoleSize(int32_t& outColumns, int32_t& outRows)
 	{
 		int32_t console_rows = std::numeric_limits<int>::max();
 		int32_t console_cols = std::numeric_limits<int>::max();
@@ -414,7 +414,7 @@ namespace ogfx
 		outRows = console_rows;
 	}
 
-	IPoint WindowBaseOutputHandler::getConsoleSize(void)
+	IPoint GraphicsWindowOutputHandler::getConsoleSize(void)
 	{
 		int32_t console_rows = std::numeric_limits<int>::max();
 		int32_t console_cols = std::numeric_limits<int>::max();
@@ -423,13 +423,13 @@ namespace ogfx
 		return { console_cols, console_rows };
 	}
 
-	void WindowBaseOutputHandler::__update_char_size(void)
+	void GraphicsWindowOutputHandler::__update_char_size(void)
 	{
 		auto size = m_renderer.getStringSize("A", m_fontSize);
 		m_charSize = { (float)size.x, (float)size.y };
 	}
 
-	void WindowBaseOutputHandler::__print_string(const String& str)
+	void GraphicsWindowOutputHandler::__print_string(const String& str)
 	{
 		if (!isReady()) return;
 		auto l_endOfConsole = [&](void) -> bool {

@@ -19,11 +19,11 @@
 */
 
 #include "BasicRenderer.hpp"
-#include "../gui/WindowBase.hpp"
+#include "../gui/Window.hpp"
 
 namespace ogfx
 {
-	void BasicRenderer2D::init(WindowBase& window)
+	void BasicRenderer2D::init(WindowCore& window)
 	{
 		m_window = &window;
 		m_ttfr.init(window.getSDLRenderer());

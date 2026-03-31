@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "gui/Window.hpp"
 #include <ogfx/render/FontUtils.hpp>
 #include <ogfx/utils/Animation.hpp>
 #include <ostd/math/Geometry.hpp>
@@ -27,16 +28,16 @@
 
 namespace ogfx
 {
-	class WindowBase;
+	class WindowCore;
 	class BasicRenderer2D
 	{
 		public:
 			BasicRenderer2D(void) = default;
-			void init(WindowBase& window);
+			void init(WindowCore& window);
 
 			inline TTFRenderer& getTTFRenderer(void) { return m_ttfr; }
 			inline ostd::IPoint getStringSize(const ostd::String str, int32_t fontSize = 0) { return m_ttfr.getStringDimensions(str, fontSize); }
-			inline WindowBase& getWindow(void) { return *m_window; }
+			inline WindowCore& getWindow(void) { return *m_window; }
 			inline bool isInitialized(void) { return m_initialized; }
 			void setFont(const ostd::String& fontFilePath);
 			void setFontSize(int32_t fontSize);
@@ -63,7 +64,7 @@ namespace ogfx
 
 		private:
 			TTFRenderer m_ttfr;
-			WindowBase* m_window { nullptr };
+			WindowCore* m_window { nullptr };
 			bool m_initialized { false };
 	};
 }

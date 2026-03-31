@@ -19,7 +19,7 @@
 */
 
 #include "RawTextInput.hpp"
-#include "../gui/WindowBase.hpp"
+#include "../gui/Window.hpp"
 #include "../../io/Logger.hpp"
 
 namespace ogfx
@@ -292,13 +292,13 @@ namespace ogfx
 				if (getParent().isMouseInside())
 				{
 					if (!m_ibeamCursorSet)
-						window.setCursor(ogfx::WindowBase::eCursor::IBeam);
+						window.setCursor(ogfx::WindowCore::eCursor::IBeam);
 					m_ibeamCursorSet = true;
 				}
 				else
 				{
 					if (m_ibeamCursorSet)
-						window.setCursor(ogfx::WindowBase::eCursor::Arrow);
+						window.setCursor(ogfx::WindowCore::eCursor::Arrow);
 					m_ibeamCursorSet = false;
 				}
 			}

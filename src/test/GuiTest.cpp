@@ -18,36 +18,54 @@
     along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "Image.hpp"
-#include "../../io/Logger.hpp"
-#include "../render/BasicRenderer.hpp"
-#include "../gui/Window.hpp"
 
-namespace ogfx
+
+
+/*
+ * Label
+ * Button
+ * Panel / Container
+ * Checkbox
+ * Radio Button (Group)
+ * Text Input
+ * Horizontal Slider
+ * Image / Icon
+ * ScrollView
+ * ListBox
+ * ComboBox
+ * TreeView
+ */
+
+#include <ogfx/ogfx.hpp>
+
+ostd::ConsoleOutputHandler out;
+
+class Window : public ogfx::gui::Window
 {
-    void Image::destroy(void)
-    {
-        SDL_DestroyTexture(m_sdl_texture);
-        m_loaded = false;
-        m_sdl_texture = nullptr;
-        m_width = 0;
-        m_height = 0;
-    }
-
-    Image& Image::loadFromFile(const ostd::String& filePath, BasicRenderer2D& gfx)
-    {
-		if (!gfx.isInitialized())
-		    return *this;  //TODO: Error
-		m_sdl_texture = IMG_LoadTexture(gfx.getWindow().getSDLRenderer(), filePath.c_str());
-		if (!m_sdl_texture)
+	public:
+		inline Window(void) {  }
+		inline void onInitialize(void) override
 		{
-			OX_ERROR("Failed to load Image: %s", SDL_GetError());
-			return *this;
+	 	}
+
+		inline void handleSignal(ostd::tSignal& signal) override
+		{
+			if (signal.ID == ostd::tBuiltinSignals::KeyReleased)
+			{
+				auto& evtData = (ogfx::KeyEventData&)signal.userData;
+				if (evtData.keyCode == SDLK_ESCAPE)
+					close();
+			}
 		}
-		SDL_GetTextureSize(m_sdl_texture, &m_width, &m_height);
-		m_loaded = true;
-		setTypeName("ogfx::Image");
-		validate();
-		return *this;
-    }
+
+	private:
+};
+
+int main(int argc, char** argv)
+{
+	Window window;
+	window.initialize(800, 600, "OmniaFramework - Test Window");
+	window.setClearColor({ 0, 0, 0 });
+	window.mainLoop();
+	return 0;
 }

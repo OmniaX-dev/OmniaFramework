@@ -18,36 +18,16 @@
     along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
-
-
-/*
- * Label
- * Button
- * Panel / Container
- * Checkbox
- * Radio Button (Group)
- * Text Input
- * Horizontal Slider
- * Image / Icon
- * ScrollView
- * ListBox
- * ComboBox
- * TreeView
- */
-
 #include <ogfx/ogfx.hpp>
 
 ostd::ConsoleOutputHandler out;
 
-class Window : public ogfx::WindowBase
+class Window : public ogfx::GraphicsWindow
 {
 	public:
 		inline Window(void) : m_sigHandler(m_textInput, *this) {  }
 		inline void onInitialize(void) override
 		{
-			enableSignals();
-			connectSignal(ostd::tBuiltinSignals::KeyReleased);
 			connectSignal(ogfx::gui::RawTextInput::actionEventSignalID);
 
 			m_gfx.init(*this);
@@ -117,7 +97,7 @@ int main(int argc, char** argv)
 
 	while (window.isRunning())
 	{
-		window.update();
+		window.mainLoop();
 	}
 	return 0;
 }

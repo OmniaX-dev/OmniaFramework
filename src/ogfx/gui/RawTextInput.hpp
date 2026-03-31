@@ -170,11 +170,11 @@ namespace ogfx
 		class RawTextInputEventListener : public RawTextInput::EventListener
 		{
 			public:
-				inline RawTextInputEventListener(ogfx::gui::RawTextInput& _parent, ogfx::WindowBase& _window) : ogfx::gui::RawTextInput::EventListener::EventListener(_parent), window(_window) {  }
+				inline RawTextInputEventListener(ogfx::gui::RawTextInput& _parent, ogfx::WindowCore& _window) : ogfx::gui::RawTextInput::EventListener::EventListener(_parent), window(_window) {  }
 				void onSignalHandled(ostd::tSignal& signal) override;
 
 			public:
-				ogfx::WindowBase& window;
+				ogfx::WindowCore& window;
 				bool m_ibeamCursorSet { false };
 		};
 		class RawTextInputNumberCharacterFilter : public RawTextInput::CharacterFilter
