@@ -34,18 +34,16 @@ elif [[ "$(uname -s)" == MINGW64_NT* ]]; then
     cp $MSYS_ROOT/ucrt64/bin/SDL2_ttf.dll $RELEASE_DIR/lib
     cp $MSYS_ROOT/ucrt64/bin/libSDL2_gfx-1-0-0.dll $RELEASE_DIR/lib
 fi
+cp -r ../licences $RELEASE_DIR
+cp ../LICENSE $RELEASE_DIR/licences/OmniaFramework-LICENCE.txt
 
-mkdir -p $RELEASE_DIR/include/ostd/vendor
+# OSTD
 mkdir -p $RELEASE_DIR/include/ostd/vendor/midifile
 mkdir -p $RELEASE_DIR/include/ostd/data
 mkdir -p $RELEASE_DIR/include/ostd/io
 mkdir -p $RELEASE_DIR/include/ostd/math
 mkdir -p $RELEASE_DIR/include/ostd/string
 mkdir -p $RELEASE_DIR/include/ostd/utils
-mkdir -p $RELEASE_DIR/include/ogfx/gui
-mkdir -p $RELEASE_DIR/include/ogfx/render
-mkdir -p $RELEASE_DIR/include/ogfx/resources
-mkdir -p $RELEASE_DIR/include/ogfx/utils
 find ../src/ostd  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ostd \;
 find ../src/ostd/data  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ostd/data \;
 find ../src/ostd/io  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ostd/io \;
@@ -54,11 +52,19 @@ find ../src/ostd/string  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/inclu
 find ../src/ostd/utils  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ostd/utils \;
 find ../src/ostd/vendor  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ostd/vendor \;
 find ../src/ostd/vendor/midifile  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ostd/vendor/midifile \;
+cp -r ../src/ostd/vendor/nlohmann $RELEASE_DIR/include/ostd/vendor/
+
+
+# OGFX
+mkdir -p $RELEASE_DIR/include/ogfx/vendor/sdl3_gfx
+mkdir -p $RELEASE_DIR/include/ogfx/gui
+mkdir -p $RELEASE_DIR/include/ogfx/render
+mkdir -p $RELEASE_DIR/include/ogfx/resources
+mkdir -p $RELEASE_DIR/include/ogfx/utils
 find ../src/ogfx  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx \;
 find ../src/ogfx/gui  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/gui \;
 find ../src/ogfx/render  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/render \;
 find ../src/ogfx/resources  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/resources \;
 find ../src/ogfx/utils  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/utils \;
-cp -r ../src/ostd/vendor/nlohmann $RELEASE_DIR/include/ostd/vendor/
-cp -r ../licences $RELEASE_DIR
-cp ../LICENSE $RELEASE_DIR/licences/OmniaFramework-LICENCE.txt
+find ../src/ogfx/vendor  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/vendor \;
+find ../src/ogfx/vendor/sdl3_gfx  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/vendor/sdl3_gfx \;

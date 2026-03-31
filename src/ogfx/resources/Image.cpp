@@ -41,10 +41,10 @@ namespace ogfx
 		m_sdl_texture = IMG_LoadTexture(gfx.getWindow().getSDLRenderer(), filePath.c_str());
 		if (!m_sdl_texture)
 		{
-			OX_ERROR("Failed to load Image: %s", IMG_GetError());
+			OX_ERROR("Failed to load Image: %s", SDL_GetError());
 			return *this;
 		}
-		SDL_QueryTexture(m_sdl_texture, nullptr, nullptr, &m_width, &m_height);
+		SDL_GetTextureSize(m_sdl_texture, &m_width, &m_height);
 		m_loaded = true;
 		setTypeName("ogfx::Image");
 		validate();

@@ -41,7 +41,7 @@ namespace ogfx
 			void setFont(const ostd::String& fontFilePath);
 			void setFontSize(int32_t fontSize);
 
-            void drawImage(const ogfx::Image& image, const ostd::Vec2& position, const ostd::Rectangle& rect = { 0, 0, 0, 0 });
+            void drawImage(ogfx::Image& image, const ostd::Vec2& position, const ostd::Rectangle& rect = { 0, 0, 0, 0 });
             void drawAnimation(const Animation& anim, const ostd::Vec2& position);
 
 			void drawString(const ostd::String& str, const ostd::Vec2& position, const ostd::Color& color, int32_t fontSize = 0);

@@ -73,7 +73,7 @@ namespace ogfx
 				}
 				inline ~Font(void)
 				{
-					SDL_FreeSurface(m_fontSurface);
+					SDL_DestroySurface(m_fontSurface);
 				}
 
 			public:

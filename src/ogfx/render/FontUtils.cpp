@@ -19,6 +19,8 @@
 */
 
 #include "FontUtils.hpp"
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_render.h>
 
 namespace ogfx
 {
@@ -50,7 +52,7 @@ namespace ogfx
 			return;
 		}
 		setFontSize(fontSize);
-		SDL_Surface* surf = TTF_RenderText_Blended(m_font, message.c_str(), { color.r, color.g, color.b, color.a });
+		SDL_Surface* surf = TTF_RenderText_Blended(m_font, message.c_str(), message.len(), { color.r, color.g, color.b, color.a });
 		if (surf == nullptr)
 		{
 			set_error_state(tErrors::TTFRenderTextBlendedFail);
@@ -64,17 +66,17 @@ namespace ogfx
 			print_ttf_error("SDL_CreateTextureFromSurface");
 			return;
 		}
-		SDL_FreeSurface(surf);
+		SDL_DestroySurface(surf);
 
-		int32_t w = 0, h = 0;
-		SDL_QueryTexture(texture, NULL, NULL, &w, &h);
+		float w = 0, h = 0;
+		SDL_GetTextureSize(texture, &w, &h);
 
-		SDL_Rect dst;
+		SDL_FRect dst;
 		dst.x = x;
 		dst.y = y;
 		dst.w = w;
 		dst.h = h;
-		SDL_RenderCopy(m_renderer, texture, NULL, &dst);
+		SDL_RenderTexture(m_renderer, texture, NULL, &dst);
 		SDL_DestroyTexture(texture);
 	}
 
@@ -101,7 +103,7 @@ namespace ogfx
 			return;
 		}
 		setFontSize(fontSize);
-		SDL_Surface* surf = TTF_RenderText_Blended(m_font, message.c_str(), { color.r, color.g, color.b, color.a });
+		SDL_Surface* surf = TTF_RenderText_Blended(m_font, message.c_str(), message.len(), { color.r, color.g, color.b, color.a });
 		if (surf == nullptr)
 		{
 			set_error_state(tErrors::TTFRenderTextBlendedFail);
@@ -115,17 +117,17 @@ namespace ogfx
 			print_ttf_error("SDL_CreateTextureFromSurface");
 			return;
 		}
-		SDL_FreeSurface(surf);
+		SDL_DestroySurface(surf);
 
-		int32_t w = 0, h = 0;
-		SDL_QueryTexture(texture, NULL, NULL, &w, &h);
+		float w = 0, h = 0;
+		SDL_GetTextureSize(texture, &w, &h);
 
-		SDL_Rect dst;
+		SDL_FRect dst;
 		dst.x = center_x - (w / 2);
 		dst.y = center_y - (h / 2);
 		dst.w = w;
 		dst.h = h;
-		SDL_RenderCopy(m_renderer, texture, NULL, &dst);
+		SDL_RenderTexture(m_renderer, texture, NULL, &dst);
 		SDL_DestroyTexture(texture);
 	}
 
@@ -152,7 +154,7 @@ namespace ogfx
 			return { 0, 0 };
 		}
 		setFontSize(fontSize);
-		SDL_Surface* surf = TTF_RenderText_Blended(m_font, message.c_str(), { 0, 0, 0, 255 });
+		SDL_Surface* surf = TTF_RenderText_Blended(m_font, message.c_str(), message.len(), { 0, 0, 0, 255 });
 		if (surf == nullptr)
 		{
 			set_error_state(tErrors::TTFRenderTextBlendedFail);
@@ -166,19 +168,19 @@ namespace ogfx
 			print_ttf_error("SDL_CreateTextureFromSurface");
 			return { 0, 0 };
 		}
-		SDL_FreeSurface(surf);
+		SDL_DestroySurface(surf);
 
-		int32_t w = 0, h = 0;
-		SDL_QueryTexture(texture, NULL, NULL, &w, &h);
+		float w = 0, h = 0;
+		SDL_GetTextureSize(texture, &w, &h);
 		SDL_DestroyTexture(texture);
-		return { w, h };
+		return { static_cast<int32_t>(w), static_cast<int32_t>(h) };
 	}
 
 	int32_t TTFRenderer::init(SDL_Renderer* renderer)
 	{
 		if (TTFRenderer::m_initialized) return set_error_state(tErrors::NoError);
 		if (renderer == nullptr) return set_error_state(tErrors::NullRenderer);
-		if (TTF_Init() != 0)
+		if (!TTF_Init())
 		{
 			print_ttf_error("TTF_Init");
 			SDL_Quit();
@@ -233,6 +235,6 @@ namespace ogfx
 
 	void TTFRenderer::print_ttf_error(const ostd::String& funcName)
 	{
-		m_out.fg(ostd::ConsoleColors::Red).p(funcName).p("(...) failed: ").p(ostd::String(TTF_GetError())).reset().nl();
+		m_out.fg(ostd::ConsoleColors::Red).p(funcName).p("(...) failed: ").p(ostd::String(SDL_GetError())).reset().nl();
 	}
 }

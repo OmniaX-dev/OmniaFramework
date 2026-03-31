@@ -20,15 +20,12 @@
 
 #pragma once
 
-#ifdef _WIN32
-#define SDL_MAIN_HANDLED
-#undef __linux__
-#endif
+#include <ostd/utils/Defines.hpp>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL2_gfxPrimitives.h>
-#include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_surface.h>
-#include <SDL2/SDL_rect.h>
-#include <SDL2/SDL_render.h>
+#include <SDL3/SDL.h>
+#include <ogfx/vendor/sdl3_gfx/SDL3_gfxPrimitives.h>
+#include <SDL3_ttf/SDL_ttf.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3/SDL_surface.h>
+#include <SDL3/SDL_rect.h>
+#include <SDL3/SDL_render.h>

@@ -78,7 +78,7 @@ namespace ogfx
 		inline void setColumnOffset(int32_t o) { m_column_offset = o; }
 		inline void setRowOffset(int32_t o) { m_row_offset = o; }
 		inline void setStill(bool s) { m_still = s; }
-		inline void setSpriteSheet(const Image& img) { m_spriteSheet = &img; }
+		inline void setSpriteSheet(Image& img) { m_spriteSheet = &img; }
 
 		inline int32_t getFrameNumber(void) const { return m_frames; }
 		inline int32_t getColumnNumber(void) const { return m_columns; }
@@ -89,11 +89,12 @@ namespace ogfx
 		inline bool isStill(void) const { return m_still; }
 		inline ostd::Rectangle getFrameRect(void) const { return m_frame_rect; }
 		inline const Image& getSpriteSheet(void) const { return (m_spriteSheet != nullptr ? *m_spriteSheet : InvalidImage); }
+		inline Image& getSpriteSheet(void) { return (m_spriteSheet != nullptr ? *m_spriteSheet : InvalidImage); }
 		inline bool hasImage(void) const { return m_spriteSheet != nullptr; }
 
 	private:
-		const Image* m_spriteSheet { nullptr };
-		inline static const Image InvalidImage;
+		Image* m_spriteSheet { nullptr };
+		inline static Image InvalidImage;
 
 		int32_t m_frames;
 		int32_t m_rows;

@@ -79,6 +79,12 @@ list(APPEND OSTD_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/Time.cpp
 )
 list(APPEND OGFX_SOURCE_FILES
+	# sdl3_gfx
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/vendor/sdl3_gfx/SDL3_framerate.c
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/vendor/sdl3_gfx/SDL3_gfxPrimitives.c
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/vendor/sdl3_gfx/SDL3_imageFilter.c
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/vendor/sdl3_gfx/SDL3_rotozoom.c
+
 	# gui
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/RawTextInput.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/WindowBase.cpp
@@ -131,7 +137,7 @@ endif()
 if (WIN32)
 	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC mingw32)
 	target_link_libraries(${OMNIA_STD_LIB} PUBLIC mingw32)
-	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC SDL2main SDL2 SDL2_gfx SDL2_ttf SDL2_image)
+	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC SDL3 SDL3_ttf SDL3_image)
 endif (WIN32)
 
 target_link_libraries(${OMNIA_GFX_LIB} PUBLIC ${OMNIA_STD_LIB})
@@ -169,6 +175,6 @@ elseif (UNIX)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,'$ORIGIN',-rpath,/usr/lib,-rpath,/usr/local/lib")
 	target_link_libraries(${OMNIA_STD_LIB} PUBLIC tinfo boost_regex)
 	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC xcb xcb-randr)
-	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC SDL2main SDL2 SDL2_gfx SDL2_ttf SDL2_image)
+	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC SDL3 SDL3_ttf SDL3_image)
 endif ()
 #-----------------------------------------------------------------------------------------

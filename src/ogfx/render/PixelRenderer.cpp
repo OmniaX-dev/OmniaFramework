@@ -21,6 +21,7 @@
 #include "PixelRenderer.hpp"
 #include "../gui/WindowBase.hpp"
 #include "../../ostd/io/Memory.hpp"
+#include <SDL3/SDL_render.h>
 
 namespace ogfx
 {
@@ -171,8 +172,8 @@ namespace ogfx
 	void PixelRenderer::displayBuffer(void)
 	{
 		if (isInvalid()) return;
-		SDL_Rect rect { 0, 0, m_windowWidth, m_windowHeight };
-		SDL_RenderCopy(m_parent->getSDLRenderer(), m_texture, NULL, &rect);
+		SDL_FRect rect { 0, 0, static_cast<float>(m_windowWidth), static_cast<float>(m_windowHeight) };
+		SDL_RenderTexture(m_parent->getSDLRenderer(), m_texture, NULL, &rect);
 	}
 
 	void PixelRenderer::clear(const ostd::Color& color)

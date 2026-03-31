@@ -42,27 +42,27 @@ namespace ogfx
 		m_ttfr.setFontSize(fontSize);
 	}
 
-    void BasicRenderer2D::drawImage(const ogfx::Image& image, const ostd::Vec2& position, const ostd::Rectangle& rect)
+    void BasicRenderer2D::drawImage(ogfx::Image& image, const ostd::Vec2& position, const ostd::Rectangle& rect)
     {
         if (!m_initialized) return;
         if (!image.isLoaded()) return;
-        SDL_Rect texr;
+        SDL_FRect texr;
         texr.x = position.x;
         texr.y = position.y;
         texr.w = image.getSize().x;
         texr.h = image.getSize().y;
-        SDL_Rect srcRect;
+        SDL_FRect srcRect;
         srcRect.x = rect.x;
         srcRect.y = rect.y;
         srcRect.w = rect.w;
         srcRect.h = rect.w;
         if (srcRect.x == 0 && srcRect.y == 0 && srcRect.w == 0 && srcRect.h == 0)
-        	SDL_RenderCopy(m_window->getSDLRenderer(), image.getSDLTexture(), nullptr, &texr);
+        	SDL_RenderTexture(m_window->getSDLRenderer(), image.getSDLTexture(), nullptr, &texr);
         else
         {
        		texr.w = srcRect.w;
         	texr.h = srcRect.h;
-       		SDL_RenderCopy(m_window->getSDLRenderer(), image.getSDLTexture(), &srcRect, &texr);
+       		SDL_RenderTexture(m_window->getSDLRenderer(), image.getSDLTexture(), &srcRect, &texr);
         }
     }
 
@@ -70,7 +70,7 @@ namespace ogfx
     {
     	if (!m_initialized) return;
      	if (!anim.hasImage()) return;
-      	const auto& img = anim.getSpriteSheet();
+      	Image img = anim.getSpriteSheet();
        	if (!img.isLoaded() || !img.isValid()) return;
         drawImage(img, position, anim.getFrameRect());
     }

@@ -18,6 +18,24 @@
     along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+
+
+
+/*
+ * Label
+ * Button
+ * Panel / Container
+ * Checkbox
+ * Radio Button (Group)
+ * Text Input
+ * Horizontal Slider
+ * Image / Icon
+ * ScrollView
+ * ListBox
+ * ComboBox
+ * TreeView
+ */
+
 #include <ogfx/ogfx.hpp>
 
 ostd::ConsoleOutputHandler out;
@@ -94,7 +112,7 @@ class Window : public ogfx::WindowBase
 int main(int argc, char** argv)
 {
 	Window window;
-	window.initialize(1280, 720, "OmniaFramework - Test Window");
+	window.initialize(800, 600, "OmniaFramework - Test Window");
 	window.setClearColor({ 0, 2	, 15 });
 
 	while (window.isRunning())
