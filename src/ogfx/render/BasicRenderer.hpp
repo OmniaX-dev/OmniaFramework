@@ -20,7 +20,6 @@
 
 #pragma once
 
-#include "gui/Window.hpp"
 #include <ogfx/render/FontUtils.hpp>
 #include <ogfx/utils/Animation.hpp>
 #include <ostd/math/Geometry.hpp>
@@ -40,6 +39,7 @@ namespace ogfx
 			inline WindowCore& getWindow(void) { return *m_window; }
 			inline bool isInitialized(void) { return m_initialized; }
 			void setFont(const ostd::String& fontFilePath);
+			void setDefaultFont(void);
 			void setFontSize(int32_t fontSize);
 
             void drawImage(ogfx::Image& image, const ostd::Vec2& position, const ostd::Rectangle& rect = { 0, 0, 0, 0 });

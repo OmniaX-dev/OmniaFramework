@@ -20,6 +20,8 @@
 
 #include "Window.hpp"
 #include "../../ostd/utils/Time.hpp"
+#include "io/IOHandlers.hpp"
+#include "string/String.hpp"
 #include <SDL2/SDL_render.h>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_keycode.h>
@@ -157,7 +159,7 @@ namespace ogfx
 
 		if (isBlockingEventsEnabled())
 		{
-			if (SDL_WaitEvent(&event))
+			if (SDL_WaitEventTimeout(&event, 16))
 				__handle_event(event);
 		}
 		else
@@ -283,6 +285,7 @@ namespace ogfx
 		{
 			enableBlockingEvents();
 			setTypeName("ogfx::gui::Window");
+			m_gfx.init(*this);
 			onInitialize();
 		}
 
@@ -298,7 +301,7 @@ namespace ogfx
 				handle_events();
 				SDL_SetRenderDrawColor(m_renderer, getClearColor().r, getClearColor().g, getClearColor().b, getClearColor().a);
 				SDL_RenderClear(m_renderer);
-
+				m_gfx.drawString("Hello World", { 100, 100 }, { 255, 0, 0 });
 				SDL_RenderPresent(m_renderer);
 			}
 		}

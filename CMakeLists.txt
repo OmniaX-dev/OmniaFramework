@@ -89,6 +89,7 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/RawTextInput.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/Window.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/WindowOutputHandler.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/Widget.cpp
 
 	# render
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/BasicRenderer.cpp
@@ -97,6 +98,7 @@ list(APPEND OGFX_SOURCE_FILES
 
 	# resources
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/resources/Image.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/resources/UbuntuMonoRegularTTF.cpp
 
 	# utils
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/utils/Animation.cpp

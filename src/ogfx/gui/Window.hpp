@@ -26,6 +26,7 @@
 #include <ostd/utils/Time.hpp>
 #include <ostd/io/IOHandlers.hpp>
 #include <ogfx/gui/Events.hpp>
+#include <ogfx/render/BasicRenderer.hpp>
 
 namespace ogfx
 {
@@ -147,6 +148,8 @@ namespace ogfx
 				void __main_loop(void) override;
 
 			private:
+				ogfx::BasicRenderer2D m_gfx;
+				ostd::ConsoleOutputHandler m_out;
 		};
 	}
 }

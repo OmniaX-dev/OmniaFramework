@@ -21,7 +21,7 @@ if [[ "$1" == "debug" || "$1" == "release" ]]; then
     rm -rf bin
     cmake -B bin -S ./ -G "$MAKEFILE_TYPE" -DCMAKE_BUILD_TYPE=$BUILD_TYPE
     $MAKE_COMMAND -C bin $NJOBS --no-print-directory
-    cp -r extra/* bin/
+    find extra -mindepth 1 -maxdepth 1 -exec cp -r {} bin/ \;
     build_number=$(cat other/build.nr)
     build_number=$((build_number + 1))
     truncate -s 0 other/build.nr
@@ -34,7 +34,7 @@ elif [[ "$1" == "install" ]]; then
     ./install_release.sh
     cd ..
 else
-    cp -r extra/* bin/
+    find extra -mindepth 1 -maxdepth 1 -exec cp -r {} bin/ \;
     printf "\n\033[0;32mBuilding Changes...\n\n\033[0m"
     $MAKE_COMMAND -C bin $NJOBS --no-print-directory
     if [[ "$1" == "run" ]]; then

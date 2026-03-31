@@ -113,17 +113,4 @@ namespace ostd
 
 			inline static bool m_initialized { false };
 	};
-
-	class WindowSizeObj : public BaseObject
-	{
-		public:
-			const int32_t width;
-			const int32_t height;
-
-			inline WindowSizeObj(int32_t _w, int32_t _h) : width(_w), height(_h)
-			{
-				setTypeName("ox::WindowSizeObj");
-				validate();
-			}
-	};
 }

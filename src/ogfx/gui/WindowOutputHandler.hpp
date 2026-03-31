@@ -26,12 +26,13 @@
 
 namespace ogfx
 {
+	class WindowCore;
 	class GraphicsWindowOutputHandler : public ostd::OutputHandlerBase
 	{
 		public: enum class eWrapMode { TripleDots, NewLine };
 		public:
 			GraphicsWindowOutputHandler(void);
-			void attachWindow(GraphicsWindow& window);
+			void attachWindow(WindowCore& window);
 			void setMonospaceFont(const ostd::String& filePath);
 			ostd::Vec2 getStringSize(const ostd::String& str);
 			bool isReady(void);
@@ -113,7 +114,7 @@ namespace ogfx
 			ostd::Color m_defaultForegroundColor { 0, 220, 0, 255 };
 			ostd::Vec2 m_curosrPosition;
 			BasicRenderer2D m_renderer;
-			GraphicsWindow* m_window { nullptr };
+			WindowCore* m_window { nullptr };
 			int32_t m_fontSize { 20 };
 			ostd::Vec2 m_charSize;
 			ostd::IPoint m_consoleSize { 0, 0 };

@@ -30,7 +30,7 @@ namespace ogfx
 	{
 	}
 
-	void GraphicsWindowOutputHandler::attachWindow(ogfx::GraphicsWindow& window)
+	void GraphicsWindowOutputHandler::attachWindow(ogfx::WindowCore& window)
 	{
 		if (m_window != nullptr) return;
 		m_window = &window;

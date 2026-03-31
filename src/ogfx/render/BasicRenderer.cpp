@@ -28,12 +28,19 @@ namespace ogfx
 		m_window = &window;
 		m_ttfr.init(window.getSDLRenderer());
 		m_initialized = true;
+		setDefaultFont();
 	}
 
 	void BasicRenderer2D::setFont(const ostd::String& fontFilePath)
 	{
 		if (!m_initialized) return;
 		m_ttfr.openFont(fontFilePath, m_ttfr.getFontSize());
+	}
+
+	void BasicRenderer2D::setDefaultFont(void)
+	{
+		if (!m_initialized) return;
+		m_ttfr.loadDefaultFont(m_ttfr.getFontSize());
 	}
 
 	void BasicRenderer2D::setFontSize(int32_t fontSize)

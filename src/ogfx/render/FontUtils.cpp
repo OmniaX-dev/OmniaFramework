@@ -19,8 +19,7 @@
 */
 
 #include "FontUtils.hpp"
-#include <SDL3/SDL_error.h>
-#include <SDL3/SDL_render.h>
+#include "../resources/UbuntuMonoRegularTTF.hpp"
 
 namespace ogfx
 {
@@ -191,6 +190,11 @@ namespace ogfx
 		return set_error_state(tErrors::NoError);
 	}
 
+	int32_t TTFRenderer::loadDefaultFont(int32_t fontSize)
+	{
+		return openFont(ubuntu_mono_regular_ttf_data, ubuntu_mono_regular_ttf_size, fontSize);
+	}
+
 	void TTFRenderer::closeFont(void)
 	{
 		if (!TTFRenderer::m_initialized || !m_fontOpen) return;
@@ -199,6 +203,7 @@ namespace ogfx
 		m_font = nullptr;
 		m_fontOpen = false;
 		m_fontSize = DefaultFontSize;
+		m_fontFromMemory = false;
 		set_error_state(tErrors::NoError);
 	}
 
@@ -217,6 +222,29 @@ namespace ogfx
 			return set_error_state(tErrors::FailedToOpenFontFile);
 		}
 		m_fontOpen = true;
+		m_fontFromMemory = false;
+		return set_error_state(tErrors::NoError);
+	}
+
+	int32_t TTFRenderer::openFont(const ostd::UByte resource_data[], uint32_t data_size, int32_t fontSize)
+	{
+		if (!TTFRenderer::m_initialized) return set_error_state(tErrors::Uninitialized);
+		if (data_size < 100) // Arbitrary 100 bytes
+			return set_error_state(tErrors::FailedToOpenFontFile);
+		if (m_fontOpen) closeFont();
+		if (fontSize <= 0)
+			fontSize = m_fontSize;
+		else
+			m_fontSize = fontSize;
+		SDL_IOStream* rw = SDL_IOFromConstMem(resource_data, data_size);
+		m_font = TTF_OpenFontIO(rw, true, fontSize);
+		if (m_font == nullptr)
+		{
+			print_ttf_error("TTF_OpenFont");
+			return set_error_state(tErrors::FailedToOpenFontFile);
+		}
+		m_fontOpen = true;
+		m_fontFromMemory = true;
 		return set_error_state(tErrors::NoError);
 	}
 

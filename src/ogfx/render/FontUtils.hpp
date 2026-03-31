@@ -40,14 +40,17 @@ namespace ogfx
 			inline static constexpr int32_t TTFCreateTextureFromSurfaceFail = 7;
 			inline static constexpr int32_t NullFont = 8;
 			inline static constexpr int32_t NoFont = 9;
+			inline static constexpr int32_t FailedToOpenFontByteStrean = 10;
 		};
 		public:
 			TTFRenderer(void) = default;
 			~TTFRenderer(void);
 			inline TTFRenderer(SDL_Renderer* renderer) { init(renderer); }
 			int32_t init(SDL_Renderer* renderer);
+			int32_t loadDefaultFont(int32_t fontSize = 0);
 			void closeFont(void);
 			int32_t openFont(const ostd::String& fontPath, int32_t fontSize = 0);
+			int32_t openFont(const ostd::UByte resource_data[], uint32_t data_size, int32_t fontSize = 0);
 			int32_t setFontSize(int32_t fontSize);
 			void renderText(const ostd::String& message, int32_t x, int32_t y, const ostd::Color& color, int32_t fontSize = 0);
 			void renderCenteredText(const ostd::String& message, int32_t center_x, int32_t center_y, const ostd::Color& color, int32_t fontSize = 0);
@@ -55,7 +58,7 @@ namespace ogfx
 			inline bool isInitialized(void) { return TTFRenderer::m_initialized; }
 			inline bool hasOpenFont(void) { return m_fontOpen; }
 			inline TTF_Font* getSDLFont(void) { return m_font;  }
-			inline bool isValid(void) { return TTFRenderer::m_initialized && m_fontOpen && m_font != nullptr && m_renderer != nullptr; }
+			inline bool isValid(void) { return TTFRenderer::m_initialized && m_fontOpen && (m_font != nullptr || m_fontFromMemory) && m_renderer != nullptr; }
 			inline int32_t geterrorState(void) { return m_errorState; }
 			inline int32_t getFontSize(void) { return m_fontSize; }
 
@@ -71,6 +74,7 @@ namespace ogfx
 			SDL_Renderer* m_renderer { nullptr };
 			int32_t m_errorState { tErrors::NoError };
 			int32_t m_fontSize { DefaultFontSize };
+			bool m_fontFromMemory { false };
 
 			inline static constexpr int32_t DefaultFontSize { 16 };
 	};
