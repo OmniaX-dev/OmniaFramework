@@ -28,6 +28,15 @@ namespace ogfx
 {
 	class TTFRenderer
 	{
+		private: class SignalHandler : public ostd::BaseObject
+		{
+			public:
+				SignalHandler(TTFRenderer& parent);
+				void handleSignal(ostd::tSignal& signal) override;
+
+			private:
+				TTFRenderer& m_parent;
+		};
 		public: struct tErrors
 		{
 			inline static constexpr int32_t NoError = 0;
@@ -68,6 +77,7 @@ namespace ogfx
 
 		private:
 			ostd::ConsoleOutputHandler m_out;
+			SignalHandler m_sigHndl { *this };
 			bool m_initialized { false };
 			bool m_fontOpen { false };
 			TTF_Font* m_font { nullptr };

@@ -34,6 +34,8 @@
  * ListBox
  * ComboBox
  * TreeView
+ * Save/Open File Dialogs (and folder dialogs)
+ * Tab Panel
  */
 
 #include <ogfx/ogfx.hpp>
@@ -58,11 +60,17 @@ class Window : public ogfx::gui::Window
 			}
 		}
 
+		void onRedraw(ogfx::BasicRenderer2D& gfx) override
+		{
+			wout().fg(ostd::Color { 255, 0, 0 }).p("Hello ").fg(ostd::Color { 0, 0, 255 }).p("World");
+		}
+
 	private:
 };
 
 int main(int argc, char** argv)
 {
+	ostd::initialize();
 	Window window;
 	window.initialize(800, 600, "OmniaFramework - Test Window");
 	window.setClearColor({ 0, 0, 0 });

@@ -20,13 +20,13 @@
 
 #pragma once
 
-#include <SDL3/SDL_events.h>
 #include <ogfx/utils/SDLInclude.hpp>
 #include <ostd/utils/Signals.hpp>
 #include <ostd/utils/Time.hpp>
 #include <ostd/io/IOHandlers.hpp>
 #include <ogfx/gui/Events.hpp>
 #include <ogfx/render/BasicRenderer.hpp>
+#include <ogfx/gui/WindowOutputHandler.hpp>
 
 namespace ogfx
 {
@@ -38,13 +38,15 @@ namespace ogfx
 			virtual ~WindowCore(void);
 			inline WindowCore(int32_t width, int32_t height, const ostd::String& title) { initialize(width, height, title); }
 			void initialize(int32_t width, int32_t height, const ostd::String& title);
-			inline void mainLoop(void) { if (isInitialized()) __main_loop(); }
+			void mainLoop(void);
 			void close(void);
 			void setSize(int32_t width, int32_t height);
 			void setTitle(const ostd::String& title);
 			void setCursor(eCursor cursor);
 			void enableResizable(bool enable = true);
 			void setIcon(const ostd::String& iconFilePath);
+			void setBlockingEventsRefreshFPS(uint32_t fps);
+			void requestRedraw(void);
 
 			inline bool isInitialized(void) const { return m_initialized; }
 			inline bool isRunning(void) const { return m_running; }
@@ -60,10 +62,14 @@ namespace ogfx
 			inline SDL_Renderer* getSDLRenderer(void) { return m_renderer; }
 			inline void enableBlockingEvents(bool enable = true) { m_blockingEvents = enable; }
 			inline bool isBlockingEventsEnabled(void) const { return m_blockingEvents; }
+			inline ostd::ConsoleOutputHandler& out(void) { return m_out; }
+			inline GraphicsWindowOutputHandler& wout(void) { return m_wout; }
 
 		protected:
 			MouseEventData get_mouse_state(void);
 			virtual void handle_events(void);
+			virtual void before_render(void);
+			virtual void after_render(void);
 			inline virtual void __on_event(SDL_Event& event) {  }
 			inline virtual void __on_window_init(int32_t width, int32_t height, const ostd::String& title) {  }
 			inline virtual void __on_window_destroy(void) {  }
@@ -76,6 +82,8 @@ namespace ogfx
 		protected:
 			SDL_Window* m_window { nullptr };
 			SDL_Renderer* m_renderer { nullptr };
+			ostd::ConsoleOutputHandler m_out;
+			GraphicsWindowOutputHandler m_wout;
 
 		private:
 			ostd::Color m_clearColor { 10, 10, 10, 255 };
@@ -83,15 +91,21 @@ namespace ogfx
 			int32_t m_windowWidth { 0 };
 			int32_t m_windowHeight { 0 };
 			ostd::String m_title { "" };
+			int32_t m_blockingEventsDelay { 33 };
 
 			bool m_running { false };
 			bool m_initialized { false };
 			bool m_visible { true };
 			bool m_blockingEvents { false };
 			bool m_resizeable { true };
+			bool m_refreshScreen { true };
 
 			SDL_Cursor* m_cursor_IBeam { nullptr };
 			SDL_Cursor* m_cursor_Arrow { nullptr };
+
+		public:
+			inline static constexpr int32_t MaxBlockingEventsFPS { 240 };
+			inline static constexpr int32_t DefaultBlockingEventsFPS { 30 };
 	};
 	class GraphicsWindow : public WindowCore
 	{
@@ -124,7 +138,6 @@ namespace ogfx
 			ostd::Timer m_fpsUpdateClock;
 			uint64_t m_frameTimeAcc { 0 };
 			int32_t m_frameCount { 0 };
-			bool m_refreshScreen { true };
 	};
 	namespace gui
 	{
@@ -139,6 +152,7 @@ namespace ogfx
 				inline virtual void onDestroy(void) {  }
 				inline virtual void onClose(void) {  }
 				inline virtual void onSDLEvent(SDL_Event& event) {  }
+				inline virtual void onRedraw(BasicRenderer2D& gfx) {  }
 
 			protected:
 				void __on_window_init(int32_t width, int32_t height, const ostd::String& title) override;
@@ -148,8 +162,7 @@ namespace ogfx
 				void __main_loop(void) override;
 
 			private:
-				ogfx::BasicRenderer2D m_gfx;
-				ostd::ConsoleOutputHandler m_out;
+				BasicRenderer2D m_gfx;
 		};
 	}
 }

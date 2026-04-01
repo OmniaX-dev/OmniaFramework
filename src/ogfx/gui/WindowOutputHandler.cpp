@@ -26,6 +26,7 @@ namespace ogfx
 {
 	using namespace ostd;
 
+
 	GraphicsWindowOutputHandler::GraphicsWindowOutputHandler(void)
 	{
 	}

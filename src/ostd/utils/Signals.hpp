@@ -45,6 +45,8 @@ namespace ostd
 
 		inline static constexpr uint32_t OnGuiEvent				=	0x2001;
 
+		inline static constexpr uint32_t BeforeSDLShutdown		=	0x3001;
+
 		inline static constexpr uint32_t WindowResized 			=	0x1001;
 		inline static constexpr uint32_t WindowClosed 			=	0x1002;
 		/*********************/
@@ -106,6 +108,7 @@ namespace ostd
 			inline static std::vector<tSignalObjPair> m_windowResizedRecievers;
 			inline static std::vector<tSignalObjPair> m_windowClosedRecievers;
 			inline static std::vector<tSignalObjPair> m_onGuiEventRecievers;
+			inline static std::vector<tSignalObjPair> m_beforeSDLShutdownRecievers;
 			/************************************/
 
 			inline static constexpr uint16_t __SIGNAL_BUFFER_START_SIZE { 128 };

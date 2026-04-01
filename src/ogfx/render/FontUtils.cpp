@@ -23,6 +23,24 @@
 
 namespace ogfx
 {
+	TTFRenderer::SignalHandler::SignalHandler(TTFRenderer& parent) : m_parent(parent)
+	{
+		enableSignals();
+		connectSignal(ostd::tBuiltinSignals::BeforeSDLShutdown);
+		setTypeName("ostd::GraphicsWindowOutputHandler::SignalHandler");
+		validate();
+	}
+
+	void TTFRenderer::SignalHandler::handleSignal(ostd::tSignal& signal)
+	{
+		if (signal.ID == ostd::tBuiltinSignals::BeforeSDLShutdown)
+		{
+			m_parent.closeFont();
+		}
+	}
+
+
+
 	TTFRenderer::~TTFRenderer(void)
 	{
 		closeFont();
@@ -179,12 +197,6 @@ namespace ogfx
 	{
 		if (TTFRenderer::m_initialized) return set_error_state(tErrors::NoError);
 		if (renderer == nullptr) return set_error_state(tErrors::NullRenderer);
-		if (!TTF_Init())
-		{
-			print_ttf_error("TTF_Init");
-			SDL_Quit();
-			return set_error_state(tErrors::FailedToLoad);
-		}
 		m_renderer = renderer;
 		TTFRenderer::m_initialized = true;
 		return set_error_state(tErrors::NoError);

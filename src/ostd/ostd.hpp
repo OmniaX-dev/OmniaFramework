@@ -45,3 +45,11 @@
 
 #include <ostd/utils/Signals.hpp>
 #include <ostd/utils/Time.hpp>
+
+namespace ostd
+{
+	inline void initialize(void)
+	{
+		ostd::SignalHandler::init(true);
+	}
+}

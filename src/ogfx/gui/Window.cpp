@@ -20,15 +20,11 @@
 
 #include "Window.hpp"
 #include "../../ostd/utils/Time.hpp"
-#include "io/IOHandlers.hpp"
-#include "string/String.hpp"
-#include <SDL2/SDL_render.h>
-#include <SDL3/SDL_events.h>
-#include <SDL3/SDL_keycode.h>
-#include <SDL3/SDL_mouse.h>
 
 namespace ogfx
 {
+	const Uint32 REDRAW_EVENT = SDL_RegisterEvents(1);
+
 	WindowCore::~WindowCore(void)
 	{
 		__on_window_destroy();
@@ -36,21 +32,18 @@ namespace ogfx
 		SDL_DestroyCursor(m_cursor_Arrow);
 		SDL_DestroyRenderer(m_renderer);
 		SDL_DestroyWindow(m_window);
-		SDL_Quit();
-		TTF_Quit();
+		SDLSysten::release();
 	}
 
 	void WindowCore::initialize(int32_t width, int32_t height, const ostd::String& title)
 	{
 		if (m_initialized) return;
+		SDLSysten::acquire();
 		m_windowWidth = width;
 		m_windowHeight = height;
 		m_title = title;
-		if (!SDL_Init(SDL_INIT_VIDEO))
-		{
-			printf( "SDL could not initialize! Error: %s\n", SDL_GetError() );
-			exit(1);
-		}
+		setBlockingEventsRefreshFPS(DefaultBlockingEventsFPS);
+
 		m_window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SDL_WINDOW_RESIZABLE);
 		m_renderer = SDL_CreateRenderer(m_window, nullptr);
 		SDL_SetWindowMinimumSize(m_window, m_windowWidth, m_windowHeight);
@@ -59,6 +52,13 @@ namespace ogfx
 
 		m_cursor_Arrow = SDL_CreateSystemCursor(SDL_SystemCursor::SDL_SYSTEM_CURSOR_DEFAULT);
 		m_cursor_IBeam = SDL_CreateSystemCursor(SDL_SystemCursor::SDL_SYSTEM_CURSOR_TEXT);
+
+		m_wout.attachWindow(*this);
+		m_wout.setFontSize(22);
+		m_wout.setConsoleMaxCharacters({ 1000, 1000 });
+		m_wout.setConsolePosition({ 5, 5 });
+		m_wout.setWrapMode(ogfx::GraphicsWindowOutputHandler::eWrapMode::NewLine);
+		m_wout.setDefaultForegroundColor({ 255, 255, 255, 255 });
 
 		m_initialized = true;
 		m_running = true;
@@ -79,6 +79,12 @@ namespace ogfx
 		connectSignal(ostd::tBuiltinSignals::WindowResized);
 
 		__on_window_init(width, height, title);
+	}
+
+	void WindowCore::mainLoop(void)
+	{
+		if (isInitialized())
+			__main_loop();
 	}
 
 	void WindowCore::close(void)
@@ -136,6 +142,24 @@ namespace ogfx
 		SDL_DestroySurface(appIcon);
 	}
 
+	void WindowCore::setBlockingEventsRefreshFPS(uint32_t fps)
+	{
+		if (fps == 0 || fps > MaxBlockingEventsFPS)
+		{
+			setBlockingEventsRefreshFPS(DefaultBlockingEventsFPS);
+			return;
+		}
+		m_blockingEventsDelay = static_cast<int>(std::floor((1.0 / (double)fps) * 1000));
+	}
+
+	void WindowCore::requestRedraw(void)
+	{
+		SDL_Event e{};
+		SDL_zero(e);
+		e.type = REDRAW_EVENT;
+		SDL_PushEvent(&e);
+	}
+
 	MouseEventData WindowCore::get_mouse_state(void)
 	{
 		float mx = 0, my = 0;
@@ -159,7 +183,7 @@ namespace ogfx
 
 		if (isBlockingEventsEnabled())
 		{
-			if (SDL_WaitEventTimeout(&event, 16))
+			if (SDL_WaitEventTimeout(&event, m_blockingEventsDelay))
 				__handle_event(event);
 		}
 		else
@@ -169,9 +193,26 @@ namespace ogfx
 		}
 	}
 
+	void WindowCore::before_render(void)
+	{
+		SDL_SetRenderDrawColor(m_renderer, getClearColor().r, getClearColor().g, getClearColor().b, getClearColor().a);
+		if (m_refreshScreen)
+			SDL_RenderClear(m_renderer);
+		wout().beginFrame();
+	}
+
+	void WindowCore::after_render(void)
+	{
+		SDL_RenderPresent(m_renderer);
+	}
+
 	void WindowCore::__handle_event(SDL_Event& event)
 	{
-		if (event.type == SDL_EVENT_QUIT)
+		if (event.type == REDRAW_EVENT)
+		{
+			//Doesn't need to do anything, the event exists just to make SDL_WaitEventTimeout() return early
+		}
+		else if (event.type == SDL_EVENT_QUIT)
 		{
 			close();
 		}
@@ -254,13 +295,11 @@ namespace ogfx
 	void GraphicsWindow::__main_loop(void)
 	{
 		handle_events();
-		SDL_SetRenderDrawColor(m_renderer, getClearColor().r, getClearColor().g, getClearColor().b, getClearColor().a);
-		if (m_refreshScreen)
-			SDL_RenderClear(m_renderer);
+		before_render();
 		m_fixedUpdateTImer.update();
 		onUpdate();
 		onRender();
-		SDL_RenderPresent(m_renderer);
+		after_render();
 		m_frameTimeAcc += m_fpsUpdateClock.restart(ostd::eTimeUnits::Seconds);
 		m_frameCount++;
 		m_fpsUpdateTimer.update();
@@ -299,10 +338,10 @@ namespace ogfx
 			while (isRunning())
 			{
 				handle_events();
-				SDL_SetRenderDrawColor(m_renderer, getClearColor().r, getClearColor().g, getClearColor().b, getClearColor().a);
-				SDL_RenderClear(m_renderer);
+				before_render();
+				onRedraw(m_gfx);
 				m_gfx.drawString("Hello World", { 100, 100 }, { 255, 0, 0 });
-				SDL_RenderPresent(m_renderer);
+				after_render();
 			}
 		}
 
