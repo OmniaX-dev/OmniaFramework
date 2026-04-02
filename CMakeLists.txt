@@ -108,6 +108,21 @@ target_include_directories(${OMNIA_STD_LIB} PUBLIC ${INCLUDE_DIRS})
 target_include_directories(${OMNIA_GFX_LIB} PUBLIC ${INCLUDE_DIRS})
 target_include_directories(${TEST_TARGET} PUBLIC ${INCLUDE_DIRS})
 
+if (WIN32)
+set(MSYS2_UCRT64 "C:/msys64/ucrt64")
+	target_include_directories(${OMNIA_STD_LIB} PRIVATE
+								"${MSYS2_UCRT64}/include"
+								"${MSYS2_UCRT64}/include/c++/13.2.0"
+								"${MSYS2_UCRT64}/include/c++/13.2.0/x86_64-w64-mingw32"
+				)
+	set(MSYS2_UCRT64 "C:/msys64/ucrt64")
+	target_include_directories(${OMNIA_GFX_LIB} PRIVATE
+								"${MSYS2_UCRT64}/include"
+								"${MSYS2_UCRT64}/include/c++/13.2.0"
+								"${MSYS2_UCRT64}/include/c++/13.2.0/x86_64-w64-mingw32"
+				)
+endif()
+
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_compile_options(-O3 -MMD -MP -Wall -ggdb -fsanitize=address)
 	target_compile_definitions(${OMNIA_STD_LIB} PUBLIC OX_DEBUG_BUILD)

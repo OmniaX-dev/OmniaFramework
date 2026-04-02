@@ -23,6 +23,7 @@
 #include <ostd/math/Geometry.hpp>
 #include <ostd/io/IOHandlers.hpp>
 #include <ostd/string/String.hpp>
+#include <ostd/utils/Defines.hpp>
 
 #ifndef WINDOWS_OS
 	#include <termios.h>

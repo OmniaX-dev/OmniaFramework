@@ -63,7 +63,7 @@ namespace ostd
 			inline String(void) { m_data = ""; }
 			inline String(const cpp_string& str) { m_data = str; }
 			inline String(const char* str) { m_data = str; }
-			inline String(const std::filesystem::path& path) { m_data = path; }
+			inline String(const std::filesystem::path& path) { m_data = path.string(); }
 
 			inline cpp_string cpp_str(void) const { return m_data; }
 			inline cpp_string& cpp_str_ref(void) { return m_data; }

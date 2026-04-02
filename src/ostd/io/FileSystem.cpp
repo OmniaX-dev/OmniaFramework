@@ -1,6 +1,7 @@
 #include "FileSystem.hpp"
 #include "Logger.hpp"
 #include <fstream>
+#include <ostd/utils/Defines.hpp>
 
 namespace ostd
 {

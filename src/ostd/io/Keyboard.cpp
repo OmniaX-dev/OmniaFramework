@@ -1,5 +1,7 @@
 #include "Console.hpp"
-#include <unistd.h>
+#ifndef WINDOWS_OS
+	#include <unistd.h>
+#endif
 
 namespace ostd
 {
