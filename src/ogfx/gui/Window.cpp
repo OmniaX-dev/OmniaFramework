@@ -20,6 +20,7 @@
 
 #include "Window.hpp"
 #include "../../ostd/utils/Time.hpp"
+#include <SDL3/SDL_events.h>
 
 namespace ogfx
 {
@@ -74,9 +75,12 @@ namespace ogfx
 		connectSignal(ostd::tBuiltinSignals::MousePressed);
 		connectSignal(ostd::tBuiltinSignals::MouseReleased);
 		connectSignal(ostd::tBuiltinSignals::MouseMoved);
+		connectSignal(ostd::tBuiltinSignals::MouseMoved);
 		connectSignal(ostd::tBuiltinSignals::OnGuiEvent);
 		connectSignal(ostd::tBuiltinSignals::WindowClosed);
 		connectSignal(ostd::tBuiltinSignals::WindowResized);
+		connectSignal(ostd::tBuiltinSignals::WindowFocused);
+		connectSignal(ostd::tBuiltinSignals::WindowLostFocus);
 
 		__on_window_init(width, height, title);
 	}
@@ -160,6 +164,11 @@ namespace ogfx
 		SDL_PushEvent(&e);
 	}
 
+	void WindowCore::handleSignal(ostd::tSignal& signal)
+	{
+		__on_signal(signal);
+	}
+
 	MouseEventData WindowCore::get_mouse_state(void)
 	{
 		float mx = 0, my = 0;
@@ -216,6 +225,14 @@ namespace ogfx
 		{
 			close();
 		}
+		else if (event.type == SDL_EVENT_WINDOW_FOCUS_GAINED)
+		{
+			ostd::SignalHandler::emitSignal(ostd::tBuiltinSignals::WindowFocused, ostd::tSignalPriority::RealTime, *this);
+		}
+		else if (event.type == SDL_EVENT_WINDOW_FOCUS_LOST)
+		{
+			ostd::SignalHandler::emitSignal(ostd::tBuiltinSignals::WindowLostFocus, ostd::tSignalPriority::RealTime, *this);
+		}
 		else if (event.type == SDL_EVENT_WINDOW_RESIZED)
 		{
 			WindowResizedData wrd(*this, m_windowWidth, m_windowHeight, 0, 0);
@@ -267,6 +284,7 @@ namespace ogfx
 
 
 
+
 	void GraphicsWindow::__on_window_init(int32_t width, int32_t height, const ostd::String& title)
 	{
 		SDL_SetWindowResizable(m_window, false);
@@ -305,6 +323,11 @@ namespace ogfx
 		m_fpsUpdateTimer.update();
 	}
 
+	void GraphicsWindow::__on_signal(ostd::tSignal& signal)
+	{
+		onSignal(signal);
+	}
+
 	void GraphicsWindow::__on_event(SDL_Event& event)
 	{
 		onSDLEvent(event);
@@ -320,11 +343,24 @@ namespace ogfx
 
 	namespace gui
 	{
+		void Window::addWidget(Widget& widget)
+		{
+			m_rootWidget.addChild(widget);
+			setTheme(*m_guiTheme);
+		}
+
+		void Window::setTheme(const gui::Theme& theme)
+		{
+			m_guiTheme = &theme;
+			m_rootWidget.__applyTheme(theme, true);
+		}
+
 		void Window::__on_window_init(int32_t width, int32_t height, const ostd::String& title)
 		{
 			enableBlockingEvents();
 			setTypeName("ogfx::gui::Window");
 			m_gfx.init(*this);
+			loadDefaultTHeme();
 			onInitialize();
 		}
 
@@ -339,19 +375,70 @@ namespace ogfx
 			{
 				handle_events();
 				before_render();
+				m_rootWidget.__update();
+				m_rootWidget.__draw(m_gfx);
 				onRedraw(m_gfx);
-				m_gfx.drawString("Hello World", { 100, 100 }, { 255, 0, 0 });
 				after_render();
 			}
 		}
 
-		void Window::__on_event(SDL_Event& event)
+		void Window::__on_signal(ostd::tSignal& signal)
 		{
-			if (event.type == SDL_EVENT_KEY_UP)
+			Event evt(*this);
+			if (signal.ID == ostd::tBuiltinSignals::WindowClosed)
 			{
-				if (event.key.key == SDLK_ESCAPE)
+				m_rootWidget.__onWindowClosed(evt);
+			}
+			else if (signal.ID == ostd::tBuiltinSignals::WindowFocused)
+			{
+				m_rootWidget.__onWIndowFocused(evt);
+			}
+			else if (signal.ID == ostd::tBuiltinSignals::WindowLostFocus)
+			{
+				m_rootWidget.__onWindowFocusLost(evt);
+			}
+			else if (signal.ID == ostd::tBuiltinSignals::WindowResized)
+			{
+				evt.windowResized = &(ogfx::WindowResizedData&)signal.userData;
+				m_rootWidget.__onWindowResized(evt);
+			}
+			else if (signal.ID == ostd::tBuiltinSignals::MouseMoved)
+			{
+				evt.mouse = &(ogfx::MouseEventData&)signal.userData;
+				m_rootWidget.__onMouseMoved(evt);
+			}
+			else if (signal.ID == ostd::tBuiltinSignals::MousePressed)
+			{
+				evt.mouse = &(ogfx::MouseEventData&)signal.userData;
+				m_rootWidget.__onMousePressed(evt);
+			}
+			else if (signal.ID == ostd::tBuiltinSignals::MouseReleased)
+			{
+				evt.mouse = &(ogfx::MouseEventData&)signal.userData;
+				m_rootWidget.__onMouseReleased(evt);
+			}
+			else if (signal.ID == ostd::tBuiltinSignals::KeyPressed)
+			{
+				evt.keyboard = &(ogfx::KeyEventData&)signal.userData;
+				m_rootWidget.__onKeyPressed(evt);
+			}
+			else if (signal.ID == ostd::tBuiltinSignals::KeyReleased)
+			{
+				evt.keyboard = &(ogfx::KeyEventData&)signal.userData;
+				m_rootWidget.__onKeyReleased(evt);
+				if (evt.keyboard->keyCode == SDLK_ESCAPE)
 					close();
 			}
+			else if (signal.ID == ostd::tBuiltinSignals::TextEntered)
+			{
+				evt.keyboard = &(ogfx::KeyEventData&)signal.userData;
+				m_rootWidget.__onTextEntered(evt);
+			}
+			onSignal(signal);
+		}
+
+		void Window::__on_event(SDL_Event& event)
+		{
 			onSDLEvent(event);
 		}
 

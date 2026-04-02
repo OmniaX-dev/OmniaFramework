@@ -25,8 +25,10 @@
 #include <ostd/utils/Time.hpp>
 #include <ostd/io/IOHandlers.hpp>
 #include <ogfx/gui/Events.hpp>
+#include <ogfx/gui/Widgets.hpp>
 #include <ogfx/render/BasicRenderer.hpp>
 #include <ogfx/gui/WindowOutputHandler.hpp>
+#include <ogfx/gui/Themes.hpp>
 
 namespace ogfx
 {
@@ -47,6 +49,7 @@ namespace ogfx
 			void setIcon(const ostd::String& iconFilePath);
 			void setBlockingEventsRefreshFPS(uint32_t fps);
 			void requestRedraw(void);
+			void handleSignal(ostd::tSignal& signal) override;
 
 			inline bool isInitialized(void) const { return m_initialized; }
 			inline bool isRunning(void) const { return m_running; }
@@ -74,6 +77,7 @@ namespace ogfx
 			inline virtual void __on_window_init(int32_t width, int32_t height, const ostd::String& title) {  }
 			inline virtual void __on_window_destroy(void) {  }
 			inline virtual void __on_window_close(void) {  }
+			inline virtual void __on_signal(ostd::tSignal& signal) {  }
 			inline virtual void __main_loop(void) = 0;
 
 		private:
@@ -106,6 +110,7 @@ namespace ogfx
 		public:
 			inline static constexpr int32_t MaxBlockingEventsFPS { 240 };
 			inline static constexpr int32_t DefaultBlockingEventsFPS { 30 };
+			inline static const gui::Theme DefaultTheme;
 	};
 	class GraphicsWindow : public WindowCore
 	{
@@ -121,6 +126,7 @@ namespace ogfx
 			inline virtual void onDestroy(void) {  }
 			inline virtual void onClose(void) { }
 			inline virtual void onSDLEvent(SDL_Event& event) { }
+			inline virtual void onSignal(ostd::tSignal& signal) {  }
 
 			inline int32_t getFPS(void) const { return m_fps; }
 
@@ -130,6 +136,7 @@ namespace ogfx
 			void __on_window_destroy(void) override;
 			void __on_window_close(void) override;
 			void __main_loop(void) override;
+			void __on_signal(ostd::tSignal& signal) override;
 
 		private:
 			int32_t m_fps { 0 };
@@ -147,12 +154,18 @@ namespace ogfx
 			public:
 				inline Window(void) {  }
 				inline Window(int32_t width, int32_t height, const ostd::String& title) { initialize(width, height, title); }
+				void addWidget(Widget& widget);
 
 				inline virtual void onInitialize(void) {  }
 				inline virtual void onDestroy(void) {  }
 				inline virtual void onClose(void) {  }
 				inline virtual void onSDLEvent(SDL_Event& event) {  }
 				inline virtual void onRedraw(BasicRenderer2D& gfx) {  }
+				inline virtual void onSignal(ostd::tSignal& signal) {  }
+
+				inline const gui::Theme& theme(void) const { return *m_guiTheme; }
+				void setTheme(const gui::Theme& theme);
+				inline void loadDefaultTHeme(void) { setTheme(DefaultTheme); }
 
 			protected:
 				void __on_window_init(int32_t width, int32_t height, const ostd::String& title) override;
@@ -160,9 +173,14 @@ namespace ogfx
 				void __on_window_destroy(void) override;
 				void __on_window_close(void) override;
 				void __main_loop(void) override;
+				void __on_signal(ostd::tSignal& signal) override;
 
 			private:
 				BasicRenderer2D m_gfx;
+				widgets::RootWidget m_rootWidget { *this };
+				const gui::Theme* m_guiTheme { nullptr };
+
+				inline static const gui::Theme DefaultTheme;
 		};
 	}
 }

@@ -49,6 +49,8 @@ namespace ostd
 
 		inline static constexpr uint32_t WindowResized 			=	0x1001;
 		inline static constexpr uint32_t WindowClosed 			=	0x1002;
+		inline static constexpr uint32_t WindowFocused 			=	0x1003;
+		inline static constexpr uint32_t WindowLostFocus		=	0x1004;
 		/*********************/
 
 		inline static constexpr uint32_t CustomSignalBase 		=	0xFF0000;
@@ -107,6 +109,8 @@ namespace ostd
 			inline static std::vector<tSignalObjPair> m_textEnteredRecievers;
 			inline static std::vector<tSignalObjPair> m_windowResizedRecievers;
 			inline static std::vector<tSignalObjPair> m_windowClosedRecievers;
+			inline static std::vector<tSignalObjPair> m_windowFocusedRecievers;
+			inline static std::vector<tSignalObjPair> m_windowLostFocusRecievers;
 			inline static std::vector<tSignalObjPair> m_onGuiEventRecievers;
 			inline static std::vector<tSignalObjPair> m_beforeSDLShutdownRecievers;
 			/************************************/

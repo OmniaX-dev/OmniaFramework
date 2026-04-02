@@ -48,9 +48,25 @@ class Window : public ogfx::gui::Window
 		inline Window(void) {  }
 		inline void onInitialize(void) override
 		{
+			m_label1.setPosition(100, 200);
+			m_label1.setText("Hello World!");
+			m_label1.setMouseMovedCallback([&](const ogfx::gui::Event& event) -> void {
+				m_label1.applyThemeValue(m_theme, "label.backgroundColor", ostd::Colors::DarkBlue, false);
+			});
+			addWidget(m_label1);
+
+			m_label2.setPosition(100, 400);
+			m_label2.setText("Ciccia Bella!");
+			addWidget(m_label2);
+
+			m_theme.set("label.textColor", ostd::Colors::White);
+			m_theme.set("label.backgroundColor", ostd::Colors::DarkRed);
+			m_theme.set("label.showBackground", true);
+			m_theme.set("label.borderRadius", 0);
+			setTheme(m_theme);
 	 	}
 
-		inline void handleSignal(ostd::tSignal& signal) override
+		inline void onSignal(ostd::tSignal& signal) override
 		{
 			if (signal.ID == ostd::tBuiltinSignals::KeyReleased)
 			{
@@ -62,10 +78,13 @@ class Window : public ogfx::gui::Window
 
 		void onRedraw(ogfx::BasicRenderer2D& gfx) override
 		{
-			wout().fg(ostd::Color { 255, 0, 0 }).p("Hello ").fg(ostd::Color { 0, 0, 255 }).p("World");
+			// wout().fg(ostd::Color { 255, 0, 0 }).p("Hello ").fg(ostd::Color { 0, 0, 255 }).p("World");
 		}
 
 	private:
+		ogfx::gui::widgets::Label m_label1 { *this };
+		ogfx::gui::widgets::Label m_label2 { *this };
+		ogfx::gui::Theme m_theme = ogfx::gui::Theme();
 };
 
 int main(int argc, char** argv)

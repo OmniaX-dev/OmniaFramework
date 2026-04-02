@@ -25,6 +25,10 @@
 namespace ogfx
 {
 	class WindowCore;
+	namespace gui
+	{
+		class Widget;
+	}
 	class WindowResizedData : public ostd::BaseObject
 	{
 		public:
@@ -55,6 +59,7 @@ namespace ogfx
 			float position_x;
 			float position_y;
 			eButton button;
+			gui::Widget* mousePressedOnWidget { nullptr };
 			WindowCore& parentWindow;
 	};
 	class KeyEventData : public ostd::BaseObject
@@ -73,4 +78,23 @@ namespace ogfx
 			eKeyEvent eventType;
 			WindowCore& parentWindow;
 	};
+	namespace gui
+	{
+		class Event
+		{
+			public:
+				inline Event(WindowCore& _window) : window(_window) {  }
+				inline void handle(void) { m_handled = true; }
+				inline bool isHandled(void) const { return m_handled; }
+
+			public:
+				WindowCore& window;
+				WindowResizedData* windowResized { nullptr };
+				MouseEventData* mouse { nullptr };
+				KeyEventData* keyboard { nullptr };
+
+			private:
+				bool m_handled { false };
+		};
+	}
 }

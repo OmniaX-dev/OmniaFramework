@@ -78,5 +78,62 @@ namespace ostd
 			uint8_t g;
 			uint8_t b;
 			uint8_t a;
+
+		public:
+	};
+	struct Colors
+	{
+		inline static const Color Transparent   {   0,   0,   0,   0 };
+		inline static const Color Black         {   0,   0,   0, 255 };
+		inline static const Color White         { 255, 255, 255, 255 };
+		inline static const Color Gray          { 128, 128, 128, 255 };
+		inline static const Color LightGray     { 192, 192, 192, 255 };
+		inline static const Color DarkGray      {  64,  64,  64, 255 };
+
+		inline static const Color Red           { 255,   0,   0, 255 };
+		inline static const Color Green         {   0, 255,   0, 255 };
+		inline static const Color Blue          {   0,   0, 255, 255 };
+
+		inline static const Color Yellow        { 255, 255,   0, 255 };
+		inline static const Color Cyan          {   0, 255, 255, 255 };
+		inline static const Color Magenta       { 255,   0, 255, 255 };
+
+		inline static const Color Orange        { 255, 165,   0, 255 };
+		inline static const Color Purple        { 128,   0, 128, 255 };
+		inline static const Color Brown         { 139,  69,  19, 255 };
+		inline static const Color Pink          { 255, 192, 203, 255 };
+		inline static const Color Lime          {  50, 205,  50, 255 };
+		inline static const Color Olive         { 128, 128,   0, 255 };
+		inline static const Color Teal          {   0, 128, 128, 255 };
+		inline static const Color Navy          {   0,   0, 128, 255 };
+		inline static const Color Maroon        { 128,   0,   0, 255 };
+		inline static const Color Indigo        {  75,   0, 130, 255 };
+		inline static const Color Gold          { 255, 215,   0, 255 };
+		inline static const Color Silver        { 192, 192, 192, 255 };
+		inline static const Color Beige         { 245, 245, 220, 255 };
+		inline static const Color Coral         { 255, 127,  80, 255 };
+		inline static const Color Salmon        { 250, 128, 114, 255 };
+		inline static const Color Chocolate     { 210, 105,  30, 255 };
+		inline static const Color Khaki         { 240, 230, 140, 255 };
+		inline static const Color Lavender      { 230, 230, 250, 255 };
+		inline static const Color Mint          { 189, 252, 201, 255 };
+		inline static const Color SkyBlue       { 135, 206, 235, 255 };
+		inline static const Color RoyalBlue     {  65, 105, 225, 255 };
+		inline static const Color DeepSkyBlue   {   0, 191, 255, 255 };
+		inline static const Color Turquoise     {  64, 224, 208, 255 };
+		inline static const Color Aquamarine    { 127, 255, 212, 255 };
+		inline static const Color ForestGreen   {  34, 139,  34, 255 };
+		inline static const Color SeaGreen      {  46, 139,  87, 255 };
+		inline static const Color SpringGreen   {   0, 255, 127, 255 };
+		inline static const Color Firebrick     { 178,  34,  34, 255 };
+		inline static const Color Crimson       { 220,  20,  60, 255 };
+		inline static const Color Tomato        { 255,  99,  71, 255 };
+		inline static const Color DarkOrange    { 255, 140,   0, 255 };
+		inline static const Color DarkRed       { 139,   0,   0, 255 };
+		inline static const Color DarkBlue      {   0,   0, 139, 255 };
+		inline static const Color DarkGreen     {   0, 100,   0, 255 };
+		inline static const Color DarkCyan      {   0, 139, 139, 255 };
+		inline static const Color DarkMagenta   { 139,   0, 139, 255 };
+		inline static const Color DarkYellow    { 204, 204,   0, 255 };
 	};
 }
