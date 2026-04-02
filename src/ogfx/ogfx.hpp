@@ -20,36 +20,16 @@
 
 #pragma once
 
-#include <ostd/utils/Defines.hpp>
+#include <ostd/ostd.hpp>
 
-#include <ostd/data/BaseObject.hpp>
-#include <ostd/data/Bitfields.hpp>
-#include <ostd/data/Color.hpp>
-#include <ostd/data/Types.hpp>
+#include <ogfx/gui/RawTextInput.hpp>
+#include <ogfx/gui/Window.hpp>
+#include <ogfx/gui/WindowOutputHandler.hpp>
 
-#include <ostd/io/Errors.hpp>
-#include <ostd/io/File.hpp>
-#include <ostd/io/FileSystem.hpp>
-#include <ostd/io/IOHandlers.hpp>
-#include <ostd/io/Json.hpp>
-#include <ostd/io/Logger.hpp>
-#include <ostd/io/Memory.hpp>
-#include <ostd/io/Serial.hpp>
+#include <ogfx/render/BasicRenderer.hpp>
+#include <ogfx/render/PixelRenderer.hpp>
 
-#include <ostd/math/Geometry.hpp>
-#include <ostd/math/MathUtils.hpp>
-#include <ostd/math/Random.hpp>
+#include <ogfx/resources/Image.hpp>
 
-#include <ostd/string/String.hpp>
-#include <ostd/string/TextStyleParser.hpp>
-
-#include <ostd/utils/Signals.hpp>
-#include <ostd/utils/Time.hpp>
-
-namespace ostd
-{
-	inline void initialize(void)
-	{
-		ostd::SignalHandler::init(true);
-	}
-}
+#include <ogfx/utils/Animation.hpp>
+#include <ogfx/utils/SDLInclude.hpp>

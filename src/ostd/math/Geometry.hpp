@@ -345,6 +345,11 @@ namespace ostd
 			inline virtual Vec2 bottomLeft(void) const { return Vec2(getx(), gety() + geth()); }
 			inline virtual Vec2 bottomRight(void) const { return Vec2(getx() + getw(), gety() + geth()); }
 
+			inline virtual float left(void) const { return getx(); }
+			inline virtual float right(void) const { return getw(); }
+			inline virtual float top(void) const { return gety(); }
+			inline virtual float bottom(void) const { return geth(); }
+
 			inline virtual bool intersects(Rectangle rect, bool includeBounds = true) const
 			{
 				if (includeBounds)
@@ -376,9 +381,9 @@ namespace ostd
 			inline virtual bool contains(Vec2 p, bool includeBounds = false) const
 			{
 				if (includeBounds)
-					return p.x >= x && p.y >= y & p.x <= x + w && p.y <= y + h;
+					return p.x >= x && p.y >= y && p.x <= x + w && p.y <= y + h;
 				else
-					return p.x > x && p.y > y & p.x < x + w && p.y < y + h;
+					return p.x > x && p.y > y && p.x < x + w && p.y < y + h;
 			}
 			inline virtual bool contains(float xx, float yy, bool includeBounds = false) const { return contains({ xx, yy }); }
 

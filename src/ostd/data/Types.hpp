@@ -23,6 +23,7 @@
 #include <string>
 #include <cstdint>
 #include <vector>
+#include <ostd/utils/Defines.hpp>
 
 namespace ostd
 {

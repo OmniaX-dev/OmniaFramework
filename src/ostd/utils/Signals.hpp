@@ -45,8 +45,12 @@ namespace ostd
 
 		inline static constexpr uint32_t OnGuiEvent				=	0x2001;
 
+		inline static constexpr uint32_t BeforeSDLShutdown		=	0x3001;
+
 		inline static constexpr uint32_t WindowResized 			=	0x1001;
 		inline static constexpr uint32_t WindowClosed 			=	0x1002;
+		inline static constexpr uint32_t WindowFocused 			=	0x1003;
+		inline static constexpr uint32_t WindowLostFocus		=	0x1004;
 		/*********************/
 
 		inline static constexpr uint32_t CustomSignalBase 		=	0xFF0000;
@@ -105,25 +109,15 @@ namespace ostd
 			inline static std::vector<tSignalObjPair> m_textEnteredRecievers;
 			inline static std::vector<tSignalObjPair> m_windowResizedRecievers;
 			inline static std::vector<tSignalObjPair> m_windowClosedRecievers;
+			inline static std::vector<tSignalObjPair> m_windowFocusedRecievers;
+			inline static std::vector<tSignalObjPair> m_windowLostFocusRecievers;
 			inline static std::vector<tSignalObjPair> m_onGuiEventRecievers;
+			inline static std::vector<tSignalObjPair> m_beforeSDLShutdownRecievers;
 			/************************************/
 
 			inline static constexpr uint16_t __SIGNAL_BUFFER_START_SIZE { 128 };
 			inline static constexpr uint16_t __DELEGATED_SIGNALS_BUFFER_START_SIZE { 128 };
 
 			inline static bool m_initialized { false };
-	};
-
-	class WindowSizeObj : public BaseObject
-	{
-		public:
-			const int32_t width;
-			const int32_t height;
-
-			inline WindowSizeObj(int32_t _w, int32_t _h) : width(_w), height(_h)
-			{
-				setTypeName("ox::WindowSizeObj");
-				validate();
-			}
 	};
 }

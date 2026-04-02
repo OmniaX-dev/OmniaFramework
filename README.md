@@ -22,7 +22,7 @@ Once you have the **MSYS2 UCRT64 terminal** open, run theese two commands to pre
 
 ```bash
 pacman -Syuu
-pacman -S --needed base-devel mingw-w64-ucrt-x86_64-clang mingw-w64-ucrt-x86_64-gdb mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-make mingw-w64-ucrt-x86_64-boost mingw-w64-ucrt-x86_64-SDL2 mingw-w64-ucrt-x86_64-SDL2_mixer mingw-w64-ucrt-x86_64-SDL2_image mingw-w64-ucrt-x86_64-SDL2_ttf mingw-w64-ucrt-x86_64-SDL2_gfx
+pacman -S --needed base-devel mingw-w64-ucrt-x86_64-clang mingw-w64-ucrt-x86_64-gdb mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-make mingw-w64-ucrt-x86_64-boost mingw-w64-ucrt-x86_64-SDL3 mingw-w64-ucrt-x86_64-SDL3_mixer mingw-w64-ucrt-x86_64-SDL3_image mingw-w64-ucrt-x86_64-SDL3_ttf
 ```
 
 #### Step 3: build OmniaFramework
@@ -86,21 +86,21 @@ Installs the library MSYS2's UCRT64 profile.
 - **<u>Arch Linux</u>**
 
 ```bash
-sudo pacman -S --needed base-devel clang  gdb cmake make boost sdl2 sdl2_mixer sdl2_image sdl2_ttf sdl2_gfx
+sudo pacman -S --needed base-devel clang  gdb cmake make boost sdl3 sdl3_mixer sdl3_image sdl3_ttf
 ```
 
 - **<u>Ubuntu</u>**
 
 ```bash
 sudo apt update && sudo apt upgrade
-sudo apt install build-essential dkms linux-headers-$(uname -r) clang gdb make cmake libssl-dev libboost-all-dev libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-gfx-dev libxcb-randr0-dev
+sudo apt install build-essential dkms linux-headers-$(uname -r) clang gdb make cmake libssl-dev libboost-all-dev libsdl3-dev libsdl3-mixer-dev libsdl3-image-dev libsdl3-ttf-dev libxcb-randr0-dev
 ```
 
 - **<u>Fedora</u>**
 
 ```bash
 sudo dnf update
-sudo dnf install gcc gcc-c++ make clang gdb cmake clang-tools-extra boost boost-devel SDL2 SDL2_image SDL2_mixer SDL2_ttf SDL2_gfx SDL2-devel SDL2_image-devel SDL2_mixer-devel SDL2_ttf-devel SDL2_gfx-devel
+sudo dnf install gcc gcc-c++ make clang gdb cmake clang-tools-extra boost boost-devel SDL3 SDL3_image SDL3_mixer SDL3_ttf SDL3-devel SDL3_image-devel SDL3_mixer-devel SDL3_ttf-devel
 ```
 
 > **NOTE**: For other Linux distros, you need to install the same dependencies through your package manager.
@@ -145,7 +145,7 @@ eval "$(/usr/local/bin/brew shellenv)"
 ##### Step 3: Install dependencies
 
 ```bash
-brew install git llvm gdb cmake make boost sdl2 sdl2_mixer sdl2_image sdl2_ttf sdl2_gfx pkg-config
+brew install git llvm gdb cmake make boost sdl3 sdl3_mixer sdl3_image sdl3_ttf pkg-config
 ```
 
 ##### Step 4: Build OmniaFramework

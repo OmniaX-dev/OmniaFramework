@@ -27,10 +27,16 @@ namespace ostd
 		SignalHandler::m_windowResizedRecievers.reserve(SignalHandler::__SIGNAL_BUFFER_START_SIZE);
 		SignalHandler::m_windowClosedRecievers.clear();
 		SignalHandler::m_windowClosedRecievers.reserve(SignalHandler::__SIGNAL_BUFFER_START_SIZE);
+		SignalHandler::m_windowFocusedRecievers.clear();
+		SignalHandler::m_windowFocusedRecievers.reserve(SignalHandler::__SIGNAL_BUFFER_START_SIZE);
+		SignalHandler::m_windowLostFocusRecievers.clear();
+		SignalHandler::m_windowLostFocusRecievers.reserve(SignalHandler::__SIGNAL_BUFFER_START_SIZE);
 		SignalHandler::m_delegatedSignals.clear();
 		SignalHandler::m_delegatedSignals.reserve(SignalHandler::__DELEGATED_SIGNALS_BUFFER_START_SIZE);
 		SignalHandler::m_onGuiEventRecievers.clear();
 		SignalHandler::m_onGuiEventRecievers.reserve(SignalHandler::__SIGNAL_BUFFER_START_SIZE);
+		SignalHandler::m_beforeSDLShutdownRecievers.clear();
+		SignalHandler::m_beforeSDLShutdownRecievers.reserve(SignalHandler::__SIGNAL_BUFFER_START_SIZE);
 		m_initialized = true;
 	}
 
@@ -69,8 +75,14 @@ namespace ostd
 			sig_list = &m_windowResizedRecievers;
 		else if (signal_id == tBuiltinSignals::WindowClosed)
 			sig_list = &m_windowClosedRecievers;
+		else if (signal_id == tBuiltinSignals::WindowLostFocus)
+			sig_list = &m_windowLostFocusRecievers;
+		else if (signal_id == tBuiltinSignals::WindowFocused)
+			sig_list = &m_windowFocusedRecievers;
 		else if (signal_id == tBuiltinSignals::OnGuiEvent)
 			sig_list = &m_onGuiEventRecievers;
+		else if (signal_id == tBuiltinSignals::BeforeSDLShutdown)
+			sig_list = &m_beforeSDLShutdownRecievers;
 		else if (signal_id > tBuiltinSignals::CustomSignalBase)
 			sig_list = &m_customRecievers;
 		if (sig_list == nullptr)
@@ -108,8 +120,14 @@ namespace ostd
 			m_windowResizedRecievers.push_back({ &object, signal_id });
 		else if (signal_id == tBuiltinSignals::WindowClosed)
 			m_windowClosedRecievers.push_back({ &object, signal_id });
+		else if (signal_id == tBuiltinSignals::WindowLostFocus)
+			m_windowLostFocusRecievers.push_back({ &object, signal_id });
+		else if (signal_id == tBuiltinSignals::WindowFocused)
+			m_windowFocusedRecievers.push_back({ &object, signal_id });
 		else if (signal_id == tBuiltinSignals::OnGuiEvent)
 			m_onGuiEventRecievers.push_back({ &object, signal_id });
+		else if (signal_id == tBuiltinSignals::BeforeSDLShutdown)
+			m_beforeSDLShutdownRecievers.push_back({ &object, signal_id });
 		else if (signal_id > tBuiltinSignals::CustomSignalBase)
 			m_customRecievers.push_back({ &object, signal_id });
 		else

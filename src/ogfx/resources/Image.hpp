@@ -20,36 +20,29 @@
 
 #pragma once
 
-#include <ostd/utils/Defines.hpp>
-
 #include <ostd/data/BaseObject.hpp>
-#include <ostd/data/Bitfields.hpp>
-#include <ostd/data/Color.hpp>
-#include <ostd/data/Types.hpp>
-
-#include <ostd/io/Errors.hpp>
-#include <ostd/io/File.hpp>
-#include <ostd/io/FileSystem.hpp>
-#include <ostd/io/IOHandlers.hpp>
-#include <ostd/io/Json.hpp>
-#include <ostd/io/Logger.hpp>
-#include <ostd/io/Memory.hpp>
-#include <ostd/io/Serial.hpp>
-
+#include <ogfx/utils/SDLInclude.hpp>
 #include <ostd/math/Geometry.hpp>
-#include <ostd/math/MathUtils.hpp>
-#include <ostd/math/Random.hpp>
 
-#include <ostd/string/String.hpp>
-#include <ostd/string/TextStyleParser.hpp>
-
-#include <ostd/utils/Signals.hpp>
-#include <ostd/utils/Time.hpp>
-
-namespace ostd
+namespace ogfx
 {
-	inline void initialize(void)
-	{
-		ostd::SignalHandler::init(true);
-	}
+    class BasicRenderer2D;
+    class Image : public ostd::BaseObject
+    {
+        public:
+            inline Image(void) { invalidate(); }
+            inline Image(const ostd::String& filePath, BasicRenderer2D& gfx) { loadFromFile(filePath, gfx); }
+            inline ~Image(void) { destroy(); }
+            void destroy(void);
+            Image& loadFromFile(const ostd::String& filePath, BasicRenderer2D& gfx);
+            inline ostd::Vec2 getSize(void) const { return { m_width, m_height }; }
+            inline bool isLoaded(void) const { return m_loaded; }
+            inline SDL_Texture* getSDLTexture(void) { return m_sdl_texture; }
+
+        private:
+            SDL_Texture* m_sdl_texture { nullptr };
+            float m_width { 0 };
+            float m_height { 0 };
+            bool m_loaded { false };
+    };
 }

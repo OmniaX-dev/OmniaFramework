@@ -24,6 +24,7 @@
 #include <unordered_map>
 #include <deque>
 #include <cstdint>
+#include <ostd/utils/Defines.hpp>
 
 namespace ostd
 {
