@@ -41,9 +41,9 @@ class Window : public ogfx::GraphicsWindow
 			m_textInput.getTheme().extraPaddingTop = 3;
 	 	}
 
-		inline void handleSignal(ostd::tSignal& signal) override
+		inline void handleSignal(ostd::Signal& signal) override
 		{
-			if (signal.ID == ostd::tBuiltinSignals::KeyReleased)
+			if (signal.ID == ostd::BuiltinSignals::KeyReleased)
 			{
 				auto& evtData = (ogfx::KeyEventData&)signal.userData;
 				if (evtData.keyCode == SDLK_ESCAPE)

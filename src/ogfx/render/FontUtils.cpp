@@ -26,14 +26,14 @@ namespace ogfx
 	TTFRenderer::SignalHandler::SignalHandler(TTFRenderer& parent) : m_parent(parent)
 	{
 		enableSignals();
-		connectSignal(ostd::tBuiltinSignals::BeforeSDLShutdown);
+		connectSignal(ostd::BuiltinSignals::BeforeSDLShutdown);
 		setTypeName("ostd::GraphicsWindowOutputHandler::SignalHandler");
 		validate();
 	}
 
-	void TTFRenderer::SignalHandler::handleSignal(ostd::tSignal& signal)
+	void TTFRenderer::SignalHandler::handleSignal(ostd::Signal& signal)
 	{
-		if (signal.ID == ostd::tBuiltinSignals::BeforeSDLShutdown)
+		if (signal.ID == ostd::BuiltinSignals::BeforeSDLShutdown)
 		{
 			m_parent.closeFont();
 		}

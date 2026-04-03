@@ -84,7 +84,7 @@ namespace ogfx
 			inline PixelRenderer(void) { invalidate(); }
 			~PixelRenderer(void);
 			void initialize(WindowCore& parent);
-			void handleSignal(ostd::tSignal& signal) override;
+			void handleSignal(ostd::Signal& signal) override;
 			void updateBuffer(void);
 			void displayBuffer(void);
 			inline uint32_t* getScreenPixels(void) { return m_pixels; }

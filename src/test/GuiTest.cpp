@@ -66,9 +66,9 @@ class Window : public ogfx::gui::Window
 			setTheme(m_theme);
 	 	}
 
-		inline void onSignal(ostd::tSignal& signal) override
+		inline void onSignal(ostd::Signal& signal) override
 		{
-			if (signal.ID == ostd::tBuiltinSignals::KeyReleased)
+			if (signal.ID == ostd::BuiltinSignals::KeyReleased)
 			{
 				auto& evtData = (ogfx::KeyEventData&)signal.userData;
 				if (evtData.keyCode == SDLK_ESCAPE)

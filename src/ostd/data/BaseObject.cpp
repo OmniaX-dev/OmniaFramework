@@ -9,7 +9,7 @@ namespace ostd
 	BaseObject::BaseObject(const BaseObject& copy)
 	{
 		m_uid = copy.m_uid;
-		m_oid = copy.m_oid;
+		m_oid = BaseObject::s_next_oid++;
 		m_valid = copy.m_valid;
 		m_typeName = copy.m_typeName;
 		m_signalsEnabled = copy.m_signalsEnabled;
@@ -18,7 +18,7 @@ namespace ostd
 	BaseObject& BaseObject::operator=(const BaseObject& copy)
 	{
 		m_uid = copy.m_uid;
-		m_oid = copy.m_oid;
+		m_oid = BaseObject::s_next_oid++;
 		m_valid = copy.m_valid;
 		m_typeName = copy.m_typeName;
 		m_signalsEnabled = copy.m_signalsEnabled;
@@ -52,7 +52,7 @@ namespace ostd
 		SignalHandler::connect(*this, signal_id);
 	}
 
-	void BaseObject::__handle_signal(tSignal& signal)
+	void BaseObject::__handle_signal(Signal& signal)
 	{
 		if (m_signalsEnabled)
 			handleSignal(signal);

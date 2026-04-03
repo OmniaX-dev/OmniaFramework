@@ -71,18 +71,18 @@ namespace ogfx
 		validate();
 		setSize(m_windowWidth, m_windowHeight);
 
-		connectSignal(ostd::tBuiltinSignals::KeyPressed);
-		connectSignal(ostd::tBuiltinSignals::KeyReleased);
-		connectSignal(ostd::tBuiltinSignals::TextEntered);
-		connectSignal(ostd::tBuiltinSignals::MousePressed);
-		connectSignal(ostd::tBuiltinSignals::MouseReleased);
-		connectSignal(ostd::tBuiltinSignals::MouseMoved);
-		connectSignal(ostd::tBuiltinSignals::MouseMoved);
-		connectSignal(ostd::tBuiltinSignals::OnGuiEvent);
-		connectSignal(ostd::tBuiltinSignals::WindowClosed);
-		connectSignal(ostd::tBuiltinSignals::WindowResized);
-		connectSignal(ostd::tBuiltinSignals::WindowFocused);
-		connectSignal(ostd::tBuiltinSignals::WindowLostFocus);
+		connectSignal(ostd::BuiltinSignals::KeyPressed);
+		connectSignal(ostd::BuiltinSignals::KeyReleased);
+		connectSignal(ostd::BuiltinSignals::TextEntered);
+		connectSignal(ostd::BuiltinSignals::MousePressed);
+		connectSignal(ostd::BuiltinSignals::MouseReleased);
+		connectSignal(ostd::BuiltinSignals::MouseMoved);
+		connectSignal(ostd::BuiltinSignals::MouseMoved);
+		connectSignal(ostd::BuiltinSignals::OnGuiEvent);
+		connectSignal(ostd::BuiltinSignals::WindowClosed);
+		connectSignal(ostd::BuiltinSignals::WindowResized);
+		connectSignal(ostd::BuiltinSignals::WindowFocused);
+		connectSignal(ostd::BuiltinSignals::WindowLostFocus);
 
 		__on_window_init(width, height, title);
 	}
@@ -97,14 +97,14 @@ namespace ogfx
 	{
 		__on_window_close();
 		m_running = false;
-		ostd::SignalHandler::emitSignal(ostd::tBuiltinSignals::WindowClosed, ostd::tSignalPriority::Normal, *this);
+		ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::WindowClosed, ostd::Signal::Priority::Normal, *this);
 	}
 
 	void WindowCore::setSize(int32_t width, int32_t height)
 	{
 		if (!isInitialized()) return;
 		SDL_SetWindowSize(m_window, width, height);
-		ostd::SignalHandler::emitSignal(ostd::tBuiltinSignals::WindowResized, ostd::tSignalPriority::RealTime);
+		ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::WindowResized, ostd::Signal::Priority::RealTime);
 	}
 
 	void WindowCore::setTitle(const ostd::String& title)
@@ -166,7 +166,7 @@ namespace ogfx
 		SDL_PushEvent(&e);
 	}
 
-	void WindowCore::handleSignal(ostd::tSignal& signal)
+	void WindowCore::handleSignal(ostd::Signal& signal)
 	{
 		__on_signal(signal);
 	}
@@ -215,6 +215,7 @@ namespace ogfx
 	void WindowCore::after_render(void)
 	{
 		SDL_RenderPresent(m_renderer);
+		ostd::SignalHandler::handleDelegateSignals();
 	}
 
 	void WindowCore::__handle_event(SDL_Event& event)
@@ -229,11 +230,11 @@ namespace ogfx
 		}
 		else if (event.type == SDL_EVENT_WINDOW_FOCUS_GAINED)
 		{
-			ostd::SignalHandler::emitSignal(ostd::tBuiltinSignals::WindowFocused, ostd::tSignalPriority::RealTime, *this);
+			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::WindowFocused, ostd::Signal::Priority::RealTime, *this);
 		}
 		else if (event.type == SDL_EVENT_WINDOW_FOCUS_LOST)
 		{
-			ostd::SignalHandler::emitSignal(ostd::tBuiltinSignals::WindowLostFocus, ostd::tSignalPriority::RealTime, *this);
+			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::WindowLostFocus, ostd::Signal::Priority::RealTime, *this);
 		}
 		else if (event.type == SDL_EVENT_WINDOW_RESIZED)
 		{
@@ -241,17 +242,17 @@ namespace ogfx
 			SDL_GetWindowSize(m_window, &m_windowWidth, &m_windowHeight);
 			wrd.new_width = m_windowWidth;
 			wrd.new_height = m_windowHeight;
-			ostd::SignalHandler::emitSignal(ostd::tBuiltinSignals::WindowResized, ostd::tSignalPriority::RealTime, wrd);
+			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::WindowResized, ostd::Signal::Priority::RealTime, wrd);
 		}
 		else if (event.type == SDL_EVENT_MOUSE_MOTION)
 		{
 			MouseEventData mmd = get_mouse_state();
-			ostd::SignalHandler::emitSignal(ostd::tBuiltinSignals::MouseMoved, ostd::tSignalPriority::RealTime, mmd);
+			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::MouseMoved, ostd::Signal::Priority::RealTime, mmd);
 		}
 		else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
 		{
 			MouseEventData mmd = get_mouse_state();
-			ostd::SignalHandler::emitSignal(ostd::tBuiltinSignals::MousePressed, ostd::tSignalPriority::RealTime, mmd);
+			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::MousePressed, ostd::Signal::Priority::RealTime, mmd);
 		}
 		else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
 		{
@@ -263,22 +264,22 @@ namespace ogfx
 				case SDL_BUTTON_MASK(3): mmd.button = MouseEventData::eButton::Right; break;
 				default: mmd.button = MouseEventData::eButton::None; break;
 			}
-			ostd::SignalHandler::emitSignal(ostd::tBuiltinSignals::MouseReleased, ostd::tSignalPriority::RealTime, mmd);
+			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::MouseReleased, ostd::Signal::Priority::RealTime, mmd);
 		}
 		else if (event.type == SDL_EVENT_KEY_DOWN)
 		{
 			KeyEventData ked(*this, (int32_t)event.key.key, 0, KeyEventData::eKeyEvent::Pressed);
-			ostd::SignalHandler::emitSignal(ostd::tBuiltinSignals::KeyPressed, ostd::tSignalPriority::RealTime, ked);
+			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::KeyPressed, ostd::Signal::Priority::RealTime, ked);
 		}
 		else if (event.type == SDL_EVENT_KEY_UP)
 		{
 			KeyEventData ked(*this, (int32_t)event.key.key, 0, KeyEventData::eKeyEvent::Released);
-			ostd::SignalHandler::emitSignal(ostd::tBuiltinSignals::KeyReleased, ostd::tSignalPriority::RealTime, ked);
+			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::KeyReleased, ostd::Signal::Priority::RealTime, ked);
 		}
 		else if (event.type == SDL_EVENT_TEXT_INPUT)
 		{
 			KeyEventData ked(*this, 0, event.text.text[0], KeyEventData::eKeyEvent::Text);
-			ostd::SignalHandler::emitSignal(ostd::tBuiltinSignals::TextEntered, ostd::tSignalPriority::RealTime, ked);
+			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::TextEntered, ostd::Signal::Priority::RealTime, ked);
 		}
 		__on_event(event);
 	}
@@ -325,7 +326,7 @@ namespace ogfx
 		m_fpsUpdateTimer.update();
 	}
 
-	void GraphicsWindow::__on_signal(ostd::tSignal& signal)
+	void GraphicsWindow::__on_signal(ostd::Signal& signal)
 	{
 		onSignal(signal);
 	}
@@ -384,54 +385,54 @@ namespace ogfx
 			}
 		}
 
-		void Window::__on_signal(ostd::tSignal& signal)
+		void Window::__on_signal(ostd::Signal& signal)
 		{
 			Event evt(*this);
-			if (signal.ID == ostd::tBuiltinSignals::WindowClosed)
+			if (signal.ID == ostd::BuiltinSignals::WindowClosed)
 			{
 				m_rootWidget.__onWindowClosed(evt);
 			}
-			else if (signal.ID == ostd::tBuiltinSignals::WindowFocused)
+			else if (signal.ID == ostd::BuiltinSignals::WindowFocused)
 			{
 				m_rootWidget.__onWIndowFocused(evt);
 			}
-			else if (signal.ID == ostd::tBuiltinSignals::WindowLostFocus)
+			else if (signal.ID == ostd::BuiltinSignals::WindowLostFocus)
 			{
 				m_rootWidget.__onWindowFocusLost(evt);
 			}
-			else if (signal.ID == ostd::tBuiltinSignals::WindowResized)
+			else if (signal.ID == ostd::BuiltinSignals::WindowResized)
 			{
 				evt.windowResized = &(ogfx::WindowResizedData&)signal.userData;
 				m_rootWidget.__onWindowResized(evt);
 			}
-			else if (signal.ID == ostd::tBuiltinSignals::MouseMoved)
+			else if (signal.ID == ostd::BuiltinSignals::MouseMoved)
 			{
 				evt.mouse = &(ogfx::MouseEventData&)signal.userData;
 				m_rootWidget.__onMouseMoved(evt);
 			}
-			else if (signal.ID == ostd::tBuiltinSignals::MousePressed)
+			else if (signal.ID == ostd::BuiltinSignals::MousePressed)
 			{
 				evt.mouse = &(ogfx::MouseEventData&)signal.userData;
 				m_rootWidget.__onMousePressed(evt);
 			}
-			else if (signal.ID == ostd::tBuiltinSignals::MouseReleased)
+			else if (signal.ID == ostd::BuiltinSignals::MouseReleased)
 			{
 				evt.mouse = &(ogfx::MouseEventData&)signal.userData;
 				m_rootWidget.__onMouseReleased(evt);
 			}
-			else if (signal.ID == ostd::tBuiltinSignals::KeyPressed)
+			else if (signal.ID == ostd::BuiltinSignals::KeyPressed)
 			{
 				evt.keyboard = &(ogfx::KeyEventData&)signal.userData;
 				m_rootWidget.__onKeyPressed(evt);
 			}
-			else if (signal.ID == ostd::tBuiltinSignals::KeyReleased)
+			else if (signal.ID == ostd::BuiltinSignals::KeyReleased)
 			{
 				evt.keyboard = &(ogfx::KeyEventData&)signal.userData;
 				m_rootWidget.__onKeyReleased(evt);
 				if (evt.keyboard->keyCode == SDLK_ESCAPE)
 					close();
 			}
-			else if (signal.ID == ostd::tBuiltinSignals::TextEntered)
+			else if (signal.ID == ostd::BuiltinSignals::TextEntered)
 			{
 				evt.keyboard = &(ogfx::KeyEventData&)signal.userData;
 				m_rootWidget.__onTextEntered(evt);

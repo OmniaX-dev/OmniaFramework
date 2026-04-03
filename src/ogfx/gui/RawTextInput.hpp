@@ -34,8 +34,8 @@ namespace ogfx
 				public: enum class eEventType { None = 0, TextEntered, KeyPressed, KeyReleased };
 				public:
 					EventListener(RawTextInput& _parent);
-					virtual void handleSignal(ostd::tSignal& signal) override;
-					inline virtual void onSignalHandled(ostd::tSignal& signal) {  }
+					virtual void handleSignal(ostd::Signal& signal) override;
+					inline virtual void onSignalHandled(ostd::Signal& signal) {  }
 					inline RawTextInput& getParent(void) { return parent; }
 
 				private:
@@ -171,7 +171,7 @@ namespace ogfx
 		{
 			public:
 				inline RawTextInputEventListener(ogfx::gui::RawTextInput& _parent, ogfx::WindowCore& _window) : ogfx::gui::RawTextInput::EventListener::EventListener(_parent), window(_window) {  }
-				void onSignalHandled(ostd::tSignal& signal) override;
+				void onSignalHandled(ostd::Signal& signal) override;
 
 			public:
 				ogfx::WindowCore& window;

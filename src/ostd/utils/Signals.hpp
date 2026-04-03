@@ -22,15 +22,12 @@
 
 #include <ostd/data/Types.hpp>
 #include <ostd/data/BaseObject.hpp>
+#include <unordered_map>
 #include <vector>
 
 namespace ostd
 {
-	//INFO: (Note to self) When adding new Builtin signals, the corresponding static list must
-	//		be addeed to the ox::SignalHandler class, and the appropriate branch must be added
-	//		to the ox::SignalHandler::emitSignal and the ox::SignalHandler::connect functions.
-	//		Also, correct initialization in the ox::SignalHandler::init function must be added
-	struct tBuiltinSignals
+	struct BuiltinSignals
 	{
 		inline static constexpr uint32_t NoSignal 				=	0x0000;
 
@@ -56,68 +53,41 @@ namespace ostd
 		inline static constexpr uint32_t CustomSignalBase 		=	0xFF0000;
 	};
 
-	struct tSignalPriority
+	struct Signal
 	{
-		inline static constexpr uint8_t RealTime = 0;
-		inline static constexpr uint8_t Normal = 1;
-	};
-
-	struct tSignal
-	{
+		struct Priority
+		{
+			inline static constexpr uint8_t RealTime = 0;
+			inline static constexpr uint8_t Normal = 1;
+		};
 		const uint8_t priority;
 		const uint32_t ID;
 		bool handled { false };
 		BaseObject& userData;
 
-		inline tSignal(uint32_t id, BaseObject& _userData = BaseObject::InvalidRef(), uint8_t prio = tSignalPriority::Normal) : priority(prio), ID(id), userData(_userData) {  }
+		inline Signal(uint32_t id, BaseObject& _userData = BaseObject::InvalidRef(), uint8_t prio = Signal::Priority::Normal) : priority(prio), ID(id), userData(_userData) {  }
 	};
 
 	class SignalHandler
 	{
-		private: struct tSignalObjPair
-		{
-			BaseObject* object { nullptr };
-			uint32_t signal_id { tBuiltinSignals::NoSignal };
-		};
-		private: struct tDelegateSignal
+		private: struct DelegateSignal
 		{
 			uint32_t id;
 			BaseObject& ud;
-
-			inline tDelegateSignal(uint32_t _id, BaseObject& _ud) : id(_id), ud(_ud) {  }
+			inline DelegateSignal(uint32_t _id, BaseObject& _ud) : id(_id), ud(_ud) {  }
 		};
 		public:
 			static void init(bool allow_reinit = false);
-			static void refresh(void);
-
-			static void emitSignal(uint32_t signal_id, uint8_t prio = tSignalPriority::Normal, BaseObject& userData = BaseObject::InvalidRef());
+			static void handleDelegateSignals(void);
+			static void emitSignal(uint32_t signal_id, uint8_t prio = Signal::Priority::RealTime, BaseObject& userData = BaseObject::InvalidRef());
 			static void connect(BaseObject& object, uint32_t signal_id);
-
-			inline static uint32_t newCustomSignal(uint32_t sub_id) { return tBuiltinSignals::CustomSignalBase + sub_id; }
+			inline static uint32_t newCustomSignal(uint32_t sub_id) { return BuiltinSignals::CustomSignalBase + sub_id; }
 
 		private:
-			inline static std::vector<tSignalObjPair> m_customRecievers;
-			inline static std::vector<tDelegateSignal> m_delegatedSignals;
-
-			/** Builtin signal recievers lists **/
-			inline static std::vector<tSignalObjPair> m_mousePressedRecievers;
-			inline static std::vector<tSignalObjPair> m_mouseReleasedRecievers;
-			inline static std::vector<tSignalObjPair> m_keyPressedRecievers;
-			inline static std::vector<tSignalObjPair> m_keyReleasedRecievers;
-			inline static std::vector<tSignalObjPair> m_mouseMovedRecievers;
-			inline static std::vector<tSignalObjPair> m_mouseDraggedRecievers;
-			inline static std::vector<tSignalObjPair> m_textEnteredRecievers;
-			inline static std::vector<tSignalObjPair> m_windowResizedRecievers;
-			inline static std::vector<tSignalObjPair> m_windowClosedRecievers;
-			inline static std::vector<tSignalObjPair> m_windowFocusedRecievers;
-			inline static std::vector<tSignalObjPair> m_windowLostFocusRecievers;
-			inline static std::vector<tSignalObjPair> m_onGuiEventRecievers;
-			inline static std::vector<tSignalObjPair> m_beforeSDLShutdownRecievers;
-			/************************************/
-
-			inline static constexpr uint16_t __SIGNAL_BUFFER_START_SIZE { 128 };
-			inline static constexpr uint16_t __DELEGATED_SIGNALS_BUFFER_START_SIZE { 128 };
-
+			inline static std::unordered_map<uint32_t, std::vector<BaseObject*>> m_recievers;
+			inline static std::vector<DelegateSignal> m_DelegateRecievers;
+			inline static constexpr uint16_t __SIGNAL_BUFFER_START_SIZE { 2048 };
+			inline static constexpr uint16_t __DELEGATE_SIGNALS_BUFFER_START_SIZE { 2048 };
 			inline static bool m_initialized { false };
 	};
 }

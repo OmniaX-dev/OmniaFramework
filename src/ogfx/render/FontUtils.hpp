@@ -32,7 +32,7 @@ namespace ogfx
 		{
 			public:
 				SignalHandler(TTFRenderer& parent);
-				void handleSignal(ostd::tSignal& signal) override;
+				void handleSignal(ostd::Signal& signal) override;
 
 			private:
 				TTFRenderer& m_parent;

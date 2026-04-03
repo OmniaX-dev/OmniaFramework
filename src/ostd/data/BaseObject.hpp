@@ -27,7 +27,7 @@
 namespace ostd
 {
 	class OutputHandlerBase;
-	struct tSignal;
+	struct Signal;
 	class BaseObject
 	{
 		public:
@@ -59,10 +59,10 @@ namespace ostd
 			virtual inline String toString(void) const { return getObjectHeaderString(); };
 			virtual void print(bool newLine = true, OutputHandlerBase* __destination = nullptr) const;
 
-			virtual inline void handleSignal(tSignal& signal) {  }
+			virtual inline void handleSignal(Signal& signal) {  }
 			void connectSignal(uint32_t signal_id);
 
-			void __handle_signal(tSignal& signal);
+			void __handle_signal(Signal& signal);
 
 			friend std::ostream& operator<<(std::ostream& os, const BaseObject& obj);
 

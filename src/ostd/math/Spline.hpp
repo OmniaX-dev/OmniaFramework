@@ -35,12 +35,12 @@ namespace ostd
 	class Spline : public BaseObject
 	{
 		public:
-			using EventHandlerCallback = std::function<void(tSignal&)>;
+			using EventHandlerCallback = std::function<void(Signal&)>;
 			using DrawCallback = std::function<void(float resolution, float lineWidth, float controlPointSize)>;
 
 		public:
 			Spline(void);
-			void handleSignal(tSignal& signal) override;
+			void handleSignal(Signal& signal) override;
 			tSplineNode getPoint(float t);
 			tSplineNode getGradient(float t);
 			float updateSegmentLength(int32_t node);
