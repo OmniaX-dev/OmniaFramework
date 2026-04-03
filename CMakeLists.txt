@@ -167,27 +167,26 @@ if (APPLE)
 	find_package(Boost REQUIRED COMPONENTS regex)
 	target_link_libraries(${OMNIA_STD_LIB} PUBLIC Boost::regex)
 	find_package(PkgConfig REQUIRED)
-	pkg_check_modules(SDL2 REQUIRED sdl2)
-	pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
-	pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
-	pkg_check_modules(SDL2_GFX REQUIRED SDL2_gfx)
+	pkg_check_modules(SDL3 REQUIRED sdl3)
+	pkg_check_modules(SDL3_IMAGE REQUIRED SDL3_image)
+	pkg_check_modules(SDL3_TTF REQUIRED SDL3_ttf)
 	target_include_directories(${OMNIA_GFX_LIB} PUBLIC
-					${SDL2_INCLUDE_DIRS}
-					${SDL2_IMAGE_INCLUDE_DIRS}
-					${SDL2_TTF_INCLUDE_DIRS}
-					${SDL2_GFX_INCLUDE_DIRS}
+					${SDL3_INCLUDE_DIRS}
+					${SDL3_IMAGE_INCLUDE_DIRS}
+					${SDL3_TTF_INCLUDE_DIRS}
+					${SDL3_GFX_INCLUDE_DIRS}
 	)
 	target_link_directories(${OMNIA_GFX_LIB} PUBLIC
-					${SDL2_LIBRARY_DIRS}
-					${SDL2_IMAGE_LIBRARY_DIRS}
-					${SDL2_TTF_LIBRARY_DIRS}
-					${SDL2_GFX_LIBRARY_DIRS}
+					${SDL3_LIBRARY_DIRS}
+					${SDL3_IMAGE_LIBRARY_DIRS}
+					${SDL3_TTF_LIBRARY_DIRS}
+					${SDL3_GFX_LIBRARY_DIRS}
 	)
 	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC
-					${SDL2_LIBRARIES}
-					${SDL2_IMAGE_LIBRARIES}
-					${SDL2_TTF_LIBRARIES}
-					${SDL2_GFX_LIBRARIES}
+					${SDL3_LIBRARIES}
+					${SDL3_IMAGE_LIBRARIES}
+					${SDL3_TTF_LIBRARIES}
+					${SDL3_GFX_LIBRARIES}
 	)
 elseif (UNIX)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,'$ORIGIN',-rpath,/usr/lib,-rpath,/usr/local/lib")

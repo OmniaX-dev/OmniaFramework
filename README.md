@@ -86,21 +86,21 @@ Installs the library MSYS2's UCRT64 profile.
 - **<u>Arch Linux</u>**
 
 ```bash
-sudo pacman -S --needed base-devel clang  gdb cmake make boost sdl3 sdl3_mixer sdl3_image sdl3_ttf
+sudo pacman -S --needed base-devel clang  gdb cmake make boost sdl3 sdl3_image sdl3_ttf
 ```
 
 - **<u>Ubuntu</u>**
 
 ```bash
 sudo apt update && sudo apt upgrade
-sudo apt install build-essential dkms linux-headers-$(uname -r) clang gdb make cmake libssl-dev libboost-all-dev libsdl3-dev libsdl3-mixer-dev libsdl3-image-dev libsdl3-ttf-dev libxcb-randr0-dev
+sudo apt install build-essential dkms linux-headers-$(uname -r) clang gdb make cmake libssl-dev libboost-all-dev libsdl3-dev libsdl3-image-dev libsdl3-ttf-dev libxcb-randr0-dev
 ```
 
 - **<u>Fedora</u>**
 
 ```bash
 sudo dnf update
-sudo dnf install gcc gcc-c++ make clang gdb cmake clang-tools-extra boost boost-devel SDL3 SDL3_image SDL3_mixer SDL3_ttf SDL3-devel SDL3_image-devel SDL3_mixer-devel SDL3_ttf-devel
+sudo dnf install gcc gcc-c++ make clang gdb cmake clang-tools-extra boost boost-devel SDL3 SDL3_image SDL3_ttf SDL3-devel SDL3_image-devel SDL3_ttf-devel
 ```
 
 > **NOTE**: For other Linux distros, you need to install the same dependencies through your package manager.
@@ -145,7 +145,7 @@ eval "$(/usr/local/bin/brew shellenv)"
 ##### Step 3: Install dependencies
 
 ```bash
-brew install git llvm gdb cmake make boost sdl3 sdl3_mixer sdl3_image sdl3_ttf pkg-config
+brew install git llvm gdb cmake make boost sdl3 sdl3_image sdl3_ttf pkg-config
 ```
 
 ##### Step 4: Build OmniaFramework
