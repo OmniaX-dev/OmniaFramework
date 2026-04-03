@@ -21,6 +21,7 @@ if [[ "$1" == "debug" || "$1" == "release" ]]; then
     rm -rf bin
     cmake -B bin -S ./ -G "$MAKEFILE_TYPE" -DCMAKE_BUILD_TYPE=$BUILD_TYPE
     $MAKE_COMMAND -C bin $NJOBS --no-print-directory
+    mkdir -p extra
     find extra -mindepth 1 -maxdepth 1 -exec cp -r {} bin/ \;
     build_number=$(cat other/build.nr)
     build_number=$((build_number + 1))

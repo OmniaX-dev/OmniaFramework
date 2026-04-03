@@ -56,12 +56,12 @@ class Window : public ogfx::GraphicsWindow
 					return;
 				if (data.eventType == ogfx::gui::RawTextInput::eActionEventType::Enter)
 				{
-					out.fg(ostd::ConsoleColors::Green).p(data.sender.getText()).reset().nl();
+					out().fg(ostd::ConsoleColors::Green).p(data.sender.getText()).reset().nl();
 					data.sender.setText("");
 				}
 				else if (data.eventType == ogfx::gui::RawTextInput::eActionEventType::Tab)
 				{
-					out.fg(ostd::ConsoleColors::Red).p("TAB").reset().nl();
+					out().fg(ostd::ConsoleColors::Red).p("TAB").reset().nl();
 					data.sender.appendText("TAB");
 				}
 			}

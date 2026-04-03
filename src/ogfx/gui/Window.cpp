@@ -45,11 +45,13 @@ namespace ogfx
 		m_title = title;
 		setBlockingEventsRefreshFPS(DefaultBlockingEventsFPS);
 
-		m_window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SDL_WINDOW_RESIZABLE);
+		m_window = SDL_CreateWindow("", m_windowWidth, m_windowHeight, SDL_WINDOW_RESIZABLE);
 		m_renderer = SDL_CreateRenderer(m_window, nullptr);
 		SDL_SetWindowMinimumSize(m_window, m_windowWidth, m_windowHeight);
+		SDL_SetWindowPosition(m_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 		SDL_SetWindowTitle(m_window, m_title.c_str());
 		SDL_StartTextInput(m_window);
+		SDL_ShowWindow(m_window);
 
 		m_cursor_Arrow = SDL_CreateSystemCursor(SDL_SystemCursor::SDL_SYSTEM_CURSOR_DEFAULT);
 		m_cursor_IBeam = SDL_CreateSystemCursor(SDL_SystemCursor::SDL_SYSTEM_CURSOR_TEXT);
