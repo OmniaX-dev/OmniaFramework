@@ -43,10 +43,23 @@ namespace ostd
 
 	Stylesheet& Stylesheet::loadFromString(const ostd::String& content, const ostd::String& filePath)
 	{
+
 		std::vector<ostd::String> lines = content.tokenize("\n", false, true).getRawData();
 		uint32_t lineNumber = 0;
 		ostd::String lineCopy = "";
 		std::unordered_map<ostd::String, ostd::String> variables;
+		auto l_warn = [&](const ostd::String& msg) -> void {
+			OX_WARN("%s in theme line. File: <%s:%d>:\n\t%s", msg.c_str(), filePath.c_str(), lineNumber, lineCopy.c_str());
+		};
+		auto l_parseLine = [&](ostd::String& line) -> void {
+			for (const auto&[var, val] : variables)
+				line.replaceAll(var, val);
+			if (!parseThemeFileLine(line))
+				l_warn("Error");
+		};
+		ostd::String groupSelector = "";
+		bool groupLines = false;
+		std::vector<ostd::String> group;
 		for (auto& line : lines)
 		{
 			lineNumber++;
@@ -63,23 +76,65 @@ namespace ostd
 				line.substr(1);
 				if (line.count("=") != 1 || line.endsWith("="))
 				{
-					OX_WARN("Invalid variable in theme line. File: <%s:%d>:\n\t%s", filePath.c_str(), lineNumber, lineCopy.c_str());
+					l_warn("Invalid variable");
 					continue;
 				}
 				ostd::String varName = line.new_substr(0, line.indexOf("=")).trim();
 				ostd::String varValue = line.new_substr(line.indexOf("=") + 1).trim();
 				if (!varName.regexMatches(m_validNameRegex))
 				{
-					OX_WARN("Invalid variable name in theme line. File: <%s:%d>:\n\t%s", filePath.c_str(), lineNumber, lineCopy.c_str());
+					l_warn("Invalid variable name");
 					continue;
 				}
 				variables["$" + varName] = varValue;
 				continue;
 			}
-			for (const auto&[var, val] : variables)
-				line.replaceAll(var, val);
-			if (!parseThemeFileLine(line))
-				OX_WARN("Invalid theme line: File <%s:%d>:\n\t%s", filePath.c_str(), lineNumber, lineCopy.c_str());
+			if (groupSelector != "")
+			{
+				if (groupLines)
+				{
+					if (line == "}")
+					{
+						groupLines = false;
+						auto newLines = parseGroup(groupSelector, group);
+						for (auto& l : newLines)
+							l_parseLine(l);
+						groupSelector = "";
+						group.clear();
+						continue;
+					}
+					group.push_back(line);
+				}
+				else
+				{
+					if (line == "{")
+						groupLines = true;
+				}
+				continue;
+			}
+			if (line.startsWith("("))
+			{
+				if (line.count(")") != 1 || line.indexOf(")") < 3)
+				{
+					l_warn("Invalid group selector");
+					continue;
+				}
+				ostd::String rawSelector = line.new_substr(1, line.indexOf(")")).trim();
+				groupSelector = parseGroupSelector(rawSelector);
+				std::cout << groupSelector << "\n";
+				if (line.contains("{"))
+				{
+					line.substr(line.indexOf("{")).trim();
+					if (line != "{")
+					{
+						l_warn("Invalid group selector");
+						continue;
+					}
+					groupLines = true;
+				}
+				continue;
+			}
+			l_parseLine(line);
 		}
 		return *this;
 	}
@@ -190,5 +245,45 @@ namespace ostd
 		else
 			return false;
 		return true;
+	}
+
+	ostd::String Stylesheet::parseGroupSelector(const ostd::String& rawSelector) const
+	{
+		ostd::String sel = rawSelector.new_trim();
+		if (sel == "") return "";
+		ostd::String id = "";
+		ostd::String name = sel;
+		ostd::String qual = "";
+		if (sel.contains(" "))
+		{
+			id = sel.new_substr(0, sel.indexOf(" ")).trim();
+			name = sel.new_substr(sel.indexOf(" ") + 1).trim();
+		}
+		if (name.contains(":"))
+		{
+			if (name.startsWith(":") || name.endsWith(":") || name.count(":") != 1)
+				return "";
+			qual = name.new_substr(name.indexOf(":") + 1).trim();
+			name.substr(0, name.indexOf(":")).trim();
+		}
+		if (qual != "")
+		{
+			if (!id.startsWith("@"))
+				id = "@" + id;
+			id += ":" + qual;
+		}
+		id += " " + name;
+		id.trim();
+		return id;
+	}
+
+	std::vector<ostd::String> Stylesheet::parseGroup(const ostd::String& selector, const std::vector<ostd::String>& group)
+	{
+		if (selector.new_trim() == "" || group.size() == 0)
+			return {};
+		std::vector<ostd::String> newLines;
+		for (const auto& property : group)
+			newLines.push_back(selector.new_add(".").new_add(property));
+		return newLines;
 	}
 }

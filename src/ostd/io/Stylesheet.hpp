@@ -53,6 +53,8 @@ namespace ostd
 
 		private:
 			bool parseThemeFileLine(const ostd::String& line);
+			ostd::String parseGroupSelector(const ostd::String& rawSelector) const;
+			std::vector<ostd::String> parseGroup(const ostd::String& selector, const std::vector<ostd::String>& group);
 
 		private:
 			std::unordered_map<ostd::String, TypeVariant> m_values;

@@ -571,7 +571,7 @@ namespace ogfx
 					gfx.fillRoundRect({ getGlobalPosition(), getSize() }, m_backgroundColor, m_borderRadius);
 				if (m_showBorder)
 					gfx.drawRoundRect({ getGlobalPosition(), getSize() }, m_borderColor, m_borderRadius, m_borderWidth);
-				gfx.drawString(getText(), getGlobalPosition() + ostd::Vec2 { getPadding().left(), getPadding().top() }, getColor());
+				gfx.drawString(getText(), getGlobalPosition() + ostd::Vec2 { getPadding().left(), getPadding().top() }, getColor(), getFontSize());
 			}
 
 			void Label::setText(const ostd::String& text)
