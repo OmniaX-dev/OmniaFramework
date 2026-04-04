@@ -20,7 +20,7 @@
 
 #include "Window.hpp"
 #include "../../ostd/utils/Time.hpp"
-#include <SDL3/SDL_events.h>
+#include "utils/Keycodes.hpp"
 
 namespace ogfx
 {
@@ -29,8 +29,28 @@ namespace ogfx
 	WindowCore::~WindowCore(void)
 	{
 		__on_window_destroy();
-		SDL_DestroyCursor(m_cursor_IBeam);
-		SDL_DestroyCursor(m_cursor_Arrow);
+
+		SDL_DestroyCursor(m_cursor_Default);
+		SDL_DestroyCursor(m_cursor_Text);
+		SDL_DestroyCursor(m_cursor_Wait);
+		SDL_DestroyCursor(m_cursor_Crosshair);
+		SDL_DestroyCursor(m_cursor_Progress);
+		SDL_DestroyCursor(m_cursor_NWSE_Resize);
+		SDL_DestroyCursor(m_cursor_NESW_Resize);
+		SDL_DestroyCursor(m_cursor_EW_Resize);
+		SDL_DestroyCursor(m_cursor_NS_Resize);
+		SDL_DestroyCursor(m_cursor_Move);
+		SDL_DestroyCursor(m_cursor_NotAllowed);
+		SDL_DestroyCursor(m_cursor_Pointer);
+		SDL_DestroyCursor(m_cursor_NW_Resize);
+		SDL_DestroyCursor(m_cursor_N_Resize);
+		SDL_DestroyCursor(m_cursor_NE_Resize);
+		SDL_DestroyCursor(m_cursor_E_Resize);
+		SDL_DestroyCursor(m_cursor_SE_Resize);
+		SDL_DestroyCursor(m_cursor_S_Resize);
+		SDL_DestroyCursor(m_cursor_SW_Resize);
+		SDL_DestroyCursor(m_cursor_W_Resize);
+
 		SDL_DestroyRenderer(m_renderer);
 		SDL_DestroyWindow(m_window);
 		SDLSysten::release();
@@ -53,8 +73,26 @@ namespace ogfx
 		SDL_StartTextInput(m_window);
 		SDL_ShowWindow(m_window);
 
-		m_cursor_Arrow = SDL_CreateSystemCursor(SDL_SystemCursor::SDL_SYSTEM_CURSOR_DEFAULT);
-		m_cursor_IBeam = SDL_CreateSystemCursor(SDL_SystemCursor::SDL_SYSTEM_CURSOR_TEXT);
+		m_cursor_Default      = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
+		m_cursor_Text         = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT);
+		m_cursor_Wait         = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
+		m_cursor_Crosshair    = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);
+		m_cursor_Progress     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_PROGRESS);
+		m_cursor_NWSE_Resize  = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NWSE_RESIZE);
+		m_cursor_NESW_Resize  = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NESW_RESIZE);
+		m_cursor_EW_Resize    = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_EW_RESIZE);
+		m_cursor_NS_Resize    = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NS_RESIZE);
+		m_cursor_Move         = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_MOVE);
+		m_cursor_NotAllowed   = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NOT_ALLOWED);
+		m_cursor_Pointer      = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_POINTER);
+		m_cursor_NW_Resize    = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NW_RESIZE);
+		m_cursor_N_Resize     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_N_RESIZE);
+		m_cursor_NE_Resize    = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NE_RESIZE);
+		m_cursor_E_Resize     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_E_RESIZE);
+		m_cursor_SE_Resize    = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SE_RESIZE);
+		m_cursor_S_Resize     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_S_RESIZE);
+		m_cursor_SW_Resize    = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SW_RESIZE);
+		m_cursor_W_Resize     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_W_RESIZE);
 
 		m_wout.attachWindow(*this);
 		m_wout.setFontSize(22);
@@ -116,18 +154,72 @@ namespace ogfx
 
 	void WindowCore::setCursor(eCursor cursor)
 	{
-		switch (cursor)
-		{
-			case eCursor::Arrow:
-				SDL_SetCursor(m_cursor_Arrow);
-			break;
-			case eCursor::IBeam:
-				SDL_SetCursor(m_cursor_IBeam);
-			break;
-			default:
-				SDL_SetCursor(m_cursor_Arrow);
-			break;
-		}
+	    switch (cursor)
+	    {
+	        case eCursor::Default:
+	            SDL_SetCursor(m_cursor_Default);
+	        break;
+	        case eCursor::Text:
+	            SDL_SetCursor(m_cursor_Text);
+	        break;
+	        case eCursor::Wait:
+	            SDL_SetCursor(m_cursor_Wait);
+	        break;
+	        case eCursor::Crosshair:
+	            SDL_SetCursor(m_cursor_Crosshair);
+	        break;
+	        case eCursor::Progress:
+	            SDL_SetCursor(m_cursor_Progress);
+	        break;
+	        case eCursor::NWSE_Resize:
+	            SDL_SetCursor(m_cursor_NWSE_Resize);
+	        break;
+	        case eCursor::NESW_Resize:
+	            SDL_SetCursor(m_cursor_NESW_Resize);
+	        break;
+	        case eCursor::EW_Resize:
+	            SDL_SetCursor(m_cursor_EW_Resize);
+	        break;
+	        case eCursor::NS_Resize:
+	            SDL_SetCursor(m_cursor_NS_Resize);
+	        break;
+	        case eCursor::Move:
+	            SDL_SetCursor(m_cursor_Move);
+	        break;
+	        case eCursor::NotAllowed:
+	            SDL_SetCursor(m_cursor_NotAllowed);
+	        break;
+	        case eCursor::Pointer:
+	            SDL_SetCursor(m_cursor_Pointer);
+	        break;
+	        case eCursor::NW_Resize:
+	            SDL_SetCursor(m_cursor_NW_Resize);
+	        break;
+	        case eCursor::N_Resize:
+	            SDL_SetCursor(m_cursor_N_Resize);
+	        break;
+	        case eCursor::NE_Resize:
+	            SDL_SetCursor(m_cursor_NE_Resize);
+	        break;
+	        case eCursor::E_Resize:
+	            SDL_SetCursor(m_cursor_E_Resize);
+	        break;
+	        case eCursor::SE_Resize:
+	            SDL_SetCursor(m_cursor_SE_Resize);
+	        break;
+	        case eCursor::S_Resize:
+	            SDL_SetCursor(m_cursor_S_Resize);
+	        break;
+	        case eCursor::SW_Resize:
+	            SDL_SetCursor(m_cursor_SW_Resize);
+	        break;
+	        case eCursor::W_Resize:
+	            SDL_SetCursor(m_cursor_W_Resize);
+	        break;
+	        default:
+	            SDL_SetCursor(m_cursor_Default);
+	        break;
+	    }
 	}
 
 	void WindowCore::enableResizable(bool enable)
@@ -429,7 +521,7 @@ namespace ogfx
 			{
 				evt.keyboard = &(ogfx::KeyEventData&)signal.userData;
 				m_rootWidget.__onKeyReleased(evt);
-				if (evt.keyboard->keyCode == SDLK_ESCAPE)
+				if (evt.keyboard->keyCode == KeyCode::Escape)
 					close();
 			}
 			else if (signal.ID == ostd::BuiltinSignals::TextEntered)

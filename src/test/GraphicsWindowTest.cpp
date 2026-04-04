@@ -18,6 +18,7 @@
     along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include "utils/Keycodes.hpp"
 #include <ogfx/ogfx.hpp>
 
 ostd::ConsoleOutputHandler out;
@@ -46,7 +47,7 @@ class Window : public ogfx::GraphicsWindow
 			if (signal.ID == ostd::BuiltinSignals::KeyReleased)
 			{
 				auto& evtData = (ogfx::KeyEventData&)signal.userData;
-				if (evtData.keyCode == SDLK_ESCAPE)
+				if (evtData.keyCode == ogfx::KeyCode::Escape)
 					close();
 			}
 			if (signal.ID == ogfx::gui::RawTextInput::actionEventSignalID)

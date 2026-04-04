@@ -19,6 +19,7 @@
 */
 
 #include "Widgets.hpp"
+#include "utils/Keycodes.hpp"
 #include <ogfx/render/BasicRenderer.hpp>
 #include <ogfx/gui/Window.hpp>
 
@@ -198,7 +199,7 @@ namespace ogfx
 		{
 			if (!m_focused) return;
 			m_focused->__onKeyReleased(event);
-			if (m_tabNavigationEnabled && event.keyboard->keyCode == SDLK_TAB)
+			if (m_tabNavigationEnabled && event.keyboard->keyCode == KeyCode::Tab)
 				focusNext();
 		}
 
@@ -277,6 +278,11 @@ namespace ogfx
 			if (!m_rootChild && m_parent != nullptr)
 				glob += m_parent->getGlobalPosition();
 			return glob;
+		}
+
+		bool Widget::contains(ostd::Vec2 p, bool includeBounds) const
+		{
+			return ostd::Rectangle(getGlobalPosition(), getSize()).contains(p, includeBounds);
 		}
 
 		void Widget::applyThemeValue(Theme& theme, const ostd::String& key, Theme::ThemeValue value, bool propagate)

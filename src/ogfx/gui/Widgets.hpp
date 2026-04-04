@@ -76,6 +76,8 @@ namespace ogfx
 				Widget(const ostd::Rectangle& bounds, WindowCore& window);
 				bool addChild(Widget& child);
 				ostd::Vec2 getGlobalPosition(void) const;
+				using ostd::Rectangle::contains;
+				bool contains(ostd::Vec2 p, bool includeBounds = false) const override;
 				virtual void applyTheme(const Theme& theme) = 0;
 				void applyThemeValue(Theme& theme, const ostd::String& key, Theme::ThemeValue value, bool propagate);
 

@@ -34,7 +34,31 @@ namespace ogfx
 {
 	class WindowCore : public ostd::BaseObject
 	{
-		public: enum class eCursor { Arrow = 0, IBeam };
+		public: enum class eCursor : uint8_t
+		{
+		    Default = 0,
+		    Text,
+		    Wait,
+		    Crosshair,
+		    Progress,
+		    NWSE_Resize,
+		    NESW_Resize,
+		    EW_Resize,
+		    NS_Resize,
+		    Move,
+		    NotAllowed,
+		    Pointer,
+		    NW_Resize,
+		    N_Resize,
+		    NE_Resize,
+		    E_Resize,
+		    SE_Resize,
+		    S_Resize,
+		    SW_Resize,
+		    W_Resize,
+
+		    Count
+		};
 		public:
 			inline WindowCore(void) {  }
 			virtual ~WindowCore(void);
@@ -104,8 +128,26 @@ namespace ogfx
 			bool m_resizeable { true };
 			bool m_refreshScreen { true };
 
-			SDL_Cursor* m_cursor_IBeam { nullptr };
-			SDL_Cursor* m_cursor_Arrow { nullptr };
+			SDL_Cursor* m_cursor_Default      { nullptr };
+			SDL_Cursor* m_cursor_Text         { nullptr };
+			SDL_Cursor* m_cursor_Wait         { nullptr };
+			SDL_Cursor* m_cursor_Crosshair    { nullptr };
+			SDL_Cursor* m_cursor_Progress     { nullptr };
+			SDL_Cursor* m_cursor_NWSE_Resize  { nullptr };
+			SDL_Cursor* m_cursor_NESW_Resize  { nullptr };
+			SDL_Cursor* m_cursor_EW_Resize    { nullptr };
+			SDL_Cursor* m_cursor_NS_Resize    { nullptr };
+			SDL_Cursor* m_cursor_Move         { nullptr };
+			SDL_Cursor* m_cursor_NotAllowed   { nullptr };
+			SDL_Cursor* m_cursor_Pointer      { nullptr };
+			SDL_Cursor* m_cursor_NW_Resize    { nullptr };
+			SDL_Cursor* m_cursor_N_Resize     { nullptr };
+			SDL_Cursor* m_cursor_NE_Resize    { nullptr };
+			SDL_Cursor* m_cursor_E_Resize     { nullptr };
+			SDL_Cursor* m_cursor_SE_Resize    { nullptr };
+			SDL_Cursor* m_cursor_S_Resize     { nullptr };
+			SDL_Cursor* m_cursor_SW_Resize    { nullptr };
+			SDL_Cursor* m_cursor_W_Resize     { nullptr };
 
 		public:
 			inline static constexpr int32_t MaxBlockingEventsFPS { 240 };
@@ -114,7 +156,6 @@ namespace ogfx
 	};
 	class GraphicsWindow : public WindowCore
 	{
-		public: enum class eCursor { Arrow = 0, IBeam };
 		public:
 			inline GraphicsWindow(void) {  }
 			inline GraphicsWindow(int32_t width, int32_t height, const ostd::String& title) { initialize(width, height, title); }
@@ -150,7 +191,6 @@ namespace ogfx
 	{
 		class Window : public WindowCore
 		{
-			public: enum class eCursor { Arrow = 0, IBeam };
 			public:
 				inline Window(void) {  }
 				inline Window(int32_t width, int32_t height, const ostd::String& title) { initialize(width, height, title); }

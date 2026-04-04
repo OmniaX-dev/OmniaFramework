@@ -38,6 +38,7 @@
  * Tab Panel
  */
 
+#include "utils/Keycodes.hpp"
 #include <ogfx/ogfx.hpp>
 
 ostd::ConsoleOutputHandler out;
@@ -52,6 +53,7 @@ class Window : public ogfx::gui::Window
 			m_label1.setText("Hello World!");
 			m_label1.setMouseMovedCallback([&](const ogfx::gui::Event& event) -> void {
 				m_label1.applyThemeValue(m_theme, "label.backgroundColor", ostd::Colors::DarkBlue, false);
+				this->setCursor(eCursor::Move);
 			});
 			addWidget(m_label1);
 
@@ -71,7 +73,7 @@ class Window : public ogfx::gui::Window
 			if (signal.ID == ostd::BuiltinSignals::KeyReleased)
 			{
 				auto& evtData = (ogfx::KeyEventData&)signal.userData;
-				if (evtData.keyCode == SDLK_ESCAPE)
+				if (evtData.keyCode == ogfx::KeyCode::Escape)
 					close();
 			}
 		}

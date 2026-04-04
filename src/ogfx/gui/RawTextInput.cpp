@@ -21,6 +21,7 @@
 #include "RawTextInput.hpp"
 #include "../gui/Window.hpp"
 #include "../../io/Logger.hpp"
+#include "utils/Keycodes.hpp"
 
 namespace ogfx
 {
@@ -88,7 +89,7 @@ namespace ogfx
 					onSignalHandled(signal);
 					return;
 				}
-				if (data.keyCode == SDLK_BACKSPACE)
+				if (data.keyCode == KeyCode::Backspace)
 				{
 					parent.m_keyRepeatCounter.start();
 					if (parent.m_theme.cursorBlink)
@@ -107,7 +108,7 @@ namespace ogfx
 					parent.m_text = s1 + s2;
 					parent.m_cursorPosition--;
 				}
-				else if (data.keyCode == SDLK_LEFT)
+				else if (data.keyCode == KeyCode::Left)
 				{
 					parent.m_keyRepeatCounter.start();
 					if (parent.m_theme.cursorBlink)
@@ -117,7 +118,7 @@ namespace ogfx
 					if (parent.m_cursorPosition > 0)
 						parent.m_cursorPosition--;
 				}
-				else if (data.keyCode == SDLK_RIGHT)
+				else if (data.keyCode == KeyCode::Right)
 				{
 					parent.m_keyRepeatCounter.start();
 					if (parent.m_theme.cursorBlink)
@@ -127,14 +128,14 @@ namespace ogfx
 					if (parent.m_cursorPosition < parent.m_text.len())
 						parent.m_cursorPosition++;
 				}
-				else if (data.keyCode == SDLK_RETURN)
+				else if (data.keyCode == KeyCode::Return)
 				{
 					parent.m_keyRepeatCounter.start();
 					parent.m_lastKeyCode = data.keyCode;
 					ActionEventData aed(parent, parent.getName(), eActionEventType::Enter, ostd::BaseObject::InvalidRef());
 					ostd::SignalHandler::emitSignal(RawTextInput::actionEventSignalID, ostd::Signal::Priority::RealTime, aed);
 				}
-				else if (data.keyCode == SDLK_TAB)
+				else if (data.keyCode == KeyCode::Tab)
 				{
 					parent.m_keyRepeatCounter.start();
 					parent.m_lastKeyCode = data.keyCode;
@@ -292,13 +293,13 @@ namespace ogfx
 				if (getParent().isMouseInside())
 				{
 					if (!m_ibeamCursorSet)
-						window.setCursor(ogfx::WindowCore::eCursor::IBeam);
+						window.setCursor(ogfx::WindowCore::eCursor::Text);
 					m_ibeamCursorSet = true;
 				}
 				else
 				{
 					if (m_ibeamCursorSet)
-						window.setCursor(ogfx::WindowCore::eCursor::Arrow);
+						window.setCursor(ogfx::WindowCore::eCursor::Default);
 					m_ibeamCursorSet = false;
 				}
 			}

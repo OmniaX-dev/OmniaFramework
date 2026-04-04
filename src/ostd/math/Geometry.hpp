@@ -385,7 +385,7 @@ namespace ostd
 				else
 					return p.x > x && p.y > y && p.x < x + w && p.y < y + h;
 			}
-			inline virtual bool contains(float xx, float yy, bool includeBounds = false) const { return contains({ xx, yy }); }
+			inline bool contains(float xx, float yy, bool includeBounds = false) const { return contains({ xx, yy }, includeBounds); }
 
 			inline virtual float getDistance(Vec2 p) const { return sqrt(fabs((p.x - getx()) * (p.x - getx()) + (p.y - gety()) * (p.y - gety()))); }
 
