@@ -1,0 +1,13 @@
+% Window
+window.backgroundColor = Color(rgba(40, 0, 0, 255))
+
+% Label
+label.textColor = Color(#FFFFFFFF)
+label.backgroundColor = Color(#FFFF80FF)
+label.borderColor = Color(#FFFFFFFF)
+label.fontSize = 30
+label.borderRadius = 20
+label.borderWidth = 2
+label.showBackground = false
+label.showBorder = false
+label.padding = Rect(5, 5, 5, 5)

@@ -215,7 +215,7 @@ namespace ogfx
 				void __main_loop(void) override;
 				void __on_signal(ostd::Signal& signal) override;
 
-			private:
+			protected:
 				BasicRenderer2D m_gfx;
 				widgets::RootWidget m_rootWidget { *this };
 				const gui::Theme* m_guiTheme { nullptr };

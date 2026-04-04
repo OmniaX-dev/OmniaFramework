@@ -19,6 +19,7 @@
 */
 
 #include "Widgets.hpp"
+#include "gui/Events.hpp"
 #include "utils/Keycodes.hpp"
 #include <ogfx/render/BasicRenderer.hpp>
 #include <ogfx/gui/Window.hpp>
@@ -167,8 +168,26 @@ namespace ogfx
 				if (w == nullptr) continue;
 				if (w->isInvalid()) continue;
 				if (!w->contains(event.mouse->position_x, event.mouse->position_y, true))
+				{
+					if (w->m_mouseInside)
+					{
+						w->m_mouseInside = false;
+						w->__onMouseExited(event);
+					}
 					continue;
-				w->__onMouseMoved(event);
+				}
+				if (!w->m_mouseInside)
+				{
+					w->m_mouseInside = true;
+					w->__onMouseEntered(event);
+				}
+				else
+				{
+					if (w->m_pressedButton != ogfx::MouseEventData::eButton::None)
+						w->__onMouseDragged(event);
+					else
+						w->__onMouseMoved(event);
+				}
 				if (event.isHandled())
 					break;
 			}
@@ -319,11 +338,13 @@ namespace ogfx
 				if (callback_onMousePressed)
 					callback_onMousePressed(event);
 				onMousePressed(event);
+				m_pressedButton = event.mouse->button;
 			}
 		}
 
 		void Widget::__onMouseReleased(const Event& event)
 		{
+			m_pressedButton = ogfx::MouseEventData::eButton::None;
 			if (hasChildren())
 				m_widgets.onMouseReleased(event);
 			if (!event.isHandled())
@@ -344,6 +365,20 @@ namespace ogfx
 					callback_onMouseMoved(event);
 				onMouseMoved(event);
 			}
+		}
+
+		void Widget::__onMouseEntered(const Event& event)
+		{
+			if (callback_onMouseEntered)
+				callback_onMouseEntered(event);
+			onMouseEntered(event);
+		}
+
+		void Widget::__onMouseExited(const Event& event)
+		{
+			if (callback_onMouseExited)
+				callback_onMouseExited(event);
+			onMouseExited(event);
 		}
 
 		void Widget::__onMouseDragged(const Event& event)
@@ -372,6 +407,7 @@ namespace ogfx
 
 		void Widget::__onKeyReleased(const Event& event)
 		{
+			m_pressedButton = ogfx::MouseEventData::eButton::None;
 			if (hasChildren())
 				m_widgets.onKeyReleased(event);
 			if (!event.isHandled())
@@ -455,10 +491,9 @@ namespace ogfx
 		{
 			RootWidget::RootWidget(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window)
 			{
+				disableDrawBox();
 				m_rootChild = true;
 				setSize(static_cast<float>(window.getWindowWidth()), static_cast<float>(window.getWindowHeight()));
-				enableDrawBox();
-				setDrawBoxColor(window.getClearColor());
 				setTypeName("ogfx::gui::widgets::RootWidget");
 			}
 
@@ -469,7 +504,12 @@ namespace ogfx
 
 			void RootWidget::applyTheme(const Theme& theme)
 			{
-				setDrawBoxColor(theme.get<ostd::Color>("window.backgroundColor", getWindow().getClearColor()));
+				m_color = theme.get<ostd::Color>("window.backgroundColor", getWindow().getClearColor());
+			}
+
+			void RootWidget::onDraw(ogfx::BasicRenderer2D& gfx)
+			{
+				gfx.fillRect({ 0, 0, static_cast<float>(getWindow().getWindowWidth()), static_cast<float>(getWindow().getWindowHeight()) }, m_color);
 			}
 
 

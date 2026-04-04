@@ -445,7 +445,7 @@ namespace ostd
 			str = str.substr(2);
 			base = 2;
 		}
-		return strtol(str.c_str(), NULL, base);
+		return strtoul(str.c_str(), NULL, base);
 	}
 
 	float String::toFloat(void) const

@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "gui/Events.hpp"
 #include <ostd/data/BaseObject.hpp>
 #include <ostd/math/Geometry.hpp>
 #include <ostd/data/Color.hpp>
@@ -87,6 +88,8 @@ namespace ogfx
 				inline virtual void onMousePressed(const Event& event) {  }
 				inline virtual void onMouseReleased(const Event& event) {  }
 				inline virtual void onMouseMoved(const Event& event) {  }
+				inline virtual void onMouseEntered(const Event& event) {  }
+				inline virtual void onMouseExited(const Event& event) {  }
 				inline virtual void onMouseDragged(const Event& event) {  }
 				inline virtual void onKeyPressed(const Event& event) {  }
 				inline virtual void onKeyReleased(const Event& event) {  }
@@ -103,6 +106,8 @@ namespace ogfx
 				void __onMousePressed(const Event& event);
 				void __onMouseReleased(const Event& event);
 				void __onMouseMoved(const Event& event);
+				void __onMouseEntered(const Event& event);
+				void __onMouseExited(const Event& event);
 				void __onMouseDragged(const Event& event);
 				void __onKeyPressed(const Event& event);
 				void __onKeyReleased(const Event& event);
@@ -116,6 +121,8 @@ namespace ogfx
 				inline virtual void setMousePressedCallback(EventCallback callback) { callback_onMousePressed = callback; }
 				inline virtual void setMouseReleasedCallback(EventCallback callback) { callback_onMouseReleased = callback; }
 				inline virtual void setMouseMovedCallback(EventCallback callback) { callback_onMouseMoved = callback; }
+				inline virtual void setMouseEnteredCallback(EventCallback callback) { callback_onMouseEntered = callback; }
+				inline virtual void setMouseExitedCallback(EventCallback callback) { callback_onMouseExited = callback; }
 				inline virtual void setMouseDraggedCallback(EventCallback callback) { callback_onMouseDragged = callback; }
 				inline virtual void setKeyPressedCallback(EventCallback callback) { callback_onKeyPressed = callback; }
 				inline virtual void setKeyReleasedCallback(EventCallback callback) { callback_onKeyReleased = callback; }
@@ -136,6 +143,8 @@ namespace ogfx
 				inline bool isChildrenEnabled(void) const { return m_allowChildren; }
 				inline void setPadding(const ostd::Rectangle& pad) { m_padding = pad; }
 				inline Rectangle getPadding(void) { return m_padding; }
+				inline bool isMouseInside(void) const { return m_mouseInside; }
+				inline ogfx::MouseEventData::eButton getPressedMouseButton(void) const { return m_pressedButton; }
 
 			protected:
 				inline void disableChildren(void) { m_allowChildren = false; }
@@ -151,6 +160,8 @@ namespace ogfx
 				EventCallback callback_onMousePressed { nullptr };
 				EventCallback callback_onMouseReleased { nullptr };
 				EventCallback callback_onMouseMoved { nullptr };
+				EventCallback callback_onMouseEntered { nullptr };
+				EventCallback callback_onMouseExited { nullptr };
 				EventCallback callback_onMouseDragged { nullptr };
 				EventCallback callback_onKeyPressed { nullptr };
 				EventCallback callback_onKeyReleased { nullptr };
@@ -168,6 +179,8 @@ namespace ogfx
 				int32_t m_zIndex { -1 };
 				WidgetManager m_widgets;
 				bool m_allowChildren { true };
+				bool m_mouseInside { false };
+				ogfx::MouseEventData::eButton m_pressedButton { ogfx::MouseEventData::eButton::None };
 
 				bool m_drawBox { true };
 				ostd::Color m_drawBoxColor { 255, 0, 0 };
@@ -184,8 +197,10 @@ namespace ogfx
 					RootWidget(WindowCore& window);
 					void onWindowResized(const Event& event) override;
 					void applyTheme(const Theme& theme) override;
+					void onDraw(ogfx::BasicRenderer2D& gfx) override;
 
 				private:
+					ostd::Color m_color { ostd::Colors::Transparent };
 			};
 			class Label : public Widget
 			{

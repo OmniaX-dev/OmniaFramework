@@ -123,6 +123,7 @@ namespace ogfx
 		connectSignal(ostd::BuiltinSignals::WindowLostFocus);
 
 		__on_window_init(width, height, title);
+		setSize(m_windowWidth, m_windowHeight);
 	}
 
 	void WindowCore::mainLoop(void)
@@ -457,6 +458,7 @@ namespace ogfx
 			m_gfx.init(*this);
 			loadDefaultTHeme();
 			onInitialize();
+			m_rootWidget.setSize(static_cast<float>(width), static_cast<float>(height));
 		}
 
 		void Window::__on_window_close(void)
