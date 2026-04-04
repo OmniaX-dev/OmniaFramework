@@ -2,7 +2,6 @@ CompileFlags:
   CompilationDatabase: bin
   Add:
     [
-      "--target=x86_64-w64-mingw32",
       "-IC:/msys64/ucrt64/include",
       "-IC:/msys64/ucrt64/include/ucrt",
       "-IC:/msys64/ucrt64/include/crt",

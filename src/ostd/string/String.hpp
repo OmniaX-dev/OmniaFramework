@@ -162,6 +162,7 @@ namespace ostd
 			bool contains(const String& str) const;
 			bool startsWith(const String& str) const;
 			bool endsWith(const String& str) const;
+			bool regexMatches(const String& regex_pattern, bool case_insensitive = false) const;
 			uint32_t count(const String& str) const;
 			int32_t indexOf(char c, uint32_t start = 0) const;
 			int32_t indexOf(const String& str, uint32_t start = 0) const;

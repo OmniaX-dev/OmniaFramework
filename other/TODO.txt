@@ -1,5 +1,5 @@
 ***Add Color constants to ostd::Color
 ***Add MouseEntered/MouseExited callbacks
 ***Fix mouse detection currently using local coordinates
-implement JSON theme loading
+***implement file theme loading
 ***Implemenmt MouseDragged callback

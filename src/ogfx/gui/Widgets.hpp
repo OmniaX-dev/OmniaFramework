@@ -24,7 +24,7 @@
 #include <ostd/data/BaseObject.hpp>
 #include <ostd/math/Geometry.hpp>
 #include <ostd/data/Color.hpp>
-#include <ogfx/gui/Themes.hpp>
+#include <ostd/io/Stylesheet.hpp>
 #include <functional>
 
 namespace ogfx
@@ -46,7 +46,7 @@ namespace ogfx
 
 				void draw(ogfx::BasicRenderer2D& gfx);
 				void update(void);
-				void onThemeApplied(const Theme& theme);
+				void onThemeApplied(const ostd::Stylesheet& theme);
 				void onMousePressed(const Event& event);
 				void onMouseReleased(const Event& event);
 				void onMouseMoved(const Event& event);
@@ -72,6 +72,12 @@ namespace ogfx
 		};
 		class Widget : public ostd::BaseObject, public ostd::Rectangle
 		{
+			private: struct ThemeOverride
+			{
+				ostd::String fullKey;
+				ostd::Stylesheet::TypeVariant value;
+				bool propagate;
+			};
 			public: using EventCallback = std::function<void(const Event&)>;
 			public:
 				Widget(const ostd::Rectangle& bounds, WindowCore& window);
@@ -79,8 +85,9 @@ namespace ogfx
 				ostd::Vec2 getGlobalPosition(void) const;
 				using ostd::Rectangle::contains;
 				bool contains(ostd::Vec2 p, bool includeBounds = false) const override;
-				virtual void applyTheme(const Theme& theme) = 0;
-				void applyThemeValue(Theme& theme, const ostd::String& key, Theme::ThemeValue value, bool propagate);
+				virtual void applyTheme(const ostd::Stylesheet& theme) = 0;
+				void addThemeOverride(const ostd::String& key, ostd::Stylesheet::TypeVariant value, const ostd::String& themeID = "", const ostd::String& qualifier = "", bool propagate = true);
+				void reloadTheme(void);
 
 				inline virtual void onDraw(ogfx::BasicRenderer2D& gfx) {  }
 				inline virtual void onUpdate(void) {  }
@@ -116,7 +123,7 @@ namespace ogfx
 				void __onWindowResized(const Event& event);
 				void __onWIndowFocused(const Event& event);
 				void __onWindowFocusLost(const Event& event);
-				void __applyTheme(const Theme& theme, bool propagate);
+				void __applyTheme(const ostd::Stylesheet& theme, bool propagate);
 
 				inline virtual void setMousePressedCallback(EventCallback callback) { callback_onMousePressed = callback; }
 				inline virtual void setMouseReleasedCallback(EventCallback callback) { callback_onMouseReleased = callback; }
@@ -145,6 +152,9 @@ namespace ogfx
 				inline Rectangle getPadding(void) { return m_padding; }
 				inline bool isMouseInside(void) const { return m_mouseInside; }
 				inline ogfx::MouseEventData::eButton getPressedMouseButton(void) const { return m_pressedButton; }
+				inline ostd::String getThemeID(void) const { return m_themeID; }
+				inline void setThemeID(const ostd::String& id) { m_themeID = id; }
+				inline ostd::String getThemeQualifier(void) const { return m_qualifier; }
 
 			protected:
 				inline void disableChildren(void) { m_allowChildren = false; }
@@ -180,7 +190,11 @@ namespace ogfx
 				WidgetManager m_widgets;
 				bool m_allowChildren { true };
 				bool m_mouseInside { false };
-				ogfx::MouseEventData::eButton m_pressedButton { ogfx::MouseEventData::eButton::None };
+				MouseEventData::eButton m_pressedButton { MouseEventData::eButton::None };
+
+				ostd::String m_themeID { "" };
+				ostd::String m_qualifier { "" };
+				std::vector<ThemeOverride> m_themeOverrides;
 
 				bool m_drawBox { true };
 				ostd::Color m_drawBoxColor { 255, 0, 0 };
@@ -196,7 +210,7 @@ namespace ogfx
 				public:
 					RootWidget(WindowCore& window);
 					void onWindowResized(const Event& event) override;
-					void applyTheme(const Theme& theme) override;
+					void applyTheme(const ostd::Stylesheet& theme) override;
 					void onDraw(ogfx::BasicRenderer2D& gfx) override;
 
 				private:
@@ -208,7 +222,7 @@ namespace ogfx
 					inline Label(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(""); }
 					inline Label(WindowCore& window, const ostd::String& text) : Widget({ 0, 0, 0, 0 }, window) { create(text); }
 					Label& create(const ostd::String& text);
-					void applyTheme(const Theme& theme) override;
+					void applyTheme(const ostd::Stylesheet& theme) override;
 					void onDraw(ogfx::BasicRenderer2D& gfx) override;
 					void setText(const ostd::String& text);
 					inline ostd::String getText(void) const { return m_text; }

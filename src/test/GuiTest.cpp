@@ -51,21 +51,22 @@ class Window : public ogfx::gui::Window
 		{
 			m_label1.setPosition(100, 200);
 			m_label1.setText("Hello World!");
-			m_label1.setMouseEnteredCallback([&](const ogfx::gui::Event& event) -> void {
-				m_label1.applyThemeValue(m_theme, "label.backgroundColor", ostd::Colors::DarkBlue, false);
-				this->setCursor(eCursor::Move);
-			});
-			m_label1.setMouseExitedCallback([&](const ogfx::gui::Event& event) -> void {
-				m_label1.applyThemeValue(m_theme, "label.backgroundColor", ostd::Colors::DarkRed, false);
-				this->setCursor(eCursor::Default);
-			});
-			m_label1.setMouseDraggedCallback([&](const ogfx::gui::Event& event) -> void {
-				m_label1.applyThemeValue(m_theme, "label.backgroundColor", ostd::Colors::DarkGreen, false);
-			});
+			// m_label1.setMouseEnteredCallback([&](const ogfx::gui::Event& event) -> void {
+			// 	m_label1.applyThemeValue(m_theme, "label.backgroundColor", ostd::Colors::DarkBlue, false);
+			// 	this->setCursor(eCursor::Move);
+			// });
+			// m_label1.setMouseExitedCallback([&](const ogfx::gui::Event& event) -> void {
+			// 	m_label1.applyThemeValue(m_theme, "label.backgroundColor", ostd::Colors::DarkRed, false);
+			// 	this->setCursor(eCursor::Default);
+			// });
+			// m_label1.setMouseDraggedCallback([&](const ogfx::gui::Event& event) -> void {
+			// 	m_label1.applyThemeValue(m_theme, "label.backgroundColor", ostd::Colors::DarkGreen, false);
+			// });
 			addWidget(m_label1);
 
 			m_label2.setPosition(100, 400);
 			m_label2.setText("Ciccia Bella!");
+			m_label2.setThemeID("testLabel");
 			addWidget(m_label2);
 
 			m_theme.loadFromFile("./testTheme.txt");
@@ -90,7 +91,7 @@ class Window : public ogfx::gui::Window
 	private:
 		ogfx::gui::widgets::Label m_label1 { *this };
 		ogfx::gui::widgets::Label m_label2 { *this };
-		ogfx::gui::Theme m_theme = ogfx::gui::Theme();
+		ostd::Stylesheet m_theme;
 };
 
 int main(int argc, char** argv)

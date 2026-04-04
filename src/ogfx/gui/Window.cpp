@@ -26,6 +26,18 @@ namespace ogfx
 {
 	const Uint32 REDRAW_EVENT = SDL_RegisterEvents(1);
 
+	inline static const ostd::String DefaultThemeStyle = \
+		"window.backgroundColor = Color(#000000FF)\n" \
+		"label.textColor = Color(#FFFFFFFF)\n" \
+		"label.backgroundColor = Color(#00000000)\n" \
+		"label.borderColor = Color(#FFFFFFFF)\n" \
+		"label.fontSize = 20\n" \
+		"label.borderRadius = 20\n" \
+		"label.borderWidth = 2\n" \
+		"label.showBackground = false\n" \
+		"label.showBorder = false\n" \
+		"label.padding = Rect(5, 5, 5, 5)\n";
+
 	WindowCore::~WindowCore(void)
 	{
 		__on_window_destroy();
@@ -60,6 +72,9 @@ namespace ogfx
 	{
 		if (m_initialized) return;
 		SDLSysten::acquire();
+
+		DefaultTheme.loadFromString(DefaultThemeStyle);
+
 		m_windowWidth = width;
 		m_windowHeight = height;
 		m_title = title;
@@ -445,7 +460,7 @@ namespace ogfx
 			setTheme(*m_guiTheme);
 		}
 
-		void Window::setTheme(const gui::Theme& theme)
+		void Window::setTheme(const ostd::Stylesheet& theme)
 		{
 			m_guiTheme = &theme;
 			m_rootWidget.__applyTheme(theme, true);

@@ -28,7 +28,6 @@
 #include <ogfx/gui/Widgets.hpp>
 #include <ogfx/render/BasicRenderer.hpp>
 #include <ogfx/gui/WindowOutputHandler.hpp>
-#include <ogfx/gui/Themes.hpp>
 
 namespace ogfx
 {
@@ -75,6 +74,10 @@ namespace ogfx
 			void requestRedraw(void);
 			void handleSignal(ostd::Signal& signal) override;
 
+			inline const ostd::Stylesheet* theme(void) const { return m_guiTheme; }
+			inline void loadDefaultTHeme(void) { setTheme(DefaultTheme); }
+			inline virtual void setTheme(const ostd::Stylesheet& theme) {  }
+
 			inline bool isInitialized(void) const { return m_initialized; }
 			inline bool isRunning(void) const { return m_running; }
 			inline bool isVisible(void) const { return m_visible; }
@@ -112,6 +115,7 @@ namespace ogfx
 			SDL_Renderer* m_renderer { nullptr };
 			ostd::ConsoleOutputHandler m_out;
 			GraphicsWindowOutputHandler m_wout;
+			const ostd::Stylesheet* m_guiTheme { nullptr };
 
 		private:
 			ostd::Color m_clearColor { 10, 10, 10, 255 };
@@ -152,7 +156,9 @@ namespace ogfx
 		public:
 			inline static constexpr int32_t MaxBlockingEventsFPS { 240 };
 			inline static constexpr int32_t DefaultBlockingEventsFPS { 30 };
-			inline static const gui::Theme DefaultTheme;
+
+		private:
+			inline static ostd::Stylesheet DefaultTheme;
 	};
 	class GraphicsWindow : public WindowCore
 	{
@@ -196,16 +202,14 @@ namespace ogfx
 				inline Window(int32_t width, int32_t height, const ostd::String& title) { initialize(width, height, title); }
 				void addWidget(Widget& widget);
 
+				void setTheme(const ostd::Stylesheet& theme) override;
+
 				inline virtual void onInitialize(void) {  }
 				inline virtual void onDestroy(void) {  }
 				inline virtual void onClose(void) {  }
 				inline virtual void onSDLEvent(SDL_Event& event) {  }
 				inline virtual void onRedraw(BasicRenderer2D& gfx) {  }
 				inline virtual void onSignal(ostd::Signal& signal) {  }
-
-				inline const gui::Theme& theme(void) const { return *m_guiTheme; }
-				void setTheme(const gui::Theme& theme);
-				inline void loadDefaultTHeme(void) { setTheme(DefaultTheme); }
 
 			protected:
 				void __on_window_init(int32_t width, int32_t height, const ostd::String& title) override;
@@ -218,9 +222,6 @@ namespace ogfx
 			protected:
 				BasicRenderer2D m_gfx;
 				widgets::RootWidget m_rootWidget { *this };
-				const gui::Theme* m_guiTheme { nullptr };
-
-				inline static const gui::Theme DefaultTheme;
 		};
 	}
 }

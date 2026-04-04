@@ -511,6 +511,20 @@ namespace ostd
 		return m_data.ends_with(str);
 	}
 
+	bool String::regexMatches(const String& regex_pattern, bool case_insensitive) const
+	{
+	    try
+	    {
+	        boost::regex rgx(regex_pattern.cpp_str(), case_insensitive ? boost::regex_constants::icase : boost::regex_constants::normal);
+	        return boost::regex_search(m_data, rgx);
+	    }
+	    catch (const boost::regex_error& err)
+	    {
+	        std::cerr << err.what() << '\n'; //TODO: Better error handling
+	        return false;
+	    }
+	}
+
 	uint32_t String::count(const String& str) const
 	{
 		Tokens tok = tokenize(str, false, true);

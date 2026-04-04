@@ -58,6 +58,7 @@ list(APPEND OSTD_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/io/OutputHandlers.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/io/Serial.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/io/Memory.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/io/Stylesheet.cpp
 
 	# math
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/math/Geometry.cpp

@@ -1,13 +1,28 @@
+% ================== testTheme.txt ==================
+
+$accentColor = Color(rgba(255, 0, 255, 255))
+
 % Window
 window.backgroundColor = Color(rgba(40, 0, 0, 255))
 
 % Label
-label.textColor = Color(#FFFFFFFF)
-label.backgroundColor = Color(#FFFF80FF)
-label.borderColor = Color(#FFFFFFFF)
+label.textColor = $accentColor
+label.backgroundColor = Color(#000000FF)
+label.borderColor = $accentColor
 label.fontSize = 30
 label.borderRadius = 20
 label.borderWidth = 2
-label.showBackground = false
-label.showBorder = false
-label.padding = Rect(5, 5, 5, 5)
+label.showBackground = true
+label.showBorder = true
+label.padding = Rect(15, 15, 15, 15)
+
+% Format:
+% @ID:QUALIFIER PROPERTY = VALUE
+
+
+@testLabel label.textColor = Color(#004000FF)
+@testLabel:hover label.textColor = Color(#000040FF)
+@testLabel:hover label.backgroundColor = Color(#400040FF)
+@testWindow window.backgroundColor = Color(#004000FF)
+
+% ===================================================
