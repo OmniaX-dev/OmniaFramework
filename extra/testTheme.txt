@@ -25,13 +25,25 @@ window.backgroundColor = Color(rgba(40, 0, 0, 255))
 	fontSize = 20
 }
 
+(@testLabel2 label) {
+	showBackground = false
+}
+
+(@testLabel2 label:hover) {
+	borderColor = Color(#208080FF)
+}
+
+(@testLabel2 label:pressed) {
+	showBackground = true
+}
+
 (label:hover) {
 	textColor = Color(rgb(0, 255, 0))
 	borderColor = Color(rgb(0, 255, 0))
 }
 
 (label:pressed) {
-	textColor = Color(#FF0000FF)
+	textColor = Color(#FF00FFFF)
 }
 
 (@testLabel label:hover) {
@@ -45,8 +57,8 @@ window.backgroundColor = Color(rgba(40, 0, 0, 255))
 
 (label:disabled) {
 	backgroundColor = Color(#EEEEEEFF)
-	textColor = Color(#505050FF)
-	borderColor = Color(#000000FF)
+	%textColor = Color(#505050FF)
+	%borderColor = Color(#000000FF)
 }
 
 % ===================================================

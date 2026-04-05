@@ -25,6 +25,7 @@
 #include <ostd/io/IOHandlers.hpp>
 
 #define STDVEC_CONTAINS(vec, elem) (std::find(vec.begin(), vec.end(), elem) != vec.end())
+#define STDVEC_REMOVE(vec, elem) (vec.erase(std::remove(vec.begin(), vec.end(), elem), vec.end()))
 
 namespace ostd
 {

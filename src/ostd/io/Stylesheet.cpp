@@ -151,35 +151,35 @@ namespace ostd
 		m_values[fullKey] = std::move(value);
 	}
 
-	const Stylesheet::TypeVariant* Stylesheet::getVariant(const ostd::String& key, const ostd::String& themeID, const QualifierList& qualifierList) const
+	const Stylesheet::TypeVariant* Stylesheet::getVariant(const ostd::String& key, const std::vector<ostd::String>& themeIDList, const QualifierList& qualifierList) const
 	{
+		std::vector<ostd::String> emptyThemeIDList { "" };
+		const std::vector<ostd::String>& __themeIDList = (themeIDList.size() == 0 ? emptyThemeIDList : themeIDList);
 		for (const auto&[qualifier, state] : qualifierList)
 		{
-			const TypeVariant* v = (state ? getFull("@" + themeID + ":" + qualifier + "." + key) : nullptr);
-			// std::cout << "0: " << "@" + themeID + ":" + qualifier + "." + key << "\n";
-			if (v)
+			const TypeVariant* v = nullptr;
+			for (int32_t i = __themeIDList.size() - 1; i >= 0; i--)
 			{
-				std::cout << "1: " << "@" + themeID + ":" + qualifier + "." + key << "\n";
-				return v;
-			}
-			v = (state ? getFull("@:" + qualifier + "." + key) : nullptr);
-			if (v)
-			{
-				std::cout << "2: " << "@:" + qualifier + "." + key << "\n";
-				return v;
+				const ostd::String& themeID = __themeIDList[i];
+				v = (state ? getFull("@" + themeID + ":" + qualifier + "." + key) : nullptr);
+				if (v)
+					return v;
 			}
 		}
-		if (auto v = getFull("@" + themeID + "." + key))
+		for (const auto&[qualifier, state] : qualifierList)
 		{
-			std::cout << "3: "  << "@" + themeID + "." + key << "\n";
-			return v;
+			const TypeVariant* v = (state ? getFull("@:" + qualifier + "." + key) : nullptr);
+			if (v)
+				return v;
 		}
-		else if (auto v = getFull("@." + key))
+		for (int32_t i = __themeIDList.size() - 1; i >= 0; i--)
 		{
-			std::cout << "4: "  << "@." + key << "\n";
-			return v;
+			const ostd::String& themeID = __themeIDList[i];
+			if (auto v = getFull("@" + themeID + "." + key))
+				return v;
 		}
-		std::cout << "\n\n";
+		if (auto v = getFull("@." + key))
+			return v;
 		return nullptr;
 	}
 

@@ -25,6 +25,7 @@
 #include <ostd/math/Geometry.hpp>
 #include <ostd/data/Color.hpp>
 #include <ostd/io/Stylesheet.hpp>
+#include <ostd/utils/Time.hpp>
 #include <functional>
 
 namespace ogfx
@@ -90,6 +91,8 @@ namespace ogfx
 				void reloadTheme(void);
 				void setThemeQualifier(const ostd::String& qualifier, bool value = true);
 				bool getThemeQualifier(const ostd::String& qualifier);
+				bool addThemeID(const ostd::String& id);
+				bool removeThemeID(const ostd::String& id);
 				inline const ostd::Stylesheet::QualifierList& getThemeQualifierList(void) const { return m_qualifierList; }
 
 				inline virtual void onDraw(ogfx::BasicRenderer2D& gfx) {  }
@@ -155,8 +158,13 @@ namespace ogfx
 				inline Rectangle getPadding(void) { return m_padding; }
 				inline bool isMouseInside(void) const { return m_mouseInside; }
 				inline ogfx::MouseEventData::eButton getPressedMouseButton(void) const { return m_pressedButton; }
-				inline ostd::String getThemeID(void) const { return m_themeID; }
-				inline void setThemeID(const ostd::String& id) { m_themeID = id; }
+				inline const std::vector<ostd::String>& getThemeIDList(void) const { return m_themeIDList; }
+
+				template<typename T>
+				inline T getThemeValue(const ostd::Stylesheet &theme, const ostd::String& key, const T& fallback)
+				{
+					return theme.get<T>(key,  fallback, getThemeIDList(), getThemeQualifierList());
+				}
 
 			protected:
 				inline void disableChildren(void) { m_allowChildren = false; }
@@ -194,7 +202,7 @@ namespace ogfx
 				bool m_mouseInside { false };
 				MouseEventData::eButton m_pressedButton { MouseEventData::eButton::None };
 
-				ostd::String m_themeID { "" };
+				std::vector<ostd::String> m_themeIDList;
 				ostd::Stylesheet::QualifierList m_qualifierList {
 					{ "disabled", false },
 					{ "pressed", false },

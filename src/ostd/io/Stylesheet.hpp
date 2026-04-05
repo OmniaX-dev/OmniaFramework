@@ -38,13 +38,13 @@ namespace ostd
 			Stylesheet& loadFromString(const ostd::String& content, const ostd::String& filePath = "memory://", bool clearCurrentRules = true);
 			void set(const std::string& key, TypeVariant value, const ostd::String& themeID);
 			void setFull(const ostd::String& fullKey, TypeVariant value);
-			const TypeVariant* getVariant(const ostd::String& key, const ostd::String& themeID, const QualifierList& qualifierList) const;
+			const TypeVariant* getVariant(const ostd::String& key, const std::vector<ostd::String>& themeIDList, const QualifierList& qualifierList) const;
 			const TypeVariant* getFull(const ostd::String& fullKey) const;
 
 			template<typename T>
-			inline T get(const ostd::String& key, const T& fallback, const ostd::String& themeID, const QualifierList& qualifierList) const
+			inline T get(const ostd::String& key, const T& fallback, const std::vector<ostd::String>& themeIDList, const QualifierList& qualifierList) const
 			{
-				if (auto v = getVariant(key, themeID, qualifierList))
+				if (auto v = getVariant(key, themeIDList, qualifierList))
 				{
 					if (auto p = std::get_if<T>(v))
 						return *p;
