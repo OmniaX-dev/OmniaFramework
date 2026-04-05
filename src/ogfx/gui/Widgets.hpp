@@ -86,6 +86,7 @@ namespace ogfx
 				ostd::Vec2 getGlobalPosition(void) const;
 				using ostd::Rectangle::contains;
 				bool contains(ostd::Vec2 p, bool includeBounds = false) const override;
+				void enable(bool enable = true);
 				virtual void applyTheme(const ostd::Stylesheet& theme) = 0;
 				void addThemeOverride(const ostd::String& fullKey, ostd::Stylesheet::TypeVariant value, bool propagate = true);
 				void reloadTheme(void);
@@ -159,6 +160,12 @@ namespace ogfx
 				inline bool isMouseInside(void) const { return m_mouseInside; }
 				inline ogfx::MouseEventData::eButton getPressedMouseButton(void) const { return m_pressedButton; }
 				inline const std::vector<ostd::String>& getThemeIDList(void) const { return m_themeIDList; }
+				inline bool isEnabled(void) const { return m_enabled; }
+				inline bool isFocusEnabled(void) const { return m_allowFocus; }
+				inline void enableFocus(bool enable = true) { m_allowFocus = enable; }
+				inline void disableFocus(void) { enableFocus(false); }
+				inline void disabble(void) { enable(false); }
+				inline void enableStopEvents(bool enable = true) { m_stopEvents = enable; }
 
 				template<typename T>
 				inline T getThemeValue(const ostd::Stylesheet &theme, const ostd::String& key, const T& fallback)
@@ -200,6 +207,9 @@ namespace ogfx
 				WidgetManager m_widgets;
 				bool m_allowChildren { true };
 				bool m_mouseInside { false };
+				bool m_allowFocus { true };
+				bool m_enabled { true };
+				bool m_stopEvents { false };
 				MouseEventData::eButton m_pressedButton { MouseEventData::eButton::None };
 
 				std::vector<ostd::String> m_themeIDList;
@@ -247,7 +257,7 @@ namespace ogfx
 					inline int32_t getFontSize(void) const { return m_fontSize; }
 					inline void setFontSize(int32_t fontSize) { m_fontSize = fontSize; }
 					inline void setBackGroundColor(const ostd::Color& color) { m_backgroundColor = color; }
-					inline ostd::Color getBackgroundColor(const ostd::Color& color) { return m_backgroundColor; }
+					inline ostd::Color getBackgroundColor(void) { return m_backgroundColor; }
 					inline void enableBackground(bool enable = true) { m_showBackground = enable; }
 					inline bool isBackgoundEnabled(void) const { return m_showBackground; }
 
@@ -267,6 +277,24 @@ namespace ogfx
 					ostd::Color m_borderColor { 255, 255, 255 };
 
 				private:
+			};
+			class Panel : public Widget
+			{
+				public:
+					inline Panel(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
+					Panel& create(void);
+					void applyTheme(const ostd::Stylesheet& theme) override;
+					void onDraw(ogfx::BasicRenderer2D& gfx) override;
+					inline void setBackGroundColor(const ostd::Color& color) { m_backgroundColor = color; }
+					inline ostd::Color getBackgroundColor(void) { return m_backgroundColor; }
+
+				private:
+					ostd::Color m_backgroundColor { 150, 150, 150 };
+					ostd::Color m_borderColor { 0, 0, 0 };
+					int32_t m_borderRadius { 10 };
+					int32_t m_borderWidth { 2 };
+					bool m_showBorder { false };
+
 			};
 		}
 	}

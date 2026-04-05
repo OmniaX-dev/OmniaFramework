@@ -37,6 +37,7 @@ namespace ostd
 			Stylesheet& loadFromFile(const ostd::String& filePath, bool clearCurrentRules = true);
 			Stylesheet& loadFromString(const ostd::String& content, const ostd::String& filePath = "memory://", bool clearCurrentRules = true);
 			void set(const std::string& key, TypeVariant value, const ostd::String& themeID);
+			void removeRule(const ostd::String& fullKey);
 			void setFull(const ostd::String& fullKey, TypeVariant value);
 			const TypeVariant* getVariant(const ostd::String& key, const std::vector<ostd::String>& themeIDList, const QualifierList& qualifierList) const;
 			const TypeVariant* getFull(const ostd::String& fullKey) const;

@@ -5,16 +5,25 @@ $accentColor = Color(rgba(255, 0, 255, 255))
 $color2 = Color(#0000FFFF)
 % -------------------
 
-window.backgroundColor = Color(rgba(40, 0, 0, 255))
+window.backgroundColor = Color(rgba(120, 120, 120, 255))
 
 (label) {
 	textColor = $accentColor
 	backgroundColor = Color(#000000FF)
 	borderColor = $accentColor
 	fontSize = 50
-	borderRadius = 20
+	borderRadius = 0
 	borderWidth = 2
 	showBackground = true
+	showBorder = true
+	padding = Rect(15, 15, 15, 15)
+}
+
+(panel) {
+	backgroundColor = Color(#AAAAAAFF)
+	borderColor = Color(#000000FF)
+	borderRadius = 8
+	borderWidth = 2
 	showBorder = true
 	padding = Rect(15, 15, 15, 15)
 }

@@ -146,6 +146,11 @@ namespace ostd
 		setFull(fullKey, value);
 	}
 
+	void Stylesheet::removeRule(const ostd::String& fullKey)
+	{
+		m_values.erase(fullKey);
+	}
+
 	void Stylesheet::setFull(const ostd::String& fullKey, TypeVariant value)
 	{
 		m_values[fullKey] = std::move(value);
@@ -305,25 +310,25 @@ namespace ostd
 		{
 			std::cout << key << "  =  " << typeVariantToString(value) << "\n";
 		}
+		std::cout << "\n";
 	}
 
 	ostd::String Stylesheet::typeVariantToString(const TypeVariant& v)
 	{
-		ostd::String str = "";
-		// if (auto p = std::get_if<int32_t>(&v))
-		// 	str.add(*p);
-		// else if (auto p = std::get_if<float>(&v))
-		// 	str.add(*p);
-		// else if (auto p = std::get_if<bool>(&v))
-		// 	str.add(STR_BOOL(*p));
-		// else if (auto p = std::get_if<ostd::String>(&v))
-		// 	str.add(*p);
-		// else if (auto p = std::get_if<ostd::Color>(&v))
-		// 	str.add(*p);
-		// else if (auto p = std::get_if<ostd::Rectangle>(&v))
-		// 	std::cout << std::format("{{ {}, {}, {}, {} }}", (*p).x, (*p).y, (*p).w, (*p).h);
-		// else if (auto p = std::get_if<ostd::Vec2>(&v))
-		// 	std::cout << *p;
-		return str;
+		if (auto p = std::get_if<int32_t>(&v))
+			return String("").add(*p);
+		else if (auto p = std::get_if<float>(&v))
+			return String("").add(*p);
+		else if (auto p = std::get_if<bool>(&v))
+			return STR_BOOL(*p);
+		else if (auto p = std::get_if<ostd::String>(&v))
+			return *p;
+		else if (auto p = std::get_if<ostd::Color>(&v))
+			return *p;
+		else if (auto p = std::get_if<ostd::Rectangle>(&v))
+			return *p;
+		else if (auto p = std::get_if<ostd::Vec2>(&v))
+			return *p;
+		return "";
 	}
 }

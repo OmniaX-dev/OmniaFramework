@@ -52,12 +52,14 @@ namespace ogfx
 				{
 					w->m_focused = false;
 					w->onFocusLost(Event(m_window));
+					w->setThemeQualifier("focused", true);
 				}
 				else
 					w->m_focused = false;
 			}
 			widget.m_focused = true;
 			widget.onFocusGained(Event(m_window));
+			widget.setThemeQualifier("focused", true);
 			m_focused = &widget;
 			return true;
 		}
@@ -305,6 +307,12 @@ namespace ogfx
 			return ostd::Rectangle(getGlobalPosition(), getSize()).contains(p, includeBounds);
 		}
 
+		void Widget::enable(bool enable)
+		{
+			m_enabled = enable;
+			setThemeQualifier("disabled", !enable);
+		}
+
 		void Widget::addThemeOverride(const ostd::String& fullKey, ostd::Stylesheet::TypeVariant value, bool propagate)
 		{
 			m_themeOverrides.push_back({ fullKey, value, propagate });
@@ -319,14 +327,29 @@ namespace ogfx
 			applyTheme(theme);
 			ostd::Stylesheet& const_cast_theme = const_cast<ostd::Stylesheet&>(theme);
 
+			struct tBackup {
+				const ostd::Stylesheet::TypeVariant* ptr;
+				ostd::Stylesheet::TypeVariant val;
+				ostd::String key;
+			};
+
+			std::vector<tBackup> backup;
 			for (auto& rule : m_themeOverrides)
 			{
-				auto currentValue = theme.getFull(rule.fullKey);
-				if (currentValue == nullptr)
-					return;
+				auto currentValuePtr = theme.getFull(rule.fullKey);
+				ostd::Stylesheet::TypeVariant currentValue;
+				if (currentValuePtr)
+					currentValue = *currentValuePtr;
+				backup.push_back({ currentValuePtr, currentValue, rule.fullKey });
 				const_cast_theme.setFull(rule.fullKey, rule.value);
 				__applyTheme(const_cast_theme, rule.propagate);
-				const_cast_theme.setFull(rule.fullKey, *currentValue);
+			}
+			for (auto&[ptr, val, key] : backup)
+			{
+				if (ptr == nullptr)
+					const_cast_theme.removeRule(key);
+				else
+					const_cast_theme.setFull(key, val);
 			}
 		}
 
@@ -581,6 +604,7 @@ namespace ogfx
 				setPadding({ 5, 5, 5, 5 });
 				setTypeName("ogfx::gui::widgets::Label");
 				disableDrawBox();
+				disableChildren();
 				enableBackground(false);
 				validate();
 				return *this;
@@ -627,6 +651,37 @@ namespace ogfx
 				m_textChanged = false;
 			}
 
+
+
+
+			Panel& Panel::create(void)
+			{
+				setPadding({ 5, 5, 5, 5 });
+				setTypeName("ogfx::gui::widgets::Panel");
+				disableDrawBox();
+				disableFocus();
+				enableStopEvents();
+				validate();
+				return *this;
+			}
+
+			void Panel::applyTheme(const ostd::Stylesheet& theme)
+			{
+				setBackGroundColor(getThemeValue<ostd::Color>(theme, "panel.backgroundColor", ostd::Colors::Gray));
+				m_borderRadius = getThemeValue<int32_t>(theme, "panel.borderRadius", 8);
+				m_borderWidth = getThemeValue<int32_t>(theme, "panel.borderWidth", 2);
+				m_showBorder = getThemeValue<bool>(theme, "panel.showBorder", true);
+				m_borderColor = getThemeValue<ostd::Color>(theme, "panel.borderColor", ostd::Colors::Black);
+				setPadding(getThemeValue<ostd::Rectangle>(theme, "panel.padding", { 15, 15, 15, 15 }));
+			}
+
+			void Panel::onDraw(ogfx::BasicRenderer2D& gfx)
+			{
+				if (m_showBorder)
+					gfx.outlinedRoundRect({ getGlobalPosition(), getSize() }, getBackgroundColor(), m_borderColor, m_borderRadius, m_borderWidth);
+				else
+					gfx.fillRoundRect({ getGlobalPosition(), getSize() }, getBackgroundColor(), m_borderRadius);
+			}
 		}
 	}
 }

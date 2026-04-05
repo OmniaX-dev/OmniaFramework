@@ -22,7 +22,7 @@
 
 
 /*
- * Label
+ * --- Label
  * Button
  * Panel / Container
  * Checkbox
@@ -49,32 +49,40 @@ class Window : public ogfx::gui::Window
 		inline Window(void) {  }
 		inline void onInitialize(void) override
 		{
+			m_panel1.setSize(300, 140);
+			m_panel1.setPosition(200, 150);
+			m_panel1.setMousePressedCallback([&](const ogfx::gui::Event& event) -> void {
+				pos = { event.mouse->position_x, event.mouse->position_y };
+			});
+			m_panel1.setMouseDraggedCallback([&](const ogfx::gui::Event& event) -> void {
+				ostd::Vec2 pos2 { event.mouse->position_x, event.mouse->position_y };
+				m_panel1.addPos(pos2 - pos);
+				pos = pos2;
+			});
+
 			m_label1.setPosition(100, 200);
 			m_label1.setText("Hello World!");
-			// m_label1.setMouseEnteredCallback([&](const ogfx::gui::Event& event) -> void {
-			// 	m_label1.applyThemeValue(m_theme, "label.backgroundColor", ostd::Colors::DarkBlue, false);
-			// 	this->setCursor(eCursor::Move);
-			// });
-			// m_label1.setMouseExitedCallback([&](const ogfx::gui::Event& event) -> void {
-			// 	m_label1.applyThemeValue(m_theme, "label.backgroundColor", ostd::Colors::DarkRed, false);
-			// 	this->setCursor(eCursor::Default);
-			// });
-			// m_label1.setMouseDraggedCallback([&](const ogfx::gui::Event& event) -> void {
-			// 	m_label1.applyThemeValue(m_theme, "label.backgroundColor", ostd::Colors::DarkGreen, false);
-			// });
+			m_label1.setMousePressedCallback([&](const ogfx::gui::Event& event) -> void {
+				std::cout << "PRESS!\n";
+			});
 			addWidget(m_label1);
+			addWidget(m_panel1);
 			// m_label1.setThemeQualifier("disabled");
 
-			m_label2.setPosition(100, 400);
+			m_label2.setPosition(10, 10);
 			m_label2.setText("Ciccia Bella!");
 			m_label2.addThemeID("testLabel");
 			m_label2.addThemeID("testLabel2");
-			addWidget(m_label2);
+			m_panel1.addChild(m_label2);
+
+			m_label1.addThemeOverride("@:pressed.label.textColor", ostd::Colors::Crimson);
 
 			m_theme.loadFromFile("./testTheme.txt");
 			setTheme(m_theme);
 
-			m_label2.addThemeOverride("@:hover.label.fontSize", 10);
+			m_label2.addThemeOverride("@:hover.label.showBackground", true);
+			m_label2.addThemeOverride("@:hover.label.backgroundColor", ostd::Colors::DarkGreen);
+			m_theme.debugPrint();
 			m_label2.reloadTheme();
 
 			m_theme.debugPrint();
@@ -98,7 +106,9 @@ class Window : public ogfx::gui::Window
 	private:
 		ogfx::gui::widgets::Label m_label1 { *this };
 		ogfx::gui::widgets::Label m_label2 { *this };
+		ogfx::gui::widgets::Panel m_panel1 { *this };
 		ostd::Stylesheet m_theme;
+		ostd::Vec2 pos { 0, 0 };
 };
 
 int main(int argc, char** argv)
