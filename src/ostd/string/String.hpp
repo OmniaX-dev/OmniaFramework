@@ -22,6 +22,7 @@
 
 #include <cstring>
 #include <filesystem>
+#include <iostream>
 #include <ostd/data/Types.hpp>
 
 #define STR_BOOL(b) (b ? "true" : "false")
@@ -179,6 +180,20 @@ namespace ostd
 		private:
 			ostd::cpp_string m_data;
 	};
+
+	struct __i_stringeable
+	{
+		virtual String toString(void) const = 0;
+		friend std::ostream& operator<<(std::ostream& out, const __i_stringeable& val);
+		inline operator String() const { return toString(); }
+		inline operator std::string() const { return toString(); }
+	};
+
+	inline std::ostream& operator<<(std::ostream& out, const __i_stringeable& val)
+	{
+		out << val.toString();
+		return out;
+	}
 }
 
 

@@ -25,12 +25,6 @@ namespace ostd
 		return *this;
 	}
 
-	std::ostream& operator<<(std::ostream& out, const BaseObject& val)
-	{
-		out << val.toString();
-		return out;
-	}
-
 	void BaseObject::print(bool newLine, OutputHandlerBase* __destination) const
 	{
 		if (__destination == nullptr)

@@ -21,14 +21,13 @@
 #pragma once
 
 #include <cstdint>
-#include <iostream>
 #include <ostd/string/String.hpp>
 
 namespace ostd
 {
 	class OutputHandlerBase;
 	struct Signal;
-	class BaseObject
+	class BaseObject : public __i_stringeable
 	{
 		public:
 			BaseObject(const BaseObject& copy);
@@ -56,15 +55,13 @@ namespace ostd
 			inline bool signalsEnabled(void) { return m_signalsEnabled; }
 			inline void enableSignals(bool e = true) { m_signalsEnabled = e; }
 
-			virtual inline String toString(void) const { return getObjectHeaderString(); };
+			virtual inline String toString(void) const override { return getObjectHeaderString(); };
 			virtual void print(bool newLine = true, OutputHandlerBase* __destination = nullptr) const;
 
 			virtual inline void handleSignal(Signal& signal) {  }
 			void connectSignal(uint32_t signal_id);
 
 			void __handle_signal(Signal& signal);
-
-			friend std::ostream& operator<<(std::ostream& os, const BaseObject& obj);
 
 		protected:
 			inline BaseObject(void) { m_uid = -1; m_valid = false; m_oid = BaseObject::s_next_oid++; }

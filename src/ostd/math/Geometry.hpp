@@ -45,9 +45,8 @@
 
 namespace ostd
 {
-	class OutputHandlerBase;
 	template<class T>
-	class Point
+	class Point : public __i_stringeable
 	{
 		public:
 			T x;
@@ -65,6 +64,8 @@ namespace ostd
 				x = (T2)(copy.x);
 				y = (T2)(copy.y);
 			}
+
+			inline String toString(void) const override { return String("{ ").add(x).add(", ").add(y).add(" }"); }
 	};
 
 	typedef Point<float> FPoint;
@@ -78,7 +79,7 @@ namespace ostd
 	typedef Point<int16_t> I16Point;
 	typedef Point<int8_t> I8Point;
 
-	struct Vec2
+	struct Vec2 : public __i_stringeable
 	{
 		//======================== Data ========================
 		float x;
@@ -103,7 +104,7 @@ namespace ostd
 		//===================== Conversion =====================
 		inline Vec2 toIsometric(void) 			const		{ return Vec2(x - y, (x + y) / 2.0f); }
 		inline Vec2 toCartesian(void) 			const 		{ return Vec2((2 * y + x) / 2.0f, (2 * y - x) / 2.0f); }
-		String toString(void)					const;
+		inline String toString(void)			const override { return String("{ ").add(x).add(", ").add(y).add(" }"); }
 		//======================================================
 
 
@@ -159,8 +160,6 @@ namespace ostd
 		inline Vec2& operator-=(const float& op2) 			{ return subm(op2, op2); }
 		inline Vec2& operator*=(const float& op2) 			{ return mulm(op2); }
 		inline Vec2& operator/=(const float& op2) 			{ return divm(op2); }
-
-		friend std::ostream& operator<<(std::ostream& out, const Vec2& val);
 		//======================================================
 
 	private:
@@ -168,13 +167,7 @@ namespace ostd
 
 	};
 
-	inline std::ostream& operator<<(std::ostream& out, const Vec2& val)
-	{
-		out << val.toString();
-		return out;
-	}
-
-	struct Vec3
+	struct Vec3 : public __i_stringeable
 	{
 		inline Vec3(float xx = 0, float yy = 0, float zz = 0)
 		{
@@ -186,25 +179,17 @@ namespace ostd
 		inline Vec2 xy(void) const { return Vec2(x, y); }
 		inline Vec2 yz(void) const { return Vec2(y, z); }
 		inline Vec2 zx(void) const { return Vec2(z, x); }
-		String toString(void) const;
+		inline String toString(void) const override { return String("{ ").add(x).add(", ").add(y).add(", ").add(z).add(" }"); }
 		inline bool  operator==(const Vec3& op2 ) 	const	{ return (x == op2.x && y == op2.y && op2.z == z); }
 		inline bool  operator!=(const Vec3& op2 ) 	const	{ return (x != op2.x || y != op2.y || op2.z != z); }
 		inline Vec3& operator+=(const Vec3& op2 ) 			{ x += op2.x; y += op2.y; z += op2.z; return *this; }
-
-		friend std::ostream& operator<<(std::ostream& out, const Vec2& val);
 
 		float x;
 		float y;
 		float z;
 	};
 
-	inline std::ostream& operator<<(std::ostream& out, const Vec3& val)
-	{
-		out << val.toString();
-		return out;
-	}
-
-	struct Vec4
+	struct Vec4 : public __i_stringeable
 	{
 		inline Vec4(float xx = 0, float yy = 0, float zz = 0, float ww = 0)
 		{
@@ -220,7 +205,7 @@ namespace ostd
 		inline Vec2 yz(void) const { return Vec2(y, z); }
 		inline Vec2 zw(void) const { return Vec2(z, w); }
 		inline Vec2 wx(void) const { return Vec2(w, x); }
-
+		inline String toString(void) const override { return String("{ ").add(x).add(", ").add(y).add(", ").add(z).add(", ").add(w).add(" }"); }
 
 		float x;
 		float y;
@@ -228,7 +213,7 @@ namespace ostd
 		float w;
 	};
 
-	struct Triangle
+	struct Triangle : public __i_stringeable
 	{
 		Vec2 vA;
 		Vec2 vB;
@@ -249,7 +234,7 @@ namespace ostd
 			vC.x = cx;
 			vC.y = cy;
 		}
-		bool contains(Vec2 p)
+		inline bool contains(Vec2 p)
 		{
 			float d1, d2, d3;
 			bool has_neg, has_pos;
@@ -263,6 +248,7 @@ namespace ostd
 
 			return !(has_neg && has_pos);
 		}
+		inline String toString(void) const override { return String("{ A: ").add(vA.toString()).add(", B: ").add(vB.toString()).add(", C: ").add(vC.toString()).add(" }"); }
 
 	private:
 		inline float __sign(Vec2 p1, Vec2 p2, Vec2 p3)
@@ -271,7 +257,7 @@ namespace ostd
 		}
 	};
 
-	class Rectangle
+	class Rectangle : public __i_stringeable
 	{
 		public:
 			inline Rectangle(void) : x(0), y(0), w(0), h(0) {}
@@ -350,6 +336,8 @@ namespace ostd
 			inline virtual float top(void) const { return gety(); }
 			inline virtual float bottom(void) const { return geth(); }
 
+			inline String toString(void) const override { return String("{ ").add(x).add(", ").add(y).add(", ").add(w).add(", ").add(h).add(" }"); }
+
 			inline virtual bool intersects(Rectangle rect, bool includeBounds = true) const
 			{
 				if (includeBounds)
@@ -397,13 +385,14 @@ namespace ostd
 	};
 
 	template<class T>
-	class Rect
+	class Rect : public __i_stringeable
 	{
 		public:
 			Rect(void) = default;
 			inline Rect(T pos_x, T pos_y, T size_x, T size_y) : position(pos_x, pos_y), size(size_x, size_y) {  }
 			inline Rect(Point<T> pos, Point<T> _size) : position(pos), size(_size) {  }
 			template <class T2> inline Rect(Rect<T2> copy) { position = { (T2)(copy.position.x), (T2)(copy.position.y) }; size = { (T2)(copy.size.x), (T2)(copy.size.y) }; }
+			inline String toString(void) const override { return String("{ ").add(position.x).add(", ").add(position.y).add(", ").add(size.x).add(", ").add(size.y).add(" }"); }
 
 		public:
 			Point<T> position;
@@ -422,13 +411,14 @@ namespace ostd
 	typedef Rect<int8_t> I8Rect;
 
 	template<class T>
-	class Line
+	class Line : public __i_stringeable
 	{
 		public:
 			Line(void) = default;
 			inline Line(T x1, T y1, T x2, T y2) : p1(x1, y1), p2(x2, y2) {  }
 			inline Line(Point<T> _p1, Point<T> _p2) : p1(_p1), p2(_p2) {  }
 			template <class T2> inline Line(Line<T2> copy) { p1 = { (T2)(copy.p1.x), (T2)(copy.p1.y) }; p2 = { (T2)(copy.p2.x), (T2)(copy.p2.y) }; }
+			inline String toString(void) const override { return String("{ P1: ").add(p1.toString()).add(", P2").add(p2.toString()).add(" }"); }
 
 		public:
 			Point<T> p1;

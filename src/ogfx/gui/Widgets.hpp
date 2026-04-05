@@ -87,7 +87,7 @@ namespace ogfx
 				using ostd::Rectangle::contains;
 				bool contains(ostd::Vec2 p, bool includeBounds = false) const override;
 				virtual void applyTheme(const ostd::Stylesheet& theme) = 0;
-				void addThemeOverride(const ostd::String& key, ostd::Stylesheet::TypeVariant value, const ostd::String& themeID = "", const ostd::String& qualifier = "", bool propagate = true);
+				void addThemeOverride(const ostd::String& fullKey, ostd::Stylesheet::TypeVariant value, bool propagate = true);
 				void reloadTheme(void);
 				void setThemeQualifier(const ostd::String& qualifier, bool value = true);
 				bool getThemeQualifier(const ostd::String& qualifier);

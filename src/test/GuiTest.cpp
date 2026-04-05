@@ -62,7 +62,7 @@ class Window : public ogfx::gui::Window
 			// m_label1.setMouseDraggedCallback([&](const ogfx::gui::Event& event) -> void {
 			// 	m_label1.applyThemeValue(m_theme, "label.backgroundColor", ostd::Colors::DarkGreen, false);
 			// });
-			// addWidget(m_label1);
+			addWidget(m_label1);
 			// m_label1.setThemeQualifier("disabled");
 
 			m_label2.setPosition(100, 400);
@@ -73,6 +73,10 @@ class Window : public ogfx::gui::Window
 
 			m_theme.loadFromFile("./testTheme.txt");
 			setTheme(m_theme);
+
+			m_label2.addThemeOverride("@:hover.label.fontSize", 10);
+			m_label2.reloadTheme();
+
 			m_theme.debugPrint();
 	 	}
 

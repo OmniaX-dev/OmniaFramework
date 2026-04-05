@@ -305,12 +305,8 @@ namespace ogfx
 			return ostd::Rectangle(getGlobalPosition(), getSize()).contains(p, includeBounds);
 		}
 
-		void Widget::addThemeOverride(const ostd::String& key, ostd::Stylesheet::TypeVariant value, const ostd::String& themeID, const ostd::String& qualifier, bool propagate)
+		void Widget::addThemeOverride(const ostd::String& fullKey, ostd::Stylesheet::TypeVariant value, bool propagate)
 		{
-			ostd::String fullKey = "@" + themeID;
-			if (qualifier.new_trim() != "")
-				fullKey += ":" + qualifier;
-			fullKey += "." + key;
 			m_themeOverrides.push_back({ fullKey, value, propagate });
 		}
 

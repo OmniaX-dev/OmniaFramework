@@ -53,6 +53,7 @@ namespace ostd
 			}
 
 			void debugPrint(void);
+			ostd::String typeVariantToString(const TypeVariant& v);
 
 		private:
 			bool parseThemeFileLine(const ostd::String& line);

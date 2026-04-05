@@ -303,7 +303,27 @@ namespace ostd
 	{
 		for (const auto&[key, value] : m_values)
 		{
-			std::cout << key << "\n";
+			std::cout << key << "  =  " << typeVariantToString(value) << "\n";
 		}
+	}
+
+	ostd::String Stylesheet::typeVariantToString(const TypeVariant& v)
+	{
+		ostd::String str = "";
+		// if (auto p = std::get_if<int32_t>(&v))
+		// 	str.add(*p);
+		// else if (auto p = std::get_if<float>(&v))
+		// 	str.add(*p);
+		// else if (auto p = std::get_if<bool>(&v))
+		// 	str.add(STR_BOOL(*p));
+		// else if (auto p = std::get_if<ostd::String>(&v))
+		// 	str.add(*p);
+		// else if (auto p = std::get_if<ostd::Color>(&v))
+		// 	str.add(*p);
+		// else if (auto p = std::get_if<ostd::Rectangle>(&v))
+		// 	std::cout << std::format("{{ {}, {}, {}, {} }}", (*p).x, (*p).y, (*p).w, (*p).h);
+		// else if (auto p = std::get_if<ostd::Vec2>(&v))
+		// 	std::cout << *p;
+		return str;
 	}
 }
