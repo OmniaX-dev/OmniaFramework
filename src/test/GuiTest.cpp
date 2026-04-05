@@ -38,7 +38,7 @@
  * Tab Panel
  */
 
-#include "utils/Keycodes.hpp"
+#include <ogfx/utils/Keycodes.hpp>
 #include <ogfx/ogfx.hpp>
 
 ostd::ConsoleOutputHandler out;
