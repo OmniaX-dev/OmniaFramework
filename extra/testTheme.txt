@@ -30,8 +30,23 @@ window.backgroundColor = Color(rgba(40, 0, 0, 255))
 	borderColor = Color(rgb(0, 255, 0))
 }
 
+(label:pressed) {
+	textColor = Color(#FF0000FF)
+}
+
 (@testLabel label:hover) {
 	borderColor = $color2
+}
+
+(@testLabel label:pressed) {
+	backgroundColor = Color(#0040AAFF)
+	textColor = Color(#505050FF)
+}
+
+(label:disabled) {
+	backgroundColor = Color(#EEEEEEFF)
+	textColor = Color(#505050FF)
+	borderColor = Color(#000000FF)
 }
 
 % ===================================================

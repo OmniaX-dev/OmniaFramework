@@ -333,6 +333,29 @@ namespace ogfx
 			}
 		}
 
+		void Widget::setThemeQualifier(const ostd::String& qualifier, bool value)
+		{
+		    for (auto& [name, state] : m_qualifierList)
+		    {
+		        if (name == qualifier)
+		        {
+		            state = value;
+					reloadTheme();
+		            return;
+		        }
+		    }
+		}
+
+		bool Widget::getThemeQualifier(const ostd::String& qualifier)
+		{
+			for (auto& [name, state] : m_qualifierList)
+			{
+				if (name == qualifier)
+					return state;
+			}
+			return false;
+		}
+
 		void Widget::__draw(ogfx::BasicRenderer2D& gfx)
 		{
 			if (isDrawBoxEnabled())
@@ -351,6 +374,7 @@ namespace ogfx
 
 		void Widget::__onMousePressed(const Event& event)
 		{
+			setThemeQualifier("pressed");
 			if (hasChildren())
 				m_widgets.onMousePressed(event);
 			if (!event.isHandled())
@@ -364,6 +388,7 @@ namespace ogfx
 
 		void Widget::__onMouseReleased(const Event& event)
 		{
+			setThemeQualifier("pressed", false);
 			m_pressedButton = ogfx::MouseEventData::eButton::None;
 			if (hasChildren())
 				m_widgets.onMouseReleased(event);
@@ -389,8 +414,7 @@ namespace ogfx
 
 		void Widget::__onMouseEntered(const Event& event)
 		{
-			m_qualifier = "hover";
-			reloadTheme();
+			setThemeQualifier("hover");
 			if (callback_onMouseEntered)
 				callback_onMouseEntered(event);
 			onMouseEntered(event);
@@ -398,8 +422,7 @@ namespace ogfx
 
 		void Widget::__onMouseExited(const Event& event)
 		{
-			m_qualifier = "";
-			reloadTheme();
+			setThemeQualifier("hover", false);
 			if (callback_onMouseExited)
 				callback_onMouseExited(event);
 			onMouseExited(event);
@@ -528,7 +551,7 @@ namespace ogfx
 
 			void RootWidget::applyTheme(const ostd::Stylesheet& theme)
 			{
-				m_color = theme.get<ostd::Color>("window.backgroundColor", getWindow().getClearColor(), getThemeID(), getThemeQualifier());
+				m_color = theme.get<ostd::Color>("window.backgroundColor", getWindow().getClearColor(), getThemeID(), getThemeQualifierList());
 			}
 
 			void RootWidget::onDraw(ogfx::BasicRenderer2D& gfx)
@@ -552,15 +575,15 @@ namespace ogfx
 
 			void Label::applyTheme(const ostd::Stylesheet& theme)
 			{
-				setColor(theme.get<ostd::Color>("label.textColor", ostd::Colors::White, getThemeID(), getThemeQualifier()));
-				setBackGroundColor(theme.get<ostd::Color>("label.backgroundColor", ostd::Colors::Transparent, getThemeID(), getThemeQualifier()));
-				setFontSize(theme.get<int32_t>("label.fontSize", 20, getThemeID(), getThemeQualifier()));
-				m_borderRadius = theme.get<int32_t>("label.borderRadius", 10, getThemeID(), getThemeQualifier());
-				m_borderWidth = theme.get<int32_t>("label.borderWidth", 2, getThemeID(), getThemeQualifier());
-				m_showBorder = theme.get<bool>("label.showBorder", false, getThemeID(), getThemeQualifier());
-				m_borderColor = theme.get<ostd::Color>("label.borderColor", ostd::Colors::White, getThemeID(), getThemeQualifier());
-				enableBackground(theme.get<bool>("label.showBackground", false, getThemeID(), getThemeQualifier()));
-				setPadding(theme.get<ostd::Rectangle>("label.padding", { 5, 5, 5, 5 }, getThemeID(), getThemeQualifier()));
+				setColor(theme.get<ostd::Color>("label.textColor", ostd::Colors::White, getThemeID(), getThemeQualifierList()));
+				setBackGroundColor(theme.get<ostd::Color>("label.backgroundColor", ostd::Colors::Transparent, getThemeID(), getThemeQualifierList()));
+				setFontSize(theme.get<int32_t>("label.fontSize", 20, getThemeID(), getThemeQualifierList()));
+				m_borderRadius = theme.get<int32_t>("label.borderRadius", 10, getThemeID(), getThemeQualifierList());
+				m_borderWidth = theme.get<int32_t>("label.borderWidth", 2, getThemeID(), getThemeQualifierList());
+				m_showBorder = theme.get<bool>("label.showBorder", false, getThemeID(), getThemeQualifierList());
+				m_borderColor = theme.get<ostd::Color>("label.borderColor", ostd::Colors::White, getThemeID(), getThemeQualifierList());
+				enableBackground(theme.get<bool>("label.showBackground", false, getThemeID(), getThemeQualifierList()));
+				setPadding(theme.get<ostd::Rectangle>("label.padding", { 5, 5, 5, 5 }, getThemeID(), getThemeQualifierList()));
 			}
 
 			void Label::onDraw(ogfx::BasicRenderer2D& gfx)

@@ -63,6 +63,7 @@ class Window : public ogfx::gui::Window
 			// 	m_label1.applyThemeValue(m_theme, "label.backgroundColor", ostd::Colors::DarkGreen, false);
 			// });
 			addWidget(m_label1);
+			m_label1.setThemeQualifier("disabled");
 
 			m_label2.setPosition(100, 400);
 			m_label2.setText("Ciccia Bella!");

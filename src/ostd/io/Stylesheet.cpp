@@ -34,16 +34,17 @@ namespace ostd
 		return *this;
 	}
 
-	Stylesheet& Stylesheet::loadFromFile(const ostd::String& filePath)
+	Stylesheet& Stylesheet::loadFromFile(const ostd::String& filePath, bool clearCurrentRules)
 	{
 		ostd::String outContent = "";
 		ostd::FileSystem::readTextFileRaw(filePath, outContent);
-		return loadFromString(outContent, filePath);
+		return loadFromString(outContent, filePath, clearCurrentRules);
 	}
 
-	Stylesheet& Stylesheet::loadFromString(const ostd::String& content, const ostd::String& filePath)
+	Stylesheet& Stylesheet::loadFromString(const ostd::String& content, const ostd::String& filePath, bool clearCurrentRules)
 	{
-
+		if (clearCurrentRules)
+			m_values.clear();
 		std::vector<ostd::String> lines = content.tokenize("\n", false, true).getRawData();
 		uint32_t lineNumber = 0;
 		ostd::String lineCopy = "";
@@ -121,7 +122,6 @@ namespace ostd
 				}
 				ostd::String rawSelector = line.new_substr(1, line.indexOf(")")).trim();
 				groupSelector = parseGroupSelector(rawSelector);
-				std::cout << groupSelector << "\n";
 				if (line.contains("{"))
 				{
 					line.substr(line.indexOf("{")).trim();
@@ -151,31 +151,43 @@ namespace ostd
 		m_values[fullKey] = std::move(value);
 	}
 
-	const Stylesheet::TypeVariant* Stylesheet::getVariant(const ostd::String& key, const ostd::String& themeID, const ostd::String& qualifier) const
+	const Stylesheet::TypeVariant* Stylesheet::getVariant(const ostd::String& key, const ostd::String& themeID, const QualifierList& qualifierList) const
 	{
-		if (auto v = getFull("@" + themeID + ":" + qualifier + "." + key))
+		for (const auto&[qualifier, state] : qualifierList)
 		{
-			return v;
+			const TypeVariant* v = (state ? getFull("@" + themeID + ":" + qualifier + "." + key) : nullptr);
+			// std::cout << "0: " << "@" + themeID + ":" + qualifier + "." + key << "\n";
+			if (v)
+			{
+				std::cout << "1: " << "@" + themeID + ":" + qualifier + "." + key << "\n";
+				return v;
+			}
+			v = (state ? getFull("@:" + qualifier + "." + key) : nullptr);
+			if (v)
+			{
+				std::cout << "2: " << "@:" + qualifier + "." + key << "\n";
+				return v;
+			}
 		}
-		else if (auto v = getFull("@:" + qualifier + "." + key))
+		if (auto v = getFull("@" + themeID + "." + key))
 		{
-			return v;
-		}
-		else if (auto v = getFull("@" + themeID + "." + key))
-		{
+			std::cout << "3: "  << "@" + themeID + "." + key << "\n";
 			return v;
 		}
 		else if (auto v = getFull("@." + key))
 		{
+			std::cout << "4: "  << "@." + key << "\n";
 			return v;
 		}
+		std::cout << "\n\n";
 		return nullptr;
 	}
 
 	const Stylesheet::TypeVariant* Stylesheet::getFull(const ostd::String& fullKey) const
 	{
-		// std::cout << "    GET: " << key << "\n";
 		auto it = m_values.find(fullKey);
+		// if (it != m_values.end())
+		// 	std::cout << "    GET: " << fullKey << "\n";
 		return it != m_values.end() ? &it->second : nullptr;
 	}
 
@@ -285,5 +297,13 @@ namespace ostd
 		for (const auto& property : group)
 			newLines.push_back(selector.new_add(".").new_add(property));
 		return newLines;
+	}
+
+	void Stylesheet::debugPrint(void)
+	{
+		for (const auto&[key, value] : m_values)
+		{
+			std::cout << key << "\n";
+		}
 	}
 }

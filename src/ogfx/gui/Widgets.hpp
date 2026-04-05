@@ -88,6 +88,9 @@ namespace ogfx
 				virtual void applyTheme(const ostd::Stylesheet& theme) = 0;
 				void addThemeOverride(const ostd::String& key, ostd::Stylesheet::TypeVariant value, const ostd::String& themeID = "", const ostd::String& qualifier = "", bool propagate = true);
 				void reloadTheme(void);
+				void setThemeQualifier(const ostd::String& qualifier, bool value = true);
+				bool getThemeQualifier(const ostd::String& qualifier);
+				inline const ostd::Stylesheet::QualifierList& getThemeQualifierList(void) const { return m_qualifierList; }
 
 				inline virtual void onDraw(ogfx::BasicRenderer2D& gfx) {  }
 				inline virtual void onUpdate(void) {  }
@@ -154,7 +157,6 @@ namespace ogfx
 				inline ogfx::MouseEventData::eButton getPressedMouseButton(void) const { return m_pressedButton; }
 				inline ostd::String getThemeID(void) const { return m_themeID; }
 				inline void setThemeID(const ostd::String& id) { m_themeID = id; }
-				inline ostd::String getThemeQualifier(void) const { return m_qualifier; }
 
 			protected:
 				inline void disableChildren(void) { m_allowChildren = false; }
@@ -193,7 +195,13 @@ namespace ogfx
 				MouseEventData::eButton m_pressedButton { MouseEventData::eButton::None };
 
 				ostd::String m_themeID { "" };
-				ostd::String m_qualifier { "" };
+				ostd::Stylesheet::QualifierList m_qualifierList {
+					{ "disabled", false },
+					{ "pressed", false },
+					{ "hover", false },
+					{ "focused", false },
+					{ "active", false }
+				};
 				std::vector<ThemeOverride> m_themeOverrides;
 
 				bool m_drawBox { true };
