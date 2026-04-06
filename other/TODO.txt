@@ -3,3 +3,30 @@
 ***Fix mouse detection currently using local coordinates
 ***implement file theme loading
 ***Implemenmt MouseDragged callback
+***Add scissoring to only draw inside the bounds of containers
+Add theme caching
+Implement mouse scroll callback
+Implement a way to determine on what widget (in the hierarchy chain) and event must stop
+Implement margin for widgets
+Implement conditional statements for stylesheet rules
+
+
+Implement following widgets:
+	***Label
+	Button
+		Image/Icon
+	Panel / Container
+		Title Label
+	Checkbox
+	Radio Button
+		Grouping
+	Text Input
+	Horizontal Slider
+	Vertical Slider
+	Image / Icon
+	ScrollView
+	ListBox
+	ComboBox
+	TreeView
+	Save/Open File Dialogs (and folder dialogs)
+	Tab Panel

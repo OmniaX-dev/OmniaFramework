@@ -21,9 +21,9 @@ window.backgroundColor = Color(rgba(120, 120, 120, 255))
 
 (panel) {
 	backgroundColor = Color(#AAAAAAFF)
-	borderColor = Color(#000000FF)
+	borderColor = Color(#00FF00FF)
 	borderRadius = 8
-	borderWidth = 2
+	borderWidth = 4
 	showBorder = true
 	padding = Rect(15, 15, 15, 15)
 }
@@ -41,6 +41,11 @@ window.backgroundColor = Color(rgba(120, 120, 120, 255))
 (@testLabel2 label:hover) {
 	borderColor = Color(#208080FF)
 }
+
+
+% (@testLabel2 label:pressed [mouseButton=left or mouseButton=right]) {
+% ...
+
 
 (@testLabel2 label:pressed) {
 	showBackground = true
@@ -68,6 +73,15 @@ window.backgroundColor = Color(rgba(120, 120, 120, 255))
 	backgroundColor = Color(#EEEEEEFF)
 	%textColor = Color(#505050FF)
 	%borderColor = Color(#000000FF)
+}
+
+(@label3 label) {
+	textColor = $color2
+	backgroundColor = Color(#000000FF)
+	fontSize = 20
+	borderColor = Color(#FF0000FF)
+	borderWidth = 4
+	borderRadius = 15
 }
 
 % ===================================================

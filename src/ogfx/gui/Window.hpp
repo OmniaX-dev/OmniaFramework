@@ -25,7 +25,7 @@
 #include <ostd/utils/Time.hpp>
 #include <ostd/io/IOHandlers.hpp>
 #include <ogfx/gui/Events.hpp>
-#include <ogfx/gui/Widgets.hpp>
+#include <ogfx/gui/widgets/Widget.hpp>
 #include <ogfx/render/BasicRenderer.hpp>
 #include <ogfx/gui/WindowOutputHandler.hpp>
 

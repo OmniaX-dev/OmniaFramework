@@ -18,26 +18,6 @@
     along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
-
-
-/*
- * --- Label
- * Button
- * Panel / Container
- * Checkbox
- * Radio Button (Group)
- * Text Input
- * Horizontal Slider
- * Image / Icon
- * ScrollView
- * ListBox
- * ComboBox
- * TreeView
- * Save/Open File Dialogs (and folder dialogs)
- * Tab Panel
- */
-
 #include <ogfx/utils/Keycodes.hpp>
 #include <ogfx/ogfx.hpp>
 
@@ -60,6 +40,10 @@ class Window : public ogfx::gui::Window
 				pos = pos2;
 			});
 
+
+			m_panel2.setSize(300, 140);
+			m_panel2.setPosition(130, 200);
+
 			m_label1.setPosition(100, 200);
 			m_label1.setText("Hello World!");
 			m_label1.setMousePressedCallback([&](const ogfx::gui::Event& event) -> void {
@@ -67,9 +51,9 @@ class Window : public ogfx::gui::Window
 			});
 			addWidget(m_label1);
 			addWidget(m_panel1);
-			// m_label1.setThemeQualifier("disabled");
+			addWidget(m_panel2);
 
-			m_label2.setPosition(10, 10);
+			m_label2.setPosition(0, 0);
 			m_label2.setText("Ciccia Bella!");
 			m_label2.addThemeID("testLabel");
 			m_label2.addThemeID("testLabel2");
@@ -78,14 +62,16 @@ class Window : public ogfx::gui::Window
 			m_label1.addThemeOverride("@:pressed.label.textColor", ostd::Colors::Crimson);
 
 			m_theme.loadFromFile("./testTheme.txt");
-			setTheme(m_theme);
 
 			m_label2.addThemeOverride("@:hover.label.showBackground", true);
 			m_label2.addThemeOverride("@:hover.label.backgroundColor", ostd::Colors::DarkGreen);
-			m_theme.debugPrint();
-			m_label2.reloadTheme();
 
-			m_theme.debugPrint();
+			m_label3.setPosition(0, 30);
+			m_label3.setText("Bella!");
+			m_label3.addThemeID("label3");
+			m_panel1.addChild(m_label3);
+
+			setTheme(m_theme);
 	 	}
 
 		inline void onSignal(ostd::Signal& signal) override
@@ -106,7 +92,9 @@ class Window : public ogfx::gui::Window
 	private:
 		ogfx::gui::widgets::Label m_label1 { *this };
 		ogfx::gui::widgets::Label m_label2 { *this };
+		ogfx::gui::widgets::Label m_label3 { *this };
 		ogfx::gui::widgets::Panel m_panel1 { *this };
+		ogfx::gui::widgets::Panel m_panel2 { *this };
 		ostd::Stylesheet m_theme;
 		ostd::Vec2 pos { 0, 0 };
 };

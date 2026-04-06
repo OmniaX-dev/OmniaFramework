@@ -58,11 +58,13 @@ cp -r ../src/ostd/vendor/nlohmann $RELEASE_DIR/include/ostd/vendor/
 # OGFX
 mkdir -p $RELEASE_DIR/include/ogfx/vendor/sdl3_gfx
 mkdir -p $RELEASE_DIR/include/ogfx/gui
+mkdir -p $RELEASE_DIR/include/ogfx/gui/widgets
 mkdir -p $RELEASE_DIR/include/ogfx/render
 mkdir -p $RELEASE_DIR/include/ogfx/resources
 mkdir -p $RELEASE_DIR/include/ogfx/utils
 find ../src/ogfx  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx \;
 find ../src/ogfx/gui  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/gui \;
+find ../src/ogfx/gui/widgets  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/gui/widgets \;
 find ../src/ogfx/render  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/render \;
 find ../src/ogfx/resources  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/resources \;
 find ../src/ogfx/utils  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/utils \;

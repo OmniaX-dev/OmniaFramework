@@ -18,12 +18,12 @@
 	along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "Widgets.hpp"
+#include "Widget.hpp"
 #include "gui/Events.hpp"
 #include "io/Memory.hpp"
 #include "utils/Keycodes.hpp"
-#include <ogfx/render/BasicRenderer.hpp>
-#include <ogfx/gui/Window.hpp>
+#include "../..//render/BasicRenderer.hpp"
+#include "../Window.hpp"
 
 namespace ogfx
 {
@@ -107,7 +107,9 @@ namespace ogfx
 			{
 				if (w == nullptr) continue;
 				if (w->isInvalid()) continue;
+				gfx.pushClippingRect({ w->getGlobalPosition(), w->getSize() }, true);
 				w->__draw(gfx);
+				gfx.popClippingRect();
 			}
 		}
 
@@ -142,7 +144,7 @@ namespace ogfx
 					continue;
 				w->__onMousePressed(event);
 				m_mousePressedOnWidget = w;
-				if (event.isHandled())
+				if (event.isHandled() || w->m_stopEvents)
 					break;
 			}
 		}
@@ -191,8 +193,20 @@ namespace ogfx
 					else
 						w->__onMouseMoved(event);
 				}
-				if (event.isHandled())
+				if (event.isHandled() || w->m_stopEvents)
+				{
+					bool mouseOut = false;
+					for (int32_t j = i - 1; j >= 0; j--)
+					{
+						Widget* ww = m_widgetList[j];
+						if (ww->m_mouseInside)
+						{
+							ww->m_mouseInside = false;
+							ww->__onMouseExited(event);
+						}
+					}
 					break;
+				}
 			}
 		}
 
@@ -291,6 +305,7 @@ namespace ogfx
 		{
 			if (!m_allowChildren)
 				return false;
+			child.reloadTheme();
 			return m_widgets.addWidget(child);
 		}
 
@@ -298,8 +313,30 @@ namespace ogfx
 		{
 			ostd::Vec2 glob = getPosition();
 			if (!m_rootChild && m_parent != nullptr)
-				glob += m_parent->getGlobalPosition();
+				glob += m_parent->getGlobalPosition() + m_parent->getPadding().getPosition();
 			return glob;
+		}
+
+		ostd::Vec2 Widget::getGlobalContentPosition(void) const
+		{
+			return getGlobalPosition() + getContentBounds().getPosition();
+		}
+
+		ostd::Rectangle Widget::getGlobalBounds(void) const
+		{
+			return { getGlobalPosition(), getSize() };
+		}
+
+		ostd::Rectangle Widget::getContentBounds(void) const
+		{
+			auto pad = getPadding();
+			return { pad.getPosition(), (getSize() - (pad.getSize() * 2)) };
+		}
+
+		ostd::Rectangle Widget::getGlobalContentBounds(void) const
+		{
+			auto pad = getPadding();
+			return { getGlobalContentPosition(), getContentBounds().getSize() };
 		}
 
 		bool Widget::contains(ostd::Vec2 p, bool includeBounds) const
@@ -593,94 +630,6 @@ namespace ogfx
 			void RootWidget::onDraw(ogfx::BasicRenderer2D& gfx)
 			{
 				gfx.fillRect({ 0, 0, static_cast<float>(getWindow().getWindowWidth()), static_cast<float>(getWindow().getWindowHeight()) }, m_color);
-			}
-
-
-
-
-			Label& Label::create(const ostd::String& text)
-			{
-				setText(text);
-				setPadding({ 5, 5, 5, 5 });
-				setTypeName("ogfx::gui::widgets::Label");
-				disableDrawBox();
-				disableChildren();
-				enableBackground(false);
-				validate();
-				return *this;
-			}
-
-			void Label::applyTheme(const ostd::Stylesheet& theme)
-			{
-				setColor(getThemeValue<ostd::Color>(theme, "label.textColor", ostd::Colors::White));
-				setBackGroundColor(getThemeValue<ostd::Color>(theme, "label.backgroundColor", ostd::Colors::Transparent));
-				setFontSize(getThemeValue<int32_t>(theme, "label.fontSize", 20));
-				m_borderRadius = getThemeValue<int32_t>(theme, "label.borderRadius", 10);
-				m_borderWidth = getThemeValue<int32_t>(theme, "label.borderWidth", 2);
-				m_showBorder = getThemeValue<bool>(theme, "label.showBorder", false);
-				m_borderColor = getThemeValue<ostd::Color>(theme, "label.borderColor", ostd::Colors::White);
-				enableBackground(getThemeValue<bool>(theme, "label.showBackground", false));
-				setPadding(getThemeValue<ostd::Rectangle>(theme, "label.padding", { 5, 5, 5, 5 }));
-			}
-
-			void Label::onDraw(ogfx::BasicRenderer2D& gfx)
-			{
-				if (m_textChanged)
-					__update_size(gfx);
-				if (m_showBackground)
-					gfx.fillRoundRect({ getGlobalPosition(), getSize() }, m_backgroundColor, m_borderRadius);
-				if (m_showBorder)
-					gfx.drawRoundRect({ getGlobalPosition(), getSize() }, m_borderColor, m_borderRadius, m_borderWidth);
-				gfx.drawString(getText(), getGlobalPosition() + ostd::Vec2 { getPadding().left(), getPadding().top() }, getColor(), getFontSize());
-			}
-
-			void Label::setText(const ostd::String& text)
-			{
-				m_text = text;
-				m_textChanged = true;
-			}
-
-			void Label::__update_size(ogfx::BasicRenderer2D& gfx)
-			{
-				auto size = gfx.getStringSize(getText(), getFontSize());
-				size.x += getPadding().left();
-				size.x += getPadding().right();
-				size.y += getPadding().top();
-				size.y += getPadding().bottom();
-				setSize({ static_cast<float>(size.x), static_cast<float>(size.y) });
-				m_textChanged = false;
-			}
-
-
-
-
-			Panel& Panel::create(void)
-			{
-				setPadding({ 5, 5, 5, 5 });
-				setTypeName("ogfx::gui::widgets::Panel");
-				disableDrawBox();
-				disableFocus();
-				enableStopEvents();
-				validate();
-				return *this;
-			}
-
-			void Panel::applyTheme(const ostd::Stylesheet& theme)
-			{
-				setBackGroundColor(getThemeValue<ostd::Color>(theme, "panel.backgroundColor", ostd::Colors::Gray));
-				m_borderRadius = getThemeValue<int32_t>(theme, "panel.borderRadius", 8);
-				m_borderWidth = getThemeValue<int32_t>(theme, "panel.borderWidth", 2);
-				m_showBorder = getThemeValue<bool>(theme, "panel.showBorder", true);
-				m_borderColor = getThemeValue<ostd::Color>(theme, "panel.borderColor", ostd::Colors::Black);
-				setPadding(getThemeValue<ostd::Rectangle>(theme, "panel.padding", { 15, 15, 15, 15 }));
-			}
-
-			void Panel::onDraw(ogfx::BasicRenderer2D& gfx)
-			{
-				if (m_showBorder)
-					gfx.outlinedRoundRect({ getGlobalPosition(), getSize() }, getBackgroundColor(), m_borderColor, m_borderRadius, m_borderWidth);
-				else
-					gfx.fillRoundRect({ getGlobalPosition(), getSize() }, getBackgroundColor(), m_borderRadius);
 			}
 		}
 	}

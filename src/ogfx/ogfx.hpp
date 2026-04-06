@@ -25,6 +25,7 @@
 #include <ogfx/gui/RawTextInput.hpp>
 #include <ogfx/gui/Window.hpp>
 #include <ogfx/gui/WindowOutputHandler.hpp>
+#include <ogfx/gui/Widgets.hpp>
 
 #include <ogfx/render/BasicRenderer.hpp>
 #include <ogfx/render/PixelRenderer.hpp>

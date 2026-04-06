@@ -31,6 +31,50 @@ namespace ogfx
 		setDefaultFont();
 	}
 
+	void BasicRenderer2D::pushClippingRect(const ostd::Rectangle& rect, bool additive)
+	{
+		if (!m_initialized) return;
+
+	    ostd::Rectangle finalRect = rect;
+
+	    if (additive && !m_clipStack.empty())
+	        finalRect = m_clipStack.back().getIntersection(rect, false);
+
+	    m_clipStack.push_back(finalRect);
+
+	    SDL_Rect r;
+	    r.x = (int)std::round(finalRect.x);
+	    r.y = (int)std::round(finalRect.y);
+	    r.w = (int)std::round(finalRect.w);
+	    r.h = (int)std::round(finalRect.h);
+
+		SDL_SetRenderClipRect(m_window->getSDLRenderer(), &r);
+	}
+
+	void BasicRenderer2D::popClippingRect(void)
+	{
+		if (!m_initialized) return;
+	    if (m_clipStack.empty()) return;
+
+	    m_clipStack.pop_back();
+
+	    if (m_clipStack.empty())
+	    {
+	        SDL_SetRenderClipRect(m_window->getSDLRenderer(), nullptr);
+	        return;
+	    }
+
+	    const auto& rect = m_clipStack.back();
+
+	    SDL_Rect r;
+	    r.x = (int)std::round(rect.x);
+	    r.y = (int)std::round(rect.y);
+	    r.w = (int)std::round(rect.w);
+	    r.h = (int)std::round(rect.h);
+
+	    SDL_SetRenderClipRect(m_window->getSDLRenderer(), &r);
+	}
+
 	void BasicRenderer2D::setFont(const ostd::String& fontFilePath)
 	{
 		if (!m_initialized) return;
@@ -172,24 +216,33 @@ namespace ogfx
 		filledCircleRGBA(m_window->getSDLRenderer(), (int32_t)std::round(center.x), (int32_t)std::round(center.y), radius, color.r, color.g, color.b, color.a);
 	}
 
-	void BasicRenderer2D::outlinedRect(const ostd::Rectangle& rect, const ostd::Color& fillColor, const ostd::Color& outlineColor, int32_t outlineThickness)
+	void BasicRenderer2D::outlinedRect(const ostd::Rectangle& rect, const ostd::Color& fillColor, const ostd::Color& outlineColor, int32_t outlineThickness, bool outlineInward)
 	{
 		if (!m_initialized) return;
 		fillRect(rect, fillColor);
-		drawRect(rect, outlineColor, outlineThickness);
+		float t = static_cast<float>(outlineThickness);
+		ostd::Rectangle offset = { 0, 0, 0, 0 };
+		if (!outlineInward)
+			offset = { -t, -t, t * 2, t * 2 };
+		drawRect(rect + offset , outlineColor, outlineThickness);
 	}
 
-	void BasicRenderer2D::outlinedRoundRect(const ostd::Rectangle& rect, const ostd::Color& fillColor, const ostd::Color& outlineColor, int32_t radius, int32_t outlineThickness)
+	void BasicRenderer2D::outlinedRoundRect(const ostd::Rectangle& rect, const ostd::Color& fillColor, const ostd::Color& outlineColor, int32_t radius, int32_t outlineThickness, bool outlineInward)
 	{
 		if (!m_initialized) return;
 		fillRoundRect(rect, fillColor, radius);
-		drawRoundRect(rect, outlineColor, radius, outlineThickness);
+		float t = static_cast<float>(outlineThickness);
+		ostd::Rectangle offset = { 0, 0, 0, 0 };
+		if (!outlineInward)
+			offset = { -t, -t, t * 2, t * 2 };
+		drawRoundRect(rect + offset, outlineColor, radius, outlineThickness);
 	}
 
-	void BasicRenderer2D::outlinedCircle(const ostd::Vec2& center, int32_t radius, const ostd::Color& fillColor, const ostd::Color& outlineColor, int32_t outlineThickness)
+	void BasicRenderer2D::outlinedCircle(const ostd::Vec2& center, int32_t radius, const ostd::Color& fillColor, const ostd::Color& outlineColor, int32_t outlineThickness, bool outlineInward)
 	{
 		if (!m_initialized) return;
 		fillCircle(center, radius, fillColor);
+		radius = (outlineInward ? radius : radius + outlineThickness);
 		drawCircle(center, radius, outlineColor, outlineThickness);
 	}
 

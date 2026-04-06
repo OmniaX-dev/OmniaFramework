@@ -38,6 +38,8 @@ namespace ogfx
 			inline ostd::IPoint getStringSize(const ostd::String str, int32_t fontSize = 0) { return m_ttfr.getStringDimensions(str, fontSize); }
 			inline WindowCore& getWindow(void) { return *m_window; }
 			inline bool isInitialized(void) { return m_initialized; }
+			void pushClippingRect(const ostd::Rectangle& rect, bool additive = false);
+			void popClippingRect(void);
 			void setFont(const ostd::String& fontFilePath);
 			void setDefaultFont(void);
 			void setFontSize(int32_t fontSize);
@@ -58,13 +60,14 @@ namespace ogfx
 			void fillRoundRect(const ostd::Rectangle& rect, const ostd::Color& color, int32_t radius);
 			void fillCircle(const ostd::Vec2& center, int32_t radius, const ostd::Color& color);
 
-			void outlinedRect(const ostd::Rectangle& rect, const ostd::Color& fillColor, const ostd::Color& outlineColor, int32_t outlineThickness = 1);
-			void outlinedRoundRect(const ostd::Rectangle& rect, const ostd::Color& fillColor, const ostd::Color& outlineColor, int32_t radius, int32_t outlineThickness = 1);
-			void outlinedCircle(const ostd::Vec2& center, int32_t radius, const ostd::Color& fillColor, const ostd::Color& outlineColor, int32_t outlineThickness = 1);
+			void outlinedRect(const ostd::Rectangle& rect, const ostd::Color& fillColor, const ostd::Color& outlineColor, int32_t outlineThickness = 1, bool outlineInward = true);
+			void outlinedRoundRect(const ostd::Rectangle& rect, const ostd::Color& fillColor, const ostd::Color& outlineColor, int32_t radius, int32_t outlineThickness = 1, bool outlineInward = true);
+			void outlinedCircle(const ostd::Vec2& center, int32_t radius, const ostd::Color& fillColor, const ostd::Color& outlineColor, int32_t outlineThickness = 1, bool outlineInward = true);
 
 		private:
 			TTFRenderer m_ttfr;
 			WindowCore* m_window { nullptr };
 			bool m_initialized { false };
+			std::vector<ostd::Rectangle> m_clipStack;
 	};
 }

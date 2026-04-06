@@ -268,6 +268,23 @@ namespace ostd
 			inline Rectangle(Vec2 position, Vec2 size) { x = position.x; y = position.y; w = size.x; h = size.y; }
 			virtual ~Rectangle(void) = default;
 
+			inline bool operator==(const Rectangle& op2) const { return x == op2.x && y == op2.y && w == op2.w && h == op2.h; }
+			inline bool operator!=(const Rectangle& op2) const { return !(*this == op2); }
+			inline Rectangle operator+(const Rectangle& op2) const { return { x + op2.x, y + op2.y, w + op2.w, h + op2.h }; 	}
+			inline Rectangle operator-(const Rectangle& op2) const {  return { x - op2.x, y - op2.y, w - op2.w, h - op2.h }; }
+			inline Rectangle operator+(float s) const { return { x + s, y + s, w + s, h + s }; }
+			inline Rectangle operator-(float s) const { return { x - s, y - s, w - s, h - s }; }
+			inline Rectangle operator*(float s) const { return { x * s, y * s, w * s, h * s }; }
+			inline Rectangle operator/(float s) const { return { x / s, y / s, w / s, h / s }; }
+			inline Rectangle& operator=(const Rectangle& r) { x = r.x; y = r.y; w = r.w; h = r.h; return *this; }
+			inline Rectangle& operator=(float s) { x = s; y = s; w = s; h = s; return *this; }
+			inline Rectangle& operator+=(const Rectangle& op2) { x += op2.x; y += op2.y; w += op2.w; h += op2.h; return *this; }
+			inline Rectangle& operator-=(const Rectangle& op2) { x -= op2.x; y -= op2.y; w -= op2.w; h -= op2.h; return *this; }
+			inline Rectangle& operator+=(float s) { x += s; y += s; w += s; h += s; return *this; }
+			inline Rectangle& operator-=(float s) { x -= s; y -= s; w -= s; h -= s; return *this; }
+			inline Rectangle& operator*=(float s) { x *= s; y *= s; w *= s; h *= s; return *this; }
+			inline Rectangle& operator/=(float s) { x /= s; y /= s; w /= s; h /= s; return *this; }
+
 			inline virtual float getx(void) const { return x; }
 			inline virtual float gety(void) const { return y; }
 			inline virtual float getw(void) const { return w; }

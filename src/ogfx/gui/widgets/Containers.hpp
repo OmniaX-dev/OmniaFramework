@@ -20,5 +20,28 @@
 
 #pragma once
 
-#include <ogfx/gui/widgets/Containers.hpp>
-#include <ogfx/gui/widgets/Label.hpp>
+#include <ogfx/gui/widgets/Widget.hpp>
+
+namespace ogfx
+{
+	namespace gui
+	{
+		namespace widgets
+		{
+			class Panel : public Widget
+			{
+				public:
+					inline Panel(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
+					Panel& create(void);
+					void applyTheme(const ostd::Stylesheet& theme) override;
+					void onDraw(ogfx::BasicRenderer2D& gfx) override;
+					inline void setBackGroundColor(const ostd::Color& color) { m_backgroundColor = color; }
+					inline ostd::Color getBackgroundColor(void) { return m_backgroundColor; }
+
+				private:
+					ostd::Color m_backgroundColor { 150, 150, 150 };
+
+			};
+		}
+	}
+}

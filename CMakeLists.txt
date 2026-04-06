@@ -89,7 +89,11 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/RawTextInput.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/Window.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/WindowOutputHandler.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/Widgets.cpp
+
+	# gui/widgets
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Widget.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Containers.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Label.cpp
 
 	# render
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/BasicRenderer.cpp
