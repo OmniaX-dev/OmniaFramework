@@ -21,7 +21,6 @@
 #include "Widget.hpp"
 #include "gui/Events.hpp"
 #include "io/Memory.hpp"
-#include "utils/Keycodes.hpp"
 #include "../..//render/BasicRenderer.hpp"
 #include "../Window.hpp"
 
@@ -29,273 +28,6 @@ namespace ogfx
 {
 	namespace gui
 	{
-		WidgetManager::WidgetManager(WindowCore& window, Widget& owner) : m_window(window), m_owner(owner)
-		{
-			//
-		}
-
-		bool WidgetManager::hasWidget(Widget& widget)
-		{
-			bool found = std::ranges::find(m_widgetList, &widget) != m_widgetList.end();
-			return found && widget.isValid();
-		}
-
-		bool WidgetManager::requestFocus(Widget& widget)
-		{
-			if (!hasWidget(widget)) return false;
-			if (&widget == m_focused) return true;
-			for (auto& w : m_widgetList)
-			{
-				if (w == nullptr) continue;
-				if (w->isInvalid()) continue;
-				if (w->m_focused)
-				{
-					w->m_focused = false;
-					w->onFocusLost(Event(m_window));
-					w->setThemeQualifier("focused", true);
-				}
-				else
-					w->m_focused = false;
-			}
-			widget.m_focused = true;
-			widget.onFocusGained(Event(m_window));
-			widget.setThemeQualifier("focused", true);
-			m_focused = &widget;
-			return true;
-		}
-
-		bool WidgetManager::addWidget(Widget& widget)
-		{
-			if (hasWidget(widget)) return false;
-			widget.m_parent = &m_owner;
-			m_widgetList.push_back(&widget);
-			std::ranges::sort(m_widgetList, {}, [](Widget* w) {
-				return w->m_zIndex;
-			});
-			return true;
-		}
-
-		Widget* WidgetManager::focusNext(void)
-		{
-			if (m_widgetList.empty())
-				return nullptr;
-
-			Widget* next = nullptr;
-			Widget* smallest = nullptr;
-
-			int32_t currentTabIndex = (m_focused != nullptr ? m_focused->m_tabIndex : std::numeric_limits<int32_t>::max());
-			for (Widget* w : m_widgetList)
-			{
-				int tab_i = w->m_tabIndex;
-				if (tab_i < 0) continue;
-				if (!smallest || tab_i < smallest->m_tabIndex)
-					smallest = w;
-				if (tab_i > currentTabIndex)
-				{
-					if (!next || tab_i < next->m_tabIndex)
-						next = w;
-				}
-			}
-			Widget*  w = next ? next : smallest;
-			requestFocus(*w);
-			return w;
-		}
-
-		void WidgetManager::draw(ogfx::BasicRenderer2D& gfx)
-		{
-			for (auto& w : m_widgetList)
-			{
-				if (w == nullptr) continue;
-				if (w->isInvalid()) continue;
-				gfx.pushClippingRect({ w->getGlobalPosition(), w->getSize() }, true);
-				w->__draw(gfx);
-				gfx.popClippingRect();
-			}
-		}
-
-		void WidgetManager::update(void)
-		{
-			for (auto& w : m_widgetList)
-			{
-				if (w == nullptr) continue;
-				if (w->isInvalid()) continue;
-				w->__update();
-			}
-		}
-
-		void WidgetManager::onThemeApplied(const ostd::Stylesheet& theme)
-		{
-			for (auto& w : m_widgetList)
-			{
-				if (w == nullptr) continue;
-				if (w->isInvalid()) continue;
-				w->__applyTheme(theme, true);
-			}
-		}
-
-		void WidgetManager::onMousePressed(const Event& event)
-		{
-			for (int32_t i = m_widgetList.size() - 1; i >= 0; i--)
-			{
-				Widget* w = m_widgetList[i];
-				if (w == nullptr) continue;
-				if (w->isInvalid()) continue;
-				if (!w->contains(event.mouse->position_x, event.mouse->position_y, true))
-					continue;
-				w->__onMousePressed(event);
-				m_mousePressedOnWidget = w;
-				if (event.isHandled() || w->m_stopEvents)
-					break;
-			}
-		}
-
-		void WidgetManager::onMouseReleased(const Event& event)
-		{
-			for (int32_t i = m_widgetList.size() - 1; i >= 0; i--)
-			{
-				Widget* w = m_widgetList[i];
-				if (w == nullptr) continue;
-				if (w->isInvalid()) continue;
-				event.mouse->mousePressedOnWidget = m_mousePressedOnWidget;
-				w->__onMouseReleased(event);
-				requestFocus(*w);
-				m_mousePressedOnWidget = nullptr;
-				if (event.isHandled())
-					break;
-			}
-		}
-
-		void WidgetManager::onMouseMoved(const Event& event)
-		{
-			for (int32_t i = m_widgetList.size() - 1; i >= 0; i--)
-			{
-				Widget* w = m_widgetList[i];
-				if (w == nullptr) continue;
-				if (w->isInvalid()) continue;
-				if (!w->contains(event.mouse->position_x, event.mouse->position_y, true))
-				{
-					if (w->m_mouseInside)
-					{
-						w->m_mouseInside = false;
-						w->__onMouseExited(event);
-					}
-					continue;
-				}
-				if (!w->m_mouseInside)
-				{
-					w->m_mouseInside = true;
-					w->__onMouseEntered(event);
-				}
-				else
-				{
-					if (w->m_pressedButton != ogfx::MouseEventData::eButton::None)
-						w->__onMouseDragged(event);
-					else
-						w->__onMouseMoved(event);
-				}
-				if (event.isHandled() || w->m_stopEvents)
-				{
-					bool mouseOut = false;
-					for (int32_t j = i - 1; j >= 0; j--)
-					{
-						Widget* ww = m_widgetList[j];
-						if (ww->m_mouseInside)
-						{
-							ww->m_mouseInside = false;
-							ww->__onMouseExited(event);
-						}
-					}
-					break;
-				}
-			}
-		}
-
-		void WidgetManager::onMouseDragged(const Event& event)
-		{
-			for (int32_t i = m_widgetList.size() - 1; i >= 0; i--)
-			{
-				Widget* w = m_widgetList[i];
-				if (w == nullptr) continue;
-				if (w->isInvalid()) continue;
-				if (!w->contains(event.mouse->position_x, event.mouse->position_y, true))
-					continue;
-				w->__onMouseDragged(event);
-				if (event.isHandled())
-					break;
-			}
-		}
-
-		void WidgetManager::onKeyPressed(const Event& event)
-		{
-			if (!m_focused) return;
-			m_focused->__onKeyPressed(event);
-		}
-
-		void WidgetManager::onKeyReleased(const Event& event)
-		{
-			if (!m_focused) return;
-			m_focused->__onKeyReleased(event);
-			if (m_tabNavigationEnabled && event.keyboard->keyCode == KeyCode::Tab)
-				focusNext();
-		}
-
-		void WidgetManager::onTextEntered(const Event& event)
-		{
-			if (!m_focused) return;
-			m_focused->__onTextEntered(event);
-		}
-
-		void WidgetManager::onWindowClosed(const Event& event)
-		{
-			for (auto& w : m_widgetList)
-			{
-				if (w == nullptr) continue;
-				if (w->isInvalid()) continue;
-				w->__onWindowClosed(event);
-				if (event.isHandled())
-					break;
-			}
-		}
-
-		void WidgetManager::onWindowResized(const Event& event)
-		{
-			for (auto& w : m_widgetList)
-			{
-				if (w == nullptr) continue;
-				if (w->isInvalid()) continue;
-				w->__onWindowResized(event);
-				if (event.isHandled())
-					break;
-			}
-		}
-
-		void WidgetManager::onWindowFocused(const Event& event)
-		{
-			for (auto& w : m_widgetList)
-			{
-				if (w == nullptr) continue;
-				if (w->isInvalid()) continue;
-				w->__onWIndowFocused(event);
-				if (event.isHandled())
-					break;
-			}
-		}
-
-		void WidgetManager::onWindowFocusLost(const Event& event)
-		{
-			for (auto& w : m_widgetList)
-			{
-				if (w == nullptr) continue;
-				if (w->isInvalid()) continue;
-				w->__onWindowFocusLost(event);
-				if (event.isHandled())
-					break;
-			}
-		}
-
-
-
-
 		Widget::Widget(const ostd::Rectangle& bounds, WindowCore& window) : Rectangle(bounds), m_widgets(window, *this)
 		{
 			m_window = &window;
@@ -403,7 +135,7 @@ namespace ogfx
 		    }
 		}
 
-		bool Widget::getThemeQualifier(const ostd::String& qualifier)
+		bool Widget::getThemeQualifier(const ostd::String& qualifier) const
 		{
 			for (auto& [name, state] : m_qualifierList)
 			{
@@ -470,6 +202,18 @@ namespace ogfx
 				if (callback_onMouseReleased)
 					callback_onMouseReleased(event);
 				onMouseReleased(event);
+			}
+		}
+
+		void Widget::__onDragAndDrop(const Event& event)
+		{
+			// if (hasChildren())
+			// 	m_widgets.onMouseReleased(event);
+			if (!event.isHandled())
+			{
+				if (callback_onDragAndDrop)
+					callback_onDragAndDrop(event);
+				onDragAndDrop(event);
 			}
 		}
 
@@ -574,7 +318,7 @@ namespace ogfx
 			}
 		}
 
-		void Widget::__onWIndowFocused(const Event& event)
+		void Widget::__onWindowFocused(const Event& event)
 		{
 			if (hasChildren())
 				m_widgets.onWindowFocused(event);
@@ -603,34 +347,6 @@ namespace ogfx
 			if (propagate && hasChildren())
 				m_widgets.onThemeApplied(theme);
 			applyTheme(theme);
-		}
-
-
-
-		namespace widgets
-		{
-			RootWidget::RootWidget(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window)
-			{
-				disableDrawBox();
-				m_rootChild = true;
-				setSize(static_cast<float>(window.getWindowWidth()), static_cast<float>(window.getWindowHeight()));
-				setTypeName("ogfx::gui::widgets::RootWidget");
-			}
-
-			void RootWidget::onWindowResized(const Event& event)
-			{
-				setSize(static_cast<float>(event.windowResized->new_width), static_cast<float>(event.windowResized->new_height));
-			}
-
-			void RootWidget::applyTheme(const ostd::Stylesheet& theme)
-			{
-				m_color = getThemeValue<ostd::Color>(theme, "window.backgroundColor", getWindow().getClearColor());
-			}
-
-			void RootWidget::onDraw(ogfx::BasicRenderer2D& gfx)
-			{
-				gfx.fillRect({ 0, 0, static_cast<float>(getWindow().getWindowWidth()), static_cast<float>(getWindow().getWindowHeight()) }, m_color);
-			}
 		}
 	}
 }

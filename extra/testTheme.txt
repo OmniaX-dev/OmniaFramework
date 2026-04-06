@@ -42,11 +42,6 @@ window.backgroundColor = Color(rgba(120, 120, 120, 255))
 	borderColor = Color(#208080FF)
 }
 
-
-% (@testLabel2 label:pressed [mouseButton=left or mouseButton=right]) {
-% ...
-
-
 (@testLabel2 label:pressed) {
 	showBackground = true
 }

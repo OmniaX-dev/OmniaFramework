@@ -78,12 +78,28 @@ namespace ogfx
 			eKeyEvent eventType;
 			WindowCore& parentWindow;
 	};
+	class DropEventData : public ostd::BaseObject
+	{
+		public: enum class eDropType { None = 0, File, Text, InApp };
+		public:
+			inline DropEventData(WindowCore& parent, eDropType type) : parentWindow(parent), dropType(type)
+			{
+				setTypeName("ogfx::DropEventData");
+				validate();
+			}
+
+		public:
+			eDropType dropType;
+			WindowCore& parentWindow;
+			ostd::String textOrFilePath { "" };
+			ostd::BaseObject* userObject { nullptr };
+	};
 	namespace gui
 	{
 		class Event
 		{
 			public:
-				inline Event(WindowCore& _window) : window(_window) {  }
+				inline Event(WindowCore& _window) : window(_window), drop(window, DropEventData::eDropType::None) {  }
 				inline void handle(void) { m_handled = true; }
 				inline bool isHandled(void) const { return m_handled; }
 
@@ -92,6 +108,8 @@ namespace ogfx
 				WindowResizedData* windowResized { nullptr };
 				MouseEventData* mouse { nullptr };
 				KeyEventData* keyboard { nullptr };
+				DropEventData drop;
+				uint32_t __original_signal_id { 0 };
 
 			private:
 				bool m_handled { false };

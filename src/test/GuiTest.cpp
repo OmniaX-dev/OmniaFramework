@@ -30,7 +30,7 @@ class Window : public ogfx::gui::Window
 		inline void onInitialize(void) override
 		{
 			m_panel1.setSize(300, 140);
-			m_panel1.setPosition(200, 150);
+			m_panel1.setPosition(350, 50);
 			m_panel1.setMousePressedCallback([&](const ogfx::gui::Event& event) -> void {
 				pos = { event.mouse->position_x, event.mouse->position_y };
 			});
@@ -43,6 +43,13 @@ class Window : public ogfx::gui::Window
 
 			m_panel2.setSize(300, 140);
 			m_panel2.setPosition(130, 200);
+			m_panel2.setMousePressedCallback([&](const ogfx::gui::Event& event) -> void {
+				ogfx::gui::Widget::setDragAndDropData(m_label3);
+				setCursor(eCursor::Move);
+			});
+			m_panel2.setMouseReleasedCallback([&](const ogfx::gui::Event& event) -> void {
+				setCursor(eCursor::Default);
+			});
 
 			m_label1.setPosition(100, 200);
 			m_label1.setText("Hello World!");
@@ -57,6 +64,14 @@ class Window : public ogfx::gui::Window
 			m_label2.setText("Ciccia Bella!");
 			m_label2.addThemeID("testLabel");
 			m_label2.addThemeID("testLabel2");
+			m_label2.enableDragAndDrop();
+			m_label2.setDragAndDropCallback([&](const ogfx::gui::Event& event) -> void {
+				std::cout << "DROP\n";
+				if (auto data = ogfx::gui::Widget::getDragAndDropData())
+				{
+					std::cout << static_cast<ogfx::gui::widgets::Label&>(*data).getText() << "!\n";
+				}
+			});
 			m_panel1.addChild(m_label2);
 
 			m_label1.addThemeOverride("@:pressed.label.textColor", ostd::Colors::Crimson);

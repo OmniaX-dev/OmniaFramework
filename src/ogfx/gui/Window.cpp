@@ -21,6 +21,7 @@
 #include "Window.hpp"
 #include "../../ostd/utils/Time.hpp"
 #include "utils/Keycodes.hpp"
+#include <SDL3/SDL_events.h>
 
 namespace ogfx
 {
@@ -336,6 +337,18 @@ namespace ogfx
 		{
 			close();
 		}
+		else if (event.type == SDL_EVENT_DROP_FILE)
+		{
+			DropEventData ded(*this, DropEventData::eDropType::File);
+			ded.textOrFilePath = event.drop.data;
+			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::FileDragAndDropped, ostd::Signal::Priority::RealTime, ded);
+		}
+		else if (event.type == SDL_EVENT_DROP_TEXT)
+		{
+			DropEventData ded(*this, DropEventData::eDropType::Text);
+			ded.textOrFilePath = event.drop.data;
+			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::FileDragAndDropped, ostd::Signal::Priority::RealTime, ded);
+		}
 		else if (event.type == SDL_EVENT_WINDOW_FOCUS_GAINED)
 		{
 			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::WindowFocused, ostd::Signal::Priority::RealTime, *this);
@@ -497,46 +510,74 @@ namespace ogfx
 		void Window::__on_signal(ostd::Signal& signal)
 		{
 			Event evt(*this);
+			evt.__original_signal_id = ostd::BuiltinSignals::NoSignal;
 			if (signal.ID == ostd::BuiltinSignals::WindowClosed)
 			{
+				evt.__original_signal_id = ostd::BuiltinSignals::WindowClosed;
 				m_rootWidget.__onWindowClosed(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::WindowFocused)
 			{
-				m_rootWidget.__onWIndowFocused(evt);
+				evt.__original_signal_id = ostd::BuiltinSignals::WindowFocused;
+				m_rootWidget.__onWindowFocused(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::WindowLostFocus)
 			{
+				evt.__original_signal_id = ostd::BuiltinSignals::WindowLostFocus;
 				m_rootWidget.__onWindowFocusLost(evt);
+			}
+			else if (signal.ID == ostd::BuiltinSignals::FileDragAndDropped)
+			{
+				auto& ud = (ogfx::DropEventData&)signal.userData;
+				evt.drop.dropType = ud.dropType;
+				evt.drop.userObject = ud.userObject;
+				evt.drop.textOrFilePath = ud.textOrFilePath;
+				evt.__original_signal_id = ostd::BuiltinSignals::FileDragAndDropped;
+				m_rootWidget.__onDragAndDrop(evt);
+			}
+			else if (signal.ID == ostd::BuiltinSignals::TextDragAndDropped)
+			{
+				auto& ud = (ogfx::DropEventData&)signal.userData;
+				evt.drop.dropType = ud.dropType;
+				evt.drop.userObject = ud.userObject;
+				evt.drop.textOrFilePath = ud.textOrFilePath;
+				evt.__original_signal_id = ostd::BuiltinSignals::TextDragAndDropped;
+				m_rootWidget.__onDragAndDrop(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::WindowResized)
 			{
 				evt.windowResized = &(ogfx::WindowResizedData&)signal.userData;
+				evt.__original_signal_id = ostd::BuiltinSignals::WindowResized;
 				m_rootWidget.__onWindowResized(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::MouseMoved)
 			{
 				evt.mouse = &(ogfx::MouseEventData&)signal.userData;
+				evt.__original_signal_id = ostd::BuiltinSignals::MouseMoved;
 				m_rootWidget.__onMouseMoved(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::MousePressed)
 			{
 				evt.mouse = &(ogfx::MouseEventData&)signal.userData;
+				evt.__original_signal_id = ostd::BuiltinSignals::MousePressed;
 				m_rootWidget.__onMousePressed(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::MouseReleased)
 			{
 				evt.mouse = &(ogfx::MouseEventData&)signal.userData;
+				evt.__original_signal_id = ostd::BuiltinSignals::MouseReleased;
 				m_rootWidget.__onMouseReleased(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::KeyPressed)
 			{
 				evt.keyboard = &(ogfx::KeyEventData&)signal.userData;
+				evt.__original_signal_id = ostd::BuiltinSignals::KeyPressed;
 				m_rootWidget.__onKeyPressed(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::KeyReleased)
 			{
 				evt.keyboard = &(ogfx::KeyEventData&)signal.userData;
+				evt.__original_signal_id = ostd::BuiltinSignals::KeyReleased;
 				m_rootWidget.__onKeyReleased(evt);
 				if (evt.keyboard->keyCode == KeyCode::Escape)
 					close();
@@ -544,6 +585,7 @@ namespace ogfx
 			else if (signal.ID == ostd::BuiltinSignals::TextEntered)
 			{
 				evt.keyboard = &(ogfx::KeyEventData&)signal.userData;
+				evt.__original_signal_id = ostd::BuiltinSignals::TextEntered;
 				m_rootWidget.__onTextEntered(evt);
 			}
 			onSignal(signal);

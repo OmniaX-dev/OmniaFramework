@@ -41,6 +41,8 @@ namespace ostd
 		inline static constexpr uint32_t TextEntered 			=	0x0007;
 
 		inline static constexpr uint32_t OnGuiEvent				=	0x2001;
+		inline static constexpr uint32_t FileDragAndDropped		=	0x2002;
+		inline static constexpr uint32_t TextDragAndDropped		=	0x2003;
 
 		inline static constexpr uint32_t BeforeSDLShutdown		=	0x3001;
 

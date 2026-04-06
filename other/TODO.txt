@@ -8,7 +8,6 @@ Add theme caching
 Implement mouse scroll callback
 Implement a way to determine on what widget (in the hierarchy chain) and event must stop
 Implement margin for widgets
-Implement conditional statements for stylesheet rules
 
 
 Implement following widgets:

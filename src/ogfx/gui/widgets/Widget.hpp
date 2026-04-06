@@ -21,56 +21,16 @@
 #pragma once
 
 #include <ogfx/gui/Events.hpp>
+#include <ogfx/gui/WidgetManager.hpp>
 #include <ostd/data/BaseObject.hpp>
 #include <ostd/math/Geometry.hpp>
-#include <ostd/data/Color.hpp>
 #include <ostd/io/Stylesheet.hpp>
-#include <ostd/utils/Time.hpp>
 #include <functional>
 
 namespace ogfx
 {
-	class BasicRenderer2D;
-	class WindowCore;
 	namespace gui
 	{
-		class Event;
-		class Widget;
-		class WidgetManager
-		{
-			public:
-				WidgetManager(WindowCore& window, Widget& owner);
-				bool hasWidget(Widget& widget);
-				bool requestFocus(Widget& widget);
-				bool addWidget(Widget& widget);
-				Widget* focusNext(void);
-
-				void draw(ogfx::BasicRenderer2D& gfx);
-				void update(void);
-				void onThemeApplied(const ostd::Stylesheet& theme);
-				void onMousePressed(const Event& event);
-				void onMouseReleased(const Event& event);
-				void onMouseMoved(const Event& event);
-				void onMouseDragged(const Event& event);
-				void onKeyPressed(const Event& event);
-				void onKeyReleased(const Event& event);
-				void onTextEntered(const Event& event);
-				void onWindowClosed(const Event& event);
-				void onWindowResized(const Event& event);
-				void onWindowFocused(const Event& event);
-				void onWindowFocusLost(const Event& event);
-
-				inline int32_t widgetCount(void) const { return m_widgetList.size(); }
-				inline WindowCore& getWindow(void) { return m_window; }
-
-			private:
-				WindowCore& m_window;
-				Widget& m_owner;
-				std::vector<Widget*> m_widgetList;
-				Widget* m_focused { nullptr };
-				bool m_tabNavigationEnabled { true };
-				Widget* m_mousePressedOnWidget { nullptr };
-		};
 		class Widget : public ostd::BaseObject, public ostd::Rectangle
 		{
 			private: struct ThemeOverride
@@ -95,7 +55,7 @@ namespace ogfx
 				void addThemeOverride(const ostd::String& fullKey, ostd::Stylesheet::TypeVariant value, bool propagate = true);
 				void reloadTheme(void);
 				void setThemeQualifier(const ostd::String& qualifier, bool value = true);
-				bool getThemeQualifier(const ostd::String& qualifier);
+				bool getThemeQualifier(const ostd::String& qualifier) const;
 				bool addThemeID(const ostd::String& id);
 				bool removeThemeID(const ostd::String& id);
 				inline const ostd::Stylesheet::QualifierList& getThemeQualifierList(void) const { return m_qualifierList; }
@@ -106,6 +66,7 @@ namespace ogfx
 				inline virtual void onMousePressed(const Event& event) {  }
 				inline virtual void onMouseReleased(const Event& event) {  }
 				inline virtual void onMouseMoved(const Event& event) {  }
+				inline virtual void onDragAndDrop(const Event& event) {  }
 				inline virtual void onMouseEntered(const Event& event) {  }
 				inline virtual void onMouseExited(const Event& event) {  }
 				inline virtual void onMouseDragged(const Event& event) {  }
@@ -123,6 +84,7 @@ namespace ogfx
 				void __update(void);
 				void __onMousePressed(const Event& event);
 				void __onMouseReleased(const Event& event);
+				void __onDragAndDrop(const Event& event);
 				void __onMouseMoved(const Event& event);
 				void __onMouseEntered(const Event& event);
 				void __onMouseExited(const Event& event);
@@ -132,13 +94,14 @@ namespace ogfx
 				void __onTextEntered(const Event& event);
 				void __onWindowClosed(const Event& event);
 				void __onWindowResized(const Event& event);
-				void __onWIndowFocused(const Event& event);
+				void __onWindowFocused(const Event& event);
 				void __onWindowFocusLost(const Event& event);
 				void __applyTheme(const ostd::Stylesheet& theme, bool propagate);
 
 				inline virtual void setMousePressedCallback(EventCallback callback) { callback_onMousePressed = callback; }
 				inline virtual void setMouseReleasedCallback(EventCallback callback) { callback_onMouseReleased = callback; }
 				inline virtual void setMouseMovedCallback(EventCallback callback) { callback_onMouseMoved = callback; }
+				inline virtual void setDragAndDropCallback(EventCallback callback) { callback_onDragAndDrop = callback; }
 				inline virtual void setMouseEnteredCallback(EventCallback callback) { callback_onMouseEntered = callback; }
 				inline virtual void setMouseExitedCallback(EventCallback callback) { callback_onMouseExited = callback; }
 				inline virtual void setMouseDraggedCallback(EventCallback callback) { callback_onMouseDragged = callback; }
@@ -147,7 +110,7 @@ namespace ogfx
 				inline virtual void setTextEnteredCallback(EventCallback callback) { callback_onTextEntered = callback; }
 				inline virtual void setWindowClosedCallback(EventCallback callback) { callback_onWindowClosed = callback; }
 				inline virtual void setWindowResizedCallback(EventCallback callback) { callback_onWindowResized = callback; }
-				inline virtual void setWIndowFocusedCallback(EventCallback callback) { callback_onWindowFocused = callback; }
+				inline virtual void setWindowFocusedCallback(EventCallback callback) { callback_onWindowFocused = callback; }
 				inline virtual void setWindowFocusLostCallback(EventCallback callback) { callback_onWindowFocusLost = callback; }
 
 				inline bool hasChildren(void) const { return m_allowChildren && m_widgets.widgetCount() > 0; }
@@ -168,14 +131,21 @@ namespace ogfx
 				inline bool isFocusEnabled(void) const { return m_allowFocus; }
 				inline void enableFocus(bool enable = true) { m_allowFocus = enable; }
 				inline void disableFocus(void) { enableFocus(false); }
-				inline void disabble(void) { enable(false); }
+				inline void disable(void) { enable(false); }
 				inline void enableStopEvents(bool enable = true) { m_stopEvents = enable; }
+				inline bool isDragAndDropEnabled(void) const { return m_acceptDragAndDrop; }
+				inline void enableDragAndDrop(bool enable = true) { m_acceptDragAndDrop = enable; }
+				inline void disableDragAndDrop(void) { enableDragAndDrop(false); }
 
 				template<typename T>
 				inline T getThemeValue(const ostd::Stylesheet &theme, const ostd::String& key, const T& fallback)
 				{
 					return theme.get<T>(key,  fallback, getThemeIDList(), getThemeQualifierList());
 				}
+
+				inline static void setDragAndDropData(ostd::BaseObject& data) { s_dragAndDropData = &data; }
+				inline static void clearDragAndDropData(void) { s_dragAndDropData = nullptr; }
+				inline static ostd::BaseObject* getDragAndDropData(void) { return s_dragAndDropData; }
 
 			protected:
 				inline void disableChildren(void) { m_allowChildren = false; }
@@ -194,6 +164,7 @@ namespace ogfx
 
 				EventCallback callback_onMousePressed { nullptr };
 				EventCallback callback_onMouseReleased { nullptr };
+				EventCallback callback_onDragAndDrop { nullptr };
 				EventCallback callback_onMouseMoved { nullptr };
 				EventCallback callback_onMouseEntered { nullptr };
 				EventCallback callback_onMouseExited { nullptr };
@@ -219,6 +190,7 @@ namespace ogfx
 				bool m_enabled { true };
 				bool m_stopEvents { true };
 				bool m_clipContents { true };
+				bool m_acceptDragAndDrop { false };
 				MouseEventData::eButton m_pressedButton { MouseEventData::eButton::None };
 
 				std::vector<ostd::String> m_themeIDList;
@@ -236,21 +208,9 @@ namespace ogfx
 
 				ostd::Rectangle m_padding { 0, 0, 0, 0 };
 
+				inline static ostd::BaseObject* s_dragAndDropData { nullptr };
+
 				friend class WidgetManager;
 		};
-		namespace widgets
-		{
-			class RootWidget : public Widget
-			{
-				public:
-					RootWidget(WindowCore& window);
-					void onWindowResized(const Event& event) override;
-					void applyTheme(const ostd::Stylesheet& theme) override;
-					void onDraw(ogfx::BasicRenderer2D& gfx) override;
-
-				private:
-					ostd::Color m_color { ostd::Colors::Transparent };
-			};
-		}
 	}
 }
