@@ -36,14 +36,16 @@ class Window : public ogfx::gui::Window
 				pos = { event.mouse->position_x, event.mouse->position_y };
 			});
 			m_panel1.setMouseDraggedCallback([&](const ogfx::gui::Event& event) -> void {
+				if (m_panel1.getPressedMouseButton() == ogfx::MouseEventData::eButton::None)
+					return;
 				ostd::Vec2 pos2 { event.mouse->position_x, event.mouse->position_y };
 				m_panel1.addPos(pos2 - pos);
 				pos = pos2;
 			});
 
 
-			m_panel2.setSize(300, 140);
-			m_panel2.setPosition(130, 200);
+			m_panel2.setSize(600, 400);
+			m_panel2.setPosition(170, 200);
 			m_panel2.setMousePressedCallback([&](const ogfx::gui::Event& event) -> void {
 				ogfx::gui::Widget::setDragAndDropData(m_label3);
 				setCursor(eCursor::Move);
@@ -58,7 +60,7 @@ class Window : public ogfx::gui::Window
 				std::cout << "PRESS!\n";
 			});
 			addWidget(m_label1);
-			addWidget(m_panel1);
+			m_panel2.addChild(m_panel1);
 			addWidget(m_panel2);
 
 			m_label2.setPosition(0, 0);
@@ -66,7 +68,7 @@ class Window : public ogfx::gui::Window
 			m_label2.connectSignal(ostd::BuiltinSignals::FileDragAndDropped);
 			m_label2.addThemeID("testLabel");
 			m_label2.addThemeID("testLabel2");
-			m_label2.setSignalCallback([&](ostd::Signal& signal){
+			m_label2.setSignalCallback([&](ostd::Signal& signal) -> void {
 				if (signal.ID == ostd::BuiltinSignals::FileDragAndDropped)
 				{
 					auto& data = (ogfx::DropEventData&)signal.userData;
@@ -95,6 +97,8 @@ class Window : public ogfx::gui::Window
 			m_panel1.addChild(m_label3);
 
 			setTheme(m_theme);
+
+			std::cout << m_theme.get<ostd::String>("panel.titlebarType", "", {}, {}) << " \n";
 	 	}
 
 		inline void onSignal(ostd::Signal& signal) override

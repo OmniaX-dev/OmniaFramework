@@ -45,6 +45,10 @@ namespace ogfx
 				m_borderWidth = getThemeValue<int32_t>(theme, "panel.borderWidth", 2);
 				m_showBorder = getThemeValue<bool>(theme, "panel.showBorder", true);
 				m_borderColor = getThemeValue<ostd::Color>(theme, "panel.borderColor", ostd::Colors::Black);
+				m_titleColor = getThemeValue<ostd::Color>(theme, "panel.titleColor", ostd::Colors::Black);
+				m_showTitle = getThemeValue<bool>(theme, "panel.showTitle", false);
+				m_titleHeight = getThemeValue<float>(theme, "panel.titleHeight", 30);
+				m_titleType = getThemeValue<ostd::String>(theme, "panel.titleHeight", "text");
 				setPadding(getThemeValue<ostd::Rectangle>(theme, "panel.padding", { 15, 15, 15, 15 }));
 			}
 
@@ -54,7 +58,6 @@ namespace ogfx
 					gfx.outlinedRoundRect({ getGlobalPosition(), getSize() }, getBackgroundColor(), m_borderColor, m_borderRadius, m_borderWidth);
 				else
 					gfx.fillRoundRect({ getGlobalPosition(), getSize() }, getBackgroundColor(), m_borderRadius);
-				gfx.drawRect(getGlobalContentBounds(), ostd::Colors::Aquamarine, 6);
 			}
 		}
 	}

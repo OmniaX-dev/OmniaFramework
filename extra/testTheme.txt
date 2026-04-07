@@ -21,11 +21,15 @@ window.backgroundColor = Color(rgba(120, 120, 120, 255))
 
 (panel) {
 	backgroundColor = Color(#AAAAAAFF)
-	borderColor = Color(#00FF00FF)
+	borderColor = Color(#000000FF)
 	borderRadius = 8
 	borderWidth = 4
 	showBorder = true
 	padding = Rect(15, 15, 15, 15)
+	showTitle = true
+	titleColor =  Color(#000000FF)
+	titlebarType =  "full"
+	titleHeight = 30
 }
 
 (@testLabel label) {

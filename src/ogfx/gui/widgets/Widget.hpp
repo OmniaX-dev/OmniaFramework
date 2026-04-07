@@ -43,11 +43,11 @@ namespace ogfx
 			public:
 				Widget(const ostd::Rectangle& bounds, WindowCore& window);
 				bool addChild(Widget& child);
-				ostd::Vec2 getGlobalPosition(void) const;
-				ostd::Vec2 getGlobalContentPosition(void) const;
-				ostd::Rectangle getGlobalBounds(void) const;
-				ostd::Rectangle getContentBounds(void) const;
-				ostd::Rectangle getGlobalContentBounds(void) const;
+				virtual ostd::Vec2 getGlobalPosition(void) const;
+				virtual ostd::Vec2 getGlobalContentPosition(void) const;
+				virtual ostd::Rectangle getGlobalBounds(void) const;
+				virtual ostd::Rectangle getContentBounds(void) const;
+				virtual ostd::Rectangle getGlobalContentBounds(void) const;
 				using ostd::Rectangle::contains;
 				bool contains(ostd::Vec2 p, bool includeBounds = false) const override;
 				void enable(bool enable = true);
