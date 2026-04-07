@@ -35,7 +35,7 @@ namespace ostd
 			Stylesheet(void);
 			Stylesheet& clear(void);
 			Stylesheet& loadFromFile(const ostd::String& filePath, bool clearCurrentRules = true);
-			Stylesheet& loadFromString(const ostd::String& content, const ostd::String& filePath = "memory://", bool clearCurrentRules = true);
+			Stylesheet& loadFromString(const ostd::String& content, const ostd::String& filePath = "memory://", bool clearCurrentRules = true, std::unordered_map<ostd::String, std::pair<ostd::String, bool>> variables = {});
 			void set(const std::string& key, TypeVariant value, const ostd::String& themeID);
 			void removeRule(const ostd::String& fullKey);
 			void setFull(const ostd::String& fullKey, TypeVariant value);

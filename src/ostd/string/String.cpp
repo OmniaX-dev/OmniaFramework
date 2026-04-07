@@ -584,9 +584,9 @@ namespace ostd
 			}
 			else
 			{
-				if (allow_white_space_only_tokens && __token != "")
+				if (allow_white_space_only_tokens && __token == "")
 					tokens.m_tokens.push_back(__token.cpp_str());
-				else if (!allow_white_space_only_tokens && __token.new_trim() != "")
+				else if (__token.new_trim() != "")
 					tokens.m_tokens.push_back(__token.cpp_str());
 			}
 			sindex = eindex + delimiter.len();

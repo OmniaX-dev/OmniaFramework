@@ -41,54 +41,66 @@ namespace ostd
 		return loadFromString(outContent, filePath, clearCurrentRules);
 	}
 
-	Stylesheet& Stylesheet::loadFromString(const ostd::String& content, const ostd::String& filePath, bool clearCurrentRules)
+	Stylesheet& Stylesheet::loadFromString(const ostd::String& content, const ostd::String& filePath, bool clearCurrentRules, std::unordered_map<ostd::String, std::pair<ostd::String, bool>> variables)
 	{
 		if (clearCurrentRules)
 			m_values.clear();
 		std::vector<ostd::String> lines = content.tokenize("\n", false, true).getRawData();
+		std::vector<ostd::String> originalLines = lines;
 		uint32_t lineNumber = 0;
-		ostd::String lineCopy = "";
-		std::unordered_map<ostd::String, ostd::String> variables;
 		auto l_warn = [&](const ostd::String& msg) -> void {
-			OX_WARN("%s in theme line. File: <%s:%d>:\n\t%s", msg.c_str(), filePath.c_str(), lineNumber, lineCopy.c_str());
+			OX_WARN("%s in theme line. File: <%s:%d>", msg.c_str(), filePath.c_str(), lineNumber, originalLines[lineNumber - 1].c_str());
 		};
 		auto l_parseLine = [&](ostd::String& line) -> void {
 			for (const auto&[var, val] : variables)
-				line.replaceAll(var, val);
+				line.replaceAll(var, val.first);
 			if (!parseThemeFileLine(line))
 				l_warn("Error");
 		};
+		uint8_t lineNumberMaxWidth = ostd::String("").add(lines.size()).len();
 		ostd::String groupSelector = "";
-		bool groupLines = false;
+		bool groupLines = true;
 		std::vector<ostd::String> group;
+		bool debug_print = true;
 		for (auto& line : lines)
 		{
 			lineNumber++;
-			lineCopy = line;
 			line.trim();
 			if (line.startsWith("%"))
-				continue;
+				goto custom_continue;
 			if (line.contains("%"))
 				line.substr(0, line.indexOf("%")).trim();
 			if (line == "")
-				continue;
-			if (line.startsWith("$"))
+				goto custom_continue;
+			if (line.startsWith("const ") || line.startsWith("$"))
 			{
+				bool is_const = false;
+				if (line.startsWith("const "))
+				{
+					line.substr(6).trim();
+					is_const = true;
+				}
 				line.substr(1);
 				if (line.count("=") != 1 || line.endsWith("="))
 				{
 					l_warn("Invalid variable");
-					continue;
+					goto custom_continue;
 				}
 				ostd::String varName = line.new_substr(0, line.indexOf("=")).trim();
 				ostd::String varValue = line.new_substr(line.indexOf("=") + 1).trim();
 				if (!varName.regexMatches(m_validNameRegex))
 				{
 					l_warn("Invalid variable name");
-					continue;
+					goto custom_continue;
 				}
-				variables["$" + varName] = varValue;
-				continue;
+				auto var = variables.find("$" + varName);
+				if (var != variables.end() && var->second.second)
+				{
+					l_warn("Trying to re-assign a const variable");
+					goto custom_continue;
+				}
+				variables["$" + varName] = { varValue, is_const };
+				goto custom_continue;
 			}
 			if (groupSelector != "")
 			{
@@ -98,11 +110,16 @@ namespace ostd
 					{
 						groupLines = false;
 						auto newLines = parseGroup(groupSelector, group);
-						for (auto& l : newLines)
+						lineNumber -= newLines.size();
+						for (int32_t i = 0; i < newLines.size(); i++)
+						{
+							auto& l = newLines[i];
 							l_parseLine(l);
+							lineNumber++;
+						}
 						groupSelector = "";
 						group.clear();
-						continue;
+						goto custom_continue;
 					}
 					group.push_back(line);
 				}
@@ -111,30 +128,39 @@ namespace ostd
 					if (line == "{")
 						groupLines = true;
 				}
-				continue;
+				goto custom_continue;
 			}
 			if (line.startsWith("("))
 			{
 				if (line.count(")") != 1 || line.indexOf(")") < 3)
 				{
 					l_warn("Invalid group selector");
-					continue;
+					goto custom_continue;
 				}
 				ostd::String rawSelector = line.new_substr(1, line.indexOf(")")).trim();
 				groupSelector = parseGroupSelector(rawSelector);
+				if (groupSelector == "")
+				{
+					l_warn("Invalid group selector");
+					goto custom_continue;
+				}
 				if (line.contains("{"))
 				{
 					line.substr(line.indexOf("{")).trim();
 					if (line != "{")
 					{
 						l_warn("Invalid group selector");
-						continue;
+						goto custom_continue;
 					}
 					groupLines = true;
 				}
-				continue;
+				goto custom_continue;
 			}
 			l_parseLine(line);
+			continue;
+custom_continue:
+			if (debug_print)
+				std::cout << ostd::String("").add(lineNumber).addLeftPadding(lineNumberMaxWidth, ' ') << "|  " << originalLines[lineNumber - 1] << "\n";
 		}
 		return *this;
 	}

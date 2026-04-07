@@ -72,6 +72,11 @@ class Window : public ogfx::gui::Window
 				if (signal.ID == ostd::BuiltinSignals::FileDragAndDropped)
 				{
 					auto& data = (ogfx::DropEventData&)signal.userData;
+					if (ostd::FileSystem::fileExists(data.textOrFilePath))
+					{
+						m_theme.loadFromFile(data.textOrFilePath);
+						m_rootWidget.reloadTheme();
+					}
 					std::cout << data.textOrFilePath << "\n";
 				}
 			});
