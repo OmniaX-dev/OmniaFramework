@@ -143,7 +143,7 @@ namespace ogfx
 					return theme.get<T>(key,  fallback, getThemeIDList(), getThemeQualifierList());
 				}
 
-				inline static void setDragAndDropData(ostd::BaseObject& data) { s_dragAndDropData = &data; }
+				inline static void setDragAndDropData(ostd::BaseObject& data) { s_dragAndDropData = &data; s_hasDragAndDropData = true; }
 				inline static void clearDragAndDropData(void) { s_dragAndDropData = nullptr; }
 				inline static ostd::BaseObject* getDragAndDropData(void) { return s_dragAndDropData; }
 
@@ -208,7 +208,9 @@ namespace ogfx
 
 				ostd::Rectangle m_padding { 0, 0, 0, 0 };
 
-				inline static ostd::BaseObject* s_dragAndDropData { nullptr };
+				public:
+				static ostd::BaseObject* s_dragAndDropData;
+				static bool s_hasDragAndDropData;
 
 				friend class WidgetManager;
 		};

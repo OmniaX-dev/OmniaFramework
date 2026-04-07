@@ -18,6 +18,7 @@
     along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include "gui/Events.hpp"
 #include <ogfx/utils/Keycodes.hpp>
 #include <ogfx/ogfx.hpp>
 
@@ -62,14 +63,21 @@ class Window : public ogfx::gui::Window
 
 			m_label2.setPosition(0, 0);
 			m_label2.setText("Ciccia Bella!");
+			m_label2.connectSignal(ostd::BuiltinSignals::FileDragAndDropped);
 			m_label2.addThemeID("testLabel");
 			m_label2.addThemeID("testLabel2");
+			m_label2.setSignalCallback([&](ostd::Signal& signal){
+				if (signal.ID == ostd::BuiltinSignals::FileDragAndDropped)
+				{
+					auto& data = (ogfx::DropEventData&)signal.userData;
+					std::cout << data.textOrFilePath << "\n";
+				}
+			});
 			m_label2.enableDragAndDrop();
 			m_label2.setDragAndDropCallback([&](const ogfx::gui::Event& event) -> void {
-				std::cout << "DROP\n";
-				if (auto data = ogfx::gui::Widget::getDragAndDropData())
+				if (event.drop.userObject->getTypeName() == "ogfx::gui::widgets::Label")
 				{
-					std::cout << static_cast<ogfx::gui::widgets::Label&>(*data).getText() << "!\n";
+					std::cout << static_cast<ogfx::gui::widgets::Label&>(*event.drop.userObject).getText() << "!\n";
 				}
 			});
 			m_panel1.addChild(m_label2);

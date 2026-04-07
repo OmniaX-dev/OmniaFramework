@@ -49,6 +49,10 @@ namespace ostd
 	void BaseObject::__handle_signal(Signal& signal)
 	{
 		if (m_signalsEnabled)
+		{
 			handleSignal(signal);
+			if (callback_signal)
+				callback_signal(signal);
+		}
 	}
 }

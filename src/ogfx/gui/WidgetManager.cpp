@@ -306,12 +306,13 @@ namespace ogfx
 			if (!widget->isMouseInside()) return;
 			if (Widget::s_dragAndDropData != nullptr)
 			{
-				widget->__onDragAndDrop(event);
+				auto& const_cast_event = const_cast<Event&>(event);
+				const_cast_event.drop.textOrFilePath = "";
+				const_cast_event.drop.dropType = DropEventData::eDropType::InApp;
+				const_cast_event.drop.userObject = Widget::s_dragAndDropData;
+				widget->__onDragAndDrop(const_cast_event);
 				Widget::clearDragAndDropData();
 			}
-
-			auto& const_cast_event = const_cast<Event&>(event);
-			// if (event.__original_signal_id == ostd::BuiltinSignals::TextDragAndDropped)
 		}
 	}
 }

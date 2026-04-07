@@ -137,6 +137,8 @@ namespace ogfx
 		connectSignal(ostd::BuiltinSignals::WindowResized);
 		connectSignal(ostd::BuiltinSignals::WindowFocused);
 		connectSignal(ostd::BuiltinSignals::WindowLostFocus);
+		connectSignal(ostd::BuiltinSignals::FileDragAndDropped);
+		connectSignal(ostd::BuiltinSignals::TextDragAndDropped);
 
 		__on_window_init(width, height, title);
 		setSize(m_windowWidth, m_windowHeight);
@@ -528,21 +530,21 @@ namespace ogfx
 			}
 			else if (signal.ID == ostd::BuiltinSignals::FileDragAndDropped)
 			{
-				auto& ud = (ogfx::DropEventData&)signal.userData;
-				evt.drop.dropType = ud.dropType;
-				evt.drop.userObject = ud.userObject;
-				evt.drop.textOrFilePath = ud.textOrFilePath;
-				evt.__original_signal_id = ostd::BuiltinSignals::FileDragAndDropped;
-				m_rootWidget.__onDragAndDrop(evt);
+				// auto& ud = (ogfx::DropEventData&)signal.userData;
+				// evt.drop.dropType = ud.dropType;
+				// evt.drop.userObject = ud.userObject;
+				// evt.drop.textOrFilePath = ud.textOrFilePath;
+				// evt.__original_signal_id = ostd::BuiltinSignals::FileDragAndDropped;
+				// m_rootWidget.__onMouseReleased(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::TextDragAndDropped)
 			{
-				auto& ud = (ogfx::DropEventData&)signal.userData;
-				evt.drop.dropType = ud.dropType;
-				evt.drop.userObject = ud.userObject;
-				evt.drop.textOrFilePath = ud.textOrFilePath;
-				evt.__original_signal_id = ostd::BuiltinSignals::TextDragAndDropped;
-				m_rootWidget.__onDragAndDrop(evt);
+				// auto& ud = (ogfx::DropEventData&)signal.userData;
+				// evt.drop.dropType = ud.dropType;
+				// evt.drop.userObject = ud.userObject;
+				// evt.drop.textOrFilePath = ud.textOrFilePath;
+				// evt.__original_signal_id = ostd::BuiltinSignals::TextDragAndDropped;
+				// m_rootWidget.__onMouseReleased(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::WindowResized)
 			{

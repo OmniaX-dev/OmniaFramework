@@ -28,6 +28,10 @@ namespace ogfx
 {
 	namespace gui
 	{
+
+		ostd::BaseObject* Widget::s_dragAndDropData { nullptr };
+		bool Widget::s_hasDragAndDropData { false };
+
 		Widget::Widget(const ostd::Rectangle& bounds, WindowCore& window) : Rectangle(bounds), m_widgets(window, *this)
 		{
 			m_window = &window;
@@ -128,6 +132,7 @@ namespace ogfx
 		    {
 		        if (name == qualifier)
 		        {
+					if (state == value) return;
 		            state = value;
 					reloadTheme();
 		            return;
@@ -207,8 +212,8 @@ namespace ogfx
 
 		void Widget::__onDragAndDrop(const Event& event)
 		{
-			// if (hasChildren())
-			// 	m_widgets.onMouseReleased(event);
+			if (hasChildren())
+				m_widgets.onMouseReleased(event);
 			if (!event.isHandled())
 			{
 				if (callback_onDragAndDrop)

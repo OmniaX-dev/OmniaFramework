@@ -22,6 +22,7 @@
 
 #include <cstdint>
 #include <ostd/string/String.hpp>
+#include <functional>
 
 namespace ostd
 {
@@ -29,10 +30,12 @@ namespace ostd
 	struct Signal;
 	class BaseObject : public __i_stringeable
 	{
+		public: using SignalCallback = std::function<void(Signal&)>;
 		public:
 			BaseObject(const BaseObject& copy);
 			inline virtual ~BaseObject(void) = default;
 			virtual BaseObject& operator=(const BaseObject& copy);
+			inline void setSignalCallback(SignalCallback callback) { callback_signal = callback; }
 
 			virtual inline uint64_t getID(void) const { return m_uid; }
 			virtual inline void setID(uint64_t id) { m_uid = id; }
@@ -74,6 +77,7 @@ namespace ostd
 			bool m_valid;
 			String m_typeName;
 			bool m_signalsEnabled { true };
+			SignalCallback callback_signal { nullptr };
 
 			inline static uint64_t s_next_oid { 1024 };
 			static BaseObject s_invalid_obj;
