@@ -47,6 +47,7 @@ namespace ostd
 			m_values.clear();
 		std::vector<ostd::String> lines = content.tokenize("\n", false, true).getRawData();
 		std::vector<ostd::String> originalLines = lines;
+		auto richLines = getRichStringLines(lines);
 		uint32_t lineNumber = 0;
 		auto l_warn = [&](const ostd::String& msg) -> void {
 			OX_WARN("%s in theme line. File: <%s:%d>", msg.c_str(), filePath.c_str(), lineNumber, originalLines[lineNumber - 1].c_str());
@@ -160,7 +161,7 @@ namespace ostd
 			continue;
 custom_continue:
 			if (debug_print)
-				std::cout << ostd::String("").add(lineNumber).addLeftPadding(lineNumberMaxWidth, ' ') << "|  " << originalLines[lineNumber - 1] << "\n";
+				std::cout << ostd::String("").add(lineNumber).addLeftPadding(lineNumberMaxWidth, ' ') << "|  " << richLines[lineNumber - 1] << "\n";
 		}
 		return *this;
 	}
@@ -356,5 +357,21 @@ custom_continue:
 		else if (auto p = std::get_if<ostd::Vec2>(&v))
 			return *p;
 		return "";
+	}
+
+	std::vector<ostd::RegexRichString> Stylesheet::getRichStringLines(const std::vector<ostd::String>& lines)
+	{
+		std::vector<ostd::RegexRichString> richLines;
+		for (auto line : lines)
+		{
+			ostd::RegexRichString rgxrstr(line);
+			rgxrstr.fg("\\{|\\}|\\+|\\*|\\-|\\/|\\(|\\)|\\[|\\]", "Red"); //Operators
+			rgxrstr.fg("0x[0-9A-Fa-f]+|0b[0-1]+|(?<!\\w)[0-9]+(?!\\w)", "Blue"); //Number Constants
+			rgxrstr.fg("(?<!\\w)(r[1-9]|r10|fl|pp|rv|fp|sp|ip|acc)(?!\\w)", "BrightGreen", true); //Registers
+			rgxrstr.fg("\\%low", "Magenta");
+			rgxrstr.fg("\\$\\w+", "Cyan"); //Labels
+			richLines.push_back(rgxrstr);
+		}
+		return richLines;
 	}
 }

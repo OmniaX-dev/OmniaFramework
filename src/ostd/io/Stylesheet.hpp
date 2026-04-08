@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "string/TextStyleParser.hpp"
 #include <ostd/data/Color.hpp>
 #include <ostd/math/Geometry.hpp>
 #include <variant>
@@ -55,6 +56,7 @@ namespace ostd
 
 			void debugPrint(void);
 			ostd::String typeVariantToString(const TypeVariant& v);
+			std::vector<ostd::RegexRichString> getRichStringLines(const std::vector<ostd::String>& lines);
 
 		private:
 			bool parseThemeFileLine(const ostd::String& line);

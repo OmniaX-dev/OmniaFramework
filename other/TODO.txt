@@ -6,10 +6,10 @@
 ***Add scissoring to only draw inside the bounds of containers
 ***Implement Drag And Drop
 ***Implement a way to determine on what widget (in the hierarchy chain) and event must stop
+***Implement const in stylesheet
 Add theme caching
 Implement mouse scroll callback
 Implement margin for widgets
-Implement const in stylesheet
 Implement color constants in stylesheet
 
 
