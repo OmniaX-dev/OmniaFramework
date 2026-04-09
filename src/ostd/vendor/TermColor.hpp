@@ -6,14 +6,14 @@
 //! to the terminal. Written just for fun with a help of the Force.
 //!
 //! :copyright: (c) 2013 by Ihor Kalnytskyi
-//! :license: BSD, see termcolor-LICENSEfile for details
+//! :license: BSD, see LICENSE for details
 //!
 
 #ifndef TERMCOLOR_HPP_
 #define TERMCOLOR_HPP_
 
+#include <cstdint>
 #include <iostream>
-#include <cstdio>
 
 // Detect target's platform and set some macros in order to wrap platform
 // specific code this library depends on.
@@ -53,30 +53,34 @@ namespace termcolor
     {
         inline int colorize_index();
         inline FILE* get_standard_stream(const std::ostream& stream);
-        inline bool is_colorized(std::ostream& stream);
-        inline bool is_atty(const std::ostream& stream);
+        inline FILE* get_standard_stream(const std::wostream& stream);
+        template <typename CharT>
+        bool is_colorized(std::basic_ostream<CharT>& stream);
+        template <typename CharT>
+        bool is_atty(const std::basic_ostream<CharT>& stream);
 
     #if defined(TERMCOLOR_TARGET_WINDOWS)
-        inline void win_change_attributes(std::ostream& stream, int foreground, int background=-1);
+        template <typename CharT>
+        void win_change_attributes(std::basic_ostream<CharT>& stream, int foreground, int background = -1);
     #endif
     }
 
-    inline
-    std::ostream& colorize(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& colorize(std::basic_ostream<CharT>& stream)
     {
         stream.iword(_internal::colorize_index()) = 1L;
         return stream;
     }
 
-    inline
-    std::ostream& nocolorize(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& nocolorize(std::basic_ostream<CharT>& stream)
     {
         stream.iword(_internal::colorize_index()) = 0L;
         return stream;
     }
 
-    inline
-    std::ostream& reset(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& reset(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -89,8 +93,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& bold(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& bold(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -102,8 +106,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& dark(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& dark(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -115,8 +119,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& italic(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& italic(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -128,8 +132,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& underline(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& underline(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -142,8 +146,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& blink(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& blink(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -155,8 +159,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& reverse(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& reverse(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -168,8 +172,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& concealed(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& concealed(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -181,8 +185,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& crossed(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& crossed(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -193,69 +197,61 @@ namespace termcolor
         }
         return stream;
     }
-
-    template <uint8_t code> inline
-    std::ostream& color(std::ostream& stream)
+    
+    template <uint8_t code, typename CharT>
+    std::basic_ostream<CharT>& color(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            char command[12];
-            std::snprintf(command, sizeof(command), "\033[38;5;%dm", code);
-            stream << command;
+            stream << "\033[38;5;" << +code << "m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
         #endif
         }
         return stream;
     }
 
-    template <uint8_t code> inline
-    std::ostream& on_color(std::ostream& stream)
+    template <uint8_t code, typename CharT>
+    std::basic_ostream<CharT>& on_color(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            char command[12];
-            std::snprintf(command, sizeof(command), "\033[48;5;%dm", code);
-            stream << command;
+            stream << "\033[48;5;" << +code << "m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
         #endif
         }
         return stream;
     }
 
-    template <uint8_t r, uint8_t g, uint8_t b> inline
-    std::ostream& color(std::ostream& stream)
+    template <uint8_t r, uint8_t g, uint8_t b, typename CharT>
+    std::basic_ostream<CharT>& color(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            char command[20];
-            std::snprintf(command, sizeof(command), "\033[38;2;%d;%d;%dm", r, g, b);
-            stream << command;
+            stream << "\033[38;2;" << +r << ";" << +g << ";" << +b << "m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
         #endif
         }
         return stream;
     }
 
-    template <uint8_t r, uint8_t g, uint8_t b> inline
-    std::ostream& on_color(std::ostream& stream)
+    template <uint8_t r, uint8_t g, uint8_t b, typename CharT>
+    std::basic_ostream<CharT>& on_color(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
         #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
-            char command[20];
-            std::snprintf(command, sizeof(command), "\033[48;2;%d;%d;%dm", r, g, b);
-            stream << command;
+            stream << "\033[48;2;" << +r << ";" << +g << ";" << +b << "m";
         #elif defined(TERMCOLOR_USE_WINDOWS_API)
         #endif
         }
         return stream;
     }
 
-    inline
-    std::ostream& grey(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& grey(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -270,8 +266,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& red(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& red(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -286,8 +282,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& green(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& green(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -302,8 +298,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& yellow(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& yellow(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -318,8 +314,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& blue(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& blue(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -334,8 +330,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& magenta(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& magenta(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -350,8 +346,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& cyan(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& cyan(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -366,8 +362,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& white(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& white(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -383,8 +379,8 @@ namespace termcolor
     }
 
 
-    inline
-    std::ostream& bright_grey(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& bright_grey(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -399,8 +395,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& bright_red(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& bright_red(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -415,8 +411,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& bright_green(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& bright_green(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -431,8 +427,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& bright_yellow(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& bright_yellow(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -447,8 +443,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& bright_blue(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& bright_blue(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -463,8 +459,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& bright_magenta(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& bright_magenta(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -479,8 +475,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& bright_cyan(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& bright_cyan(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -495,8 +491,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& bright_white(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& bright_white(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -512,8 +508,8 @@ namespace termcolor
     }
 
 
-    inline
-    std::ostream& on_grey(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& on_grey(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -528,8 +524,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& on_red(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& on_red(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -544,8 +540,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& on_green(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& on_green(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -560,8 +556,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& on_yellow(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& on_yellow(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -576,8 +572,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& on_blue(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& on_blue(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -592,8 +588,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& on_magenta(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& on_magenta(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -608,8 +604,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& on_cyan(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& on_cyan(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -624,8 +620,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& on_white(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& on_white(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -642,8 +638,8 @@ namespace termcolor
     }
 
 
-    inline
-    std::ostream& on_bright_grey(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& on_bright_grey(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -658,8 +654,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& on_bright_red(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& on_bright_red(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -674,8 +670,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& on_bright_green(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& on_bright_green(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -690,8 +686,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& on_bright_yellow(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& on_bright_yellow(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -706,8 +702,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& on_bright_blue(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& on_bright_blue(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -722,8 +718,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& on_bright_magenta(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& on_bright_magenta(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -738,8 +734,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& on_bright_cyan(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& on_bright_cyan(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -754,8 +750,8 @@ namespace termcolor
         return stream;
     }
 
-    inline
-    std::ostream& on_bright_white(std::ostream& stream)
+    template <typename CharT>
+    std::basic_ostream<CharT>& on_bright_white(std::basic_ostream<CharT>& stream)
     {
         if (_internal::is_colorized(stream))
         {
@@ -798,7 +794,21 @@ namespace termcolor
         {
             if (&stream == &std::cout)
                 return stdout;
-            else if ((&stream == &std::cerr) || (&stream == &std::clog))
+            else if (&stream == &std::cerr || &stream == &std::clog)
+                return stderr;
+
+            return nullptr;
+        }
+
+        //! Since C++ hasn't a true way to extract stream handler
+        //! from the a given `std::wostream` object, I have to write
+        //! this kind of hack.
+        inline
+        FILE* get_standard_stream(const std::wostream& stream)
+        {
+            if (&stream == &std::wcout)
+                return stdout;
+            else if (&stream == &std::wcerr || &stream == &std::wclog)
                 return stderr;
 
             return nullptr;
@@ -807,16 +817,16 @@ namespace termcolor
         // Say whether a given stream should be colorized or not. It's always
         // true for ATTY streams and may be true for streams marked with
         // colorize flag.
-        inline
-        bool is_colorized(std::ostream& stream)
+        template <typename CharT>
+        bool is_colorized(std::basic_ostream<CharT>& stream)
         {
             return is_atty(stream) || static_cast<bool>(stream.iword(colorize_index()));
         }
 
         //! Test whether a given `std::ostream` object refers to
         //! a terminal.
-        inline
-        bool is_atty(const std::ostream& stream)
+        template <typename CharT>
+        bool is_atty(const std::basic_ostream<CharT>& stream)
         {
             FILE* std_stream = get_standard_stream(stream);
 
@@ -837,9 +847,31 @@ namespace termcolor
         }
 
     #if defined(TERMCOLOR_TARGET_WINDOWS)
+    
+        //! same hack as used in get_standard_stream function, but for Windows with `std::ostream`
+        inline HANDLE get_terminal_handle(std::ostream& stream)
+        {
+            if (&stream == &std::cout)
+                return GetStdHandle(STD_OUTPUT_HANDLE);
+            else if (&stream == &std::cerr || &stream == &std::clog)
+                return GetStdHandle(STD_ERROR_HANDLE);
+            return nullptr;
+        }
+        
+        //! same hack as used in get_standard_stream function, but for Windows with `std::wostream`
+        inline HANDLE get_terminal_handle(std::wostream& stream)
+        {
+            if (&stream == &std::wcout)
+                return GetStdHandle(STD_OUTPUT_HANDLE);
+            else if (&stream == &std::wcerr || &stream == &std::wclog)
+                return GetStdHandle(STD_ERROR_HANDLE);
+            return nullptr;
+        }
+        
         //! Change Windows Terminal colors attribute. If some
         //! parameter is `-1` then attribute won't changed.
-        inline void win_change_attributes(std::ostream& stream, int foreground, int background)
+        template <typename CharT>
+        void win_change_attributes(std::basic_ostream<CharT>& stream, int foreground, int background)
         {
             // yeah, i know.. it's ugly, it's windows.
             static WORD defaultAttributes = 0;
@@ -853,10 +885,7 @@ namespace termcolor
 
             // get terminal handle
             HANDLE hTerminal = INVALID_HANDLE_VALUE;
-            if (&stream == &std::cout)
-                hTerminal = GetStdHandle(STD_OUTPUT_HANDLE);
-            else if (&stream == &std::cerr)
-                hTerminal = GetStdHandle(STD_ERROR_HANDLE);
+            hTerminal = get_terminal_handle(stream);
 
             // save default terminal attributes if it unsaved
             if (!defaultAttributes)

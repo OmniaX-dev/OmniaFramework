@@ -185,8 +185,10 @@ namespace ostd
 	class ConsoleOutputHandler : public OutputHandlerBase
 	{
 		public:
+			OutputHandlerBase& bg(const Color& color) override;
 			OutputHandlerBase& bg(const ConsoleColors::tConsoleColor& color) override;
 			OutputHandlerBase& bg(const String& color) override;
+			OutputHandlerBase& fg(const Color& color) override;
 			OutputHandlerBase& fg(const ConsoleColors::tConsoleColor& color) override;
 			OutputHandlerBase& fg(const String& color) override;
 

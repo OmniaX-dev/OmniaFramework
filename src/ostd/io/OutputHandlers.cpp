@@ -53,6 +53,12 @@ namespace ostd
 
 
 
+	OutputHandlerBase& ConsoleOutputHandler::bg(const Color& color)
+	{
+		std::cout << "\033[48;2;" << (int)color.r << ";" << (int)color.g << ";" << (int)color.b << "m";
+		return *this;
+	}
+
 	OutputHandlerBase& ConsoleOutputHandler::bg(const ConsoleColors::tConsoleColor& color)
 	{
 		std::cout << color.asBackground();
@@ -62,6 +68,12 @@ namespace ostd
 	OutputHandlerBase& ConsoleOutputHandler::bg(const String& color)
 	{
 		std::cout << ConsoleColors::getFromName(color, true);
+		return *this;
+	}
+
+	OutputHandlerBase& ConsoleOutputHandler::fg(const Color& color)
+	{
+		std::cout << "\033[38;2;" << (int)color.r << ";" << (int)color.g << ";" << (int)color.b << "m";
 		return *this;
 	}
 
