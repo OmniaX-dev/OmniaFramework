@@ -91,7 +91,7 @@ class Window : public ogfx::gui::Window
 
 			m_label1.addThemeOverride("@:pressed.label.textColor", ostd::Colors::Crimson);
 
-			m_theme.loadFromFile("./testTheme.txt");
+			m_theme.loadFromFile("./testTheme.txt", true, getDefaultStylesheetVariableList());
 
 			m_label2.addThemeOverride("@:hover.label.showBackground", true);
 			m_label2.addThemeOverride("@:hover.label.backgroundColor", ostd::Colors::DarkGreen);

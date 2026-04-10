@@ -74,7 +74,8 @@ namespace ogfx
 		if (m_initialized) return;
 		SDLSysten::acquire();
 
-		DefaultTheme.loadFromString(DefaultThemeStyle);
+		__load_default_stylesheet_variables();
+		DefaultTheme.loadFromString(DefaultThemeStyle, "memory://", true, getDefaultStylesheetVariableList());
 
 		m_windowWidth = width;
 		m_windowHeight = height;
@@ -405,6 +406,82 @@ namespace ogfx
 			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::TextEntered, ostd::Signal::Priority::RealTime, ked);
 		}
 		__on_event(event);
+	}
+
+	void WindowCore::__load_default_stylesheet_variables(void)
+	{
+		// Cursors
+		m_defaultStylesheetVariables["cursor_default"] = { ostd::String("").add(static_cast<int32_t>(eCursor::Default)), true };
+		m_defaultStylesheetVariables["cursor_text"] = { ostd::String("").add(static_cast<int32_t>(eCursor::Text)), true };
+		m_defaultStylesheetVariables["cursor_wait"] = { ostd::String("").add(static_cast<int32_t>(eCursor::Wait)), true };
+		m_defaultStylesheetVariables["cursor_crosshair"] = { ostd::String("").add(static_cast<int32_t>(eCursor::Crosshair)), true };
+		m_defaultStylesheetVariables["cursor_progress"] = { ostd::String("").add(static_cast<int32_t>(eCursor::Progress)), true };
+		m_defaultStylesheetVariables["cursor_nwse_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::NWSE_Resize)), true };
+		m_defaultStylesheetVariables["cursor_nesw_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::NESW_Resize)), true };
+		m_defaultStylesheetVariables["cursor_ew_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::EW_Resize)), true };
+		m_defaultStylesheetVariables["cursor_ns_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::NS_Resize)), true };
+		m_defaultStylesheetVariables["cursor_move"] = { ostd::String("").add(static_cast<int32_t>(eCursor::Move)), true };
+		m_defaultStylesheetVariables["cursor_no_allowed"] = { ostd::String("").add(static_cast<int32_t>(eCursor::NotAllowed)), true };
+		m_defaultStylesheetVariables["cursor_pointer"] = { ostd::String("").add(static_cast<int32_t>(eCursor::Pointer)), true };
+		m_defaultStylesheetVariables["cursor_nw_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::NW_Resize)), true };
+		m_defaultStylesheetVariables["cursor_n_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::N_Resize)), true };
+		m_defaultStylesheetVariables["cursor_ne_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::NE_Resize)), true };
+		m_defaultStylesheetVariables["cursor_e_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::E_Resize)), true };
+		m_defaultStylesheetVariables["cursor_se_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::SE_Resize)), true };
+		m_defaultStylesheetVariables["cursor_s_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::S_Resize)), true };
+		m_defaultStylesheetVariables["cursor_sw_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::SW_Resize)), true };
+		m_defaultStylesheetVariables["cursor_w_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::W_Resize)), true };
+
+		// Colors
+		m_defaultStylesheetVariables["color_transparent"]   = { "Color(" + ostd::Colors::Transparent.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_black"]         = { "Color(" + ostd::Colors::Black.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_white"]         = { "Color(" + ostd::Colors::White.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_gray"]          = { "Color(" + ostd::Colors::Gray.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_lightgray"]     = { "Color(" + ostd::Colors::LightGray.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_darkgray"]      = { "Color(" + ostd::Colors::DarkGray.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_red"]           = { "Color(" + ostd::Colors::Red.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_green"]         = { "Color(" + ostd::Colors::Green.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_blue"]          = { "Color(" + ostd::Colors::Blue.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_yellow"]        = { "Color(" + ostd::Colors::Yellow.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_cyan"]          = { "Color(" + ostd::Colors::Cyan.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_magenta"]       = { "Color(" + ostd::Colors::Magenta.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_orange"]        = { "Color(" + ostd::Colors::Orange.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_purple"]        = { "Color(" + ostd::Colors::Purple.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_brown"]         = { "Color(" + ostd::Colors::Brown.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_pink"]          = { "Color(" + ostd::Colors::Pink.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_lime"]          = { "Color(" + ostd::Colors::Lime.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_olive"]         = { "Color(" + ostd::Colors::Olive.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_teal"]          = { "Color(" + ostd::Colors::Teal.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_navy"]          = { "Color(" + ostd::Colors::Navy.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_maroon"]        = { "Color(" + ostd::Colors::Maroon.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_indigo"]        = { "Color(" + ostd::Colors::Indigo.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_gold"]          = { "Color(" + ostd::Colors::Gold.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_silver"]        = { "Color(" + ostd::Colors::Silver.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_beige"]         = { "Color(" + ostd::Colors::Beige.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_coral"]         = { "Color(" + ostd::Colors::Coral.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_salmon"]        = { "Color(" + ostd::Colors::Salmon.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_chocolate"]     = { "Color(" + ostd::Colors::Chocolate.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_khaki"]         = { "Color(" + ostd::Colors::Khaki.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_lavender"]      = { "Color(" + ostd::Colors::Lavender.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_mint"]          = { "Color(" + ostd::Colors::Mint.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_skyblue"]       = { "Color(" + ostd::Colors::SkyBlue.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_royalblue"]     = { "Color(" + ostd::Colors::RoyalBlue.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_deepskyblue"]   = { "Color(" + ostd::Colors::DeepSkyBlue.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_turquoise"]     = { "Color(" + ostd::Colors::Turquoise.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_aquamarine"]    = { "Color(" + ostd::Colors::Aquamarine.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_forestgreen"]   = { "Color(" + ostd::Colors::ForestGreen.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_seagreen"]      = { "Color(" + ostd::Colors::SeaGreen.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_springgreen"]   = { "Color(" + ostd::Colors::SpringGreen.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_firebrick"]     = { "Color(" + ostd::Colors::Firebrick.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_crimson"]       = { "Color(" + ostd::Colors::Crimson.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_tomato"]        = { "Color(" + ostd::Colors::Tomato.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_darkorange"]    = { "Color(" + ostd::Colors::DarkOrange.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_darkred"]       = { "Color(" + ostd::Colors::DarkRed.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_darkblue"]      = { "Color(" + ostd::Colors::DarkBlue.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_darkgreen"]     = { "Color(" + ostd::Colors::DarkGreen.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_darkcyan"]      = { "Color(" + ostd::Colors::DarkCyan.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_darkmagenta"]   = { "Color(" + ostd::Colors::DarkMagenta.hexString(true, "#") + ")", true };
+		m_defaultStylesheetVariables["color_darkyellow"]    = { "Color(" + ostd::Colors::DarkYellow.hexString(true, "#") + ")", true };
 	}
 
 

@@ -77,6 +77,7 @@ namespace ogfx
 
 			inline const ostd::Stylesheet* theme(void) const { return m_guiTheme; }
 			inline void loadDefaultTHeme(void) { setTheme(DefaultTheme); }
+			inline ostd::Stylesheet::VariableList& getDefaultStylesheetVariableList(void) { return m_defaultStylesheetVariables; }
 			inline virtual void setTheme(const ostd::Stylesheet& theme) {  }
 
 			inline bool isInitialized(void) const { return m_initialized; }
@@ -110,6 +111,7 @@ namespace ogfx
 
 		private:
 			void __handle_event(SDL_Event& event);
+			void __load_default_stylesheet_variables(void);
 
 		protected:
 			SDL_Window* m_window { nullptr };
@@ -160,6 +162,8 @@ namespace ogfx
 
 		private:
 			inline static ostd::Stylesheet DefaultTheme;
+			std::unordered_map<ostd::String, std::pair<ostd::String, bool>> m_defaultStylesheetVariables;
+
 	};
 	class GraphicsWindow : public WindowCore
 	{
@@ -202,7 +206,6 @@ namespace ogfx
 				inline Window(void) {  }
 				inline Window(int32_t width, int32_t height, const ostd::String& title) { initialize(width, height, title); }
 				void addWidget(Widget& widget);
-
 				void setTheme(const ostd::Stylesheet& theme) override;
 
 				inline virtual void onInitialize(void) {  }

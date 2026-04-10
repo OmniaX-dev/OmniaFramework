@@ -31,12 +31,13 @@ namespace ostd
 	class Stylesheet
 	{
 		public: using QualifierList = std::vector<std::pair<const ostd::String, bool>>;
+		public: using VariableList = std::unordered_map<ostd::String, std::pair<ostd::String, bool>>;
 		public: using TypeVariant = std::variant<int32_t, float, bool, ostd::String, ostd::Color, ostd::Rectangle, ostd::Vec2>;
 		public:
 			Stylesheet(void);
 			Stylesheet& clear(void);
-			Stylesheet& loadFromFile(const ostd::String& filePath, bool clearCurrentRules = true);
-			Stylesheet& loadFromString(const ostd::String& content, const ostd::String& filePath = "memory://", bool clearCurrentRules = true, std::unordered_map<ostd::String, std::pair<ostd::String, bool>> variables = {});
+			Stylesheet& loadFromFile(const ostd::String& filePath, bool clearCurrentRules = true, VariableList variables = {});
+			Stylesheet& loadFromString(const ostd::String& content, const ostd::String& filePath = "memory://", bool clearCurrentRules = true, VariableList variables = {});
 			void set(const std::string& key, TypeVariant value, const ostd::String& themeID);
 			void removeRule(const ostd::String& fullKey);
 			void setFull(const ostd::String& fullKey, TypeVariant value);
@@ -59,7 +60,7 @@ namespace ostd
 			std::vector<ostd::RegexRichString> getRichStringLines(const std::vector<ostd::String>& lines);
 
 		private:
-			bool parseThemeFileLine(const ostd::String& line);
+			bool parseThemeFileLine(const ostd::String& line, const VariableList& variables, bool exitCondition = false);
 			ostd::String parseGroupSelector(const ostd::String& rawSelector) const;
 			std::vector<ostd::String> parseGroup(const ostd::String& selector, const std::vector<ostd::String>& group);
 

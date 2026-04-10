@@ -34,14 +34,14 @@ namespace ostd
 		return *this;
 	}
 
-	Stylesheet& Stylesheet::loadFromFile(const ostd::String& filePath, bool clearCurrentRules)
+	Stylesheet& Stylesheet::loadFromFile(const ostd::String& filePath, bool clearCurrentRules, VariableList variable)
 	{
 		ostd::String outContent = "";
 		ostd::FileSystem::readTextFileRaw(filePath, outContent);
-		return loadFromString(outContent, filePath, clearCurrentRules);
+		return loadFromString(outContent, filePath, clearCurrentRules, variable);
 	}
 
-	Stylesheet& Stylesheet::loadFromString(const ostd::String& content, const ostd::String& filePath, bool clearCurrentRules, std::unordered_map<ostd::String, std::pair<ostd::String, bool>> variables)
+	Stylesheet& Stylesheet::loadFromString(const ostd::String& content, const ostd::String& filePath, bool clearCurrentRules, VariableList variables)
 	{
 		if (clearCurrentRules)
 			m_values.clear();
@@ -53,11 +53,11 @@ namespace ostd
 			OX_WARN("%s in theme line. File: <%s:%d>", msg.c_str(), filePath.c_str(), lineNumber, originalLines[lineNumber - 1].c_str());
 		};
 		auto l_parseLine = [&](ostd::String& line) -> void {
-			for (const auto&[var, val] : variables)
-				line.replaceAll(var, val.first);
-			if (!parseThemeFileLine(line))
+			if (!parseThemeFileLine(line, variables))
 				l_warn("Error");
 		};
+		for (const auto&[var, val] : variables)
+			std::cout << var << " = " << val.first << "\n";
 		uint8_t lineNumberMaxWidth = ostd::String("").add(lines.size()).len();
 		ostd::String groupSelector = "";
 		bool groupLines = true;
@@ -223,7 +223,7 @@ custom_continue:
 		return it != m_values.end() ? &it->second : nullptr;
 	}
 
-	bool Stylesheet::parseThemeFileLine(const ostd::String& line)
+	bool Stylesheet::parseThemeFileLine(const ostd::String& line, const VariableList& variables, bool exitCondition)
 	{
 		if (!line.contains("="))
 			return false;
@@ -287,7 +287,20 @@ custom_continue:
 			set(key, ostd::Rectangle(vec[0], vec[1], vec[2], vec[3]), themeID);
 		}
 		else
-			return false;
+		{
+			if (exitCondition)
+				return false;
+			ostd::String lineCopy = line;
+			for (const auto&[var, val] : variables)
+			{
+				if (lineCopy.contains(var))
+				{
+					lineCopy.replaceAll(var, val.first);
+					break;
+				}
+			}
+			return parseThemeFileLine(lineCopy, variables, true);
+		}
 		return true;
 	}
 
