@@ -96,6 +96,7 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Containers.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Label.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/RootWidget.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/CheckBox.cpp
 
 	# render
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/BasicRenderer.cpp

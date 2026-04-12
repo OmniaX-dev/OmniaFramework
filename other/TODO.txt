@@ -15,11 +15,11 @@ Add theme caching
 
 Implement following widgets:
 	***Label
+	***Checkbox
 	Button
 		Image/Icon
 	Panel / Container
 		Title Label
-	Checkbox
 	Radio Button
 		Grouping
 	Text Input
@@ -32,3 +32,7 @@ Implement following widgets:
 	TreeView
 	Save/Open File Dialogs (and folder dialogs)
 	Tab Panel
+	Layouts
+		Vertical
+		Horizontal
+		Grid

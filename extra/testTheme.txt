@@ -21,6 +21,34 @@ $accentColor = Color(rgb(255, 0, 0))
 	padding = Rect(15, 15, 15, 15)
 }
 
+(checkbox) {
+	textColor = color_black
+	fontSize = 28
+	showBackground = false
+	showBorder = false
+	borderRadius = 0
+	borderWidth = 2
+
+	checkBorderRadius = 8
+	checkBorderWidth = 2
+	checkBorderColor = color_skyblue
+	checkBoxColor = color_skyblue
+	padding = Rect(15, 15, 15, 15)
+}
+
+(checkbox:hover) {
+	checkBorderColor = color_white
+}
+
+(checkbox:pressed) {
+	checkBoxColor = color_lightgray
+	textColor = color_darkgray
+}
+
+(checkbox:active) {
+	textColor = Color(#000050FF)
+}
+
 (panel) {
 	backgroundColor = Color(#AAAAAAFF)
 	borderColor = Color(#000000FF)

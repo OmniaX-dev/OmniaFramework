@@ -69,6 +69,11 @@ class Window : public ogfx::gui::Window
 			m_panel2.addChild(m_panel1);
 			addWidget(m_panel2);
 
+
+			m_check1.setPosition(30, 30);
+			m_check1.setText("Check this out!");
+			addWidget(m_check1);
+
 			m_label2.setPosition(0, 0);
 			m_label2.setText("Ciccia Bella!");
 			m_label2.connectSignal(ostd::BuiltinSignals::FileDragAndDropped);
@@ -136,6 +141,7 @@ class Window : public ogfx::gui::Window
 		ogfx::gui::widgets::Label m_label3 { *this };
 		ogfx::gui::widgets::Panel m_panel1 { *this };
 		ogfx::gui::widgets::Panel m_panel2 { *this };
+		ogfx::gui::widgets::CheckBox m_check1 { *this };
 		ostd::Stylesheet m_theme;
 		ostd::Vec2 pos { 0, 0 };
 };
