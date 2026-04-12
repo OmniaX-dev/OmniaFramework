@@ -28,7 +28,6 @@
 namespace ogfx
 {
 	class WindowCore;
-	class BasicRenderer2D;
 };
 
 namespace ostd

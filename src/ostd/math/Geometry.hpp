@@ -45,40 +45,6 @@
 
 namespace ostd
 {
-	template<class T>
-	class Point : public __i_stringeable
-	{
-		public:
-			T x;
-			T y;
-
-		public:
-			inline Point(void) : x(0), y(0) {}
-			inline Point(T xx, T yy) : x(xx), y(yy) {}
-
-			inline bool  operator==(const Point<T>& op2 ) 	const	{ return (x == op2.x && y == op2.y); }
-			inline bool  operator!=(const Point<T>& op2 ) 	const	{ return (x != op2.x || y != op2.y); }
-
-			template <class T2> inline Point(Point<T2> copy)
-			{
-				x = (T2)(copy.x);
-				y = (T2)(copy.y);
-			}
-
-			inline String toString(void) const override { return String("{ ").add(x).add(", ").add(y).add(" }"); }
-	};
-
-	typedef Point<float> FPoint;
-	typedef Point<double> DPoint;
-	typedef Point<uint32_t> UIPoint;
-	typedef Point<uint64_t> UI64Point;
-	typedef Point<uint16_t> UI16Point;
-	typedef Point<uint8_t> UI8Point;
-	typedef Point<int32_t> IPoint;
-	typedef Point<int64_t> I64Point;
-	typedef Point<int16_t> I16Point;
-	typedef Point<int8_t> I8Point;
-
 	struct Vec2 : public __i_stringeable
 	{
 		//======================== Data ========================
@@ -146,6 +112,7 @@ namespace ostd
 		//===================== Operators ======================
 		inline bool  operator==(const Vec2& op2 ) 	const	{ return (x == op2.x && y == op2.y); }
 		inline bool  operator!=(const Vec2& op2 ) 	const	{ return (x != op2.x || y != op2.y); }
+		inline Vec2  operator-() 					const	{ return { -x, -y }; }
 		inline Vec2  operator+ (const Vec2& op2 ) 	const	{ return add(op2); }
 		inline Vec2  operator- (const Vec2& op2 ) 	const	{ return sub(op2); }
 		inline Vec2  operator+ (const float& op2) 	const	{ return add(op2, op2); }
@@ -166,6 +133,62 @@ namespace ostd
 		inline float _zp(float n1) const { return (n1 == 0 ? 1 : n1); }
 
 	};
+
+	template<class T>
+	class Point : public __i_stringeable
+	{
+		public:
+			T x;
+			T y;
+
+		public:
+			inline Point(void) : x(0), y(0) {  }
+			inline Point(T xx, T yy) : x(xx), y(yy) {}
+			inline Point(const Vec2& vec)								{ x = vec.x; y = vec.y; }
+			inline Point<T>& set(const Point<T>& v2) 					{ x = v2.x; y = v2.y; return *this; }
+			inline Point<T>& set(float xx, float yy) 					{ x = xx; y = yy; return *this; }
+
+			//===================== Operators ======================
+			inline bool  operator==(const Point<T>& op2 ) 		const	{ return (x == op2.x && y == op2.y); }
+			inline bool  operator!=(const Point<T>& op2 ) 		const	{ return (x != op2.x || y != op2.y); }
+			inline operator Vec2() 								const	{ return { static_cast<float>(x), static_cast<float>(y) }; }
+			inline Point<T>  operator+ (const Point<T>& op2 ) 	const	{ return { x + op2.x, y + op2.y }; }
+			inline Point<T>  operator- (const Point<T>& op2 ) 	const	{ return { x - op2.x, y - op2.y }; }
+			inline Point<T>  operator+ (const T& op2) 			const	{ return { x + op2, y + op2 }; }
+			inline Point<T>  operator- (const T& op2) 			const	{ return { x + op2, y + op2 }; }
+			inline Point<T>  operator* (const T& op2) 			const	{ return { x * op2, y * op2 }; }
+			inline Point<T>  operator/ (const T& op2) 			const	{ return { x / op2, y / op2 }; }
+			inline Point<T>& operator= (const Point<T>& val ) 			{ return set(val); }
+			inline Point<T>& operator= (const T& val) 					{ return set(val, val); }
+			inline Point<T>& operator+=(const Point<T>& op2 ) 			{ x += op2.x; y += op2.y; return *this; }
+			inline Point<T>& operator-=(const Point<T>& op2 ) 			{ x -= op2.x; y -= op2.y; return *this; }
+			inline Point<T>& operator+=(const T& op2) 					{ x += op2; y += op2; return *this;; }
+			inline Point<T>& operator-=(const T& op2) 					{ x -= op2; y -= op2; return *this; }
+			inline Point<T>& operator*=(const T& op2) 					{ return x *= op2; y *= op2; return *this; }
+			inline Point<T>& operator/=(const T& op2) 					{ return x /= op2; y /= op2; return *this; }
+			//======================================================
+
+			template <class T2> inline Point(Point<T2> copy)
+			{
+				x = (T2)(copy.x);
+				y = (T2)(copy.y);
+			}
+
+			inline Vec2 asVec2(void) const { return { static_cast<float>(x), static_cast<float>(y) }; }
+
+			inline String toString(void) const override { return String("{ ").add(x).add(", ").add(y).add(" }"); }
+	};
+
+	typedef Point<float> FPoint;
+	typedef Point<double> DPoint;
+	typedef Point<uint32_t> UIPoint;
+	typedef Point<uint64_t> UI64Point;
+	typedef Point<uint16_t> UI16Point;
+	typedef Point<uint8_t> UI8Point;
+	typedef Point<int32_t> IPoint;
+	typedef Point<int64_t> I64Point;
+	typedef Point<int16_t> I16Point;
+	typedef Point<int8_t> I8Point;
 
 	struct Vec3 : public __i_stringeable
 	{

@@ -39,6 +39,20 @@ namespace ostd
 			FloatCol(void) : r(0.0f), g(0.0f), b(0.0f), a(1.0f) {  }
 			FloatCol(float _r, float _g, float _b, float _a) : r(_r), g(_g), b(_b), a(_a) {  }
 		};
+		public: struct Channel
+		{
+			uint8_t value;
+			Color& parent;
+
+			inline Channel(Color& _parent) : parent(_parent) { value = 0; }
+			inline operator uint8_t() const { return value; }
+			inline Channel& operator=(uint8_t v)
+			{
+			    value = v;
+			    parent.m_dirty = true;
+			    return *this;
+			}
+		};
 
 		public: enum class eColorFormat { RGBA = 0, ARGB };
 
@@ -74,10 +88,14 @@ namespace ostd
 			static void HSVtoRGB(float h, float s, float v, float& r, float& g, float& b);
 
 		public:
-			uint8_t r;
-			uint8_t g;
-			uint8_t b;
-			uint8_t a;
+			Channel r;
+			Channel g;
+			Channel b;
+			Channel a;
+
+		private:
+			mutable bool m_dirty { true };
+    		mutable FloatCol m_cachedFloat { 0, 0, 0, 0 };
 
 		public:
 	};

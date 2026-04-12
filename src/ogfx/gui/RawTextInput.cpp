@@ -169,12 +169,12 @@ namespace ogfx
 							tmpStr2 = "";
 							char c = text[i];
 							tmpStr1 += c;
-							int32_t strWidth1 = parent.m_gfx->getStringSize(tmpStr1, parent.m_fontSize).x;
+							int32_t strWidth1 = parent.m_gfx->getStringDimensions(tmpStr1, parent.m_fontSize).x;
 							if (relativePosition.x > strWidth1)
 								continue;
 							found = true;
 							tmpStr2 = tmpStr1.new_substr(0, tmpStr1.len() - 1);
-							int32_t strWidth2 = (tmpStr2.len() > 0 ? parent.m_gfx->getStringSize(tmpStr2, parent.m_fontSize).x : 0);
+							int32_t strWidth2 = (tmpStr2.len() > 0 ? parent.m_gfx->getStringDimensions(tmpStr2, parent.m_fontSize).x : 0);
 							int32_t d1 = (int32_t)std::abs(relativePosition.x - strWidth2);
 							int32_t d2 = (int32_t)std::abs(strWidth1 - relativePosition.x);
 							if (d1 > d2)
@@ -221,7 +221,7 @@ namespace ogfx
 			if (m_cursorPosition > 0 && m_text != "")
 			{
 				ostd::String s1 = m_text.new_substr(0, m_cursorPosition);
-				strSize = gfx.getStringSize(s1, m_fontSize);
+				strSize = gfx.getStringDimensions(s1, m_fontSize);
 			}
 
 			gfx.outlinedRect(*this, m_theme.backgroundColor, m_theme.borderColor, 2);

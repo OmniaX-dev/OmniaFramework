@@ -11,6 +11,9 @@
 ***Implement margin for widgets
 ***Implement mouse scroll callback
 Add theme caching
+Implement callback for state changes in checkbox
+FIX: WindowOutputHandler text rendering
+find a way to add fixed update to gui::Window
 
 
 Implement following widgets:

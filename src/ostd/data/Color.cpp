@@ -5,47 +5,47 @@
 
 namespace ostd
 {
-	Color::Color(void)
+	Color::Color(void) : r(*this), g(*this), b(*this), a(*this)
 	{
 		set();
 		setTypeName("ox::Color");
 		BaseObject::setValid(true);
 	}
 
-	Color::Color(uint8_t rgb_single_value, uint8_t alpha)
+	Color::Color(uint8_t rgb_single_value, uint8_t alpha) : r(*this), g(*this), b(*this), a(*this)
 	{
 		set(rgb_single_value, alpha);
 		setTypeName("ox::Color");
 		BaseObject::setValid(true);
 	}
 
-	Color::Color(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t alpha)
+	Color::Color(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t alpha) : r(*this), g(*this), b(*this), a(*this)
 	{
 		set(_r, _g, _b, alpha);
 		setTypeName("ox::Color");
 		BaseObject::setValid(true);
 	}
 
-	Color::Color(const String& color_string)
+	Color::Color(const String& color_string) : r(*this), g(*this), b(*this), a(*this)
 	{
 		set(color_string);
 		setTypeName("ox::Color");
 		BaseObject::setValid(true);
 	}
 
-	Color::Color(const FloatCol& normalized_color)
+	Color::Color(const FloatCol& normalized_color) : r(*this), g(*this), b(*this), a(*this)
 	{
 		set(normalized_color);
 		setTypeName("ox::Color");
 		BaseObject::setValid(true);
 	}
 
-	Color::Color(const Color& copy) : BaseObject(copy)
+	Color::Color(const Color& copy) : BaseObject(copy), r(*this), g(*this), b(*this), a(*this)
 	{
-		r = copy.r;
-		g = copy.g;
-		b = copy.b;
-		a = copy.a;
+		r = static_cast<uint8_t>(copy.r);
+		g = static_cast<uint8_t>(copy.g);
+		b = static_cast<uint8_t>(copy.b);
+		a = static_cast<uint8_t>(copy.a);
 	}
 
 	bool Color::operator==(const Color& col2)
@@ -61,10 +61,10 @@ namespace ostd
 	Color& Color::operator=(const Color& copy)
 	{
 		BaseObject::operator=(copy);
-		r = copy.r;
-		g = copy.g;
-		b = copy.b;
-		a = copy.a;
+		r = static_cast<uint8_t>(copy.r);
+		g = static_cast<uint8_t>(copy.g);
+		b = static_cast<uint8_t>(copy.b);
+		a = static_cast<uint8_t>(copy.a);
 		return *this;
 	}
 
@@ -99,7 +99,9 @@ namespace ostd
 	{
 		String se(color_string);
 		se.trim();
-		r = g = b = 0;
+		r = 0;
+		g = 0;
+		b = 0;
 		a = 255;
 		if (se.startsWith("#"))
 		{
@@ -204,7 +206,17 @@ namespace ostd
 
 	Color::FloatCol Color::getNormalizedColor(void) const
 	{
-		return { r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f };
+		if (m_dirty)
+		{
+            m_cachedFloat = {
+                r.value * (1.0f / 255.0f),
+                g.value * (1.0f / 255.0f),
+                b.value * (1.0f / 255.0f),
+                a.value * (1.0f / 255.0f)
+            };
+            m_dirty = false;
+        }
+        return m_cachedFloat;
 	}
 
 	String Color::toString(void) const

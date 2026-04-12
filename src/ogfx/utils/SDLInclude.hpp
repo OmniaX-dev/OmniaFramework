@@ -25,7 +25,6 @@
 #include <ostd/utils/Signals.hpp>
 
 #include <SDL3/SDL.h>
-#include <ogfx/vendor/sdl3_gfx/SDL3_gfxPrimitives.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <SDL3_image/SDL_image.h>
 #include <SDL3/SDL_surface.h>

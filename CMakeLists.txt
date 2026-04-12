@@ -79,12 +79,6 @@ list(APPEND OSTD_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/Time.cpp
 )
 list(APPEND OGFX_SOURCE_FILES
-	# sdl3_gfx
-	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/vendor/sdl3_gfx/SDL3_framerate.c
-	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/vendor/sdl3_gfx/SDL3_gfxPrimitives.c
-	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/vendor/sdl3_gfx/SDL3_imageFilter.c
-	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/vendor/sdl3_gfx/SDL3_rotozoom.c
-
 	# gui
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/RawTextInput.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/Window.cpp
@@ -100,7 +94,6 @@ list(APPEND OGFX_SOURCE_FILES
 
 	# render
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/BasicRenderer.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/FontUtils.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/PixelRenderer.cpp
 
 	# resources

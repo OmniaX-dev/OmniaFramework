@@ -26,20 +26,11 @@ ostd::ConsoleOutputHandler out;
 class Window : public ogfx::GraphicsWindow
 {
 	public:
-		inline Window(void) : m_sigHandler(m_textInput, *this) {  }
+		inline Window(void) {  }
 		inline void onInitialize(void) override
 		{
 			connectSignal(ogfx::gui::RawTextInput::actionEventSignalID);
-
 			m_gfx.init(*this);
-			m_gfx.setFont("res/ttf/Courier Prime.ttf");
-
-			float w = getWindowWidth();
-			float h = 40.0f;
-			m_textInput.create({ 0.0f, (float)(getWindowHeight() - h) }, { w, h }, "MainInputTXT");
-			m_textInput.setEventListener(m_sigHandler);
-			// m_textInput.setCharacterFilter(m_numCharFilter);
-			m_textInput.getTheme().extraPaddingTop = 3;
 	 	}
 
 		inline void handleSignal(ostd::Signal& signal) override
@@ -50,44 +41,30 @@ class Window : public ogfx::GraphicsWindow
 				if (evtData.keyCode == ogfx::KeyCode::Escape)
 					close();
 			}
-			if (signal.ID == ogfx::gui::RawTextInput::actionEventSignalID)
-			{
-				auto& data = (ogfx::gui::RawTextInput::ActionEventData&)signal.userData;
-				if (data.senderName != "MainInputTXT")
-					return;
-				if (data.eventType == ogfx::gui::RawTextInput::eActionEventType::Enter)
-				{
-					out().fg(ostd::ConsoleColors::Green).p(data.sender.getText()).reset().nl();
-					data.sender.setText("");
-				}
-				else if (data.eventType == ogfx::gui::RawTextInput::eActionEventType::Tab)
-				{
-					out().fg(ostd::ConsoleColors::Red).p("TAB").reset().nl();
-					data.sender.appendText("TAB");
-				}
-			}
 		}
 
 		inline void onRender(void) override
 		{
-			m_textInput.render(m_gfx);
+			auto l_rndPoint = [&](void) -> ostd::FPoint {
+				using rnd = ostd::Random;
+				return rnd::getVec2({ 0, (float)getWindowWidth() }, { 0, (float)getWindowHeight() });
+			};
+			for (int32_t i = 0; i < 10000; i++)
+				m_gfx.drawLine({ l_rndPoint(), l_rndPoint() }, ostd::Colors::Crimson, 10);
+			m_gfx.endFrame();
 		}
 
 		inline void onFixedUpdate(double frameTime_s) override
 		{
-			m_textInput.fixedUpdate();
+			std::cout << (int)getFPS() << "\n";
 		}
 
 		inline void onUpdate(void) override
 		{
-			m_textInput.update();
 		}
 
 	private:
-		ogfx::gui::RawTextInput m_textInput;
 		ogfx::BasicRenderer2D m_gfx;
-		ogfx::gui::RawTextInputEventListener m_sigHandler;
-		ogfx::gui::RawTextInputNumberCharacterFilter m_numCharFilter;
 };
 
 int main(int argc, char** argv)

@@ -72,7 +72,7 @@ namespace ogfx
 
 			void Label::__update_size(ogfx::BasicRenderer2D& gfx)
 			{
-				auto size = gfx.getStringSize(getText(), getFontSize());
+				auto size = gfx.getStringDimensions(getText(), getFontSize());
 				size.x += getPadding().left();
 				size.x += getPadding().right();
 				size.y += getPadding().top();

@@ -213,6 +213,7 @@ namespace ogfx
 				inline virtual void onClose(void) {  }
 				inline virtual void onSDLEvent(SDL_Event& event) {  }
 				inline virtual void onRedraw(BasicRenderer2D& gfx) {  }
+				inline virtual void onUpdate(void) {  }
 				inline virtual void onSignal(ostd::Signal& signal) {  }
 
 			protected:

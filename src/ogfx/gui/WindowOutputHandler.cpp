@@ -40,8 +40,9 @@ namespace ogfx
 
 	void GraphicsWindowOutputHandler::setMonospaceFont(const String& filePath)
 	{
-		m_renderer.setFont(filePath);
-		m_renderer.setFontSize(m_fontSize);
+		//TODO: Fix
+		// m_renderer.setFont(filePath);
+		// m_renderer.setFontSize(m_fontSize);
 		__update_char_size();
 	}
 
@@ -54,8 +55,8 @@ namespace ogfx
 	}
 
 	bool GraphicsWindowOutputHandler::isReady(void)
-	{
-		return m_window != nullptr && m_renderer.getTTFRenderer().hasOpenFont() && m_fontSize > 0;
+	{//TODO: Fix
+		return m_window != nullptr && /* m_renderer.getTTFRenderer().hasOpenFont() &&*/ m_fontSize > 0;
 	}
 
 	void GraphicsWindowOutputHandler::resetCursorPosition(void)
@@ -119,7 +120,8 @@ namespace ogfx
 	void GraphicsWindowOutputHandler::setFontSize(int32_t fontSize)
 	{
 		m_fontSize = fontSize;
-		m_renderer.setFontSize(m_fontSize);
+		//TODO: Fix
+		// m_renderer.setFontSize(m_fontSize);
 		__update_char_size();
 	}
 
@@ -132,7 +134,7 @@ namespace ogfx
 	{
 		if (fontSize > 0)
 		{
-			auto size = m_renderer.getStringSize("A", fontSize);
+			auto size = m_renderer.getStringDimensions("A", fontSize);
 			return { (float)size.x, (float)size.y };
 		}
 		return m_charSize;
@@ -426,7 +428,7 @@ namespace ogfx
 
 	void GraphicsWindowOutputHandler::__update_char_size(void)
 	{
-		auto size = m_renderer.getStringSize("A", m_fontSize);
+		auto size = m_renderer.getStringDimensions("A", m_fontSize);
 		m_charSize = { (float)size.x, (float)size.y };
 	}
 

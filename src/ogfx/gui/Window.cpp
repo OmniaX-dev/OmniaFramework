@@ -593,6 +593,7 @@ namespace ogfx
 				m_rootWidget.__update();
 				m_rootWidget.__draw(m_gfx);
 				onRedraw(m_gfx);
+				m_gfx.endFrame();
 				after_render();
 			}
 		}

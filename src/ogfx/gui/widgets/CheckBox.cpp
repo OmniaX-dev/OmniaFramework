@@ -85,7 +85,7 @@ namespace ogfx
 
 			void CheckBox::__update_size(ogfx::BasicRenderer2D& gfx)
 			{
-				auto size = gfx.getStringSize(getText(), getFontSize());
+				auto size = gfx.getStringDimensions(getText(), getFontSize());
 				m_checkSize = { static_cast<float>(size.y), static_cast<float>(size.y) };
 				size.x += m_spacing + m_checkSize.x;
 				size.x += getPadding().left();

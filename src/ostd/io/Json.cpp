@@ -318,10 +318,10 @@ namespace ostd
 		        try
 				{
 		            json arr = json::array();
-		            arr.push_back(value.r);
-		            arr.push_back(value.g);
-		            arr.push_back(value.b);
-		            if (value.a != 255) arr.push_back(value.a);
+		            arr.push_back(static_cast<uint8_t>(value.r));
+		            arr.push_back(static_cast<uint8_t>(value.g));
+		            arr.push_back(static_cast<uint8_t>(value.b));
+		            if (value.a != 255) arr.push_back(static_cast<uint8_t>(value.a));
 		            root[p] = arr;
 		            return true;
 		        } catch (...) { return false; }

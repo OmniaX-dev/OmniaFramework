@@ -30,6 +30,20 @@ class Window : public ogfx::gui::Window
 		inline Window(void) {  }
 		inline void onInitialize(void) override
 		{
+			test.loadFromFile("./test.png", m_gfx);
+			ogfx::Animation::AnimationData ad;
+			ad.backwards = false;
+			ad.columns = 9;
+			ad.rows = 4;
+			ad.frame_width = 256;
+			ad.frame_height = 256;
+			ad.length = 36;
+			ad.random = false;
+			ad.still = false;
+			ad.speed = 0;
+			m_anim.create(ad);
+			m_anim.setSpriteSheet(test);
+
 			m_panel1.setSize(300, 140);
 			m_panel1.setPosition(350, 50);
 			m_panel1.setMousePressedCallback([&](const ogfx::gui::Event& event) -> void {
@@ -132,7 +146,16 @@ class Window : public ogfx::gui::Window
 
 		void onRedraw(ogfx::BasicRenderer2D& gfx) override
 		{
-			// wout().fg(ostd::Color { 255, 0, 0 }).p("Hello ").fg(ostd::Color { 0, 0, 255 }).p("World");
+			// auto l_rndPoint = [&](void) -> ostd::FPoint {
+			// 	using rnd = ostd::Random;
+			// 	return rnd::getVec2({ 0, (float)getWindowWidth() / 2 }, { 0, (float)getWindowHeight() / 2 });
+			// };
+			// for (int32_t i = 0; i < 1000; i++)
+			// 	gfx.drawLine({ l_rndPoint(), l_rndPoint() }, ostd::Colors::Crimson, 10);
+			// gfx.drawLine({ { 10, 10 }, { 200, 100 } }, ostd::Colors::Crimson, 3);
+			// gfx.drawRect({ 50, 50, 200, 120 }, ostd::Colors::Aquamarine, 1);
+
+			// std::cout << (int)(gfx.getDrawCallCount() + 1) << "\n";
 		}
 
 	private:
@@ -144,6 +167,8 @@ class Window : public ogfx::gui::Window
 		ogfx::gui::widgets::CheckBox m_check1 { *this };
 		ostd::Stylesheet m_theme;
 		ostd::Vec2 pos { 0, 0 };
+		ogfx::Image test;
+		ogfx::Animation m_anim;
 };
 
 int main(int argc, char** argv)
