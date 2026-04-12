@@ -48,6 +48,7 @@ namespace ogfx
 	class MouseEventData : public ostd::BaseObject
 	{
 		public: enum class eButton { None = 0, Left, Middle, Right };
+		public: enum class eScrollDirection { None = 0, Up, Down };
 		public:
 			inline MouseEventData(WindowCore& parent, float mousex, float mousey, eButton btn) : parentWindow(parent), position_x(mousex), position_y(mousey), button(btn)
 			{
@@ -59,6 +60,7 @@ namespace ogfx
 			float position_x;
 			float position_y;
 			eButton button;
+			eScrollDirection scroll { eScrollDirection::None };
 			gui::Widget* mousePressedOnWidget { nullptr };
 			WindowCore& parentWindow;
 	};

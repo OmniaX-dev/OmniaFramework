@@ -42,6 +42,7 @@ $accentColor = Color(rgb(255, 0, 0))
 
 (@testLabel2 label) {
 	showBackground = false
+	margin = Rect(30, 0, 30, 30)
 }
 
 (@testLabel2 label:hover) {

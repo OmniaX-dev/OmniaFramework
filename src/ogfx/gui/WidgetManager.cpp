@@ -216,6 +216,21 @@ namespace ogfx
 			}
 		}
 
+		void WidgetManager::onMouseScrolled(const Event& event)
+		{
+			for (int32_t i = m_widgetList.size() - 1; i >= 0; i--)
+			{
+				Widget* w = m_widgetList[i];
+				if (w == nullptr) continue;
+				if (w->isInvalid()) continue;
+				if (!w->contains(event.mouse->position_x, event.mouse->position_y, true))
+					continue;
+				w->__onMouseScrolled(event);
+				if (event.isHandled() || w->m_stopEvents)
+					break;
+			}
+		}
+
 		void WidgetManager::onMouseDragged(const Event& event)
 		{
 			for (int32_t i = m_widgetList.size() - 1; i >= 0; i--)

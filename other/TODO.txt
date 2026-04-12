@@ -7,10 +7,10 @@
 ***Implement Drag And Drop
 ***Implement a way to determine on what widget (in the hierarchy chain) and event must stop
 ***Implement const in stylesheet
+***Implement color constants in stylesheet
+***Implement margin for widgets
+***Implement mouse scroll callback
 Add theme caching
-Implement mouse scroll callback
-Implement margin for widgets
-Implement color constants in stylesheet
 
 
 Implement following widgets:

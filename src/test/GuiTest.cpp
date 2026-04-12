@@ -42,6 +42,9 @@ class Window : public ogfx::gui::Window
 				m_panel1.addPos(pos2 - pos);
 				pos = pos2;
 			});
+			m_panel1.setMouseScrolledCallback([&](const ogfx::gui::Event& event) -> void {
+				std::cout << "SCROLLED IN THE PANEL LOL \n";
+			});
 
 
 			m_panel2.setSize(600, 400);
@@ -58,6 +61,9 @@ class Window : public ogfx::gui::Window
 			m_label1.setText("Hello World!");
 			m_label1.setMousePressedCallback([&](const ogfx::gui::Event& event) -> void {
 				std::cout << "PRESS!\n";
+			});
+			m_label1.setMouseScrolledCallback([&](const ogfx::gui::Event& event) -> void {
+				std::cout << "SCROLL!\n";
 			});
 			addWidget(m_label1);
 			m_panel2.addChild(m_panel1);
@@ -79,6 +85,9 @@ class Window : public ogfx::gui::Window
 					}
 					std::cout << data.textOrFilePath << "\n";
 				}
+			});
+			m_label2.setMouseScrolledCallback([&](const ogfx::gui::Event& event) -> void {
+				std::cout << "BARBABARBA!\n";
 			});
 			m_label2.enableDragAndDrop();
 			m_label2.setDragAndDropCallback([&](const ogfx::gui::Event& event) -> void {
@@ -103,7 +112,7 @@ class Window : public ogfx::gui::Window
 
 			setTheme(m_theme);
 
-			std::cout << m_theme.get<ostd::String>("panel.titlebarType", "", {}, {}) << " \n";
+			// std::cout << m_theme.get<ostd::String>("panel.titlebarType", "", {}, {}) << " \n";
 	 	}
 
 		inline void onSignal(ostd::Signal& signal) override

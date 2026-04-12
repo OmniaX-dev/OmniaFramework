@@ -132,7 +132,7 @@ namespace ogfx
 		connectSignal(ostd::BuiltinSignals::MousePressed);
 		connectSignal(ostd::BuiltinSignals::MouseReleased);
 		connectSignal(ostd::BuiltinSignals::MouseMoved);
-		connectSignal(ostd::BuiltinSignals::MouseMoved);
+		connectSignal(ostd::BuiltinSignals::MouseScrolled);
 		connectSignal(ostd::BuiltinSignals::OnGuiEvent);
 		connectSignal(ostd::BuiltinSignals::WindowClosed);
 		connectSignal(ostd::BuiltinSignals::WindowResized);
@@ -372,6 +372,17 @@ namespace ogfx
 		{
 			MouseEventData mmd = get_mouse_state();
 			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::MouseMoved, ostd::Signal::Priority::RealTime, mmd);
+		}
+		else if (event.type == SDL_EVENT_MOUSE_WHEEL)
+		{
+			MouseEventData mmd = get_mouse_state();
+			if (event.wheel.y == -1)
+				mmd.scroll = MouseEventData::eScrollDirection::Down;
+			else if (event.wheel.y == 1)
+				mmd.scroll = MouseEventData::eScrollDirection::Up;
+			else
+				mmd.scroll = MouseEventData::eScrollDirection::None;
+			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::MouseScrolled, ostd::Signal::Priority::RealTime, mmd);
 		}
 		else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
 		{
@@ -634,6 +645,12 @@ namespace ogfx
 				evt.mouse = &(ogfx::MouseEventData&)signal.userData;
 				evt.__original_signal_id = ostd::BuiltinSignals::MouseMoved;
 				m_rootWidget.__onMouseMoved(evt);
+			}
+			else if (signal.ID == ostd::BuiltinSignals::MouseScrolled)
+			{
+				evt.mouse = &(ogfx::MouseEventData&)signal.userData;
+				evt.__original_signal_id = ostd::BuiltinSignals::MouseScrolled;
+				m_rootWidget.__onMouseScrolled(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::MousePressed)
 			{

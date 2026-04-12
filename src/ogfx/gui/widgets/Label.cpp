@@ -50,6 +50,7 @@ namespace ogfx
 				m_borderColor = getThemeValue<ostd::Color>(theme, "label.borderColor", ostd::Colors::White);
 				enableBackground(getThemeValue<bool>(theme, "label.showBackground", false));
 				setPadding(getThemeValue<ostd::Rectangle>(theme, "label.padding", { 5, 5, 5, 5 }));
+				setMargin(getThemeValue<ostd::Rectangle>(theme, "label.margin", { 0, 0, 0, 0 }));
 			}
 
 			void Label::onDraw(ogfx::BasicRenderer2D& gfx)

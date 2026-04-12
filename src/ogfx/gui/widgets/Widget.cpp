@@ -50,6 +50,7 @@ namespace ogfx
 			ostd::Vec2 glob = getPosition();
 			if (!m_rootChild && m_parent != nullptr)
 				glob += m_parent->getGlobalPosition() + m_parent->getPadding().getPosition();
+			glob += m_margin.getPosition();
 			return glob;
 		}
 
@@ -60,7 +61,7 @@ namespace ogfx
 
 		ostd::Rectangle Widget::getGlobalBounds(void) const
 		{
-			return { getGlobalPosition(), getSize() };
+			return { getGlobalPosition(), getSize() + (m_margin.getSize() * 2) };
 		}
 
 		ostd::Rectangle Widget::getContentBounds(void) const
@@ -86,9 +87,9 @@ namespace ogfx
 			setThemeQualifier("disabled", !enable);
 		}
 
-		void Widget::addThemeOverride(const ostd::String& fullKey, ostd::Stylesheet::TypeVariant value, bool propagate)
+		void Widget::addThemeOverride(const ostd::String& fullKey, ostd::Stylesheet::TypeVariant value)
 		{
-			m_themeOverrides.push_back({ fullKey, value, propagate });
+			m_themeOverrides.push_back({ fullKey, value });
 		}
 
 		void Widget::reloadTheme(void)
@@ -115,8 +116,8 @@ namespace ogfx
 					currentValue = *currentValuePtr;
 				backup.push_back({ currentValuePtr, currentValue, rule.fullKey });
 				const_cast_theme.setFull(rule.fullKey, rule.value);
-				__applyTheme(const_cast_theme, rule.propagate);
 			}
+			__applyTheme(const_cast_theme, false);
 			for (auto&[ptr, val, key] : backup)
 			{
 				if (ptr == nullptr)
@@ -231,6 +232,18 @@ namespace ogfx
 				if (callback_onMouseMoved)
 					callback_onMouseMoved(event);
 				onMouseMoved(event);
+			}
+		}
+
+		void Widget::__onMouseScrolled(const Event& event)
+		{
+			if (hasChildren())
+				m_widgets.onMouseScrolled(event);
+			if (!event.isHandled())
+			{
+				if (callback_onMouseScrolled)
+					callback_onMouseScrolled(event);
+				onMouseScrolled(event);
 			}
 		}
 

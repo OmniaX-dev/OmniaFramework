@@ -56,13 +56,11 @@ namespace ostd
 			if (!parseThemeFileLine(line, variables))
 				l_warn("Error");
 		};
-		for (const auto&[var, val] : variables)
-			std::cout << var << " = " << val.first << "\n";
 		uint8_t lineNumberMaxWidth = ostd::String("").add(lines.size()).len();
 		ostd::String groupSelector = "";
 		bool groupLines = true;
 		std::vector<ostd::String> group;
-		bool debug_print = true;
+		bool debug_print = false;
 		for (auto& line : lines)
 		{
 			lineNumber++;

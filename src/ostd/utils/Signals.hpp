@@ -39,6 +39,7 @@ namespace ostd
 		inline static constexpr uint32_t MouseMoved 			=	0x0005;
 		inline static constexpr uint32_t MouseDragged 			=	0x0006;
 		inline static constexpr uint32_t TextEntered 			=	0x0007;
+		inline static constexpr uint32_t MouseScrolled 			=	0x0008;
 
 		inline static constexpr uint32_t OnGuiEvent				=	0x2001;
 		inline static constexpr uint32_t FileDragAndDropped		=	0x2002;

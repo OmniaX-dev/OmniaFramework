@@ -37,7 +37,6 @@ namespace ogfx
 			{
 				ostd::String fullKey;
 				ostd::Stylesheet::TypeVariant value;
-				bool propagate;
 			};
 			public: using EventCallback = std::function<void(const Event&)>;
 			public:
@@ -52,7 +51,7 @@ namespace ogfx
 				bool contains(ostd::Vec2 p, bool includeBounds = false) const override;
 				void enable(bool enable = true);
 				virtual void applyTheme(const ostd::Stylesheet& theme) = 0;
-				void addThemeOverride(const ostd::String& fullKey, ostd::Stylesheet::TypeVariant value, bool propagate = true);
+				void addThemeOverride(const ostd::String& fullKey, ostd::Stylesheet::TypeVariant value);
 				void reloadTheme(void);
 				void setThemeQualifier(const ostd::String& qualifier, bool value = true);
 				bool getThemeQualifier(const ostd::String& qualifier) const;
@@ -66,6 +65,7 @@ namespace ogfx
 				inline virtual void onMousePressed(const Event& event) {  }
 				inline virtual void onMouseReleased(const Event& event) {  }
 				inline virtual void onMouseMoved(const Event& event) {  }
+				inline virtual void onMouseScrolled(const Event& event) {  }
 				inline virtual void onDragAndDrop(const Event& event) {  }
 				inline virtual void onMouseEntered(const Event& event) {  }
 				inline virtual void onMouseExited(const Event& event) {  }
@@ -86,6 +86,7 @@ namespace ogfx
 				void __onMouseReleased(const Event& event);
 				void __onDragAndDrop(const Event& event);
 				void __onMouseMoved(const Event& event);
+				void __onMouseScrolled(const Event& event);
 				void __onMouseEntered(const Event& event);
 				void __onMouseExited(const Event& event);
 				void __onMouseDragged(const Event& event);
@@ -101,6 +102,7 @@ namespace ogfx
 				inline virtual void setMousePressedCallback(EventCallback callback) { callback_onMousePressed = callback; }
 				inline virtual void setMouseReleasedCallback(EventCallback callback) { callback_onMouseReleased = callback; }
 				inline virtual void setMouseMovedCallback(EventCallback callback) { callback_onMouseMoved = callback; }
+				inline virtual void setMouseScrolledCallback(EventCallback callback) { callback_onMouseScrolled = callback; }
 				inline virtual void setDragAndDropCallback(EventCallback callback) { callback_onDragAndDrop = callback; }
 				inline virtual void setMouseEnteredCallback(EventCallback callback) { callback_onMouseEntered = callback; }
 				inline virtual void setMouseExitedCallback(EventCallback callback) { callback_onMouseExited = callback; }
@@ -123,7 +125,9 @@ namespace ogfx
 				inline int32_t getZIndex(void) const { return m_zIndex; }
 				inline bool isChildrenEnabled(void) const { return m_allowChildren; }
 				inline void setPadding(const ostd::Rectangle& pad) { m_padding = pad; }
+				inline void setMargin(const ostd::Rectangle& margin) { m_margin = margin; }
 				inline Rectangle getPadding(void) const { return m_padding; }
+				inline Rectangle getMargin(void) const { return m_margin; }
 				inline bool isMouseInside(void) const { return m_mouseInside; }
 				inline ogfx::MouseEventData::eButton getPressedMouseButton(void) const { return m_pressedButton; }
 				inline const std::vector<ostd::String>& getThemeIDList(void) const { return m_themeIDList; }
@@ -166,6 +170,7 @@ namespace ogfx
 				EventCallback callback_onMouseReleased { nullptr };
 				EventCallback callback_onDragAndDrop { nullptr };
 				EventCallback callback_onMouseMoved { nullptr };
+				EventCallback callback_onMouseScrolled { nullptr };
 				EventCallback callback_onMouseEntered { nullptr };
 				EventCallback callback_onMouseExited { nullptr };
 				EventCallback callback_onMouseDragged { nullptr };
@@ -207,8 +212,8 @@ namespace ogfx
 				ostd::Color m_drawBoxColor { 255, 0, 0 };
 
 				ostd::Rectangle m_padding { 0, 0, 0, 0 };
+				ostd::Rectangle m_margin { 0, 0, 0, 0 };
 
-				public:
 				static ostd::BaseObject* s_dragAndDropData;
 				static bool s_hasDragAndDropData;
 
