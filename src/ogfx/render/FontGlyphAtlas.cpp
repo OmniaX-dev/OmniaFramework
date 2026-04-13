@@ -126,6 +126,7 @@ namespace ogfx
 		int lockedPitch = 0;
 		if (SDL_LockTexture(atlas, &dstRect, &lockedPixels, &lockedPitch))
 		{
+			SDL_LockSurface(surf);
 		    uint8_t* src = (uint8_t*)surf->pixels;
 		    uint8_t* dst = (uint8_t*)lockedPixels;
 		    for (int y = 0; y < gh; y++)
@@ -134,6 +135,7 @@ namespace ogfx
 		        src += surf->pitch;
 		        dst += lockedPitch;
 		    }
+			SDL_UnlockSurface(surf);
 		    SDL_UnlockTexture(atlas);
 		}
 

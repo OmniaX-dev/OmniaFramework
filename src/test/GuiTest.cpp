@@ -157,55 +157,61 @@ class Window : public ogfx::gui::Window
 
 			setTheme(m_theme);
 
-			int32_t count = 0;
-			for (char c = 'A'; c <= 'Z'; c++)
-			{
-				for (int32_t i = 0; i < 200; i++)
-				{
-					count++;
-					uint32_t _fs = ostd::Random::getui32(8, 200);
-					m_gfx.setFontSize(_fs);
-					m_gfx.getFontGlyphAtlas().rasterize_glyph(ostd::String("").addChar(c), m_gfx.getSDLFont(), _fs);
-				}
-			}
-			for (char c = '0'; c <= '9'; c++)
-			{
-				for (int32_t i = 0; i < 200; i++)
-				{
-					count++;
-					uint32_t _fs = ostd::Random::getui32(8, 200);
-					m_gfx.setFontSize(_fs);
-					m_gfx.getFontGlyphAtlas().rasterize_glyph(ostd::String("").addChar(c), m_gfx.getSDLFont(), _fs);
-				}
-			}
-			for (char c = 'a'; c <= 'z'; c++)
-			{
-				count++;
-				for (int32_t i = 0; i < 200; i++)
-				{
-					uint32_t _fs = ostd::Random::getui32(8, 200);
-					m_gfx.setFontSize(_fs);
-					m_gfx.getFontGlyphAtlas().rasterize_glyph(ostd::String("").addChar(c), m_gfx.getSDLFont(), _fs);
-				}
-			}
-			for (char c = '0'; c <= '9'; c++)
-			{
-				for (int32_t i = 0; i < 200; i++)
-				{
-					count++;
-					uint32_t _fs = ostd::Random::getui32(8, 200);
-					m_gfx.setFontSize(_fs);
-					m_gfx.getFontGlyphAtlas().rasterize_glyph(ostd::String("").addChar(c), m_gfx.getSDLFont(), _fs);
-				}
-			}
+			m_gfx.setFontSize(fs);
+			m_gfx.getFontGlyphAtlas().rasterize_glyph(ostd::String("").addChar('H'), m_gfx.getSDLFont(), fs);
+			m_gfx.getFontGlyphAtlas().rasterize_glyph(ostd::String("").addChar('e'), m_gfx.getSDLFont(), fs);
+			m_gfx.getFontGlyphAtlas().rasterize_glyph(ostd::String("").addChar('l'), m_gfx.getSDLFont(), fs);
+			m_gfx.getFontGlyphAtlas().rasterize_glyph(ostd::String("").addChar('o'), m_gfx.getSDLFont(), fs);
 
-			for (int32_t i = 0; i < m_gfx.getFontGlyphAtlas().m_currentAtlasCount; i++)
-			{
-				ostd::String file("./atlas");
-				file.add(i).add(".png");
-				m_gfx.getFontGlyphAtlas().save_atlas_to_png(m_gfx.getSDLRenderer(), m_gfx.getFontGlyphAtlas().m_atlases[i], file);
-			}
-			std::cout << "Atlas cound: " << (int)count << "\n";
+			// int32_t count = 0;
+			// for (char c = 'A'; c <= 'Z'; c++)
+			// {
+			// 	for (int32_t i = 0; i < 200; i++)
+			// 	{
+			// 		count++;
+			// 		uint32_t _fs = ostd::Random::getui32(8, 200);
+			// 		m_gfx.setFontSize(_fs);
+			// 		m_gfx.getFontGlyphAtlas().rasterize_glyph(ostd::String("").addChar(c), m_gfx.getSDLFont(), _fs);
+			// 	}
+			// }
+			// for (char c = '0'; c <= '9'; c++)
+			// {
+			// 	for (int32_t i = 0; i < 200; i++)
+			// 	{
+			// 		count++;
+			// 		uint32_t _fs = ostd::Random::getui32(8, 200);
+			// 		m_gfx.setFontSize(_fs);
+			// 		m_gfx.getFontGlyphAtlas().rasterize_glyph(ostd::String("").addChar(c), m_gfx.getSDLFont(), _fs);
+			// 	}
+			// }
+			// for (char c = 'a'; c <= 'z'; c++)
+			// {
+			// 	count++;
+			// 	for (int32_t i = 0; i < 200; i++)
+			// 	{
+			// 		uint32_t _fs = ostd::Random::getui32(8, 200);
+			// 		m_gfx.setFontSize(_fs);
+			// 		m_gfx.getFontGlyphAtlas().rasterize_glyph(ostd::String("").addChar(c), m_gfx.getSDLFont(), _fs);
+			// 	}
+			// }
+			// for (char c = '0'; c <= '9'; c++)
+			// {
+			// 	for (int32_t i = 0; i < 200; i++)
+			// 	{
+			// 		count++;
+			// 		uint32_t _fs = ostd::Random::getui32(8, 200);
+			// 		m_gfx.setFontSize(_fs);
+			// 		m_gfx.getFontGlyphAtlas().rasterize_glyph(ostd::String("").addChar(c), m_gfx.getSDLFont(), _fs);
+			// 	}
+			// }
+
+			// for (int32_t i = 0; i < m_gfx.getFontGlyphAtlas().m_currentAtlasCount; i++)
+			// {
+			// 	ostd::String file("./atlas");
+			// 	file.add(i).add(".png");
+			// 	m_gfx.getFontGlyphAtlas().save_atlas_to_png(m_gfx.getSDLRenderer(), m_gfx.getFontGlyphAtlas().m_atlases[i], file);
+			// }
+			// std::cout << "Atlas cound: " << (int)count << "\n";
 	 	}
 
 		inline void onSignal(ostd::Signal& signal) override
@@ -251,7 +257,7 @@ class Window : public ogfx::gui::Window
 
 			l_renderString("Hello", { 10, 140 });
 
-			gfx.renderText("Hello", 10, 100, ostd::Colors::Crimson, 30);
+			gfx.renderText("Hello", 10, 100, ostd::Colors::Crimson, fs);
 
 		}
 
