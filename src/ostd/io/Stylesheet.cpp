@@ -56,7 +56,7 @@ namespace ostd
 			if (!parseThemeFileLine(line, variables))
 				l_warn("Error");
 		};
-		uint8_t lineNumberMaxWidth = ostd::String("").add(lines.size()).len();
+		uint8_t lineNumberMaxWidth = ostd::String("").add(static_cast<uint32_t>(lines.size())).len();
 		ostd::String groupSelector = "";
 		bool groupLines = true;
 		std::vector<ostd::String> group;

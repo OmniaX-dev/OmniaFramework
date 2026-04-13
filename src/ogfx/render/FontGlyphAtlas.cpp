@@ -122,25 +122,30 @@ namespace ogfx
 		// 7. Upload glyph bitmap into atlas
 		SDL_Rect dstRect { m_penX, m_penY, gw, gh };
 
-		void* lockedPixels = nullptr;
-		int lockedPitch = 0;
-		if (SDL_LockTexture(atlas, &dstRect, &lockedPixels, &lockedPitch))
-		{
-			SDL_LockSurface(surf);
-		    uint8_t* src = (uint8_t*)surf->pixels;
-		    uint8_t* dst = (uint8_t*)lockedPixels;
-		    for (int y = 0; y < gh; y++)
-		    {
-		        memcpy(dst, src, gw * 4);  // 4 bytes per pixel (ARGB8888)
-		        src += surf->pitch;
-		        dst += lockedPitch;
-		    }
-			SDL_UnlockSurface(surf);
-		    SDL_UnlockTexture(atlas);
-		}
-
-		// SDL_UpdateTexture(atlas, &dstRect, surf->pixels, surf->pitch);
+		SDL_LockSurface(surf);
+		SDL_UpdateTexture(atlas, &dstRect, surf->pixels, surf->pitch);
+		SDL_UnlockSurface(surf);
 		SDL_DestroySurface(surf);
+
+		// void* lockedPixels = nullptr;
+		// int lockedPitch = 0;
+		// if (SDL_LockTexture(atlas, &dstRect, &lockedPixels, &lockedPitch))
+		// {
+		// 	SDL_LockSurface(surf);
+		//     uint8_t* src = (uint8_t*)surf->pixels;
+		//     uint8_t* dst = (uint8_t*)lockedPixels;
+		//     for (int y = 0; y < gh; y++)
+		//     {
+		//         memcpy(dst, src, gw * 4);  // 4 bytes per pixel (ARGB8888)
+		//         src += surf->pitch;
+		//         dst += lockedPitch;
+		//     }
+		// 	SDL_UnlockSurface(surf);
+		//     SDL_UnlockTexture(atlas);
+		// }
+
+		// // SDL_UpdateTexture(atlas, &dstRect, surf->pixels, surf->pitch);
+		// SDL_DestroySurface(surf);
 
 		// 8. Compute UVs
 		float u0 = float(m_penX) / float(AtlasTextureDimension);
