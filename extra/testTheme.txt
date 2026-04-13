@@ -5,7 +5,7 @@ $accentColor = Color(rgba(255, 0, 255, 255))
 const $color2 = Color(#0000FFFF)
 % -------------------
 
-window.backgroundColor = Color(rgba(120, 120, 120, 255))
+window.backgroundColor = Color(rgba(0, 0, 0, 255))
 
 $accentColor = Color(rgb(255, 0, 0))
 

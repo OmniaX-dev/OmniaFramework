@@ -50,7 +50,10 @@
 #endif
 
 #ifndef OX_DEBUG_BUILD
+	#define _DEBUG(n)
 	#ifndef OX_RELEASE_BUILD
 		#define OX_RELEASE_BUILD
 	#endif
+#else
+	#define _DEBUG(n) std::cout << (int)n << "\n";
 #endif

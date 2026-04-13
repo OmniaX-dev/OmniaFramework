@@ -61,7 +61,9 @@ namespace ogfx
 		m_window = &window;
 		if (m_initialized) return set_error_state(tErrors::NoError);
 		init_arrays();
+		m_initialized = true;
 		loadDefaultFont(20);
+		m_initialized = false;
 		m_fontGlyphAtlas.init(*this);
 		m_initialized = true;
 		return set_error_state(tErrors::NoError);

@@ -20,8 +20,9 @@
 
 #include "FontGlyphAtlas.hpp"
 #include "BasicRenderer.hpp"
-
-#define DEBUG(n) std::cout << (int)n << "\n";
+#include <SDL3/SDL_pixels.h>
+#include <SDL3/SDL_render.h>
+#include <SDL3/SDL_surface.h>
 
 namespace ogfx
 {
@@ -38,19 +39,19 @@ namespace ogfx
 
 	bool FontGlyphAtlas::rasterize_glyph(const ostd::String& glyphStr, TTF_Font* font, uint32_t fontSize)
 	{
-		DEBUG(1);
-		std::cout << (uint64_t)font << "\n";
 		if (!font || m_currentAtlasCount <= 0)
 			return false;
 
-		DEBUG(2);
 		// 1. Extract codepoint from the ostd::String
 		auto cps = glyphStr.getUTF8Codepoints();
 		if (cps.size() != 1)
 			return false; // must be exactly one character
 
-		DEBUG(3);
 		uint32_t codepoint = cps[0];
+
+		GlyphKey key { codepoint, uint64_t(font), fontSize };
+		if (auto it = m_uvs.find(key) != m_uvs.end())
+		    return true;
 
 		// 2. Convert the ostd::String to UTF-8 for SDL_ttf
 		std::string utf8 = glyphStr.cpp_str();
@@ -61,12 +62,18 @@ namespace ogfx
 		if (!surf)
 			return false;
 
-		DEBUG(4);
+		// SDL_Surface* converted = SDL_ConvertSurface(surf, SDL_PIXELFORMAT_RGBA32);
+		// SDL_DestroySurface(surf);
+		// surf = converted;
+
 		int gw = surf->w;
 		int gh = surf->h;
 
 		// 4. Get current atlas
 		SDL_Texture* atlas = m_atlases[m_currentAtlasCount - 1];
+
+		// SDL_Log("atlas format = %s", SDL_GetPixelFormatName(atlas->format));
+		// SDL_Log("surf format = %s", SDL_GetPixelFormatName(surf->format));
 
 		// 5. Shelf packing: move to next row if needed
 		if (m_penX + gw > int(AtlasTextureDimension))
@@ -90,10 +97,47 @@ namespace ogfx
 			m_rowHeight = 0;
 		}
 
-		DEBUG(5);
+		uint8_t* pixels = (uint8_t*)surf->pixels;
+		int pitch = surf->pitch;
+
+		// for (int y = 0; y < surf->h; y++)
+		// {
+		// 	uint32_t* row = (uint32_t*)(pixels + y * pitch);
+
+		// 	for (int x = 0; x < surf->w; x++)
+		// 	{
+		// 		uint32_t px = row[x];
+
+		// 		uint8_t a = (px >> 24) & 0xFF;  // ABGR → A is highest byte
+		// 		uint8_t r = (px >> 16) & 0xFF;
+		// 		uint8_t g = (px >> 8)  & 0xFF;
+		// 		uint8_t b = (px)       & 0xFF;
+
+		// 		std::cout << (int)r << "," << (int)g << "," << (int)b << "," << (int)a << "  ";
+
+		// 		row[x] = (a << 24) | (r << 16) | (g << 8) | b;
+		// 	}
+		// }
+
 		// 7. Upload glyph bitmap into atlas
 		SDL_Rect dstRect { m_penX, m_penY, gw, gh };
-		SDL_UpdateTexture(atlas, &dstRect, surf->pixels, surf->pitch);
+
+		void* lockedPixels = nullptr;
+		int lockedPitch = 0;
+		if (SDL_LockTexture(atlas, &dstRect, &lockedPixels, &lockedPitch))
+		{
+		    uint8_t* src = (uint8_t*)surf->pixels;
+		    uint8_t* dst = (uint8_t*)lockedPixels;
+		    for (int y = 0; y < gh; y++)
+		    {
+		        memcpy(dst, src, gw * 4);  // 4 bytes per pixel (ARGB8888)
+		        src += surf->pitch;
+		        dst += lockedPitch;
+		    }
+		    SDL_UnlockTexture(atlas);
+		}
+
+		// SDL_UpdateTexture(atlas, &dstRect, surf->pixels, surf->pitch);
 		SDL_DestroySurface(surf);
 
 		// 8. Compute UVs
@@ -108,9 +152,9 @@ namespace ogfx
 		uv.uvs[1] = { u1, v0 };
 		uv.uvs[2] = { u1, v1 };
 		uv.uvs[3] = { u0, v1 };
+		uv.size = { static_cast<float>(gw), static_cast<float>(gh) };
 
 		// 9. Store in hashmap
-		GlyphKey key { codepoint, uint64_t(font), fontSize };
 		m_uvs[key] = uv;
 
 		// 10. Advance shelf packing cursor
@@ -133,19 +177,14 @@ namespace ogfx
 			return false;
 
 		// 2. Create the texture
-		SDL_Texture* tex = SDL_CreateTexture(
-			sdlRenderer,
-			SDL_PIXELFORMAT_RGBA8888,
-			SDL_TEXTUREACCESS_STREAMING,
-			AtlasTextureDimension,
-			AtlasTextureDimension
-		);
+		SDL_Texture* tex = SDL_CreateTexture(sdlRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, AtlasTextureDimension, AtlasTextureDimension);
 
 		if (!tex)
 			return false;
 
 		// 3. Set blend mode (important for alpha glyphs)
 		SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+		SDL_SetTextureScaleMode(tex, SDL_SCALEMODE_LINEAR);
 
 		// 4. Clear the texture to transparent
 		{
@@ -153,7 +192,7 @@ namespace ogfx
 			int pitch = 0;
 			if (SDL_LockTexture(tex, nullptr, &pixels, &pitch) == 0)
 			{
-				memset(pixels, 0, pitch * AtlasTextureDimension);
+				memset(pixels, 0x00, pitch * AtlasTextureDimension);
 				SDL_UnlockTexture(tex);
 			}
 		}
@@ -170,55 +209,40 @@ namespace ogfx
 		return true;
 	}
 
-	bool FontGlyphAtlas::save_atlas_png(int atlasIndex, const char* filename)
+	void FontGlyphAtlas::save_atlas_to_png(SDL_Renderer* renderer, SDL_Texture* atlas, const char* filename)
 	{
-		if (atlasIndex < 0 || atlasIndex >= m_currentAtlasCount)
-			return false;
+	    // 1. Get texture dimensions and format
+	    float w, h;
+	    SDL_GetTextureSize(atlas, &w, &h);
+	    int iw = (int)w, ih = (int)h;
 
-		SDL_Texture* tex = m_atlases[atlasIndex];
-		if (!tex)
-			return false;
+	    // 2. Create a target surface
+	    SDL_Surface* surf = SDL_CreateSurface(iw, ih, SDL_PIXELFORMAT_ARGB8888);
+	    if (!surf) return;
 
-		// --- 1. Query texture properties (SDL3 way) ---
-		SDL_PropertiesID props = SDL_GetTextureProperties(tex);
-		if (!props)
-			return false;
+	    // 3. Read pixels back from the texture
+	    SDL_Rect rect { 0, 0, iw, ih };
 
-		int width  = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_WIDTH_NUMBER, 0);
-		int height = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_HEIGHT_NUMBER, 0);
-		Uint32 format = (Uint32)SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_FORMAT_NUMBER, SDL_PIXELFORMAT_RGBA32);
+	    // For STREAMING textures, lock/read directly:
+	    void* pixels = nullptr;
+	    int pitch = 0;
+	    if (SDL_LockTexture(atlas, nullptr, &pixels, &pitch))
+	    {
+	        uint8_t* src = (uint8_t*)pixels;
+	        uint8_t* dst = (uint8_t*)surf->pixels;
+	        for (int y = 0; y < ih; y++)
+	        {
+	            memcpy(dst, src, iw * 4);
+	            src += pitch;
+	            dst += surf->pitch;
+	        }
+	        SDL_UnlockTexture(atlas);
+	    }
 
-		if (width <= 0 || height <= 0)
-			return false;
+	    // 4. Save
+	    IMG_SavePNG(surf, filename);  // needs SDL3_image
+	    // or: SDL_SaveBMP(surf, "atlas_debug.bmp");
 
-		// --- 2. Create a surface to receive the pixels ---
-		SDL_Surface* surf = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_RGBA32);
-		if (!surf)
-			return false;
-
-		// --- 3. Lock texture and copy pixels ---
-		void* pixels = nullptr;
-		int pitch = 0;
-
-		if (!SDL_LockTexture(tex, nullptr, &pixels, &pitch))
-		{
-			SDL_DestroySurface(surf);
-			return false;
-		}
-
-		// Copy row-by-row (pitch may differ)
-		uint8_t* dst = static_cast<uint8_t*>(surf->pixels);
-		uint8_t* src = static_cast<uint8_t*>(pixels);
-
-		for (int y = 0; y < height; y++)
-			memcpy(dst + y * surf->pitch, src + y * pitch, width * 4);
-
-		SDL_UnlockTexture(tex);
-
-		// --- 4. Save PNG ---
-		bool ok = (IMG_SavePNG(surf, filename) == 0);
-
-		SDL_DestroySurface(surf);
-		return ok;
+	    SDL_DestroySurface(surf);
 	}
 }

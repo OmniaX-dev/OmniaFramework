@@ -33,6 +33,7 @@ namespace ogfx
 		{
 			ostd::Vec2 uvs[4];
 			SDL_Texture* atlas { nullptr };
+			ostd::Vec2 size;
 		};
 		struct GlyphKey
 		{
@@ -49,30 +50,29 @@ namespace ogfx
 		};
 		struct GlyphKeyHasher
 		{
-		    inline size_t operator()(const GlyphKey& k) const noexcept
+			size_t operator()(const GlyphKey& k) const noexcept
 			{
-		        uint64_t v = 0;
-		        v |= uint64_t(k.codepoint);
-		        v |= uint64_t(k.fontID)     << 32;
-		        v |= uint64_t(k.pixelSize)  << 48;
-		        return std::hash<uint64_t>()(v);
-		    }
+			    size_t h = std::hash<uint32_t>()(k.codepoint);
+			    h ^= std::hash<uint64_t>()(k.fontID) + 0x9e3779b9 + (h << 6) + (h >> 2);
+			    h ^= std::hash<uint32_t>()(k.pixelSize) + 0x9e3779b9 + (h << 6) + (h >> 2);
+			    return h;
+			}
 		};
 		public:
 			inline FontGlyphAtlas(void) {  }
 			inline FontGlyphAtlas(BasicRenderer2D& renderer) { init(renderer); }
 			FontGlyphAtlas init(BasicRenderer2D& renderer);
-			bool save_atlas_png(int atlasIndex, const char* filename);
 
 		public:
 			bool rasterize_glyph(const ostd::String& glyphStr, TTF_Font* font, uint32_t fontSize);
 			bool create_new_atlas(void);
+			void save_atlas_to_png(SDL_Renderer* renderer, SDL_Texture* atlas, const char* filename);
 
 		public:
 			inline static constexpr uint32_t AtlasTextureDimension { 8192 };
 			inline static constexpr uint32_t MaxAtlasCount { 16 };
 
-		private:
+		public:
 			std::unordered_map<GlyphKey, GlyphUV, GlyphKeyHasher> m_uvs;
 			SDL_Texture* m_atlases[FontGlyphAtlas::MaxAtlasCount];
 			int32_t m_currentAtlasCount { 0 };

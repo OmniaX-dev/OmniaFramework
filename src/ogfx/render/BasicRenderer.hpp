@@ -55,7 +55,7 @@ namespace ogfx
 				BasicRenderer2D& m_parent;
 		};
 		public:
-			BasicRenderer2D(void) = default;
+			inline BasicRenderer2D(void) {  }
 			~BasicRenderer2D(void);
 			int32_t init(WindowCore& window);
 			SDL_Renderer* getSDLRenderer(void) const;
@@ -106,7 +106,7 @@ namespace ogfx
 			void outlinedCircle(const ostd::Rectangle& rect, const ostd::Color& fillColor, const ostd::Color& outlineColor, int32_t outlineThickness = 1);
 			void outlinedEllipse(const ostd::Rectangle& rect, const ostd::Color& fillColor, const ostd::Color& outlineColor, int32_t outlineThickness = 1);
 
-		private:
+		public:
 			void init_arrays(void);
 			void generate_half_circle(const ostd::Vec2& center, const ostd::Vec2& dir, float radius, int segments, const ostd::Color& color);
 			void generate_quarter_circle(const ostd::Vec2& center, float radius, float thickness, float startAngle, const ostd::Color& color, int segments);
