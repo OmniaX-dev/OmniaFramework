@@ -646,7 +646,54 @@ namespace ostd
 		return str;
 	}
 
+	std::vector<uint32_t> String::decodeUTF8(const ostd::String& s)
+	{
+		std::vector<uint32_t> out;
+	    const char* p = s.m_data.data();
+	    const char* end = p + s.m_data.size();
 
+	    while (p < end)
+	        out.push_back(utf8_next(p, end));
+
+	    return out;
+	}
+
+
+	uint32_t String::utf8_next(const char*& p, const char* end)
+	{
+		uint8_t c = static_cast<uint8_t>(*p++);
+
+	    // ASCII fast path
+	    if (c < 0x80)
+	        return c;
+
+	    // 2-byte sequence
+	    if ((c >> 5) == 0x6) {
+	        uint32_t cp = (c & 0x1F) << 6;
+	        cp |= (static_cast<uint8_t>(*p++) & 0x3F);
+	        return cp;
+	    }
+
+	    // 3-byte sequence
+	    if ((c >> 4) == 0xE) {
+	        uint32_t cp = (c & 0x0F) << 12;
+	        cp |= (static_cast<uint8_t>(*p++) & 0x3F) << 6;
+	        cp |= (static_cast<uint8_t>(*p++) & 0x3F);
+	        return cp;
+	    }
+
+	    // 4-byte sequence
+	    if ((c >> 3) == 0x1E) {
+	        uint32_t cp = (c & 0x07) << 18;
+	        cp |= (static_cast<uint8_t>(*p++) & 0x3F) << 12;
+	        cp |= (static_cast<uint8_t>(*p++) & 0x3F) << 6;
+	        cp |= (static_cast<uint8_t>(*p++) & 0x3F);
+	        return cp;
+	    }
+
+	    // Invalid byte → return replacement character
+	    return 0xFFFD;
+	}
 
 	String operator+(const cpp_string& str1, const String& str)
 	{

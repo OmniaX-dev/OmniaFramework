@@ -67,7 +67,7 @@ namespace ogfx
 					gfx.drawRoundRect({ getGlobalPosition(), getSize() }, m_borderColor, m_borderRadius, m_borderWidth);
 				gfx.drawRoundRect({ getGlobalContentPosition(), m_checkSize }, getCheckBorderColor(), m_checkBorderRadius, m_checkBorderWidth);
 				if (isChecked())
-					gfx.fillRoundRect({ getGlobalContentPosition() + 5, m_checkSize - 10 }, getCheckBoxColor(), m_checkBorderRadius / 2);
+					gfx.fillRoundRect({ getGlobalContentPosition() + 5, m_checkSize - 10 }, getCheckBoxColor(), m_checkBorderRadius / 2.0f);
 				gfx.drawString(getText(), getGlobalContentPosition() + ostd::Vec2 { m_checkSize.x + m_spacing, 0 }, getTextColor(), getFontSize());
 			}
 

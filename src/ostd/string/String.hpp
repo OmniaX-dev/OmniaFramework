@@ -83,6 +83,7 @@ namespace ostd
 			inline operator std::filesystem::path() const { return cpp_str(); }
 			inline String& clr(void) { m_data = ""; return *this; }
 			inline String& set(const cpp_string& str) { m_data = str; return *this; }
+			inline std::vector<uint32_t> getUTF8Codepoints(void) const { return decodeUTF8(m_data); }
 
 			inline auto begin(void) { return m_data.begin(); }
 			inline auto end(void) { return m_data.end(); }
@@ -174,8 +175,12 @@ namespace ostd
 			static String getHexStr(uint64_t value, bool prefix = true, uint8_t nbytes = 1);
 			static String getBinStr(uint64_t value, bool prefix = true, uint8_t nbytes = 1);
 			static String duplicateChar(unsigned char c, uint16_t count);
+			static std::vector<uint32_t> decodeUTF8(const ostd::String& s);
 
 			friend std::ostream& operator<<(std::ostream& out, const String& val);
+
+		private:
+			static uint32_t utf8_next(const char*& p, const char* end);
 
 		private:
 			ostd::cpp_string m_data;

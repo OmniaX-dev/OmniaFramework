@@ -20,10 +20,12 @@
 
 #pragma once
 
-#include <ogfx/render/FontUtils.hpp>
 #include <ogfx/utils/Animation.hpp>
 #include <ostd/math/Geometry.hpp>
+#include <ostd/data/Color.hpp>
 #include <ogfx/resources/Image.hpp>
+#include <ostd/io/IOHandlers.hpp>
+#include <ogfx/render/FontGlyphAtlas.hpp>
 
 namespace ogfx
 {
@@ -56,6 +58,7 @@ namespace ogfx
 			BasicRenderer2D(void) = default;
 			~BasicRenderer2D(void);
 			int32_t init(WindowCore& window);
+			SDL_Renderer* getSDLRenderer(void) const;
 			void flushBatch(void);
 			void endFrame(void);
 			void pushClippingRect(const ostd::Rectangle& rect, bool additive = false);
@@ -70,11 +73,12 @@ namespace ogfx
 			inline uint32_t getDrawCallCount(void) { return m_drawCallCount; }
 			inline bool hasOpenFont(void) { return m_fontOpen; }
 			inline TTF_Font* getSDLFont(void) { return m_font;  }
-			inline bool isValid(void) { return m_initialized && m_fontOpen && (m_font != nullptr || m_fontFromMemory); }
+			inline bool isValid(void) const { return m_initialized && m_fontOpen && (m_font != nullptr || m_fontFromMemory); }
 			inline int32_t geterrorState(void) { return m_errorState; }
 			inline int32_t getFontSize(void) { return m_fontSize; }
 			inline WindowCore& getWindow(void) { return *m_window; }
 			inline bool isInitialized(void) { return m_initialized; }
+			inline FontGlyphAtlas& getFontGlyphAtlas(void) { return m_fontGlyphAtlas; }
 
             void drawImage(const ogfx::Image& image, const ostd::Vec2& position, const ostd::Vec2& size = { 0, 0 }, const ostd::Rectangle& srcRect = { 0, 0, 0, 0 });
             void drawAnimation(const Animation& anim, const ostd::Vec2& position, const ostd::Vec2& size = { 0, 0 });
@@ -138,6 +142,7 @@ namespace ogfx
 			int32_t m_errorState { tErrors::NoError };
 			int32_t m_fontSize { DefaultFontSize };
 			bool m_fontFromMemory { false };
+			FontGlyphAtlas m_fontGlyphAtlas;
 
 			inline static constexpr int32_t DefaultFontSize { 16 };
 	};

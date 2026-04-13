@@ -30,20 +30,6 @@ class Window : public ogfx::gui::Window
 		inline Window(void) {  }
 		inline void onInitialize(void) override
 		{
-			test.loadFromFile("./test.png", m_gfx);
-			ogfx::Animation::AnimationData ad;
-			ad.backwards = false;
-			ad.columns = 9;
-			ad.rows = 4;
-			ad.frame_width = 256;
-			ad.frame_height = 256;
-			ad.length = 36;
-			ad.random = false;
-			ad.still = false;
-			ad.speed = 0;
-			m_anim.create(ad);
-			m_anim.setSpriteSheet(test);
-
 			m_panel1.setSize(300, 140);
 			m_panel1.setPosition(350, 50);
 			m_panel1.setMousePressedCallback([&](const ogfx::gui::Event& event) -> void {
@@ -131,6 +117,9 @@ class Window : public ogfx::gui::Window
 
 			setTheme(m_theme);
 
+			m_gfx.getFontGlyphAtlas().rasterize_glyph("A", m_gfx.getSDLFont(), 30);
+			m_gfx.getFontGlyphAtlas().save_atlas_png(0, "./atlas.png");
+
 			// std::cout << m_theme.get<ostd::String>("panel.titlebarType", "", {}, {}) << " \n";
 	 	}
 
@@ -167,8 +156,6 @@ class Window : public ogfx::gui::Window
 		ogfx::gui::widgets::CheckBox m_check1 { *this };
 		ostd::Stylesheet m_theme;
 		ostd::Vec2 pos { 0, 0 };
-		ogfx::Image test;
-		ogfx::Animation m_anim;
 };
 
 int main(int argc, char** argv)

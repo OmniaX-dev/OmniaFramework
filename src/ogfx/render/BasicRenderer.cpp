@@ -21,6 +21,7 @@
 #include "BasicRenderer.hpp"
 #include "../gui/Window.hpp"
 #include "../resources/UbuntuMonoRegularTTF.hpp"
+#include "../gui/Window.hpp"
 
 #define COLOR_CAST(ostd_color) std::bit_cast<SDL_FColor>(ostd_color.getNormalizedColor())
 #define QUAD_INDICES_ARR { 0, 1, 2, 2, 3, 0 }
@@ -60,8 +61,15 @@ namespace ogfx
 		m_window = &window;
 		if (m_initialized) return set_error_state(tErrors::NoError);
 		init_arrays();
+		loadDefaultFont(20);
+		m_fontGlyphAtlas.init(*this);
 		m_initialized = true;
 		return set_error_state(tErrors::NoError);
+	}
+
+	SDL_Renderer* BasicRenderer2D::getSDLRenderer(void) const
+	{
+		return m_window != nullptr ? m_window->getSDLRenderer() : nullptr;
 	}
 
 	void BasicRenderer2D::flushBatch(void)
