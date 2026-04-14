@@ -46,10 +46,10 @@ namespace ogfx
 				setTextColor(getThemeValue<ostd::Color>(theme, "checkbox.textColor", ostd::Colors::Black));
 				setBackGroundColor(getThemeValue<ostd::Color>(theme, "checkbox.backgroundColor", ostd::Colors::Transparent));
 				setFontSize(getThemeValue<int32_t>(theme, "checkbox.fontSize", 28));
-				m_borderRadius = getThemeValue<int32_t>(theme, "checkbox.borderRadius", 10);
-				m_borderWidth = getThemeValue<int32_t>(theme, "checkbox.borderWidth", 2);
-				m_showBorder = getThemeValue<bool>(theme, "checkbox.showBorder", false);
-				m_borderColor = getThemeValue<ostd::Color>(theme, "checkbox.borderColor", ostd::Colors::White);
+				setBorderRadius(getThemeValue<int32_t>(theme, "checkbox.borderRadius", 10));
+				setBorderWidth(getThemeValue<int32_t>(theme, "checkbox.borderWidth", 2));
+				enableBorder(getThemeValue<bool>(theme, "checkbox.showBorder", false));
+				setBorderColor(getThemeValue<ostd::Color>(theme, "checkbox.borderColor", ostd::Colors::White));
 				enableBackground(getThemeValue<bool>(theme, "checkbox.showBackground", false));
 				setPadding(getThemeValue<ostd::Rectangle>(theme, "checkbox.padding", { 5, 5, 5, 5 }));
 				setMargin(getThemeValue<ostd::Rectangle>(theme, "checkbox.margin", { 0, 0, 0, 0 }));
@@ -61,10 +61,6 @@ namespace ogfx
 			{
 				if (m_textChanged)
 					__update_size(gfx);
-				if (m_showBackground)
-					gfx.fillRoundRect({ getGlobalPosition(), getSize() }, m_backgroundColor, m_borderRadius);
-				if (m_showBorder)
-					gfx.drawRoundRect({ getGlobalPosition(), getSize() }, m_borderColor, m_borderRadius, m_borderWidth);
 				gfx.drawRoundRect({ getGlobalContentPosition(), m_checkSize }, getCheckBorderColor(), m_checkBorderRadius, m_checkBorderWidth);
 				if (isChecked())
 					gfx.fillRoundRect({ getGlobalContentPosition() + 5, m_checkSize - 10 }, getCheckBoxColor(), m_checkBorderRadius / 2.0f);
@@ -75,14 +71,21 @@ namespace ogfx
 			{
 				if (!isMouseInside())
 					return;
-				m_checked = !m_checked;
-				setThemeQualifier("active", m_checked);
+				setChecked(!isChecked());
 			}
 
 			void CheckBox::setText(const ostd::String& text)
 			{
 				m_text = text;
 				m_textChanged = true;
+			}
+
+			void CheckBox::setChecked(bool checked)
+			{
+				m_checked = !m_checked;
+				setThemeQualifier("active", m_checked);
+				if (callback_onStateChanged)
+					callback_onStateChanged(*this, m_checked);
 			}
 
 			void CheckBox::__update_size(ogfx::BasicRenderer2D& gfx)

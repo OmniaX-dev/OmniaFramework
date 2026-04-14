@@ -55,6 +55,7 @@ $accentColor = Color(rgb(255, 0, 0))
 	borderRadius = 8
 	borderWidth = 4
 	showBorder = true
+	showBackground = true
 	padding = Rect(15, 15, 15, 15)
 	showTitle = true
 	titleColor =  Color(#000000FF)

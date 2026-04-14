@@ -41,10 +41,11 @@ namespace ogfx
 			void Panel::applyTheme(const ostd::Stylesheet& theme)
 			{
 				setBackGroundColor(getThemeValue<ostd::Color>(theme, "panel.backgroundColor", ostd::Colors::Gray));
-				m_borderRadius = getThemeValue<int32_t>(theme, "panel.borderRadius", 8);
-				m_borderWidth = getThemeValue<int32_t>(theme, "panel.borderWidth", 2);
-				m_showBorder = getThemeValue<bool>(theme, "panel.showBorder", true);
-				m_borderColor = getThemeValue<ostd::Color>(theme, "panel.borderColor", ostd::Colors::Black);
+				setBorderRadius(getThemeValue<int32_t>(theme, "panel.borderRadius", 8));
+				setBorderWidth(getThemeValue<int32_t>(theme, "panel.borderWidth", 2));
+				enableBorder(getThemeValue<bool>(theme, "panel.showBorder", true));
+				enableBackground(getThemeValue<bool>(theme, "panel.showBackground", true));
+				setBorderColor(getThemeValue<ostd::Color>(theme, "panel.borderColor", ostd::Colors::Black));
 				m_titleColor = getThemeValue<ostd::Color>(theme, "panel.titleColor", ostd::Colors::Black);
 				m_showTitle = getThemeValue<bool>(theme, "panel.showTitle", false);
 				m_titleHeight = getThemeValue<float>(theme, "panel.titleHeight", 30);
@@ -54,10 +55,6 @@ namespace ogfx
 
 			void Panel::onDraw(ogfx::BasicRenderer2D& gfx)
 			{
-				if (m_showBorder)
-					gfx.outlinedRoundRect({ getGlobalPosition(), getSize() }, getBackgroundColor(), m_borderColor, m_borderRadius, m_borderWidth);
-				else
-					gfx.fillRoundRect({ getGlobalPosition(), getSize() }, getBackgroundColor(), m_borderRadius);
 			}
 		}
 	}

@@ -208,6 +208,7 @@ namespace ogfx
 			return set_error_state(tErrors::NullFont);
 		if (fontSize == m_fontSize || fontSize <= 0) return set_error_state(tErrors::NoError);
 		TTF_SetFontSize(m_font, fontSize);
+		m_fontSize = fontSize;
 		return set_error_state(tErrors::NoError);
 	}
 
@@ -317,6 +318,7 @@ namespace ogfx
 		if (!isValid()) return;
 		if (fontSize <= 0)
 			fontSize = m_fontSize;
+		int32_t oldFontSize = m_fontSize;
 		setFontSize(fontSize);
 
 		auto glyphs = m_fontGlyphAtlas.processString(str, m_font, fontSize);
@@ -348,6 +350,7 @@ namespace ogfx
 
 			x += (g->advance * scale);
 		}
+		setFontSize(oldFontSize);
 	}
 
 	void BasicRenderer2D::drawCenteredString(const ostd::String& str, const ostd::Vec2& center, const ostd::Color& color, int32_t fontSize, float scale)
@@ -661,7 +664,7 @@ namespace ogfx
 		if (!m_initialized) return;
 		ostd::Rectangle offset = { 1, 1, -2, -2 };
 		fillRect(rect + offset, fillColor);
-		drawRect(rect , outlineColor, outlineThickness);
+		drawRect(rect, outlineColor, outlineThickness);
 	}
 
 	void BasicRenderer2D::outlinedRoundRect(const ostd::Rectangle& rect, const ostd::Color& fillColor, const ostd::Color& outlineColor, float radius, int32_t outlineThickness)

@@ -10,14 +10,16 @@
 ***Implement color constants in stylesheet
 ***Implement margin for widgets
 ***Implement mouse scroll callback
+***Fix: Text rendering bug in labels
+***Implement callback for state changes in checkbox
+***FIX: WindowOutputHandler text rendering
 Add theme caching
-Implement callback for state changes in checkbox
-FIX: WindowOutputHandler text rendering
 find a way to add fixed update to gui::Window
 Implement global scale (probably query desktop scale and adjust accordingly)
-Fix: Text rendering bug in labels
 Implement show/hide functionality for widgets
 Implement wrappers in Renderer2D to take a center and size for rects
+Implement Panel title
+Create reliable default stylesheet
 
 
 
@@ -38,6 +40,7 @@ Implement following widgets:
 	ListBox
 	ComboBox
 	TreeView
+	Progressbar
 	Save/Open File Dialogs (and folder dialogs)
 	Tab Panel
 	Layouts

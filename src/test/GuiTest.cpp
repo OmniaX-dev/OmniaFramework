@@ -25,42 +25,6 @@
 
 ostd::ConsoleOutputHandler out;
 
-void drawTexturedQuad(SDL_Renderer* renderer, SDL_Texture* tex, const ostd::Rectangle& rect, const ostd::Vec2 uvs[4])
-{
-	SDL_Vertex verts[4];
-
-	// Expand rectangle into quad corners
-	const float x  = rect.x;
-	const float y  = rect.y;
-	const float w  = rect.w;
-	const float h  = rect.h;
-
-	const ostd::Vec2 quad[4] = {
-		{ x,     y     },
-		{ x + w, y     },
-		{ x + w, y + h },
-		{ x,     y + h }
-	};
-
-	for (int i = 0; i < 4; i++)
-	{
-		verts[i].position.x = quad[i].x;
-		verts[i].position.y = quad[i].y;
-
-		verts[i].tex_coord.x = uvs[i].x;
-		verts[i].tex_coord.y = uvs[i].y;
-
-		auto crim = ostd::Colors::Crimson.getNormalizedColor();
-		verts[i].color = SDL_FColor{crim.r, crim.g, crim.b, crim.a};
-	}
-
-	// Two triangles: (0,1,2) and (2,3,0)
-	const int indices[6] = { 0, 1, 2, 2, 3, 0 };
-
-	SDL_RenderGeometry(renderer, tex, verts, 4, indices, 6);
-}
-
-
 class Window : public ogfx::gui::Window
 {
 	public:
@@ -98,6 +62,7 @@ class Window : public ogfx::gui::Window
 			m_label1.setText("Hello World!");
 			m_label1.setMousePressedCallback([&](const ogfx::gui::Event& event) -> void {
 				std::cout << "PRESS!\n";
+				m_check1.setChecked(!m_check1.isChecked());
 			});
 			m_label1.setMouseScrolledCallback([&](const ogfx::gui::Event& event) -> void {
 				std::cout << "SCROLL!\n";
@@ -109,6 +74,9 @@ class Window : public ogfx::gui::Window
 
 			m_check1.setPosition(30, 30);
 			m_check1.setText("Check this out!");
+			m_check1.setStateChangedCallback([&](ogfx::gui::widgets::CheckBox& sender, bool state) -> void {
+				std::cout << STR_BOOL(state) << "\n";
+			});
 			addWidget(m_check1);
 
 			m_label2.setPosition(0, 0);
@@ -152,6 +120,9 @@ class Window : public ogfx::gui::Window
 			m_label3.addThemeID("label3");
 			m_panel1.addChild(m_label3);
 
+			wout().setFontSize(80);
+
+
 			setTheme(m_theme);
 		}
 
@@ -167,6 +138,7 @@ class Window : public ogfx::gui::Window
 
 		void onRedraw(ogfx::BasicRenderer2D& gfx) override
 		{
+			wout().xy(100, 100).fg(ostd::Colors::Crimson).p("CIAO BELLA").resetColors();
 		}
 
 	private:

@@ -43,10 +43,6 @@ namespace ogfx
 					inline void setColor(const ostd::Color& color) { m_color = color; }
 					inline int32_t getFontSize(void) const { return m_fontSize; }
 					inline void setFontSize(int32_t fontSize) { m_fontSize = fontSize; }
-					inline void setBackGroundColor(const ostd::Color& color) { m_backgroundColor = color; }
-					inline ostd::Color getBackgroundColor(void) { return m_backgroundColor; }
-					inline void enableBackground(bool enable = true) { m_showBackground = enable; }
-					inline bool isBackgoundEnabled(void) const { return m_showBackground; }
 
 				private:
 					void __update_size(ogfx::BasicRenderer2D& gfx);
@@ -56,10 +52,6 @@ namespace ogfx
 					bool m_textChanged { false };
 					int32_t m_fontSize { 20 };
 					ostd::Color m_color { 255, 255, 255 };
-					bool m_showBackground { false };
-					ostd::Color m_backgroundColor { ostd::Colors::Transparent };
-
-				private:
 			};
 		}
 	}

@@ -44,10 +44,10 @@ namespace ogfx
 				setColor(getThemeValue<ostd::Color>(theme, "label.textColor", ostd::Colors::White));
 				setBackGroundColor(getThemeValue<ostd::Color>(theme, "label.backgroundColor", ostd::Colors::Transparent));
 				setFontSize(getThemeValue<int32_t>(theme, "label.fontSize", 20));
-				m_borderRadius = getThemeValue<int32_t>(theme, "label.borderRadius", 10);
-				m_borderWidth = getThemeValue<int32_t>(theme, "label.borderWidth", 2);
-				m_showBorder = getThemeValue<bool>(theme, "label.showBorder", false);
-				m_borderColor = getThemeValue<ostd::Color>(theme, "label.borderColor", ostd::Colors::White);
+				setBorderRadius(getThemeValue<int32_t>(theme, "label.borderRadius", 10));
+				setBorderWidth(getThemeValue<int32_t>(theme, "label.borderWidth", 2));
+				enableBorder(getThemeValue<bool>(theme, "label.showBorder", false));
+				setBorderColor(getThemeValue<ostd::Color>(theme, "label.borderColor", ostd::Colors::White));
 				enableBackground(getThemeValue<bool>(theme, "label.showBackground", false));
 				setPadding(getThemeValue<ostd::Rectangle>(theme, "label.padding", { 5, 5, 5, 5 }));
 				setMargin(getThemeValue<ostd::Rectangle>(theme, "label.margin", { 0, 0, 0, 0 }));
@@ -57,10 +57,6 @@ namespace ogfx
 			{
 				if (m_textChanged)
 					__update_size(gfx);
-				if (m_showBackground)
-					gfx.fillRoundRect({ getGlobalPosition(), getSize() }, m_backgroundColor, m_borderRadius);
-				if (m_showBorder)
-					gfx.drawRoundRect({ getGlobalPosition(), getSize() }, m_borderColor, m_borderRadius, m_borderWidth);
 				gfx.drawString(getText(), getGlobalContentPosition(), getColor(), getFontSize());
 			}
 

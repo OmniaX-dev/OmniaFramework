@@ -40,6 +40,7 @@ namespace ogfx
 					void onDraw(ogfx::BasicRenderer2D& gfx) override;
 					void onMouseReleased(const Event& event) override;
 					void setText(const ostd::String& text);
+					void setChecked(bool checked);
 					inline ostd::String getText(void) const { return m_text; }
 					inline ostd::Color getCheckBorderColor(void) const { return m_checkBorderColor; }
 					inline void setCheckBorderColor(const ostd::Color& color) { m_checkBorderColor = color; }
@@ -49,12 +50,8 @@ namespace ogfx
 					inline void setTextColor(const ostd::Color& color) { m_textColor = color; }
 					inline int32_t getFontSize(void) const { return m_fontSize; }
 					inline void setFontSize(int32_t fontSize) { m_fontSize = fontSize; }
-					inline void setBackGroundColor(const ostd::Color& color) { m_backgroundColor = color; }
-					inline ostd::Color getBackgroundColor(void) { return m_backgroundColor; }
-					inline void enableBackground(bool enable = true) { m_showBackground = enable; }
-					inline bool isBackgoundEnabled(void) const { return m_showBackground; }
 					inline bool isChecked(void) const { return m_checked; }
-					inline void setChecked(bool checked) { m_checked = checked; }
+					inline void setStateChangedCallback(std::function<void(CheckBox&, bool)> callback) { callback_onStateChanged = callback; }
 
 				private:
 					void __update_size(ogfx::BasicRenderer2D& gfx);
@@ -65,14 +62,14 @@ namespace ogfx
 					bool m_textChanged { false };
 					int32_t m_fontSize { 20 };
 					ostd::Color m_textColor { 255, 255, 255 };
-					bool m_showBackground { false };
-					ostd::Color m_backgroundColor { ostd::Colors::Transparent };
 					float m_spacing { 10 };
 					ostd::Vec2 m_checkSize  { 0, 0 };
 					int32_t m_checkBorderRadius { 5 };
 					int32_t m_checkBorderWidth { 1 };
 					ostd::Color m_checkBorderColor { 255, 255, 255 };
 					ostd::Color m_checkBoxColor { 255, 255, 255 };
+
+					std::function<void(CheckBox&, bool)> callback_onStateChanged { nullptr };
 			};
 		}
 	}

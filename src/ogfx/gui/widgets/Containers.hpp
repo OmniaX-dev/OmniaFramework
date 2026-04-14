@@ -39,7 +39,6 @@ namespace ogfx
 					inline ostd::Color getBackgroundColor(void) { return m_backgroundColor; }
 
 				private:
-					ostd::Color m_backgroundColor { 150, 150, 150 };
 					ostd::Color m_titleColor { 0, 0, 0 };
 					bool m_showTitle { false };
 					ostd::String m_titleType = "full";

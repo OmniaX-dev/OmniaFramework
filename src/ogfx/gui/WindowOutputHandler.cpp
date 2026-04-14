@@ -1,21 +1,21 @@
 /*
-    OmniaFramework - A collection of useful functionality
-    Copyright (C) 2025  OmniaX-Dev
+	OmniaFramework - A collection of useful functionality
+	Copyright (C) 2025  OmniaX-Dev
 
-    This file is part of OmniaFramework.
+	This file is part of OmniaFramework.
 
-    OmniaFramework is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	OmniaFramework is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    OmniaFramework is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	OmniaFramework is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "WindowOutputHandler.hpp"
@@ -35,14 +35,13 @@ namespace ogfx
 	{
 		if (m_window != nullptr) return;
 		m_window = &window;
-		// m_renderer.init(window); //TODO: Fix
+		m_renderer.init(window);
 	}
 
 	void GraphicsWindowOutputHandler::setMonospaceFont(const String& filePath)
 	{
-		//TODO: Fix
-		// m_renderer.setFont(filePath);
-		// m_renderer.setFontSize(m_fontSize);
+		m_renderer.openFont(filePath);
+		m_renderer.setFontSize(m_fontSize);
 		__update_char_size();
 	}
 
@@ -55,8 +54,8 @@ namespace ogfx
 	}
 
 	bool GraphicsWindowOutputHandler::isReady(void)
-	{//TODO: Fix
-		return m_window != nullptr && /* m_renderer.getTTFRenderer().hasOpenFont() &&*/ m_fontSize > 0;
+	{
+		return m_window != nullptr && m_renderer.hasOpenFont() && m_fontSize > 0;
 	}
 
 	void GraphicsWindowOutputHandler::resetCursorPosition(void)
@@ -120,8 +119,7 @@ namespace ogfx
 	void GraphicsWindowOutputHandler::setFontSize(int32_t fontSize)
 	{
 		m_fontSize = fontSize;
-		//TODO: Fix
-		// m_renderer.setFontSize(m_fontSize);
+		m_renderer.setFontSize(m_fontSize);
 		__update_char_size();
 	}
 

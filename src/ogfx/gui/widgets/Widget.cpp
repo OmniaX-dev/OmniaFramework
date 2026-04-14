@@ -28,7 +28,6 @@ namespace ogfx
 {
 	namespace gui
 	{
-
 		ostd::BaseObject* Widget::s_dragAndDropData { nullptr };
 		bool Widget::s_hasDragAndDropData { false };
 
@@ -171,9 +170,18 @@ namespace ogfx
 		{
 			if (isDrawBoxEnabled())
 				gfx.fillRect({ getGlobalPosition(), getSize() }, getDrawBoxColor());
+			else
+			{
+				if (m_showBackground && m_showBorder)
+					gfx.outlinedRoundRect({ getGlobalPosition(), getSize() }, m_backgroundColor, m_borderColor, m_borderRadius, m_borderWidth);
+				else if (m_showBackground)
+					gfx.fillRoundRect({ getGlobalPosition(), getSize() }, m_backgroundColor, m_borderRadius);
+			}
 			onDraw(gfx);
 			if (hasChildren())
 				m_widgets.draw(gfx);
+			if (m_showBorder)
+				gfx.drawRoundRect({ getGlobalPosition(), getSize() }, m_borderColor, m_borderRadius, m_borderWidth);
 		}
 
 		void Widget::__update(void)

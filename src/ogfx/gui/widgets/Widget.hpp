@@ -1,21 +1,21 @@
 /*
-    OmniaFramework - A collection of useful functionality
-    Copyright (C) 2025  OmniaX-Dev
+	OmniaFramework - A collection of useful functionality
+	Copyright (C) 2025  OmniaX-Dev
 
-    This file is part of OmniaFramework.
+	This file is part of OmniaFramework.
 
-    OmniaFramework is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	OmniaFramework is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    OmniaFramework is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	OmniaFramework is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
@@ -140,6 +140,18 @@ namespace ogfx
 				inline bool isDragAndDropEnabled(void) const { return m_acceptDragAndDrop; }
 				inline void enableDragAndDrop(bool enable = true) { m_acceptDragAndDrop = enable; }
 				inline void disableDragAndDrop(void) { enableDragAndDrop(false); }
+				inline void setBackGroundColor(const ostd::Color& color) { m_backgroundColor = color; }
+				inline ostd::Color getBackgroundColor(void) { return m_backgroundColor; }
+				inline void enableBackground(bool enable = true) { m_showBackground = enable; }
+				inline bool isBackgoundEnabled(void) const { return m_showBackground; }
+				inline void setBorderColor(const ostd::Color& color) { m_borderColor = color; }
+				inline ostd::Color getBorderColor(void) { return m_borderColor; }
+				inline void enableBorder(bool enable = true) { m_showBorder = enable; }
+				inline bool isBorderEnabled(void) const { return m_showBorder; }
+				inline void setBorderRadius(int32_t br) { m_borderRadius = br; }
+				inline int32_t getBorderRadius(void) const { return m_borderRadius; }
+				inline void setBorderWidth(int32_t bw) { m_borderWidth = bw; }
+				inline int32_t getBorderWidth(void) const { return m_borderWidth; }
 
 				template<typename T>
 				inline T getThemeValue(const ostd::Stylesheet &theme, const ostd::String& key, const T& fallback)
@@ -165,6 +177,8 @@ namespace ogfx
 				int32_t m_borderWidth { 2 };
 				ostd::Color m_borderColor { 255, 255, 255 };
 				bool m_showBorder { false };
+				ostd::Color m_backgroundColor { ostd::Colors::Transparent };
+				bool m_showBackground { false };
 
 				EventCallback callback_onMousePressed { nullptr };
 				EventCallback callback_onMouseReleased { nullptr };
