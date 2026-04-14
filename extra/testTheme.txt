@@ -5,7 +5,7 @@ $accentColor = Color(rgba(255, 0, 255, 255))
 const $color2 = Color(#0000FFFF)
 % -------------------
 
-window.backgroundColor = Color(rgba(0, 0, 0, 255))
+window.backgroundColor = Color(rgba(160, 160, 160, 255))
 
 $accentColor = Color(rgb(255, 0, 0))
 
@@ -13,7 +13,7 @@ $accentColor = Color(rgb(255, 0, 0))
 	textColor = $accentColor
 	backgroundColor = Color(#000000FF)
 	borderColor = $accentColor
-	fontSize = 50
+	fontSize = 20
 	borderRadius = 0
 	borderWidth = 2
 	showBackground = true
@@ -65,7 +65,7 @@ $accentColor = Color(rgb(255, 0, 0))
 (@testLabel label) {
 	textColor = $color2
 	backgroundColor = Color(#000000FF)
-	fontSize = 20
+	fontSize = 50
 }
 
 (@testLabel2 label) {
@@ -108,7 +108,6 @@ $accentColor = Color(rgb(255, 0, 0))
 (@label3 label) {
 	textColor = $color2
 	backgroundColor = Color(#000000FF)
-	fontSize = 20
 	borderColor = Color(#FF0000FF)
 	borderWidth = 4
 	borderRadius = 15

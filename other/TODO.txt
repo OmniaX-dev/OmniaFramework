@@ -14,6 +14,11 @@ Add theme caching
 Implement callback for state changes in checkbox
 FIX: WindowOutputHandler text rendering
 find a way to add fixed update to gui::Window
+Implement global scale (probably query desktop scale and adjust accordingly)
+Fix: Text rendering bug in labels
+Implement show/hide functionality for widgets
+Implement wrappers in Renderer2D to take a center and size for rects
+
 
 
 Implement following widgets:

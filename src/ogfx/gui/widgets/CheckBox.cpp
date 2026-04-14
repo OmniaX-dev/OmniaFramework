@@ -73,6 +73,8 @@ namespace ogfx
 
 			void CheckBox::onMouseReleased(const Event& event)
 			{
+				if (!isMouseInside())
+					return;
 				m_checked = !m_checked;
 				setThemeQualifier("active", m_checked);
 			}
