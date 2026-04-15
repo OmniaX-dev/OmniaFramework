@@ -35,7 +35,7 @@
 
 namespace ogfx
 {
-	const uint32_t ubuntu_mono_regular_ttf_size = 189892;
+	const u32 ubuntu_mono_regular_ttf_size = 189892;
 	const ostd::UByte ubuntu_mono_regular_ttf_data[189892] = {
 	    0, 1, 0, 0, 0, 16, 1, 0, 0, 4, 0, 0, 71, 83, 85, 66, 172, 54, 149, 231,
 	    0, 0, 34, 204, 0, 0, 16, 50, 79, 83, 47, 50, 136, 193, 253, 210, 0, 0, 1, 144,

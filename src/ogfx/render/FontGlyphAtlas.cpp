@@ -31,14 +31,14 @@ namespace ogfx
 	{
 		m_renderer = &renderer;
 		m_uvs.reserve(4096);
-		for (int32_t i = 0; i < FontGlyphAtlas::MaxAtlasCount; i++)
+		for (i32 i = 0; i < FontGlyphAtlas::MaxAtlasCount; i++)
 			m_atlases[i] = nullptr;
 		m_currentAtlasCount = 0;
 		create_new_atlas();
 		return *this;
 	}
 
-	const std::vector<const FontGlyphAtlas::GlyphInfo*> FontGlyphAtlas::processString(const ostd::String& str, TTF_Font* font, uint32_t fontSize)
+	const stdvec<const FontGlyphAtlas::GlyphInfo*> FontGlyphAtlas::processString(const String& str, TTF_Font* font, u32 fontSize)
 	{
 		if (m_currentAtlasCount <= 0)
 	        return {};
@@ -47,24 +47,24 @@ namespace ogfx
 	    for (auto& c : str)
 	    {
 	        const GlyphInfo* dummy;
-	        if (!rasterize_glyph(ostd::String("").addChar(c), font, fontSize, &dummy))
+	        if (!rasterize_glyph(String("").addChar(c), font, fontSize, &dummy))
 	            return {};
 	    }
 
 	    // Pass 2: collect stable pointers (no more insertions, no rehash risk)
-	    std::vector<const GlyphInfo*> glyphs;
+	    stdvec<const GlyphInfo*> glyphs;
 	    glyphs.reserve(str.len());
 	    for (auto& c : str)
 	    {
-	        auto cps = ostd::String("").addChar(c).getUTF8Codepoints();
+	        auto cps = String("").addChar(c).getUTF8Codepoints();
 	        if (cps.size() != 1) return {};
-	        GlyphKey key { cps[0], uint64_t(font), fontSize };
+	        GlyphKey key { cps[0], u64(font), fontSize };
 	        glyphs.push_back(&m_uvs[key]);
 	    }
 	    return glyphs;
 	}
 
-	bool FontGlyphAtlas::rasterize_glyph(const ostd::String& glyphStr, TTF_Font* font, uint32_t fontSize, const GlyphInfo** outGlyph)
+	bool FontGlyphAtlas::rasterize_glyph(const String& glyphStr, TTF_Font* font, u32 fontSize, const GlyphInfo** outGlyph)
 	{
 		if (!font || m_currentAtlasCount <= 0)
 			return false;
@@ -73,9 +73,9 @@ namespace ogfx
 		if (cps.size() != 1)
 			return false;
 
-		uint32_t codepoint = cps[0];
+		u32 codepoint = cps[0];
 
-		GlyphKey key { codepoint, uint64_t(font), fontSize };
+		GlyphKey key { codepoint, u64(font), fontSize };
 		auto it = m_uvs.find(key);
 		if (it != m_uvs.end())
 		{
@@ -87,10 +87,10 @@ namespace ogfx
 		if (!surf)
 			return false;
 
-		int gw = surf->w;
-		int gh = surf->h;
+		i32 gw = surf->w;
+		i32 gh = surf->h;
 
-		int minx, maxx, miny, maxy, advance;
+		i32 minx, maxx, miny, maxy, advance;
 		TTF_GetGlyphMetrics(font, codepoint, &minx, &maxx, &miny, &maxy, &advance);
 
 		GlyphInfo glyph;
@@ -99,14 +99,14 @@ namespace ogfx
 
 		SDL_Texture* atlas = m_atlases[m_currentAtlasCount - 1];
 
-		if (m_penX + gw > int(AtlasTextureDimension))
+		if (m_penX + gw > i32(AtlasTextureDimension))
 		{
 			m_penX = 0;
 			m_penY += m_rowHeight;
 			m_rowHeight = 0;
 		}
 
-		if (m_penY + gh > int(AtlasTextureDimension))
+		if (m_penY + gh > i32(AtlasTextureDimension))
 		{
 			SDL_DestroySurface(surf);
 
@@ -126,17 +126,17 @@ namespace ogfx
 		SDL_DestroySurface(surf);
 
 
-		float u0 = float(m_penX) / float(AtlasTextureDimension);
-		float v0 = float(m_penY) / float(AtlasTextureDimension);
-		float u1 = float(m_penX + gw) / float(AtlasTextureDimension);
-		float v1 = float(m_penY + gh) / float(AtlasTextureDimension);
+		f32 u0 = f32(m_penX) / f32(AtlasTextureDimension);
+		f32 v0 = f32(m_penY) / f32(AtlasTextureDimension);
+		f32 u1 = f32(m_penX + gw) / f32(AtlasTextureDimension);
+		f32 v1 = f32(m_penY + gh) / f32(AtlasTextureDimension);
 
 		glyph.atlas = atlas;
 		glyph.uvs[0] = { u0, v0 };
 		glyph.uvs[1] = { u1, v0 };
 		glyph.uvs[2] = { u1, v1 };
 		glyph.uvs[3] = { u0, v1 };
-		glyph.size = { static_cast<float>(gw), static_cast<float>(gh) };
+		glyph.size = { cast<f32>(gw), cast<f32>(gh) };
 
 		m_uvs[key] = glyph;
 		*outGlyph = &(m_uvs[key]);
@@ -148,7 +148,7 @@ namespace ogfx
 
 	bool FontGlyphAtlas::create_new_atlas(void)
 	{
-		if (m_currentAtlasCount >= int(MaxAtlasCount))
+		if (m_currentAtlasCount >= i32(MaxAtlasCount))
 			return false;
 
 		if (!m_renderer)
@@ -168,7 +168,7 @@ namespace ogfx
 
 		{ // Clear the texture to transparent
 			void* pixels = nullptr;
-			int pitch = 0;
+			i32 pitch = 0;
 			if (SDL_LockTexture(tex, nullptr, &pixels, &pitch) == 0)
 			{
 				memset(pixels, 0x00, pitch * AtlasTextureDimension);

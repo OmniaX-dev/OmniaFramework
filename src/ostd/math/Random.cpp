@@ -3,7 +3,7 @@
 
 namespace ostd
 {
-	void RandomGenerator::seed(int64_t _seed)
+	void RandomGenerator::seed(i64 _seed)
 	{
 		m_engine.seed(_seed);
 		m_noiseGen.SetSeed(_seed);
@@ -17,89 +17,89 @@ namespace ostd
 		m_noiseGen.SetSeed(m_seed);
 	}
 
-	int64_t RandomGenerator::getSeed(void)
+	i64 RandomGenerator::getSeed(void)
 	{
 		return m_seed;
 	}
 
-	float RandomGenerator::getf32(float min, float max)
+	f32 RandomGenerator::getf32(f32 min, f32 max)
 	{
-		__swap_if_first_is_bigger<float>(min, max);
-		std::uniform_real_distribution<float> dist(min, max);
+		__swap_if_first_is_bigger<f32>(min, max);
+		std::uniform_real_distribution<f32> dist(min, max);
 		return dist(m_engine);
 	}
 
-	double RandomGenerator::getf64(double min, double max)
+	f64 RandomGenerator::getf64(f64 min, f64 max)
 	{
-		__swap_if_first_is_bigger<double>(min, max);
-		std::uniform_real_distribution<double> dist(min, max);
+		__swap_if_first_is_bigger<f64>(min, max);
+		std::uniform_real_distribution<f64> dist(min, max);
 		return dist(m_engine);
 	}
 
-	uint64_t RandomGenerator::getui64(uint64_t min, uint64_t max)
+	u64 RandomGenerator::getui64(u64 min, u64 max)
 	{
-		__swap_if_first_is_bigger<uint64_t>(min, max);
-		std::uniform_int_distribution<uint64_t> dist(min, max);
+		__swap_if_first_is_bigger<u64>(min, max);
+		std::uniform_int_distribution<u64> dist(min, max);
 		return dist(m_engine);
 	}
 
-	uint32_t RandomGenerator::getui32(uint32_t min, uint32_t max)
+	u32 RandomGenerator::getui32(u32 min, u32 max)
 	{
-		__swap_if_first_is_bigger<uint32_t>(min, max);
-		std::uniform_int_distribution<uint32_t> dist(min, max);
+		__swap_if_first_is_bigger<u32>(min, max);
+		std::uniform_int_distribution<u32> dist(min, max);
 		return dist(m_engine);
 	}
 
-	uint16_t RandomGenerator::getui16(uint16_t min, uint16_t max)
+	u16 RandomGenerator::getui16(u16 min, u16 max)
 	{
-		__swap_if_first_is_bigger<uint16_t>(min, max);
-		std::uniform_int_distribution<uint16_t> dist(min, max);
+		__swap_if_first_is_bigger<u16>(min, max);
+		std::uniform_int_distribution<u16> dist(min, max);
 		return dist(m_engine);
 	}
 
-	uint8_t RandomGenerator::getui8(uint8_t min, uint8_t max)
+	u8 RandomGenerator::getui8(u8 min, u8 max)
 	{
-		__swap_if_first_is_bigger<uint8_t>(min, max);
-		std::uniform_int_distribution<uint8_t> dist(min, max);
+		__swap_if_first_is_bigger<u8>(min, max);
+		std::uniform_int_distribution<u8> dist(min, max);
 		return dist(m_engine);
 	}
 
-	int64_t RandomGenerator::geti64(int64_t min, int64_t max)
+	i64 RandomGenerator::geti64(i64 min, i64 max)
 	{
-		__swap_if_first_is_bigger<int64_t>(min, max);
-		std::uniform_int_distribution<int64_t> dist(min, max);
+		__swap_if_first_is_bigger<i64>(min, max);
+		std::uniform_int_distribution<i64> dist(min, max);
 		return dist(m_engine);
 	}
 
-	int32_t RandomGenerator::geti32(int32_t min, int32_t max)
+	i32 RandomGenerator::geti32(i32 min, i32 max)
 	{
-		__swap_if_first_is_bigger<int32_t>(min, max);
-		std::uniform_int_distribution<int32_t> dist(min, max);
+		__swap_if_first_is_bigger<i32>(min, max);
+		std::uniform_int_distribution<i32> dist(min, max);
 		return dist(m_engine);
 	}
 
-	int16_t RandomGenerator::geti16(int16_t min, int16_t max)
+	i16 RandomGenerator::geti16(i16 min, i16 max)
 	{
-		__swap_if_first_is_bigger<int16_t>(min, max);
-		std::uniform_int_distribution<int16_t> dist(min, max);
+		__swap_if_first_is_bigger<i16>(min, max);
+		std::uniform_int_distribution<i16> dist(min, max);
 		return dist(m_engine);
 	}
 
-	int8_t RandomGenerator::geti8(int8_t min, int8_t max)
+	i8 RandomGenerator::geti8(i8 min, i8 max)
 	{
-		__swap_if_first_is_bigger<int8_t>(min, max);
-		std::uniform_int_distribution<int8_t> dist(min, max);
+		__swap_if_first_is_bigger<i8>(min, max);
+		std::uniform_int_distribution<i8> dist(min, max);
 		return dist(m_engine);
 	}
 
-	bool RandomGenerator::getb(float true_percentage)
+	bool RandomGenerator::getb(f32 true_percentage)
 	{
 		return getf32() >= (1.0f - std::clamp(true_percentage, 0.0f, 1.0f));
 	}
 
-	Vec2 RandomGenerator::getVec2(float min, float max, bool match_xy)
+	Vec2 RandomGenerator::getVec2(f32 min, f32 max, bool match_xy)
 	{
-		float x = getf32(min, max);
+		f32 x = getf32(min, max);
 		return { x, (match_xy ? x : getf32(min, max)) };
 	}
 
@@ -108,7 +108,7 @@ namespace ostd
 		return { getf32(minmax_x.x, minmax_x.y), getf32(minmax_y.x, minmax_y.y) };
 	}
 
-	float RandomGenerator::getOpenSimplex2D(float x, float y)
+	f32 RandomGenerator::getOpenSimplex2D(f32 x, f32 y)
 	{
 		m_noiseGen.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
 		return m_noiseGen.GetNoise(x, y);

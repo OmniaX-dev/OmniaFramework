@@ -24,6 +24,6 @@
 
 namespace ogfx
 {
-	extern const uint32_t ubuntu_mono_regular_ttf_size;
+	extern const u32 ubuntu_mono_regular_ttf_size;
 	extern const ostd::UByte ubuntu_mono_regular_ttf_data[];
 }

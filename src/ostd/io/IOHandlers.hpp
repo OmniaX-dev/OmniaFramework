@@ -150,16 +150,16 @@ namespace ostd
 			inline virtual OutputHandlerBase& pObject(const BaseObject& bo) { return *this; }
 
 			inline virtual OutputHandlerBase& p(const String& se) { return *this; }
-			inline virtual OutputHandlerBase& p(uint8_t i) { return *this; }
-			inline virtual OutputHandlerBase& p(int8_t i) { return *this; }
-			inline virtual OutputHandlerBase& p(uint16_t i) { return *this; }
-			inline virtual OutputHandlerBase& p(int16_t i) { return *this; }
-			inline virtual OutputHandlerBase& p(uint32_t i) { return *this; }
-			inline virtual OutputHandlerBase& p(int32_t i) { return *this; }
-			inline virtual OutputHandlerBase& p(uint64_t i) { return *this; }
-			inline virtual OutputHandlerBase& p(int64_t i) { return *this; }
-			inline virtual OutputHandlerBase& p(float f, uint8_t precision = 0) { return *this; }
-			inline virtual OutputHandlerBase& p(double f, uint8_t precision = 0) { return *this; }
+			inline virtual OutputHandlerBase& p(u8 i) { return *this; }
+			inline virtual OutputHandlerBase& p(i8 i) { return *this; }
+			inline virtual OutputHandlerBase& p(u16 i) { return *this; }
+			inline virtual OutputHandlerBase& p(i16 i) { return *this; }
+			inline virtual OutputHandlerBase& p(u32 i) { return *this; }
+			inline virtual OutputHandlerBase& p(i32 i) { return *this; }
+			inline virtual OutputHandlerBase& p(u64 i) { return *this; }
+			inline virtual OutputHandlerBase& p(i64 i) { return *this; }
+			inline virtual OutputHandlerBase& p(f32 f, u8 precision = 0) { return *this; }
+			inline virtual OutputHandlerBase& p(f64 f, u8 precision = 0) { return *this; }
 
 			inline virtual OutputHandlerBase& nl(void) { return *this; }
 			inline virtual OutputHandlerBase& tab(void) { return *this; }
@@ -168,16 +168,16 @@ namespace ostd
 			inline virtual OutputHandlerBase& clear(void) { return *this; }
 
 			inline virtual OutputHandlerBase& xy(IPoint position) { return *this; }
-			inline virtual OutputHandlerBase& xy(int32_t x, int32_t y) { return *this; }
-			inline virtual OutputHandlerBase& x(int32_t x) { return *this; }
-			inline virtual OutputHandlerBase& y(int32_t y) { return *this; }
+			inline virtual OutputHandlerBase& xy(i32 x, i32 y) { return *this; }
+			inline virtual OutputHandlerBase& x(i32 x) { return *this; }
+			inline virtual OutputHandlerBase& y(i32 y) { return *this; }
 
 			inline virtual IPoint getCursorPosition(void) { return { 0, 0 }; }
-			inline virtual void getCursorPosition(int32_t& outX, int32_t& outY) {  }
-			inline virtual int32_t getCursorX(void) { return 0; }
-			inline virtual int32_t getCursorY(void) { return 0; }
+			inline virtual void getCursorPosition(i32& outX, i32& outY) {  }
+			inline virtual i32 getCursorX(void) { return 0; }
+			inline virtual i32 getCursorY(void) { return 0; }
 
-			inline virtual void getConsoleSize(int32_t& outColumns, int32_t& outRows) {  }
+			inline virtual void getConsoleSize(i32& outColumns, i32& outRows) {  }
 			inline virtual IPoint getConsoleSize(void) { return { 0, 0 }; }
 	};
 
@@ -198,16 +198,16 @@ namespace ostd
 			OutputHandlerBase& pObject(const BaseObject& bo) override;
 
 			OutputHandlerBase& p(const String& se) override;
-			OutputHandlerBase& p(uint8_t i) override;
-			OutputHandlerBase& p(int8_t i) override;
-			OutputHandlerBase& p(uint16_t i) override;
-			OutputHandlerBase& p(int16_t i) override;
-			OutputHandlerBase& p(uint32_t i) override;
-			OutputHandlerBase& p(int32_t i) override;
-			OutputHandlerBase& p(uint64_t i) override;
-			OutputHandlerBase& p(int64_t i) override;
-			OutputHandlerBase& p(float f, uint8_t precision = 0) override;
-			OutputHandlerBase& p(double f, uint8_t precision = 0) override;
+			OutputHandlerBase& p(u8 i) override;
+			OutputHandlerBase& p(i8 i) override;
+			OutputHandlerBase& p(u16 i) override;
+			OutputHandlerBase& p(i16 i) override;
+			OutputHandlerBase& p(u32 i) override;
+			OutputHandlerBase& p(i32 i) override;
+			OutputHandlerBase& p(u64 i) override;
+			OutputHandlerBase& p(i64 i) override;
+			OutputHandlerBase& p(f32 f, u8 precision = 0) override;
+			OutputHandlerBase& p(f64 f, u8 precision = 0) override;
 
 			OutputHandlerBase& nl(void) override;
 			OutputHandlerBase& flush(void) override;
@@ -215,16 +215,16 @@ namespace ostd
 			OutputHandlerBase& clear(void) override;
 
 			OutputHandlerBase& xy(IPoint position) override;
-			OutputHandlerBase& xy(int32_t x, int32_t y) override;
-			OutputHandlerBase& x(int32_t x) override;
-			OutputHandlerBase& y(int32_t y) override;
+			OutputHandlerBase& xy(i32 x, i32 y) override;
+			OutputHandlerBase& x(i32 x) override;
+			OutputHandlerBase& y(i32 y) override;
 
 			IPoint getCursorPosition(void) override;
-			void getCursorPosition(int32_t& outX, int32_t& outY) override;
-			int32_t getCursorX(void) override;
-			int32_t getCursorY(void) override;
+			void getCursorPosition(i32& outX, i32& outY) override;
+			i32 getCursorX(void) override;
+			i32 getCursorY(void) override;
 
-			void getConsoleSize(int32_t& outColumns, int32_t& outRows) override;
+			void getConsoleSize(i32& outColumns, i32& outRows) override;
 			IPoint getConsoleSize(void) override;
 	};
 }

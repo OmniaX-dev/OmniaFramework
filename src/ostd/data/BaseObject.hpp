@@ -37,8 +37,8 @@ namespace ostd
 			virtual BaseObject& operator=(const BaseObject& copy);
 			inline void setSignalCallback(SignalCallback callback) { callback_signal = callback; }
 
-			virtual inline uint64_t getID(void) const { return m_uid; }
-			virtual inline void setID(uint64_t id) { m_uid = id; }
+			virtual inline u64 getID(void) const { return m_uid; }
+			virtual inline void setID(u64 id) { m_uid = id; }
 
 			virtual inline bool isValid(void) const { return !isInvalid(); }
 			virtual inline bool isInvalid(void) const { return !m_valid || m_oid == 0; }
@@ -46,7 +46,7 @@ namespace ostd
 			virtual inline void validate(void) { m_valid = true; }
 			virtual inline void setValid(bool valid) { m_valid = valid; }
 
-			inline uint64_t getCompareOID(void) const { return m_oid; }
+			inline u64 getCompareOID(void) const { return m_oid; }
 			inline bool compareByOID(const BaseObject& other) const { return m_oid == other.m_oid; }
 
 			inline static BaseObject& InvalidRef(void) { return BaseObject::s_invalid_obj; }
@@ -62,7 +62,7 @@ namespace ostd
 			virtual void print(bool newLine = true, OutputHandlerBase* __destination = nullptr) const;
 
 			virtual inline void handleSignal(Signal& signal) {  }
-			void connectSignal(uint32_t signal_id);
+			void connectSignal(u32 signal_id);
 
 			void __handle_signal(Signal& signal);
 
@@ -72,14 +72,14 @@ namespace ostd
 			inline BaseObject(bool __valid) { m_uid = -1; m_valid = __valid; m_oid = 0; }
 
 		private:
-			uint64_t m_uid;
-			uint64_t m_oid;
+			u64 m_uid;
+			u64 m_oid;
 			bool m_valid;
 			String m_typeName;
 			bool m_signalsEnabled { true };
 			SignalCallback callback_signal { nullptr };
 
-			inline static uint64_t s_next_oid { 1024 };
+			inline static u64 s_next_oid { 1024 };
 			static BaseObject s_invalid_obj;
 	};
 }

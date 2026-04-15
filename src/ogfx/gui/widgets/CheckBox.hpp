@@ -34,22 +34,22 @@ namespace ogfx
 			{
 				public:
 					inline CheckBox(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(""); }
-					inline CheckBox(WindowCore& window, const ostd::String& text) : Widget({ 0, 0, 0, 0 }, window) { create(text); }
-					CheckBox& create(const ostd::String& text);
+					inline CheckBox(WindowCore& window, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(text); }
+					CheckBox& create(const String& text);
 					void applyTheme(const ostd::Stylesheet& theme) override;
 					void onDraw(ogfx::BasicRenderer2D& gfx) override;
 					void onMouseReleased(const Event& event) override;
-					void setText(const ostd::String& text);
+					void setText(const String& text);
 					void setChecked(bool checked);
-					inline ostd::String getText(void) const { return m_text; }
+					inline String getText(void) const { return m_text; }
 					inline ostd::Color getCheckBorderColor(void) const { return m_checkBorderColor; }
 					inline void setCheckBorderColor(const ostd::Color& color) { m_checkBorderColor = color; }
 					inline ostd::Color getCheckBoxColor(void) const { return m_checkBoxColor; }
 					inline void setCheckBoxColor(const ostd::Color& color) { m_checkBoxColor = color; }
 					inline ostd::Color getTextColor(void) const { return m_textColor; }
 					inline void setTextColor(const ostd::Color& color) { m_textColor = color; }
-					inline int32_t getFontSize(void) const { return m_fontSize; }
-					inline void setFontSize(int32_t fontSize) { m_fontSize = fontSize; }
+					inline i32 getFontSize(void) const { return m_fontSize; }
+					inline void setFontSize(i32 fontSize) { m_fontSize = fontSize; }
 					inline bool isChecked(void) const { return m_checked; }
 					inline void setStateChangedCallback(std::function<void(CheckBox&, bool)> callback) { callback_onStateChanged = callback; }
 
@@ -58,14 +58,14 @@ namespace ogfx
 
 				private:
 					bool m_checked { false };
-					ostd::String m_text { "" };
+					String m_text { "" };
 					bool m_textChanged { false };
-					int32_t m_fontSize { 20 };
+					i32 m_fontSize { 20 };
 					ostd::Color m_textColor { 255, 255, 255 };
-					float m_spacing { 10 };
+					f32 m_spacing { 10 };
 					ostd::Vec2 m_checkSize  { 0, 0 };
-					int32_t m_checkBorderRadius { 5 };
-					int32_t m_checkBorderWidth { 1 };
+					i32 m_checkBorderRadius { 5 };
+					i32 m_checkBorderWidth { 1 };
 					ostd::Color m_checkBorderColor { 255, 255, 255 };
 					ostd::Color m_checkBoxColor { 255, 255, 255 };
 

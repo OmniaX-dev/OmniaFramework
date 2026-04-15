@@ -27,7 +27,7 @@ namespace ogfx
 	{
 		namespace widgets
 		{
-			Label& Label::create(const ostd::String& text)
+			Label& Label::create(const String& text)
 			{
 				setText(text);
 				setPadding({ 5, 5, 5, 5 });
@@ -43,9 +43,9 @@ namespace ogfx
 			{
 				setColor(getThemeValue<ostd::Color>(theme, "label.textColor", ostd::Colors::White));
 				setBackGroundColor(getThemeValue<ostd::Color>(theme, "label.backgroundColor", ostd::Colors::Transparent));
-				setFontSize(getThemeValue<int32_t>(theme, "label.fontSize", 20));
-				setBorderRadius(getThemeValue<int32_t>(theme, "label.borderRadius", 10));
-				setBorderWidth(getThemeValue<int32_t>(theme, "label.borderWidth", 2));
+				setFontSize(getThemeValue<i32>(theme, "label.fontSize", 20));
+				setBorderRadius(getThemeValue<i32>(theme, "label.borderRadius", 10));
+				setBorderWidth(getThemeValue<i32>(theme, "label.borderWidth", 2));
 				enableBorder(getThemeValue<bool>(theme, "label.showBorder", false));
 				setBorderColor(getThemeValue<ostd::Color>(theme, "label.borderColor", ostd::Colors::White));
 				enableBackground(getThemeValue<bool>(theme, "label.showBackground", false));
@@ -60,7 +60,7 @@ namespace ogfx
 				gfx.drawString(getText(), getGlobalContentPosition(), getColor(), getFontSize());
 			}
 
-			void Label::setText(const ostd::String& text)
+			void Label::setText(const String& text)
 			{
 				m_text = text;
 				m_textChanged = true;
@@ -73,7 +73,7 @@ namespace ogfx
 				size.x += getPadding().right();
 				size.y += getPadding().top();
 				size.y += getPadding().bottom();
-				setSize({ static_cast<float>(size.x), static_cast<float>(size.y) });
+				setSize({ cast<f32>(size.x), cast<f32>(size.y) });
 				m_textChanged = false;
 			}
 		}

@@ -28,7 +28,7 @@ namespace ogfx
 		create(0, 0, 0, 0, 0);
 	}
 
-	Animation::Animation(int frames, int columns, int rows, int frame_width, int frame_height)
+	Animation::Animation(i32 frames, i32 columns, i32 rows, i32 frame_width, i32 frame_height)
 	{
 		create(frames, columns, rows, frame_width, frame_height);
 	}
@@ -49,7 +49,7 @@ namespace ogfx
 		m_random = false;
 	}
 
-	void Animation::create(int frames, int columns, int rows, int frame_width, int frame_height)
+	void Animation::create(i32 frames, i32 columns, i32 rows, i32 frame_width, i32 frame_height)
 	{
 		m_frames = frames;
 		m_columns = columns;
@@ -107,11 +107,11 @@ namespace ogfx
 		}
 		else if (m_still)
 			m_current_frame = 1; //TODO: Hardcoded value
-		int x = ((m_current_frame % m_columns) + m_column_offset) * m_frame_width;
-		int y = m_row_offset * m_frame_height;
+		i32 x = ((m_current_frame % m_columns) + m_column_offset) * m_frame_width;
+		i32 y = m_row_offset * m_frame_height;
 		if (m_rows > 1)
 			y = ((m_current_frame / m_columns) + m_row_offset) * m_frame_height;
 
-		m_frame_rect = { static_cast<float>(x), static_cast<float>(y), static_cast<float>(m_frame_width), static_cast<float>(m_frame_height) };
+		m_frame_rect = { cast<f32>(x), cast<f32>(y), cast<f32>(m_frame_width), cast<f32>(m_frame_height) };
 	}
 }

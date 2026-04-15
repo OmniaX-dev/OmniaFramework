@@ -139,9 +139,9 @@ if (WIN32)
 								"${MSYS2_UCRT64}/include/c++/13.2.0/x86_64-w64-mingw32"
 
 				)
-	file(WRITE ${CMAKE_CURRENT_LIST_DIR}/.clangd "CompileFlags:\n    CompilationDatabase: bin\n    Add: [\"--target=x86_64-w64-mingw32\"]")
+	file(WRITE ${CMAKE_CURRENT_LIST_DIR}/.clangd "CompileFlags:\n    CompilationDatabase: bin\n    Add: [\"--target=x86_64-w64-mingw32\"]\nDiagnostics:\n    MissingIncludes: None")
 else()
-	file(WRITE ${CMAKE_CURRENT_LIST_DIR}/.clangd "CompileFlags:\n    CompilationDatabase: bin")
+	file(WRITE ${CMAKE_CURRENT_LIST_DIR}/.clangd "CompileFlags:\n    CompilationDatabase: bin\nDiagnostics:\n    MissingIncludes: None")
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

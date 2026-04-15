@@ -31,18 +31,18 @@ namespace ogfx
 			characterMap[c] = getCharacterIndex(c);
 	}
 
-	bool PixelRenderer::TextRenderer::drawString(ostd::String str, uint32_t column, uint32_t row, uint32_t* screenPixels, int32_t screenWidth, int32_t screenHeight, uint32_t* fontPixels,  ostd::Color color, ostd::Color background)
+	bool PixelRenderer::TextRenderer::drawString(const String& str, u32 column, u32 row, u32* screenPixels, i32 screenWidth, i32 screenHeight, u32* fontPixels, const ostd::Color& color, const ostd::Color& background)
 	{
-		ostd::String se(str);
+		String se(str);
 		if (se == "") return false;
 		if (row >= CONSOLE_CHARS_V) return false;
 		if (column >= CONSOLE_CHARS_H) return false;
 		if (column + str.len() > CONSOLE_CHARS_H) return false;
-		int32_t x = column * FONT_CHAR_W;
-		int32_t y = row * FONT_CHAR_H;
+		i32 x = column * FONT_CHAR_W;
+		i32 y = row * FONT_CHAR_H;
 		for (auto& c : str)
 		{
-			drawCharacter((uint8_t*)screenPixels, screenWidth, screenHeight, (uint8_t*)fontPixels, x, y, c, color, background);
+			drawCharacter((u8*)screenPixels, screenWidth, screenHeight, (u8*)fontPixels, x, y, c, color, background);
 			x += FONT_CHAR_W;
 		}
 		s_cursor_pos_x = x;
@@ -51,11 +51,11 @@ namespace ogfx
 		return true;
 	}
 
-	int32_t PixelRenderer::TextRenderer::getCharacterIndex(char c)
+	i32 PixelRenderer::TextRenderer::getCharacterIndex(char c)
 	{
 		using namespace ostd;
 
-		int32_t charIndex = (int)c - 32;
+		i32 charIndex = (i32)c - 32;
 		IPoint charCoords = CONVERT_1D_2D(charIndex, FONT_H_CHARS);
 		charCoords.x *= FONT_CHAR_W * 4;
 		charCoords.y *= FONT_CHAR_H;
@@ -64,37 +64,37 @@ namespace ogfx
 		return charIndex;
 	}
 
-	ostd::Color PixelRenderer::TextRenderer::applyTint(ostd::Color baseColor, ostd::Color tintColor)
+	ostd::Color PixelRenderer::TextRenderer::applyTint(const ostd::Color& baseColor, const ostd::Color& tintColor)
 	{
 		auto nBase = baseColor.getNormalizedColor();
 		auto nTint = tintColor.getNormalizedColor();
 
-		float r = nBase.r * nTint.r;
-		float g = nBase.r * nTint.g;
-		float b = nBase.r * nTint.b;
+		f32 r = nBase.r * nTint.r;
+		f32 g = nBase.r * nTint.g;
+		f32 b = nBase.r * nTint.b;
 
 		ostd::Color::FloatCol nTinted(r, g, b, 1.0f);
 
 		return ostd::Color(nTinted);
 	}
 
-	void PixelRenderer::TextRenderer::drawCharacter(uint8_t* screenPixels, int32_t screenWidth, int32_t screenHeight, uint8_t* fontPixels, int32_t x, int32_t y, char c, ostd::Color color, ostd::Color background)
+	void PixelRenderer::TextRenderer::drawCharacter(u8* screenPixels, i32 screenWidth, i32 screenHeight, u8* fontPixels, i32 x, i32 y, char c, const ostd::Color& color, const ostd::Color& background)
 	{
 		using namespace ostd;
-		int32_t charIndex = characterMap[c];
+		i32 charIndex = characterMap[c];
 		IPoint charCoords = CONVERT_1D_2D(charIndex, (FONT_CHAR_W * FONT_H_CHARS * 4));
 
-		int32_t screenx = x * 4, screeny = y;
+		i32 screenx = x * 4, screeny = y;
 
 		ostd::Color tintedColor;
 
 		bool applyBackground = false;
-		for (int32_t y = charCoords.y; y < charCoords.y + (FONT_CHAR_H); y += 1)
+		for (i32 y = charCoords.y; y < charCoords.y + (FONT_CHAR_H); y += 1)
 		{
-			for (int32_t x = charCoords.x; x < charCoords.x + (FONT_CHAR_W * 4); x += 4)
+			for (i32 x = charCoords.x; x < charCoords.x + (FONT_CHAR_W * 4); x += 4)
 			{
-				int32_t index = CONVERT_2D_1D(x, y, (FONT_CHAR_W * FONT_H_CHARS * 4));
-				int32_t screenIndex = CONVERT_2D_1D(screenx, screeny, (screenWidth * 4));
+				i32 index = CONVERT_2D_1D(x, y, (FONT_CHAR_W * FONT_H_CHARS * 4));
+				i32 screenIndex = CONVERT_2D_1D(screenx, screeny, (screenWidth * 4));
 				screenx += 4;
 				if (fontPixels[index] == 0x00 && fontPixels[index + 1] == 0x00 && fontPixels[index + 2] == 0x00)
 				{
@@ -138,7 +138,7 @@ namespace ogfx
 		if (!parent.isValid() || !parent.isInitialized())
 			return; //TODO: Error
 		m_parent = &parent;
-		m_pixels = ostd::Memory::createArray<uint32_t>(parent.getWindowWidth() * parent.getWindowHeight());
+		m_pixels = ostd::Memory::createArray<u32>(parent.getWindowWidth() * parent.getWindowHeight());
 		m_texture = SDL_CreateTexture(parent.getSDLRenderer(), SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, parent.getWindowWidth(), parent.getWindowHeight());
 		m_windowWidth = parent.getWindowWidth();
 		m_windowHeight = parent.getWindowHeight();
@@ -153,7 +153,7 @@ namespace ogfx
 		if (isInvalid()) return;
 		if (signal.ID == ostd::BuiltinSignals::WindowResized)
 		{
-			m_pixels = ostd::Memory::resizeArray<uint32_t>(m_pixels, m_parent->getWindowWidth() * m_parent->getWindowHeight());
+			m_pixels = ostd::Memory::resizeArray<u32>(m_pixels, m_parent->getWindowWidth() * m_parent->getWindowHeight());
 			SDL_DestroyTexture(m_texture);
 			m_texture = SDL_CreateTexture(m_parent->getSDLRenderer(), SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, m_parent->getWindowWidth(), m_parent->getWindowHeight());
 			m_windowWidth = m_parent->getWindowWidth();
@@ -172,18 +172,18 @@ namespace ogfx
 	void PixelRenderer::displayBuffer(void)
 	{
 		if (isInvalid()) return;
-		SDL_FRect rect { 0, 0, static_cast<float>(m_windowWidth), static_cast<float>(m_windowHeight) };
+		SDL_FRect rect { 0, 0, cast<f32>(m_windowWidth), cast<f32>(m_windowHeight) };
 		SDL_RenderTexture(m_parent->getSDLRenderer(), m_texture, NULL, &rect);
 	}
 
 	void PixelRenderer::clear(const ostd::Color& color)
 	{
 		if (isInvalid()) return;
-		for (int32_t y = 0; y < m_windowHeight; y++)
+		for (i32 y = 0; y < m_windowHeight; y++)
 		{
-			for (uint32_t x = 0; x < m_windowWidth; x++)
+			for (u32 x = 0; x < m_windowWidth; x++)
 			{
-				int32_t index = CONVERT_2D_1D(x, y, m_windowWidth);
+				i32 index = CONVERT_2D_1D(x, y, m_windowWidth);
 				m_pixels[index] = color.asInteger(ostd::Color::eColorFormat::ARGB);
 			}
 		}

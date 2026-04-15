@@ -1,26 +1,25 @@
 /*
-    OmniaFramework - A collection of useful functionality
-    Copyright (C) 2025  OmniaX-Dev
+	OmniaFramework - A collection of useful functionality
+	Copyright (C) 2025  OmniaX-Dev
 
-    This file is part of OmniaFramework.
+	This file is part of OmniaFramework.
 
-    OmniaFramework is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	OmniaFramework is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    OmniaFramework is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	OmniaFramework is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
 
-#include <cstdint>
 #include <ostd/data/Types.hpp>
 #include <ostd/data/BaseObject.hpp>
 #include <ostd/string/String.hpp>
@@ -31,26 +30,26 @@ namespace ostd
 	{
 		public: struct FloatCol
 		{
-			float r;
-			float g;
-			float b;
-			float a;
+			f32 r;
+			f32 g;
+			f32 b;
+			f32 a;
 
 			FloatCol(void) : r(0.0f), g(0.0f), b(0.0f), a(1.0f) {  }
-			FloatCol(float _r, float _g, float _b, float _a) : r(_r), g(_g), b(_b), a(_a) {  }
+			FloatCol(f32 _r, f32 _g, f32 _b, f32 _a) : r(_r), g(_g), b(_b), a(_a) {  }
 		};
 		public: struct Channel
 		{
-			uint8_t value;
+			u8 value;
 			Color& parent;
 
 			inline Channel(Color& _parent) : parent(_parent) { value = 0; }
-			inline operator uint8_t() const { return value; }
-			inline Channel& operator=(uint8_t v)
+			inline operator u8() const { return value; }
+			inline Channel& operator=(u8 v)
 			{
-			    value = v;
-			    parent.m_dirty = true;
-			    return *this;
+				value = v;
+				parent.m_dirty = true;
+				return *this;
 			}
 		};
 
@@ -58,8 +57,8 @@ namespace ostd
 
 		public:
 			Color(void);
-			Color(uint8_t rgb_single_value, uint8_t alpha = 255);
-			Color(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t alpha = 255);
+			Color(u8 rgb_single_value, u8 alpha = 255);
+			Color(u8 _r, u8 _g, u8 _b, u8 alpha = 255);
 			Color(const String& color_string);
 			Color(const FloatCol& normalized_color);
 			Color(const Color& copy);
@@ -69,14 +68,14 @@ namespace ostd
 			Color& operator=(const Color& copy);
 
 			Color& set(void);
-			Color& set(uint8_t rgb_single_value, uint8_t alpha = 255);
-			Color& set(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t alpha = 255);
+			Color& set(u8 rgb_single_value, u8 alpha = 255);
+			Color& set(u8 _r, u8 _g, u8 _b, u8 alpha = 255);
 			Color& set(const String& color_string);
 			Color& set(const FloatCol& normalized_color);
 
-			String hexString(bool include_alpha = false, String prefix = "0x") const;
+			String hexString(bool include_alpha = false, const String& prefix = "0x") const;
 			String rgbString(bool include_parenthesis = true, bool include_alpha = false) const;
-			uint32_t asInteger(eColorFormat format = eColorFormat::RGBA) const;
+			u32 asInteger(eColorFormat format = eColorFormat::RGBA) const;
 			FloatCol getNormalizedColor(void) const;
 
 			String toString(void) const override;
@@ -84,8 +83,8 @@ namespace ostd
 			inline void invalidate(void) override {  }
 			inline void setValid(bool valid) override {  }
 
-			static void RGBtoHSV(float r, float g, float b, float& h, float& s, float& v);
-			static void HSVtoRGB(float h, float s, float v, float& r, float& g, float& b);
+			static void RGBtoHSV(f32 r, f32 g, f32 b, f32& h, f32& s, f32& v);
+			static void HSVtoRGB(f32 h, f32 s, f32 v, f32& r, f32& g, f32& b);
 
 		public:
 			Channel r;
@@ -95,7 +94,7 @@ namespace ostd
 
 		private:
 			mutable bool m_dirty { true };
-    		mutable FloatCol m_cachedFloat { 0, 0, 0, 0 };
+			mutable FloatCol m_cachedFloat { 0, 0, 0, 0 };
 
 		public:
 	};

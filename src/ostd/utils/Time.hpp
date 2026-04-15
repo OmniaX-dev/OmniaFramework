@@ -87,29 +87,29 @@ namespace ostd
 			bool m_counting { false };
 	};
 
-	typedef _Counter<uint64_t> Counter;
-	typedef _Counter<float> FloatCounter;
-	typedef _Counter<double> DoubleCounter;
+	typedef _Counter<u64> Counter;
+	typedef _Counter<f32> FloatCounter;
+	typedef _Counter<f64> DoubleCounter;
 
 	class OutputHandlerBase;
 	class Timer
 	{
 		public:
 			inline Timer(void) { m_started = false; m_current = 0; m_timeUnit = eTimeUnits::Nanoseconds; m_dest = nullptr; }
-			uint64_t start(bool print = true, String name = "", eTimeUnits timeUnit = eTimeUnits::Nanoseconds, OutputHandlerBase* __destination = nullptr);
-			uint64_t startCount(eTimeUnits timeUnit = eTimeUnits::Nanoseconds);
-			uint64_t end(bool print = true);
-			uint64_t endCount(bool stop = true);
-			uint64_t restart(eTimeUnits timeUnit = eTimeUnits::Nanoseconds);
+			u64 start(bool print = true, const String& name = "", eTimeUnits timeUnit = eTimeUnits::Nanoseconds, OutputHandlerBase* __destination = nullptr);
+			u64 startCount(eTimeUnits timeUnit = eTimeUnits::Nanoseconds);
+			u64 end(bool print = true);
+			u64 endCount(bool stop = true);
+			u64 restart(eTimeUnits timeUnit = eTimeUnits::Nanoseconds);
 
-			static uint64_t getEpoch(eTimeUnits timeUnit = eTimeUnits::Milliseconds);
+			static u64 getEpoch(eTimeUnits timeUnit = eTimeUnits::Milliseconds);
 
 			inline const String& getName(void) const { return m_name; }
-			inline uint64_t read(void) { if (!m_started) return 0; return endCount(false); }
+			inline u64 read(void) { if (!m_started) return 0; return endCount(false); }
 
 		private:
 			bool m_started;
-			int64_t m_current;
+			i64 m_current;
 			eTimeUnits m_timeUnit;
 			String m_name;
 			OutputHandlerBase* m_dest;
@@ -118,26 +118,26 @@ namespace ostd
 	class StepTimer
 	{
 		public:
-		    using Callback = std::function<void(double dt)>;
+		    using Callback = std::function<void(f64 dt)>;
 			using Clock = std::chrono::high_resolution_clock;
 		    using TimePoint = Clock::time_point;
 		    using Duration = Clock::duration;
 
 		public:
 		    StepTimer() = default;
-		    inline StepTimer(double updatesPerSecond, Callback callback) { create(updatesPerSecond, callback); }
-		    StepTimer& create(double updatesPerSecond, Callback callback);
+		    inline StepTimer(f64 updatesPerSecond, Callback callback) { create(updatesPerSecond, callback); }
+		    StepTimer& create(f64 updatesPerSecond, Callback callback);
 		    void update(void);
 		    void reset(void);
-			inline double getInterpolationAlpha(void) const { return m_valid && m_targetDt > 0.0 ? m_accumulator / m_targetDt : 0.0; }
+			inline f64 getInterpolationAlpha(void) const { return m_valid && m_targetDt > 0.0 ? m_accumulator / m_targetDt : 0.0; }
 		    inline void invalidate(void) { m_valid = false; }
 		    inline bool isValid(void) const { return m_valid; }
 
 		private:
 			TimePoint m_prevTime;
-		    double m_targetDt { 0.0 };
+		    f64 m_targetDt { 0.0 };
 		    Callback m_callback { nullptr };
-		    double m_accumulator { 0.0 };
+		    f64 m_accumulator { 0.0 };
 		    bool m_valid { false };
 	};
 
@@ -145,8 +145,8 @@ namespace ostd
 	{
 		public:
 			GameClock(void);
-			const float& start(void);
-			inline const float& getTimeOfDay(void) const { return m_timeOfDay; }
+			const f32& start(void);
+			inline const f32& getTimeOfDay(void) const { return m_timeOfDay; }
 			String asString(void);
 			void update(void);
 
@@ -155,16 +155,16 @@ namespace ostd
 			String convertMonth(void);
 
 		public:
-			uint8_t minutes;
-			uint8_t hours;
-			uint16_t days;
-			uint8_t months;
-			uint16_t years;
+			u8 minutes;
+			u8 hours;
+			u16 days;
+			u8 months;
+			u16 years;
 
 		private:
 			Timer m_rtClock;
-			float m_timeOfDay;
-			float m_totalSeconds;
+			f32 m_timeOfDay;
+			f32 m_totalSeconds;
 	};
 
 	class LocalTime
@@ -173,13 +173,13 @@ namespace ostd
 			String getFullString(bool include_date = true, bool include_time = true, bool day_name = true, bool month_as_name = true, bool include_seconds = true) const;
 			inline String getDateString(bool day_name = true, bool month_as_name = true) { return getFullString(true, false, day_name, month_as_name, false); }
 			inline String getTimeString(bool include_seconds = true) { return getFullString(false, true, false, false, include_seconds); }
-			int32_t hours(void) const;
-			int32_t minutes(void) const;
-			int32_t seconds(void) const;
-			int32_t day(void) const;
-			int32_t month(void) const;
-			int32_t year(void) const;
-			int32_t weekDay(void) const;
+			i32 hours(void) const;
+			i32 minutes(void) const;
+			i32 seconds(void) const;
+			i32 day(void) const;
+			i32 month(void) const;
+			i32 year(void) const;
+			i32 weekDay(void) const;
 			String shours(bool leading_zero = true) const;
 			String sminutes(bool leading_zero = true) const;
 			String sseconds(bool leading_zero = true) const;
@@ -189,40 +189,40 @@ namespace ostd
 			String sWeekDay(bool day_name = true) const;
 
 		protected:
-			virtual String monthToText(int32_t month) const;
-			virtual String weekDayToText(int32_t day) const;
+			virtual String monthToText(i32 month) const;
+			virtual String weekDayToText(i32 day) const;
 	};
 	typedef LocalTime LocalTime_EN;
 	class LocalTime_IT : public LocalTime
 	{
 		protected:
-			String monthToText(int32_t month) const override;
-			String weekDayToText(int32_t day) const override;
+			String monthToText(i32 month) const override;
+			String weekDayToText(i32 day) const override;
 	};
 	class LocalTime_ES : public LocalTime
 	{
 		protected:
-			String monthToText(int32_t month) const override;
-			String weekDayToText(int32_t day) const override;
+			String monthToText(i32 month) const override;
+			String weekDayToText(i32 day) const override;
 	};
 	class LocalTime_DE : public LocalTime
 	{
 		protected:
-			String monthToText(int32_t month) const override;
-			String weekDayToText(int32_t day) const override;
+			String monthToText(i32 month) const override;
+			String weekDayToText(i32 day) const override;
 	};
 
 	class Time
 	{
 		public:
 			static void startRunningTimer(void);
-			static inline const uint64_t getStartTime(void) { return s_startTime_ms; }
-			static void sleep(uint32_t __time, eTimeUnits __unit = eTimeUnits::Milliseconds);
-			static uint64_t getRunningTime_ms(void);
-			static String secondsToFormattedString(int32_t totalSeconds);
+			static inline const u64 getStartTime(void) { return s_startTime_ms; }
+			static void sleep(u32 __time, eTimeUnits __unit = eTimeUnits::Milliseconds);
+			static u64 getRunningTime_ms(void);
+			static String secondsToFormattedString(i32 totalSeconds);
 
 		private:
-			inline static uint64_t s_startTime_ms;
+			inline static u64 s_startTime_ms;
 
 	};
 }

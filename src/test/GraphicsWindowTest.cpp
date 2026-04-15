@@ -47,16 +47,16 @@ class Window : public ogfx::GraphicsWindow
 		{
 			auto l_rndPoint = [&](void) -> ostd::FPoint {
 				using rnd = ostd::Random;
-				return rnd::getVec2({ 0, (float)getWindowWidth() }, { 0, (float)getWindowHeight() });
+				return rnd::getVec2({ 0, (f32)getWindowWidth() }, { 0, (f32)getWindowHeight() });
 			};
-			for (int32_t i = 0; i < 10000; i++)
+			for (i32 i = 0; i < 10000; i++)
 				m_gfx.drawLine({ l_rndPoint(), l_rndPoint() }, ostd::Colors::Crimson, 10);
 			m_gfx.endFrame();
 		}
 
-		inline void onFixedUpdate(double frameTime_s) override
+		inline void onFixedUpdate(f64 frameTime_s) override
 		{
-			std::cout << (int)getFPS() << "\n";
+			std::cout << (i32)getFPS() << "\n";
 		}
 
 		inline void onUpdate(void) override
@@ -67,7 +67,7 @@ class Window : public ogfx::GraphicsWindow
 		ogfx::BasicRenderer2D m_gfx;
 };
 
-int main(int argc, char** argv)
+i32 main(i32 argc, char** argv)
 {
 	Window window;
 	window.initialize(800, 600, "OmniaFramework - Test Window");

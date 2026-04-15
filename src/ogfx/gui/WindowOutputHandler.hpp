@@ -33,56 +33,56 @@ namespace ogfx
 		public:
 			GraphicsWindowOutputHandler(void);
 			void attachWindow(WindowCore& window);
-			void setMonospaceFont(const ostd::String& filePath);
-			ostd::Vec2 getStringSize(const ostd::String& str);
+			void setMonospaceFont(const String& filePath);
+			ostd::Vec2 getStringSize(const String& str);
 			bool isReady(void);
 			void resetCursorPosition(void);
 			void resetColors(void);
 			void beginFrame(void);
 
-			void setFontSize(int32_t fontSize);
+			void setFontSize(i32 fontSize);
 			void setConsoleMaxCharacters(const ostd::IPoint& size);
 			void setConsolePosition(const ostd::Vec2& pos);
 			void setWrapMode(eWrapMode wrapMode);
 			void setPadding(const ostd::Rectangle& rect);
 			void setDefaultForegroundColor(const ostd::Color& color);
 			void setDefaultBackgorundColor(const ostd::Color& color);
-			void setTabWidth(uint8_t tw);
+			void setTabWidth(u8 tw);
 
-			int32_t getFontSize(void);
-			ostd::Vec2 getCharacterSize(int32_t fontSize = 0);
+			i32 getFontSize(void);
+			ostd::Vec2 getCharacterSize(i32 fontSize = 0);
 			ostd::Vec2 getConsolePosition(void);
 			eWrapMode getWrapMode(void);
 			ostd::Rectangle getPadding(void);
 			ostd::Color getDefaultBackgroundColor(void);
 			ostd::Color getDefaultForegroundColor(void);
-			uint8_t getTabWidth(void);
+			u8 getTabWidth(void);
 			ostd::Rectangle getConsoleBounds(void);
 
 			GraphicsWindowOutputHandler& bg(const ostd::Color& color) override;
 			GraphicsWindowOutputHandler& bg(const ostd::ConsoleColors::tConsoleColor& color) override;
-			GraphicsWindowOutputHandler& bg(const ostd::String& color) override;
+			GraphicsWindowOutputHandler& bg(const String& color) override;
 			GraphicsWindowOutputHandler& fg(const ostd::Color& color) override;
 			GraphicsWindowOutputHandler& fg(const ostd::ConsoleColors::tConsoleColor& color) override;
-			GraphicsWindowOutputHandler& fg(const ostd::String& color) override;
+			GraphicsWindowOutputHandler& fg(const String& color) override;
 
 			GraphicsWindowOutputHandler& pChar(char c) override;
-			GraphicsWindowOutputHandler& pStyled(const ostd::String& styled) override;
+			GraphicsWindowOutputHandler& pStyled(const String& styled) override;
 			GraphicsWindowOutputHandler& pStyled(const ostd::TextStyleParser::tStyledString& styled) override;
 			GraphicsWindowOutputHandler& pStyled(ostd::TextStyleBuilder::IRichStringBase& styled) override;
 			GraphicsWindowOutputHandler& pObject(const ostd::BaseObject& bo) override;
 
-			GraphicsWindowOutputHandler& p(const ostd::String& se) override;
-			GraphicsWindowOutputHandler& p(uint8_t i) override;
-			GraphicsWindowOutputHandler& p(int8_t i) override;
-			GraphicsWindowOutputHandler& p(uint16_t i) override;
-			GraphicsWindowOutputHandler& p(int16_t i) override;
-			GraphicsWindowOutputHandler& p(uint32_t i) override;
-			GraphicsWindowOutputHandler& p(int32_t i) override;
-			GraphicsWindowOutputHandler& p(uint64_t i) override;
-			GraphicsWindowOutputHandler& p(int64_t i) override;
-			GraphicsWindowOutputHandler& p(float f, uint8_t precision = 0) override;
-			GraphicsWindowOutputHandler& p(double f, uint8_t precision = 0) override;
+			GraphicsWindowOutputHandler& p(const String& se) override;
+			GraphicsWindowOutputHandler& p(u8 i) override;
+			GraphicsWindowOutputHandler& p(i8 i) override;
+			GraphicsWindowOutputHandler& p(u16 i) override;
+			GraphicsWindowOutputHandler& p(i16 i) override;
+			GraphicsWindowOutputHandler& p(u32 i) override;
+			GraphicsWindowOutputHandler& p(i32 i) override;
+			GraphicsWindowOutputHandler& p(u64 i) override;
+			GraphicsWindowOutputHandler& p(i64 i) override;
+			GraphicsWindowOutputHandler& p(f32 f, u8 precision = 0) override;
+			GraphicsWindowOutputHandler& p(f64 f, u8 precision = 0) override;
 
 			GraphicsWindowOutputHandler& nl(void) override;
 			GraphicsWindowOutputHandler& tab(void) override;
@@ -91,21 +91,21 @@ namespace ogfx
 			GraphicsWindowOutputHandler& reset(void) override;
 
 			GraphicsWindowOutputHandler& xy(ostd::IPoint position) override;
-			GraphicsWindowOutputHandler& xy(int32_t x, int32_t y) override;
-			GraphicsWindowOutputHandler& x(int32_t x) override;
-			GraphicsWindowOutputHandler& y(int32_t y) override;
+			GraphicsWindowOutputHandler& xy(i32 x, i32 y) override;
+			GraphicsWindowOutputHandler& x(i32 x) override;
+			GraphicsWindowOutputHandler& y(i32 y) override;
 
 			ostd::IPoint getCursorPosition(void) override;
-			void getCursorPosition(int32_t& outX, int32_t& outY) override;
-			int32_t getCursorX(void) override;
-			int32_t getCursorY(void) override;
+			void getCursorPosition(i32& outX, i32& outY) override;
+			i32 getCursorX(void) override;
+			i32 getCursorY(void) override;
 
-			void getConsoleSize(int32_t& outColumns, int32_t& outRows) override;
+			void getConsoleSize(i32& outColumns, i32& outRows) override;
 			ostd::IPoint getConsoleSize(void) override;
 
 		private:
 			void __update_char_size(void);
-			void __print_string(const ostd::String& str);
+			void __print_string(const String& str);
 
 		private:
 			ostd::Color m_backgroundColor;
@@ -115,13 +115,13 @@ namespace ogfx
 			ostd::Vec2 m_curosrPosition;
 			BasicRenderer2D m_renderer;
 			WindowCore* m_window { nullptr };
-			int32_t m_fontSize { 20 };
+			i32 m_fontSize { 20 };
 			ostd::Vec2 m_charSize;
 			ostd::IPoint m_consoleSize { 0, 0 };
 			bool m_ready { false };
 			ostd::Vec2 m_consolePosition { 0.0f, 0.0f };
 			eWrapMode m_wrapMode { eWrapMode::TripleDots };
 			ostd::Rectangle m_padding { 10, 10, 10, 10 };
-			uint8_t m_tabWidth { 8 };
+			u8 m_tabWidth { 8 };
 	};
 }

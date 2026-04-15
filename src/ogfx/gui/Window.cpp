@@ -27,7 +27,8 @@ namespace ogfx
 {
 	const Uint32 REDRAW_EVENT = SDL_RegisterEvents(1);
 
-	inline static const ostd::String DefaultThemeStyle = \
+	//TODO: Temporary
+	inline static const String DefaultThemeStyle = \
 		"window.backgroundColor = Color(#000000FF)\n" \
 		"label.textColor = Color(#FFFFFFFF)\n" \
 		"label.backgroundColor = Color(#00000000)\n" \
@@ -69,7 +70,7 @@ namespace ogfx
 		SDLSysten::release();
 	}
 
-	void WindowCore::initialize(int32_t width, int32_t height, const ostd::String& title)
+	void WindowCore::initialize(i32 width, i32 height, const String& title)
 	{
 		if (m_initialized) return;
 		SDLSysten::acquire();
@@ -158,14 +159,14 @@ namespace ogfx
 		ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::WindowClosed, ostd::Signal::Priority::Normal, *this);
 	}
 
-	void WindowCore::setSize(int32_t width, int32_t height)
+	void WindowCore::setSize(i32 width, i32 height)
 	{
 		if (!isInitialized()) return;
 		SDL_SetWindowSize(m_window, width, height);
 		ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::WindowResized, ostd::Signal::Priority::RealTime);
 	}
 
-	void WindowCore::setTitle(const ostd::String& title)
+	void WindowCore::setTitle(const String& title)
 	{
 		if (!isInitialized()) return;
 		m_title = title;
@@ -174,72 +175,72 @@ namespace ogfx
 
 	void WindowCore::setCursor(eCursor cursor)
 	{
-	    switch (cursor)
-	    {
-	        case eCursor::Default:
-	            SDL_SetCursor(m_cursor_Default);
-	        break;
-	        case eCursor::Text:
-	            SDL_SetCursor(m_cursor_Text);
-	        break;
-	        case eCursor::Wait:
-	            SDL_SetCursor(m_cursor_Wait);
-	        break;
-	        case eCursor::Crosshair:
-	            SDL_SetCursor(m_cursor_Crosshair);
-	        break;
-	        case eCursor::Progress:
-	            SDL_SetCursor(m_cursor_Progress);
-	        break;
-	        case eCursor::NWSE_Resize:
-	            SDL_SetCursor(m_cursor_NWSE_Resize);
-	        break;
-	        case eCursor::NESW_Resize:
-	            SDL_SetCursor(m_cursor_NESW_Resize);
-	        break;
-	        case eCursor::EW_Resize:
-	            SDL_SetCursor(m_cursor_EW_Resize);
-	        break;
-	        case eCursor::NS_Resize:
-	            SDL_SetCursor(m_cursor_NS_Resize);
-	        break;
-	        case eCursor::Move:
-	            SDL_SetCursor(m_cursor_Move);
-	        break;
-	        case eCursor::NotAllowed:
-	            SDL_SetCursor(m_cursor_NotAllowed);
-	        break;
-	        case eCursor::Pointer:
-	            SDL_SetCursor(m_cursor_Pointer);
-	        break;
-	        case eCursor::NW_Resize:
-	            SDL_SetCursor(m_cursor_NW_Resize);
-	        break;
-	        case eCursor::N_Resize:
-	            SDL_SetCursor(m_cursor_N_Resize);
-	        break;
-	        case eCursor::NE_Resize:
-	            SDL_SetCursor(m_cursor_NE_Resize);
-	        break;
-	        case eCursor::E_Resize:
-	            SDL_SetCursor(m_cursor_E_Resize);
-	        break;
-	        case eCursor::SE_Resize:
-	            SDL_SetCursor(m_cursor_SE_Resize);
-	        break;
-	        case eCursor::S_Resize:
-	            SDL_SetCursor(m_cursor_S_Resize);
-	        break;
-	        case eCursor::SW_Resize:
-	            SDL_SetCursor(m_cursor_SW_Resize);
-	        break;
-	        case eCursor::W_Resize:
-	            SDL_SetCursor(m_cursor_W_Resize);
-	        break;
-	        default:
-	            SDL_SetCursor(m_cursor_Default);
-	        break;
-	    }
+		switch (cursor)
+		{
+			case eCursor::Default:
+				SDL_SetCursor(m_cursor_Default);
+			break;
+			case eCursor::Text:
+				SDL_SetCursor(m_cursor_Text);
+			break;
+			case eCursor::Wait:
+				SDL_SetCursor(m_cursor_Wait);
+			break;
+			case eCursor::Crosshair:
+				SDL_SetCursor(m_cursor_Crosshair);
+			break;
+			case eCursor::Progress:
+				SDL_SetCursor(m_cursor_Progress);
+			break;
+			case eCursor::NWSE_Resize:
+				SDL_SetCursor(m_cursor_NWSE_Resize);
+			break;
+			case eCursor::NESW_Resize:
+				SDL_SetCursor(m_cursor_NESW_Resize);
+			break;
+			case eCursor::EW_Resize:
+				SDL_SetCursor(m_cursor_EW_Resize);
+			break;
+			case eCursor::NS_Resize:
+				SDL_SetCursor(m_cursor_NS_Resize);
+			break;
+			case eCursor::Move:
+				SDL_SetCursor(m_cursor_Move);
+			break;
+			case eCursor::NotAllowed:
+				SDL_SetCursor(m_cursor_NotAllowed);
+			break;
+			case eCursor::Pointer:
+				SDL_SetCursor(m_cursor_Pointer);
+			break;
+			case eCursor::NW_Resize:
+				SDL_SetCursor(m_cursor_NW_Resize);
+			break;
+			case eCursor::N_Resize:
+				SDL_SetCursor(m_cursor_N_Resize);
+			break;
+			case eCursor::NE_Resize:
+				SDL_SetCursor(m_cursor_NE_Resize);
+			break;
+			case eCursor::E_Resize:
+				SDL_SetCursor(m_cursor_E_Resize);
+			break;
+			case eCursor::SE_Resize:
+				SDL_SetCursor(m_cursor_SE_Resize);
+			break;
+			case eCursor::S_Resize:
+				SDL_SetCursor(m_cursor_S_Resize);
+			break;
+			case eCursor::SW_Resize:
+				SDL_SetCursor(m_cursor_SW_Resize);
+			break;
+			case eCursor::W_Resize:
+				SDL_SetCursor(m_cursor_W_Resize);
+			break;
+			default:
+				SDL_SetCursor(m_cursor_Default);
+			break;
+		}
 	}
 
 	void WindowCore::enableResizable(bool enable)
@@ -248,7 +249,7 @@ namespace ogfx
 		m_resizeable = enable;
 	}
 
-	void WindowCore::setIcon(const ostd::String& iconFilePath)
+	void WindowCore::setIcon(const String& iconFilePath)
 	{
 		SDL_Surface* appIcon = IMG_Load(iconFilePath);
 		if (appIcon == nullptr)
@@ -260,14 +261,14 @@ namespace ogfx
 		SDL_DestroySurface(appIcon);
 	}
 
-	void WindowCore::setBlockingEventsRefreshFPS(uint32_t fps)
+	void WindowCore::setBlockingEventsRefreshFPS(u32 fps)
 	{
 		if (fps == 0 || fps > MaxBlockingEventsFPS)
 		{
 			setBlockingEventsRefreshFPS(DefaultBlockingEventsFPS);
 			return;
 		}
-		m_blockingEventsDelay = static_cast<int>(std::floor((1.0 / (double)fps) * 1000));
+		m_blockingEventsDelay = cast<i32>(std::floor((1.0 / (f64)fps) * 1000));
 	}
 
 	void WindowCore::requestRedraw(void)
@@ -285,8 +286,8 @@ namespace ogfx
 
 	MouseEventData WindowCore::get_mouse_state(void)
 	{
-		float mx = 0, my = 0;
-		uint32_t btn = SDL_GetMouseState(&mx, &my);
+		f32 mx = 0, my = 0;
+		u32 btn = SDL_GetMouseState(&mx, &my);
 		MouseEventData::eButton button = MouseEventData::eButton::None;
 		switch (btn)
 		{
@@ -403,12 +404,12 @@ namespace ogfx
 		}
 		else if (event.type == SDL_EVENT_KEY_DOWN)
 		{
-			KeyEventData ked(*this, (int32_t)event.key.key, 0, KeyEventData::eKeyEvent::Pressed);
+			KeyEventData ked(*this, (i32)event.key.key, 0, KeyEventData::eKeyEvent::Pressed);
 			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::KeyPressed, ostd::Signal::Priority::RealTime, ked);
 		}
 		else if (event.type == SDL_EVENT_KEY_UP)
 		{
-			KeyEventData ked(*this, (int32_t)event.key.key, 0, KeyEventData::eKeyEvent::Released);
+			KeyEventData ked(*this, (i32)event.key.key, 0, KeyEventData::eKeyEvent::Released);
 			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::KeyReleased, ostd::Signal::Priority::RealTime, ked);
 		}
 		else if (event.type == SDL_EVENT_TEXT_INPUT)
@@ -422,26 +423,26 @@ namespace ogfx
 	void WindowCore::__load_default_stylesheet_variables(void)
 	{
 		// Cursors
-		m_defaultStylesheetVariables["cursor_default"] = { ostd::String("").add(static_cast<int32_t>(eCursor::Default)), true };
-		m_defaultStylesheetVariables["cursor_text"] = { ostd::String("").add(static_cast<int32_t>(eCursor::Text)), true };
-		m_defaultStylesheetVariables["cursor_wait"] = { ostd::String("").add(static_cast<int32_t>(eCursor::Wait)), true };
-		m_defaultStylesheetVariables["cursor_crosshair"] = { ostd::String("").add(static_cast<int32_t>(eCursor::Crosshair)), true };
-		m_defaultStylesheetVariables["cursor_progress"] = { ostd::String("").add(static_cast<int32_t>(eCursor::Progress)), true };
-		m_defaultStylesheetVariables["cursor_nwse_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::NWSE_Resize)), true };
-		m_defaultStylesheetVariables["cursor_nesw_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::NESW_Resize)), true };
-		m_defaultStylesheetVariables["cursor_ew_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::EW_Resize)), true };
-		m_defaultStylesheetVariables["cursor_ns_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::NS_Resize)), true };
-		m_defaultStylesheetVariables["cursor_move"] = { ostd::String("").add(static_cast<int32_t>(eCursor::Move)), true };
-		m_defaultStylesheetVariables["cursor_no_allowed"] = { ostd::String("").add(static_cast<int32_t>(eCursor::NotAllowed)), true };
-		m_defaultStylesheetVariables["cursor_pointer"] = { ostd::String("").add(static_cast<int32_t>(eCursor::Pointer)), true };
-		m_defaultStylesheetVariables["cursor_nw_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::NW_Resize)), true };
-		m_defaultStylesheetVariables["cursor_n_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::N_Resize)), true };
-		m_defaultStylesheetVariables["cursor_ne_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::NE_Resize)), true };
-		m_defaultStylesheetVariables["cursor_e_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::E_Resize)), true };
-		m_defaultStylesheetVariables["cursor_se_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::SE_Resize)), true };
-		m_defaultStylesheetVariables["cursor_s_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::S_Resize)), true };
-		m_defaultStylesheetVariables["cursor_sw_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::SW_Resize)), true };
-		m_defaultStylesheetVariables["cursor_w_resize"] = { ostd::String("").add(static_cast<int32_t>(eCursor::W_Resize)), true };
+		m_defaultStylesheetVariables["cursor_default"] = { String("").add(cast<i32>(eCursor::Default)), true };
+		m_defaultStylesheetVariables["cursor_text"] = { String("").add(cast<i32>(eCursor::Text)), true };
+		m_defaultStylesheetVariables["cursor_wait"] = { String("").add(cast<i32>(eCursor::Wait)), true };
+		m_defaultStylesheetVariables["cursor_crosshair"] = { String("").add(cast<i32>(eCursor::Crosshair)), true };
+		m_defaultStylesheetVariables["cursor_progress"] = { String("").add(cast<i32>(eCursor::Progress)), true };
+		m_defaultStylesheetVariables["cursor_nwse_resize"] = { String("").add(cast<i32>(eCursor::NWSE_Resize)), true };
+		m_defaultStylesheetVariables["cursor_nesw_resize"] = { String("").add(cast<i32>(eCursor::NESW_Resize)), true };
+		m_defaultStylesheetVariables["cursor_ew_resize"] = { String("").add(cast<i32>(eCursor::EW_Resize)), true };
+		m_defaultStylesheetVariables["cursor_ns_resize"] = { String("").add(cast<i32>(eCursor::NS_Resize)), true };
+		m_defaultStylesheetVariables["cursor_move"] = { String("").add(cast<i32>(eCursor::Move)), true };
+		m_defaultStylesheetVariables["cursor_no_allowed"] = { String("").add(cast<i32>(eCursor::NotAllowed)), true };
+		m_defaultStylesheetVariables["cursor_pointer"] = { String("").add(cast<i32>(eCursor::Pointer)), true };
+		m_defaultStylesheetVariables["cursor_nw_resize"] = { String("").add(cast<i32>(eCursor::NW_Resize)), true };
+		m_defaultStylesheetVariables["cursor_n_resize"] = { String("").add(cast<i32>(eCursor::N_Resize)), true };
+		m_defaultStylesheetVariables["cursor_ne_resize"] = { String("").add(cast<i32>(eCursor::NE_Resize)), true };
+		m_defaultStylesheetVariables["cursor_e_resize"] = { String("").add(cast<i32>(eCursor::E_Resize)), true };
+		m_defaultStylesheetVariables["cursor_se_resize"] = { String("").add(cast<i32>(eCursor::SE_Resize)), true };
+		m_defaultStylesheetVariables["cursor_s_resize"] = { String("").add(cast<i32>(eCursor::S_Resize)), true };
+		m_defaultStylesheetVariables["cursor_sw_resize"] = { String("").add(cast<i32>(eCursor::SW_Resize)), true };
+		m_defaultStylesheetVariables["cursor_w_resize"] = { String("").add(cast<i32>(eCursor::W_Resize)), true };
 
 		// Colors
 		m_defaultStylesheetVariables["color_transparent"]   = { "Color(" + ostd::Colors::Transparent.hexString(true, "#") + ")", true };
@@ -499,18 +500,18 @@ namespace ogfx
 
 
 
-	void GraphicsWindow::__on_window_init(int32_t width, int32_t height, const ostd::String& title)
+	void GraphicsWindow::__on_window_init(i32 width, i32 height, const String& title)
 	{
 		SDL_SetWindowResizable(m_window, false);
 
-		m_fixedUpdateTImer.create(60.0, [this](double frameTime_s){
+		m_fixedUpdateTImer.create(60.0, [this](f64 frameTime_s){
 			this->onFixedUpdate(frameTime_s);
 		});
 
-		m_fpsUpdateTimer.create(1.0, [this](double frameTime_s){
+		m_fpsUpdateTimer.create(1.0, [this](f64 frameTime_s){
 			if (this->m_frameCount == 0) return;
 			if (this->m_frameTimeAcc == 0) return;
-			this->m_fps = (int32_t)(1.0f / (static_cast<double>(this->m_frameTimeAcc) / static_cast<double>(this->m_frameCount)));
+			this->m_fps = (i32)(1.0f / (cast<f64>(this->m_frameTimeAcc) / cast<f64>(this->m_frameCount)));
 			this->m_frameTimeAcc = 0;
 			this->m_frameCount = 0;
 		});
@@ -569,14 +570,19 @@ namespace ogfx
 			m_rootWidget.__applyTheme(theme, true);
 		}
 
-		void Window::__on_window_init(int32_t width, int32_t height, const ostd::String& title)
+		void Window::__on_window_init(i32 width, i32 height, const String& title)
 		{
 			enableBlockingEvents();
 			setTypeName("ogfx::gui::Window");
 			m_gfx.init(*this);
 			loadDefaultTHeme();
+
+			m_fixedUpdateTimer.create(60.0, [this](f64 dt) {
+				__on_fixed_update();
+			});
+			m_lastFrameTime = ostd::StepTimer::Clock::now();
 			onInitialize();
-			m_rootWidget.setSize(static_cast<float>(width), static_cast<float>(height));
+			m_rootWidget.setSize(cast<f32>(width), cast<f32>(height));
 		}
 
 		void Window::__on_window_close(void)
@@ -588,6 +594,16 @@ namespace ogfx
 		{
 			while (isRunning())
 			{
+				auto now = ostd::StepTimer::Clock::now();
+				f64 delta = std::chrono::duration<f64>(now - m_lastFrameTime).count();
+				m_lastFrameTime = now;
+
+				if (delta > 0.25)
+					delta = 0.25;
+
+				m_fixedUpdateTimer.update();
+				__on_update(delta);
+
 				handle_events();
 				before_render();
 				m_rootWidget.__update();
@@ -686,6 +702,16 @@ namespace ogfx
 				m_rootWidget.__onTextEntered(evt);
 			}
 			onSignal(signal);
+		}
+
+		void Window::__on_update(f64 delta)
+		{
+			onUpdate(delta);
+		}
+
+		void Window::__on_fixed_update(void)
+		{
+			onFixedUpdate();
 		}
 
 		void Window::__on_event(SDL_Event& event)

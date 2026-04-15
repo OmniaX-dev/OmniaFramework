@@ -41,8 +41,8 @@ namespace ogfx
 				private:
 					ostd::Color m_titleColor { 0, 0, 0 };
 					bool m_showTitle { false };
-					ostd::String m_titleType = "full";
-					float m_titleHeight { 30 };
+					String m_titleType = "full";
+					f32 m_titleHeight { 30 };
 			};
 		}
 	}

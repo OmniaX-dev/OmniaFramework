@@ -43,7 +43,7 @@ namespace ostd
 	class LogicEvaluator
 	{
 		public:
-			static bool eval(String exp);
+			static bool eval(const String& exp);
 
 		private:
 			static bool applyOp(bool a, bool b, eLogicOp op);

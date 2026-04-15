@@ -108,7 +108,7 @@ namespace ogfx
 		m_defaultForegroundColor = color;
 	}
 
-	void GraphicsWindowOutputHandler::setTabWidth(uint8_t tw)
+	void GraphicsWindowOutputHandler::setTabWidth(u8 tw)
 	{
 		m_tabWidth = tw;
 	}
@@ -116,24 +116,24 @@ namespace ogfx
 
 
 
-	void GraphicsWindowOutputHandler::setFontSize(int32_t fontSize)
+	void GraphicsWindowOutputHandler::setFontSize(i32 fontSize)
 	{
 		m_fontSize = fontSize;
 		m_renderer.setFontSize(m_fontSize);
 		__update_char_size();
 	}
 
-	int32_t GraphicsWindowOutputHandler::getFontSize(void)
+	i32 GraphicsWindowOutputHandler::getFontSize(void)
 	{
 		return m_fontSize;
 	}
 
-	Vec2 GraphicsWindowOutputHandler::getCharacterSize(int32_t fontSize)
+	Vec2 GraphicsWindowOutputHandler::getCharacterSize(i32 fontSize)
 	{
 		if (fontSize > 0)
 		{
 			auto size = m_renderer.getStringDimensions("A", fontSize);
-			return { (float)size.x, (float)size.y };
+			return { (f32)size.x, (f32)size.y };
 		}
 		return m_charSize;
 	}
@@ -163,15 +163,15 @@ namespace ogfx
 		return m_defaultForegroundColor;
 	}
 
-	uint8_t GraphicsWindowOutputHandler::getTabWidth(void)
+	u8 GraphicsWindowOutputHandler::getTabWidth(void)
 	{
 		return m_tabWidth;
 	}
 
 	Rectangle GraphicsWindowOutputHandler::getConsoleBounds(void)
 	{
-		float console_w = ((float)m_consoleSize.x * getCharacterSize().x) + getPadding().x + getPadding().w;
-		float console_h = ((float)m_consoleSize.y * getCharacterSize().y) + getPadding().y + getPadding().h;
+		f32 console_w = ((f32)m_consoleSize.x * getCharacterSize().x) + getPadding().x + getPadding().w;
+		f32 console_h = ((f32)m_consoleSize.y * getCharacterSize().y) + getPadding().y + getPadding().h;
 		return { getConsolePosition().x - getPadding().x, getConsolePosition().y - getPadding().y, console_w, console_h };
 	}
 
@@ -216,7 +216,7 @@ namespace ogfx
 
 	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::pChar(char c)
 	{
-		__print_string(ostd::String("").addChar(c));
+		__print_string(String("").addChar(c));
 		return *this;
 	}
 
@@ -230,7 +230,7 @@ namespace ogfx
 		if (!styled.validate()) return *this;
 		Color oldBgCol = m_backgroundColor;
 		Color oldFgCol = m_foregroundColor;
-		for (int32_t i = 0; i < styled.text.len(); i++)
+		for (i32 i = 0; i < styled.text.len(); i++)
 			bg(styled.backgroundColors[i].fullColor).fg(styled.foregroundColors[i].fullColor).pChar(styled.text[i]);
 		m_backgroundColor = oldBgCol;
 		m_foregroundColor = oldFgCol;
@@ -261,63 +261,63 @@ namespace ogfx
 		return *this;
 	}
 
-	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(uint8_t i)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(u8 i)
 	{
-		__print_string(ostd::String("").add(i));
+		__print_string(String("").add(i));
 		return *this;
 	}
 
-	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(int8_t i)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(i8 i)
 	{
-		__print_string(ostd::String("").add(i));
+		__print_string(String("").add(i));
 		return *this;
 	}
 
-	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(uint16_t i)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(u16 i)
 	{
-		__print_string(ostd::String("").add(i));
+		__print_string(String("").add(i));
 		return *this;
 	}
 
-	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(int16_t i)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(i16 i)
 	{
-		__print_string(ostd::String("").add(i));
+		__print_string(String("").add(i));
 		return *this;
 	}
 
-	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(uint32_t i)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(u32 i)
 	{
-		__print_string(ostd::String("").add(i));
+		__print_string(String("").add(i));
 		return *this;
 	}
 
-	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(int32_t i)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(i32 i)
 	{
-		__print_string(ostd::String("").add(i));
+		__print_string(String("").add(i));
 		return *this;
 	}
 
-	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(uint64_t i)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(u64 i)
 	{
-		__print_string(ostd::String("").add(i));
+		__print_string(String("").add(i));
 		return *this;
 	}
 
-	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(int64_t i)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(i64 i)
 	{
-		__print_string(ostd::String("").add(i));
+		__print_string(String("").add(i));
 		return *this;
 	}
 
-	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(float f, uint8_t precision)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(f32 f, u8 precision)
 	{
-		__print_string(ostd::String("").add(f, precision));
+		__print_string(String("").add(f, precision));
 		return *this;
 	}
 
-	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(double f, uint8_t precision)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::p(f64 f, u8 precision)
 	{
-		__print_string(ostd::String("").add(f, precision));
+		__print_string(String("").add(f, precision));
 		return *this;
 	}
 
@@ -333,14 +333,14 @@ namespace ogfx
 	{
 		if (m_curosrPosition.x == 0)
 		{
-			__print_string(ostd::String("").fixedLength(m_tabWidth, ' ', ""));
+			__print_string(String("").fixedLength(m_tabWidth, ' ', ""));
 			return *this;
 		}
-		int32_t restTab = m_tabWidth - ((int32_t)m_curosrPosition.x % m_tabWidth);
+		i32 restTab = m_tabWidth - ((i32)m_curosrPosition.x % m_tabWidth);
 		if (m_curosrPosition.x + restTab > m_consoleSize.x)
 			restTab = m_consoleSize.x - m_curosrPosition.x;
 		if (restTab == 0) return *this;
-		__print_string(ostd::String("").fixedLength(restTab, ' ', ""));
+		__print_string(String("").fixedLength(restTab, ' ', ""));
 		return *this;
 	}
 
@@ -362,53 +362,53 @@ namespace ogfx
 
 	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::xy(IPoint position)
 	{
-		m_curosrPosition = { (float)position.x, (float)position.y };
+		m_curosrPosition = { (f32)position.x, (f32)position.y };
 		return *this;
 	}
 
-	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::xy(int32_t x, int32_t y)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::xy(i32 x, i32 y)
 	{
-		m_curosrPosition = { (float)x, (float)y };
+		m_curosrPosition = { (f32)x, (f32)y };
 		return *this;
 	}
 
-	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::x(int32_t x)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::x(i32 x)
 	{
-		m_curosrPosition.x = (float)x;
+		m_curosrPosition.x = (f32)x;
 		return *this;
 	}
 
-	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::y(int32_t y)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::y(i32 y)
 	{
-		m_curosrPosition.y = (float)y;
+		m_curosrPosition.y = (f32)y;
 		return *this;
 	}
 
 	IPoint GraphicsWindowOutputHandler::getCursorPosition(void)
 	{
-		return { (int32_t)std::round(m_curosrPosition.x), (int32_t)std::round(m_curosrPosition.y) };
+		return { (i32)std::round(m_curosrPosition.x), (i32)std::round(m_curosrPosition.y) };
 	}
 
-	void GraphicsWindowOutputHandler::getCursorPosition(int32_t& outX, int32_t& outY)
+	void GraphicsWindowOutputHandler::getCursorPosition(i32& outX, i32& outY)
 	{
-		outX = (int32_t)std::round(m_curosrPosition.x);
-		outY = (int32_t)std::round(m_curosrPosition.y);
+		outX = (i32)std::round(m_curosrPosition.x);
+		outY = (i32)std::round(m_curosrPosition.y);
 	}
 
-	int32_t GraphicsWindowOutputHandler::getCursorX(void)
+	i32 GraphicsWindowOutputHandler::getCursorX(void)
 	{
-		return (int32_t)std::round(m_curosrPosition.x);
+		return (i32)std::round(m_curosrPosition.x);
 	}
 
-	int32_t GraphicsWindowOutputHandler::getCursorY(void)
+	i32 GraphicsWindowOutputHandler::getCursorY(void)
 	{
-		return (int32_t)std::round(m_curosrPosition.y);
+		return (i32)std::round(m_curosrPosition.y);
 	}
 
-	void GraphicsWindowOutputHandler::getConsoleSize(int32_t& outColumns, int32_t& outRows)
+	void GraphicsWindowOutputHandler::getConsoleSize(i32& outColumns, i32& outRows)
 	{
-		int32_t console_rows = std::numeric_limits<int>::max();
-		int32_t console_cols = std::numeric_limits<int>::max();
+		i32 console_rows = std::numeric_limits<i32>::max();
+		i32 console_cols = std::numeric_limits<i32>::max();
 		if (m_consoleSize.x > 0) console_cols = m_consoleSize.x;
 		if (m_consoleSize.y > 0) console_rows = m_consoleSize.y;
 		outColumns = console_cols;
@@ -417,8 +417,8 @@ namespace ogfx
 
 	IPoint GraphicsWindowOutputHandler::getConsoleSize(void)
 	{
-		int32_t console_rows = std::numeric_limits<int>::max();
-		int32_t console_cols = std::numeric_limits<int>::max();
+		i32 console_rows = std::numeric_limits<i32>::max();
+		i32 console_cols = std::numeric_limits<i32>::max();
 		if (m_consoleSize.x > 0) console_cols = m_consoleSize.x;
 		if (m_consoleSize.y > 0) console_rows = m_consoleSize.y;
 		return { console_cols, console_rows };
@@ -427,7 +427,7 @@ namespace ogfx
 	void GraphicsWindowOutputHandler::__update_char_size(void)
 	{
 		auto size = m_renderer.getStringDimensions("A", m_fontSize);
-		m_charSize = { (float)size.x, (float)size.y };
+		m_charSize = { (f32)size.x, (f32)size.y };
 	}
 
 	void GraphicsWindowOutputHandler::__print_string(const String& str)
@@ -439,7 +439,7 @@ namespace ogfx
 		auto l_print = [&](const String& string) {
 			if (l_endOfConsole()) return;
 			if (string.len() == 0) return;
-			float vertical_margin = 4;
+			f32 vertical_margin = 4;
 			Vec2 pos = m_consolePosition + ostd::Vec2 { m_charSize.x * m_curosrPosition.x, m_charSize.y * m_curosrPosition.y };
 			if (m_backgroundColor.a > 0)
 				m_renderer.fillRect({ pos.x, pos.y + vertical_margin, m_charSize.x * string.len(), m_charSize.y - vertical_margin }, m_backgroundColor);
@@ -449,8 +449,8 @@ namespace ogfx
 			if (m_curosrPosition.x >= getConsoleSize().x)
 				nl();
 		};
-		int32_t string_length = str.len();
-		int32_t lineLen = m_curosrPosition.x + string_length;
+		i32 string_length = str.len();
+		i32 lineLen = m_curosrPosition.x + string_length;
 		if (lineLen <= getConsoleSize().x)
 		{
 			l_print(str);
@@ -458,24 +458,24 @@ namespace ogfx
 		}
 		if (m_wrapMode == eWrapMode::TripleDots)
 		{
-			int32_t fixedLen = getConsoleSize().x - m_curosrPosition.x;
+			i32 fixedLen = getConsoleSize().x - m_curosrPosition.x;
 			l_print(str.new_fixedLength(fixedLen, ' ', "..."));
 		}
 		else if (m_wrapMode == eWrapMode::NewLine)
 		{
-			int32_t restOfLine = getConsoleSize().x - m_curosrPosition.x;
-			ostd::String tmp = str.new_substr(0, restOfLine);
+			i32 restOfLine = getConsoleSize().x - m_curosrPosition.x;
+			String tmp = str.new_substr(0, restOfLine);
 			l_print(tmp);
 			tmp = str.new_substr(restOfLine);
-			int32_t nlines = tmp.len() / getConsoleSize().x;
+			i32 nlines = tmp.len() / getConsoleSize().x;
 			if (nlines == 0)
 			{
 				l_print(tmp);
 				return;
 			}
-			for (int32_t i = 0; i < nlines; i++)
+			for (i32 i = 0; i < nlines; i++)
 			{
-				ostd::String line = tmp.new_substr(0, getConsoleSize().x);
+				String line = tmp.new_substr(0, getConsoleSize().x);
 				l_print(line);
 				tmp.substr(getConsoleSize().x);
 			}

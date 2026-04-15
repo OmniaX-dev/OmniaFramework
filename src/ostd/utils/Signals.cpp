@@ -1,5 +1,6 @@
 #include "Signals.hpp"
 #include "../data/BaseObject.hpp"
+#include "io/Memory.hpp"
 
 namespace ostd
 {
@@ -20,7 +21,7 @@ namespace ostd
 		m_DelegateRecievers.clear();
 	}
 
-	void SignalHandler::emitSignal(uint32_t signal_id, uint8_t prio, BaseObject& userData)
+	void SignalHandler::emitSignal(u32 signal_id, u8 prio, BaseObject& userData)
 	{
 		if (prio == Signal::Priority::Normal)
 		{
@@ -37,8 +38,16 @@ namespace ostd
 		}
 	}
 
-	void SignalHandler::connect(BaseObject& object, uint32_t signal_id)
+	void SignalHandler::connect(BaseObject& object, u32 signal_id)
 	{
 		m_recievers[signal_id].push_back(&object);
+	}
+
+	void SignalHandler::disconnect(BaseObject& object, u32 signal_id)
+	{
+		auto it = m_recievers.find(signal_id);
+		if (it == m_recievers.end())
+			return;
+		STDVEC_REMOVE(it->second, &object);
 	}
 }

@@ -81,10 +81,10 @@ namespace ogfx
 			Widget* next = nullptr;
 			Widget* smallest = nullptr;
 
-			int32_t currentTabIndex = (m_focused != nullptr ? m_focused->m_tabIndex : std::numeric_limits<int32_t>::max());
+			i32 currentTabIndex = (m_focused != nullptr ? m_focused->m_tabIndex : std::numeric_limits<i32>::max());
 			for (Widget* w : m_widgetList)
 			{
-				int tab_i = w->m_tabIndex;
+				i32 tab_i = w->m_tabIndex;
 				if (tab_i < 0) continue;
 				if (!smallest || tab_i < smallest->m_tabIndex)
 					smallest = w;
@@ -133,7 +133,7 @@ namespace ogfx
 
 		void WidgetManager::onMousePressed(const Event& event)
 		{
-			for (int32_t i = m_widgetList.size() - 1; i >= 0; i--)
+			for (i32 i = m_widgetList.size() - 1; i >= 0; i--)
 			{
 				Widget* w = m_widgetList[i];
 				if (w == nullptr) continue;
@@ -155,7 +155,7 @@ namespace ogfx
 				m_mousePressedOnWidget->__onMouseReleased(event);
 				// processDragAndDrop(m_mousePressedOnWidget, event);
 			}
-			for (int32_t i = m_widgetList.size() - 1; i >= 0; i--)
+			for (i32 i = m_widgetList.size() - 1; i >= 0; i--)
 			{
 				Widget* w = m_widgetList[i];
 				if (w == nullptr) continue;
@@ -173,7 +173,7 @@ namespace ogfx
 
 		void WidgetManager::onMouseMoved(const Event& event)
 		{
-			for (int32_t i = m_widgetList.size() - 1; i >= 0; i--)
+			for (i32 i = m_widgetList.size() - 1; i >= 0; i--)
 			{
 				Widget* w = m_widgetList[i];
 				if (w == nullptr) continue;
@@ -202,7 +202,7 @@ namespace ogfx
 				if (event.isHandled() || w->m_stopEvents)
 				{
 					bool mouseOut = false;
-					for (int32_t j = i - 1; j >= 0; j--)
+					for (i32 j = i - 1; j >= 0; j--)
 					{
 						Widget* ww = m_widgetList[j];
 						if (ww->m_mouseInside)
@@ -218,7 +218,7 @@ namespace ogfx
 
 		void WidgetManager::onMouseScrolled(const Event& event)
 		{
-			for (int32_t i = m_widgetList.size() - 1; i >= 0; i--)
+			for (i32 i = m_widgetList.size() - 1; i >= 0; i--)
 			{
 				Widget* w = m_widgetList[i];
 				if (w == nullptr) continue;
@@ -233,7 +233,7 @@ namespace ogfx
 
 		void WidgetManager::onMouseDragged(const Event& event)
 		{
-			for (int32_t i = m_widgetList.size() - 1; i >= 0; i--)
+			for (i32 i = m_widgetList.size() - 1; i >= 0; i--)
 			{
 				Widget* w = m_widgetList[i];
 				if (w == nullptr) continue;

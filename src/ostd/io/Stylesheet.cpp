@@ -34,32 +34,32 @@ namespace ostd
 		return *this;
 	}
 
-	Stylesheet& Stylesheet::loadFromFile(const ostd::String& filePath, bool clearCurrentRules, VariableList variable)
+	Stylesheet& Stylesheet::loadFromFile(const String& filePath, bool clearCurrentRules, VariableList variable)
 	{
-		ostd::String outContent = "";
+		String outContent = "";
 		ostd::FileSystem::readTextFileRaw(filePath, outContent);
 		return loadFromString(outContent, filePath, clearCurrentRules, variable);
 	}
 
-	Stylesheet& Stylesheet::loadFromString(const ostd::String& content, const ostd::String& filePath, bool clearCurrentRules, VariableList variables)
+	Stylesheet& Stylesheet::loadFromString(const String& content, const String& filePath, bool clearCurrentRules, VariableList variables)
 	{
 		if (clearCurrentRules)
 			m_values.clear();
-		std::vector<ostd::String> lines = content.tokenize("\n", false, true).getRawData();
-		std::vector<ostd::String> originalLines = lines;
+		stdvec<String> lines = content.tokenize("\n", false, true).getRawData();
+		stdvec<String> originalLines = lines;
 		auto richLines = getRichStringLines(lines);
-		uint32_t lineNumber = 0;
-		auto l_warn = [&](const ostd::String& msg) -> void {
+		u32 lineNumber = 0;
+		auto l_warn = [&](const String& msg) -> void {
 			OX_WARN("%s in theme line. File: <%s:%d>", msg.c_str(), filePath.c_str(), lineNumber, originalLines[lineNumber - 1].c_str());
 		};
-		auto l_parseLine = [&](ostd::String& line) -> void {
+		auto l_parseLine = [&](String& line) -> void {
 			if (!parseThemeFileLine(line, variables))
 				l_warn("Error");
 		};
-		uint8_t lineNumberMaxWidth = ostd::String("").add(static_cast<uint32_t>(lines.size())).len();
-		ostd::String groupSelector = "";
+		u8 lineNumberMaxWidth = String("").add(cast<u32>(lines.size())).len();
+		String groupSelector = "";
 		bool groupLines = true;
-		std::vector<ostd::String> group;
+		stdvec<String> group;
 		bool debug_print = false;
 		for (auto& line : lines)
 		{
@@ -85,8 +85,8 @@ namespace ostd
 					l_warn("Invalid variable");
 					goto custom_continue;
 				}
-				ostd::String varName = line.new_substr(0, line.indexOf("=")).trim();
-				ostd::String varValue = line.new_substr(line.indexOf("=") + 1).trim();
+				String varName = line.new_substr(0, line.indexOf("=")).trim();
+				String varValue = line.new_substr(line.indexOf("=") + 1).trim();
 				if (!varName.regexMatches(m_validNameRegex))
 				{
 					l_warn("Invalid variable name");
@@ -110,7 +110,7 @@ namespace ostd
 						groupLines = false;
 						auto newLines = parseGroup(groupSelector, group);
 						lineNumber -= newLines.size();
-						for (int32_t i = 0; i < newLines.size(); i++)
+						for (i32 i = 0; i < newLines.size(); i++)
 						{
 							auto& l = newLines[i];
 							l_parseLine(l);
@@ -136,7 +136,7 @@ namespace ostd
 					l_warn("Invalid group selector");
 					goto custom_continue;
 				}
-				ostd::String rawSelector = line.new_substr(1, line.indexOf(")")).trim();
+				String rawSelector = line.new_substr(1, line.indexOf(")")).trim();
 				groupSelector = parseGroupSelector(rawSelector);
 				if (groupSelector == "")
 				{
@@ -159,38 +159,38 @@ namespace ostd
 			continue;
 custom_continue:
 			if (debug_print)
-				std::cout << ostd::String("").add(lineNumber).addLeftPadding(lineNumberMaxWidth, ' ') << "|  " << richLines[lineNumber - 1] << "\n";
+				std::cout << String("").add(lineNumber).addLeftPadding(lineNumberMaxWidth, ' ') << "|  " << richLines[lineNumber - 1] << "\n";
 		}
 		return *this;
 	}
 
-	void Stylesheet::set(const std::string& key, TypeVariant value, const ostd::String& themeID)
+	void Stylesheet::set(const std::string& key, TypeVariant value, const String& themeID)
 	{
-		ostd::String fullKey = "@" + themeID + "." + key;
+		String fullKey = "@" + themeID + "." + key;
 		// std::cout << "SET: " << fullKey << "\n";
 		setFull(fullKey, value);
 	}
 
-	void Stylesheet::removeRule(const ostd::String& fullKey)
+	void Stylesheet::removeRule(const String& fullKey)
 	{
 		m_values.erase(fullKey);
 	}
 
-	void Stylesheet::setFull(const ostd::String& fullKey, TypeVariant value)
+	void Stylesheet::setFull(const String& fullKey, TypeVariant value)
 	{
 		m_values[fullKey] = std::move(value);
 	}
 
-	const Stylesheet::TypeVariant* Stylesheet::getVariant(const ostd::String& key, const std::vector<ostd::String>& themeIDList, const QualifierList& qualifierList) const
+	const Stylesheet::TypeVariant* Stylesheet::getVariant(const String& key, const stdvec<String>& themeIDList, const QualifierList& qualifierList) const
 	{
-		std::vector<ostd::String> emptyThemeIDList { "" };
-		const std::vector<ostd::String>& __themeIDList = (themeIDList.size() == 0 ? emptyThemeIDList : themeIDList);
+		stdvec<String> emptyThemeIDList { "" };
+		const stdvec<String>& __themeIDList = (themeIDList.size() == 0 ? emptyThemeIDList : themeIDList);
 		for (const auto&[qualifier, state] : qualifierList)
 		{
 			const TypeVariant* v = nullptr;
-			for (int32_t i = __themeIDList.size() - 1; i >= 0; i--)
+			for (i32 i = __themeIDList.size() - 1; i >= 0; i--)
 			{
-				const ostd::String& themeID = __themeIDList[i];
+				const String& themeID = __themeIDList[i];
 				v = (state ? getFull("@" + themeID + ":" + qualifier + "." + key) : nullptr);
 				if (v)
 					return v;
@@ -202,9 +202,9 @@ custom_continue:
 			if (v)
 				return v;
 		}
-		for (int32_t i = __themeIDList.size() - 1; i >= 0; i--)
+		for (i32 i = __themeIDList.size() - 1; i >= 0; i--)
 		{
-			const ostd::String& themeID = __themeIDList[i];
+			const String& themeID = __themeIDList[i];
 			if (auto v = getFull("@" + themeID + "." + key))
 				return v;
 		}
@@ -213,7 +213,7 @@ custom_continue:
 		return nullptr;
 	}
 
-	const Stylesheet::TypeVariant* Stylesheet::getFull(const ostd::String& fullKey) const
+	const Stylesheet::TypeVariant* Stylesheet::getFull(const String& fullKey) const
 	{
 		auto it = m_values.find(fullKey);
 		// if (it != m_values.end())
@@ -221,16 +221,16 @@ custom_continue:
 		return it != m_values.end() ? &it->second : nullptr;
 	}
 
-	bool Stylesheet::parseThemeFileLine(const ostd::String& line, const VariableList& variables, bool exitCondition)
+	bool Stylesheet::parseThemeFileLine(const String& line, const VariableList& variables, bool exitCondition)
 	{
 		if (!line.contains("="))
 			return false;
-		ostd::String key = line.new_substr(0, line.indexOf("=")).trim();
-		ostd::String valuePreserveCase = line.new_substr(line.indexOf("=") + 1).trim();
-		ostd::String value = line.new_substr(line.indexOf("=") + 1).trim().toLower();
+		String key = line.new_substr(0, line.indexOf("=")).trim();
+		String valuePreserveCase = line.new_substr(line.indexOf("=") + 1).trim();
+		String value = line.new_substr(line.indexOf("=") + 1).trim().toLower();
 		if (key == "")
 			return false;
-		ostd::String themeID = "";
+		String themeID = "";
 		if (key.startsWith("@"))
 		{
 			if (key.indexOf(" ") < 2)
@@ -239,7 +239,7 @@ custom_continue:
 			key.substr(key.indexOf(" ") + 1).trim();
 		}
 		if (value.isInt())
-			set(key, static_cast<int32_t>(value.toInt()), themeID);
+			set(key, cast<i32>(value.toInt()), themeID);
 		else if (value.isNumeric(true))
 			set(key, value.toFloat(), themeID);
 		else if (value == "true" || value == "false")
@@ -260,7 +260,7 @@ custom_continue:
 			auto tokens = value.tokenize(",");
 			if (tokens.count() != 2)
 				return false;
-			std::vector<float> vec;
+			stdvec<f32> vec;
 			for (const auto& tok : tokens)
 			{
 				if (!tok.isNumeric(true))
@@ -275,7 +275,7 @@ custom_continue:
 			auto tokens = value.tokenize(",");
 			if (tokens.count() != 4)
 				return false;
-			std::vector<float> vec;
+			stdvec<f32> vec;
 			for (const auto& tok : tokens)
 			{
 				if (!tok.isNumeric(true))
@@ -288,7 +288,7 @@ custom_continue:
 		{
 			if (exitCondition)
 				return false;
-			ostd::String lineCopy = line;
+			String lineCopy = line;
 			for (const auto&[var, val] : variables)
 			{
 				if (lineCopy.contains(var))
@@ -302,13 +302,13 @@ custom_continue:
 		return true;
 	}
 
-	ostd::String Stylesheet::parseGroupSelector(const ostd::String& rawSelector) const
+	String Stylesheet::parseGroupSelector(const String& rawSelector) const
 	{
-		ostd::String sel = rawSelector.new_trim();
+		String sel = rawSelector.new_trim();
 		if (sel == "") return "";
-		ostd::String id = "";
-		ostd::String name = sel;
-		ostd::String qual = "";
+		String id = "";
+		String name = sel;
+		String qual = "";
 		if (sel.contains(" "))
 		{
 			id = sel.new_substr(0, sel.indexOf(" ")).trim();
@@ -332,11 +332,11 @@ custom_continue:
 		return id;
 	}
 
-	std::vector<ostd::String> Stylesheet::parseGroup(const ostd::String& selector, const std::vector<ostd::String>& group)
+	stdvec<String> Stylesheet::parseGroup(const String& selector, const stdvec<String>& group)
 	{
 		if (selector.new_trim() == "" || group.size() == 0)
 			return {};
-		std::vector<ostd::String> newLines;
+		stdvec<String> newLines;
 		for (const auto& property : group)
 			newLines.push_back(selector.new_add(".").new_add(property));
 		return newLines;
@@ -351,15 +351,15 @@ custom_continue:
 		std::cout << "\n";
 	}
 
-	ostd::String Stylesheet::typeVariantToString(const TypeVariant& v)
+	String Stylesheet::typeVariantToString(const TypeVariant& v)
 	{
-		if (auto p = std::get_if<int32_t>(&v))
+		if (auto p = std::get_if<i32>(&v))
 			return String("").add(*p);
-		else if (auto p = std::get_if<float>(&v))
+		else if (auto p = std::get_if<f32>(&v))
 			return String("").add(*p);
 		else if (auto p = std::get_if<bool>(&v))
 			return STR_BOOL(*p);
-		else if (auto p = std::get_if<ostd::String>(&v))
+		else if (auto p = std::get_if<String>(&v))
 			return *p;
 		else if (auto p = std::get_if<ostd::Color>(&v))
 			return *p;
@@ -370,9 +370,9 @@ custom_continue:
 		return "";
 	}
 
-	std::vector<ostd::RegexRichString> Stylesheet::getRichStringLines(const std::vector<ostd::String>& lines)
+	stdvec<ostd::RegexRichString> Stylesheet::getRichStringLines(const stdvec<String>& lines)
 	{
-		std::vector<ostd::RegexRichString> richLines;
+		stdvec<ostd::RegexRichString> richLines;
 		for (auto line : lines)
 		{
 			ostd::RegexRichString rgxrstr(line);

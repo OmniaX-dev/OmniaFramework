@@ -35,7 +35,7 @@ namespace ogfx
 		{
 			private: struct ThemeOverride
 			{
-				ostd::String fullKey;
+				String fullKey;
 				ostd::Stylesheet::TypeVariant value;
 			};
 			public: using EventCallback = std::function<void(const Event&)>;
@@ -51,12 +51,12 @@ namespace ogfx
 				bool contains(ostd::Vec2 p, bool includeBounds = false) const override;
 				void enable(bool enable = true);
 				virtual void applyTheme(const ostd::Stylesheet& theme) = 0;
-				void addThemeOverride(const ostd::String& fullKey, ostd::Stylesheet::TypeVariant value);
+				void addThemeOverride(const String& fullKey, ostd::Stylesheet::TypeVariant value);
 				void reloadTheme(void);
-				void setThemeQualifier(const ostd::String& qualifier, bool value = true);
-				bool getThemeQualifier(const ostd::String& qualifier) const;
-				bool addThemeID(const ostd::String& id);
-				bool removeThemeID(const ostd::String& id);
+				void setThemeQualifier(const String& qualifier, bool value = true);
+				bool getThemeQualifier(const String& qualifier) const;
+				bool addThemeID(const String& id);
+				bool removeThemeID(const String& id);
 				inline const ostd::Stylesheet::QualifierList& getThemeQualifierList(void) const { return m_qualifierList; }
 
 				inline virtual void onDraw(ogfx::BasicRenderer2D& gfx) {  }
@@ -117,12 +117,12 @@ namespace ogfx
 
 				inline bool hasChildren(void) const { return m_allowChildren && m_widgets.widgetCount() > 0; }
 				inline virtual bool isInvalid(void) const override { return ostd::BaseObject::isInvalid() || (m_parent == nullptr && !m_rootChild); }
-				inline void setTabIndex(int32_t tabIndex) { m_tabIndex = tabIndex; }
-				inline int32_t getTabIndex(void) const { return m_tabIndex; }
+				inline void setTabIndex(i32 tabIndex) { m_tabIndex = tabIndex; }
+				inline i32 getTabIndex(void) const { return m_tabIndex; }
 				inline bool isFocused(void) const { return m_focused; }
 				inline WindowCore& getWindow(void) { return *m_window; }
 				inline Widget* getParent(void) { return m_parent; }
-				inline int32_t getZIndex(void) const { return m_zIndex; }
+				inline i32 getZIndex(void) const { return m_zIndex; }
 				inline bool isChildrenEnabled(void) const { return m_allowChildren; }
 				inline void setPadding(const ostd::Rectangle& pad) { m_padding = pad; }
 				inline void setMargin(const ostd::Rectangle& margin) { m_margin = margin; }
@@ -130,7 +130,7 @@ namespace ogfx
 				inline Rectangle getMargin(void) const { return m_margin; }
 				inline bool isMouseInside(void) const { return m_mouseInside; }
 				inline ogfx::MouseEventData::eButton getPressedMouseButton(void) const { return m_pressedButton; }
-				inline const std::vector<ostd::String>& getThemeIDList(void) const { return m_themeIDList; }
+				inline const stdvec<String>& getThemeIDList(void) const { return m_themeIDList; }
 				inline bool isEnabled(void) const { return m_enabled; }
 				inline bool isFocusEnabled(void) const { return m_allowFocus; }
 				inline void enableFocus(bool enable = true) { m_allowFocus = enable; }
@@ -148,13 +148,13 @@ namespace ogfx
 				inline ostd::Color getBorderColor(void) { return m_borderColor; }
 				inline void enableBorder(bool enable = true) { m_showBorder = enable; }
 				inline bool isBorderEnabled(void) const { return m_showBorder; }
-				inline void setBorderRadius(int32_t br) { m_borderRadius = br; }
-				inline int32_t getBorderRadius(void) const { return m_borderRadius; }
-				inline void setBorderWidth(int32_t bw) { m_borderWidth = bw; }
-				inline int32_t getBorderWidth(void) const { return m_borderWidth; }
+				inline void setBorderRadius(i32 br) { m_borderRadius = br; }
+				inline i32 getBorderRadius(void) const { return m_borderRadius; }
+				inline void setBorderWidth(i32 bw) { m_borderWidth = bw; }
+				inline i32 getBorderWidth(void) const { return m_borderWidth; }
 
 				template<typename T>
-				inline T getThemeValue(const ostd::Stylesheet &theme, const ostd::String& key, const T& fallback)
+				inline T getThemeValue(const ostd::Stylesheet &theme, const String& key, const T& fallback)
 				{
 					return theme.get<T>(key,  fallback, getThemeIDList(), getThemeQualifierList());
 				}
@@ -173,8 +173,8 @@ namespace ogfx
 
 			protected:
 				bool m_rootChild { false };
-				int32_t m_borderRadius { 10 };
-				int32_t m_borderWidth { 2 };
+				i32 m_borderRadius { 10 };
+				i32 m_borderWidth { 2 };
 				ostd::Color m_borderColor { 255, 255, 255 };
 				bool m_showBorder { false };
 				ostd::Color m_backgroundColor { ostd::Colors::Transparent };
@@ -200,8 +200,8 @@ namespace ogfx
 				WindowCore* m_window { nullptr };
 				Widget* m_parent { nullptr };
 				bool m_focused { false };
-				int32_t m_tabIndex { -1 };
-				int32_t m_zIndex { -1 };
+				i32 m_tabIndex { -1 };
+				i32 m_zIndex { -1 };
 				WidgetManager m_widgets;
 				bool m_allowChildren { true };
 				bool m_mouseInside { false };
@@ -212,7 +212,7 @@ namespace ogfx
 				bool m_acceptDragAndDrop { false };
 				MouseEventData::eButton m_pressedButton { MouseEventData::eButton::None };
 
-				std::vector<ostd::String> m_themeIDList;
+				stdvec<String> m_themeIDList;
 				ostd::Stylesheet::QualifierList m_qualifierList {
 					{ "disabled", false },
 					{ "pressed", false },
@@ -220,7 +220,7 @@ namespace ogfx
 					{ "focused", false },
 					{ "active", false }
 				};
-				std::vector<ThemeOverride> m_themeOverrides;
+				stdvec<ThemeOverride> m_themeOverrides;
 
 				bool m_drawBox { true };
 				ostd::Color m_drawBoxColor { 255, 0, 0 };

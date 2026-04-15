@@ -19,31 +19,31 @@ namespace ostd
 		        catch (const json::exception&) { return false; }
 		    }
 		};
-		// ----- int ----------------------------------------------------------
-		template<> struct Getter<int>
+		// ----- i32 ----------------------------------------------------------
+		template<> struct Getter<i32>
 		{
-		    static int exec_impl(const std::string& p, const json& root)
+		    static i32 exec_impl(const std::string& p, const json& root)
 		    {
-		        try { return root.at(p).get<int>(); }
+		        try { return root.at(p).get<i32>(); }
 		        catch (const json::exception&) { return 0; }
 		    }
 		};
-		// ----- double -------------------------------------------------------
-		template<> struct Getter<double>
+		// ----- f64 -------------------------------------------------------
+		template<> struct Getter<f64>
 		{
-		    static double exec_impl(const std::string& p, const json& root)
+		    static f64 exec_impl(const std::string& p, const json& root)
 		    {
-		        try { return root.at(p).get<double>(); }
+		        try { return root.at(p).get<f64>(); }
 		        catch (const json::exception&) { return 0.0; }
 		    }
 		};
-		// ----- ostd::String -------------------------------------------------
-		template<> struct Getter<ostd::String>
+		// ----- String -------------------------------------------------
+		template<> struct Getter<String>
 		{
-		    static ostd::String exec_impl(const std::string& p, const json& root)
+		    static String exec_impl(const std::string& p, const json& root)
 		    {
-		        try { return ostd::String(root.at(p).get<std::string>().c_str()); }
-		        catch (const json::exception&) { return ostd::String(""); }
+		        try { return String(root.at(p).get<std::string>().c_str()); }
+		        catch (const json::exception&) { return String(""); }
 		    }
 		};
 		// ----- ostd::Color -------------------------------------------------
@@ -66,11 +66,11 @@ namespace ostd
 					// Case 2: Array of integers
 		            if (node.is_array() && !node.empty())
 		            {
-		                std::vector<int> vals;
+		                stdvec<i32> vals;
 		                for (const auto& v : node)
 		                {
 		                    if (!v.is_number_integer()) return ostd::Color();
-		                    int iv = v.get<int>();
+		                    i32 iv = v.get<i32>();
 		                    if (iv < 0 || iv > 255) return ostd::Color();
 		                    vals.push_back(iv);
 		                }
@@ -100,13 +100,13 @@ namespace ostd
 		            const json& node = root.at(p);
 		            if (node.is_array() && node.size() == 4)
 		            {
-		                std::vector<float> vals;
+		                stdvec<f32> vals;
 		                vals.reserve(4);
 		                for (const auto& v : node)
 		                {
 		                    if (!v.is_number_float() && !v.is_number_integer())
 		                        return ostd::Rectangle();
-		                    vals.push_back(v.get<float>());
+		                    vals.push_back(v.get<f32>());
 		                }
 		                return ostd::Rectangle(vals[0], vals[1], vals[2], vals[3]);
 		            }
@@ -118,12 +118,12 @@ namespace ostd
 		        }
 		    }
 		};
-		// ----- std::vector<int32_t> ----------------------------------------
-		template<> struct Getter<std::vector<int32_t>>
+		// ----- stdvec<i32> ----------------------------------------
+		template<> struct Getter<stdvec<i32>>
 		{
-		    static std::vector<int32_t> exec_impl(const std::string& p, const json& root)
+		    static stdvec<i32> exec_impl(const std::string& p, const json& root)
 		    {
-		        std::vector<int32_t> result;
+		        stdvec<i32> result;
 		        try
 				{
 		            const json& arr = root.at(p);
@@ -131,18 +131,18 @@ namespace ostd
 		            for (const auto& v : arr)
 					{
 		                if (v.is_number_integer())
-		                    result.push_back(v.get<int32_t>());
+		                    result.push_back(v.get<i32>());
 		            }
 		        } catch (...) {}
 		        return result;
 		    }
 		};
-		// ----- std::vector<double> -----------------------------------------
-		template<> struct Getter<std::vector<double>>
+		// ----- stdvec<f64> -----------------------------------------
+		template<> struct Getter<stdvec<f64>>
 		{
-		    static std::vector<double> exec_impl(const std::string& p, const json& root)
+		    static stdvec<f64> exec_impl(const std::string& p, const json& root)
 		    {
-		        std::vector<double> result;
+		        stdvec<f64> result;
 		        try
 				{
 		            const json& arr = root.at(p);
@@ -150,18 +150,18 @@ namespace ostd
 		            for (const auto& v : arr)
 					{
 		                if (v.is_number())
-		                    result.push_back(v.get<double>());
+		                    result.push_back(v.get<f64>());
 		            }
 		        } catch (...) {}
 		        return result;
 		    }
 		};
-		// ----- std::vector<ostd::String> -----------------------------------
-		template<> struct Getter<std::vector<ostd::String>>
+		// ----- stdvec<String> -----------------------------------
+		template<> struct Getter<stdvec<String>>
 		{
-		    static std::vector<ostd::String> exec_impl(const std::string& p, const json& root)
+		    static stdvec<String> exec_impl(const std::string& p, const json& root)
 		    {
-		        std::vector<ostd::String> result;
+		        stdvec<String> result;
 		        try
 				{
 		            const json& arr = root.at(p);
@@ -175,12 +175,12 @@ namespace ostd
 		        return result;
 		    }
 		};
-		// ----- std::vector<ostd::Color> -----------------------------------
-		template<> struct Getter<std::vector<ostd::Color>>
+		// ----- stdvec<ostd::Color> -----------------------------------
+		template<> struct Getter<stdvec<ostd::Color>>
 		{
-		    static std::vector<ostd::Color> exec_impl(const std::string& p, const json& root)
+		    static stdvec<ostd::Color> exec_impl(const std::string& p, const json& root)
 		    {
-		        std::vector<ostd::Color> result;
+		        stdvec<ostd::Color> result;
 		        try
 		        {
 		            const json& node = root.at(p);
@@ -203,7 +203,7 @@ namespace ostd
 		        }
 		    }
 		};
-		// ----- std::vector<ostd::Vec2> -----------------------------------
+		// ----- stdvec<ostd::Vec2> -----------------------------------
 		template<> struct Getter<ostd::Vec2>
 		{
 		    static ostd::Vec2 exec_impl(const std::string& p, const json& root)
@@ -213,7 +213,7 @@ namespace ostd
 		            const json& arr = root.at(p);
 		            if (!arr.is_array() || arr.size() != 2)
 		                return ostd::Vec2();
-		            return ostd::Vec2(arr[0].get<float>(), arr[1].get<float>());
+		            return ostd::Vec2(arr[0].get<f32>(), arr[1].get<f32>());
 		        }
 		        catch (...)
 				{
@@ -221,12 +221,12 @@ namespace ostd
 		        }
 		    }
 		};
-		// ----- std::vector<ostd::Rectangle> -----------------------------------
-		template<> struct Getter<std::vector<ostd::Rectangle>>
+		// ----- stdvec<ostd::Rectangle> -----------------------------------
+		template<> struct Getter<stdvec<ostd::Rectangle>>
 		{
-		    static std::vector<ostd::Rectangle> exec_impl(const std::string& p, const json& root)
+		    static stdvec<ostd::Rectangle> exec_impl(const std::string& p, const json& root)
 		    {
-		        std::vector<ostd::Rectangle> result;
+		        stdvec<ostd::Rectangle> result;
 		        try
 		        {
 		            const json& node = root.at(p);
@@ -269,10 +269,10 @@ namespace ostd
 		    }
 		};
 
-		// ----- int ----------------------------------------------------------
-		template<> struct Setter<int>
+		// ----- i32 ----------------------------------------------------------
+		template<> struct Setter<i32>
 		{
-		    static bool exec_impl(const std::string& p, json& root, int value)
+		    static bool exec_impl(const std::string& p, json& root, i32 value)
 		    {
 		        try
 				{
@@ -283,10 +283,10 @@ namespace ostd
 		    }
 		};
 
-		// ----- double -------------------------------------------------------
-		template<> struct Setter<double>
+		// ----- f64 -------------------------------------------------------
+		template<> struct Setter<f64>
 		{
-		    static bool exec_impl(const std::string& p, json& root, double value)
+		    static bool exec_impl(const std::string& p, json& root, f64 value)
 		    {
 		        try
 				{
@@ -297,10 +297,10 @@ namespace ostd
 		    }
 		};
 
-		// ----- ostd::String -------------------------------------------------
-		template<> struct Setter<ostd::String>
+		// ----- String -------------------------------------------------
+		template<> struct Setter<String>
 		{
-		    static bool exec_impl(const std::string& p, json& root, const ostd::String& value)
+		    static bool exec_impl(const std::string& p, json& root, const String& value)
 		    {
 		        try
 				{
@@ -318,16 +318,16 @@ namespace ostd
 		        try
 				{
 		            json arr = json::array();
-		            arr.push_back(static_cast<uint8_t>(value.r));
-		            arr.push_back(static_cast<uint8_t>(value.g));
-		            arr.push_back(static_cast<uint8_t>(value.b));
-		            if (value.a != 255) arr.push_back(static_cast<uint8_t>(value.a));
+		            arr.push_back(cast<u8>(value.r));
+		            arr.push_back(cast<u8>(value.g));
+		            arr.push_back(cast<u8>(value.b));
+		            if (value.a != 255) arr.push_back(cast<u8>(value.a));
 		            root[p] = arr;
 		            return true;
 		        } catch (...) { return false; }
 		    }
 		};
-		// ----- std::vector<ostd::Vec2> -----------------------------------
+		// ----- stdvec<ostd::Vec2> -----------------------------------
 		template<> struct Setter<ostd::Vec2>
 		{
 		    static bool exec_impl(const std::string& p, json& root, const ostd::Vec2& value)
@@ -367,38 +367,38 @@ namespace ostd
 		        }
 		    }
 		};
-		// ----- std::vector<int32_t> ----------------------------------------
-		template<> struct Setter<std::vector<int32_t>>
+		// ----- stdvec<i32> ----------------------------------------
+		template<> struct Setter<stdvec<i32>>
 		{
-		    static bool exec_impl(const std::string& p, json& root, const std::vector<int32_t>& value)
+		    static bool exec_impl(const std::string& p, json& root, const stdvec<i32>& value)
 		    {
 		        try
 				{
 		            json arr = json::array();
-		            for (int32_t v : value) arr.push_back(v);
+		            for (i32 v : value) arr.push_back(v);
 		            root[p] = arr;
 		            return true;
 		        } catch (...) { return false; }
 		    }
 		};
-		// ----- std::vector<double> -----------------------------------------
-		template<> struct Setter<std::vector<double>>
+		// ----- stdvec<f64> -----------------------------------------
+		template<> struct Setter<stdvec<f64>>
 		{
-		    static bool exec_impl(const std::string& p, json& root, const std::vector<double>& value)
+		    static bool exec_impl(const std::string& p, json& root, const stdvec<f64>& value)
 		    {
 		        try
 				{
 		            json arr = json::array();
-		            for (double v : value) arr.push_back(v);
+		            for (f64 v : value) arr.push_back(v);
 		            root[p] = arr;
 		            return true;
 		        } catch (...) { return false; }
 		    }
 		};
-		// ----- std::vector<ostd::String> -----------------------------------
-		template<> struct Setter<std::vector<ostd::String>>
+		// ----- stdvec<String> -----------------------------------
+		template<> struct Setter<stdvec<String>>
 		{
-		    static bool exec_impl(const std::string& p, json& root, const std::vector<ostd::String>& value)
+		    static bool exec_impl(const std::string& p, json& root, const stdvec<String>& value)
 		    {
 		        try
 				{
@@ -409,10 +409,10 @@ namespace ostd
 		        } catch (...) { return false; }
 		    }
 		};
-		// ----- std::vector<ostd::Color> -----------------------------------
-		template<> struct Setter<std::vector<ostd::Color>>
+		// ----- stdvec<ostd::Color> -----------------------------------
+		template<> struct Setter<stdvec<ostd::Color>>
 		{
-		    static bool exec_impl(const std::string& p, json& root, const std::vector<ostd::Color>& value)
+		    static bool exec_impl(const std::string& p, json& root, const stdvec<ostd::Color>& value)
 		    {
 		        try
 		        {
@@ -428,10 +428,10 @@ namespace ostd
 		        }
 		    }
 		};
-		// ----- std::vector<ostd::Rectangle> -----------------------------------
-		template<> struct Setter<std::vector<ostd::Rectangle>>
+		// ----- stdvec<ostd::Rectangle> -----------------------------------
+		template<> struct Setter<stdvec<ostd::Rectangle>>
 		{
-		    static bool exec_impl(const std::string& p, json& root, const std::vector<ostd::Rectangle>& value)
+		    static bool exec_impl(const std::string& p, json& root, const stdvec<ostd::Rectangle>& value)
 		    {
 		        try
 		        {
@@ -457,7 +457,7 @@ namespace ostd
 	}
 
 
-	static inline bool __navigate_json_path(const ostd::String& path, json*& outSource, ostd::String& outName)
+	static inline bool __navigate_json_path(const String& path, json*& outSource, String& outName)
 	{
 	    auto tokens = path.tokenize(".");
 	    if (tokens.count() <= 1)
@@ -468,7 +468,7 @@ namespace ostd
 	        return true;
 	    }
 
-	    ostd::String key = "";
+	    String key = "";
 	    while (tokens.hasNext())
 	    {
 	        key = tokens.next();
@@ -490,10 +490,10 @@ namespace ostd
 	}
 
 	template<class T>
-	T JsonFile::get(const ostd::String& name)
+	T JsonFile::get(const String& name)
 	{
 		json* source = &m_json;
-		ostd::String settingName = "";
+		String settingName = "";
 		if (__navigate_json_path(name, source, settingName))
 			return detail::Getter<T>::exec_impl(settingName, *source);
 		else
@@ -501,7 +501,7 @@ namespace ostd
 	    return detail::Getter<T>::exec_impl(settingName, *source);
 	}
 	template<class T>
-	bool JsonFile::set(const ostd::String& name, T value)
+	bool JsonFile::set(const String& name, T value)
 	{
 		if (!m_loaded) return false;
 		if (!m_writeable) return false;
@@ -510,7 +510,7 @@ namespace ostd
 	    if (tokens.count() == 0) return false;
 
 	    json* current = &m_json;
-	    ostd::String key;
+	    String key;
 
 	    while (tokens.hasNext())
 	    {
@@ -530,34 +530,34 @@ namespace ostd
 	    return false;
 	}
 
-	bool JsonFile::get_bool(const ostd::String& name) { return get<bool>(name); }
-	int JsonFile::get_int(const ostd::String& name) { return get<int32_t>(name); }
-	double JsonFile::get_double(const ostd::String& name) { return get<double>(name); }
-	ostd::String JsonFile::get_string(const ostd::String& name) { return get<ostd::String>(name); }
-	ostd::Color JsonFile::get_color(const ostd::String& name) { return get<ostd::Color>(name); }
-	ostd::Vec2 JsonFile::get_vec2(const ostd::String& name) { return get<ostd::Vec2>(name); }
-	ostd::Rectangle JsonFile::get_rect(const ostd::String& name) { return get<ostd::Rectangle>(name); }
-	std::vector<int32_t> JsonFile::get_int_array(const ostd::String& name) { return get<std::vector<int32_t>>(name); }
-	std::vector<double> JsonFile::get_double_array(const ostd::String& name) { return get<std::vector<double>>(name); }
-	std::vector<ostd::String> JsonFile::get_string_array(const ostd::String& name) { return get<std::vector<ostd::String>>(name); }
-	std::vector<ostd::Color> JsonFile::get_color_array(const ostd::String& name) { return get<std::vector<ostd::Color>>(name); }
-	std::vector<ostd::Rectangle> JsonFile::get_rect_array(const ostd::String& name) { return get<std::vector<ostd::Rectangle>>(name); }
+	bool JsonFile::get_bool(const String& name) { return get<bool>(name); }
+	i32 JsonFile::get_int(const String& name) { return get<i32>(name); }
+	f64 JsonFile::get_double(const String& name) { return get<f64>(name); }
+	String JsonFile::get_string(const String& name) { return get<String>(name); }
+	ostd::Color JsonFile::get_color(const String& name) { return get<ostd::Color>(name); }
+	ostd::Vec2 JsonFile::get_vec2(const String& name) { return get<ostd::Vec2>(name); }
+	ostd::Rectangle JsonFile::get_rect(const String& name) { return get<ostd::Rectangle>(name); }
+	stdvec<i32> JsonFile::get_int_array(const String& name) { return get<stdvec<i32>>(name); }
+	stdvec<f64> JsonFile::get_double_array(const String& name) { return get<stdvec<f64>>(name); }
+	stdvec<String> JsonFile::get_string_array(const String& name) { return get<stdvec<String>>(name); }
+	stdvec<ostd::Color> JsonFile::get_color_array(const String& name) { return get<stdvec<ostd::Color>>(name); }
+	stdvec<ostd::Rectangle> JsonFile::get_rect_array(const String& name) { return get<stdvec<ostd::Rectangle>>(name); }
 
-	bool JsonFile::set_bool(const ostd::String& name, bool value) { return set<bool>(name, value); }
-	bool JsonFile::set_int(const ostd::String& name, int32_t value) { return set<int32_t>(name, value); }
-	bool JsonFile::set_double(const ostd::String& name, double value) { return set<double>(name, value); }
-	bool JsonFile::set_string(const ostd::String& name, const ostd::String& value) { return set<ostd::String>(name, value); }
-	bool JsonFile::set_color(const ostd::String& name, const ostd::Color& value) { return set<ostd::Color>(name, value); }
-	bool JsonFile::set_vec2(const ostd::String& name, const ostd::Vec2& value) { return set<ostd::Vec2>(name, value); }
-	bool JsonFile::set_rect(const ostd::String& name, const ostd::Rectangle& value) { return set<ostd::Rectangle>(name, value); }
-	bool JsonFile::set_int_array(const ostd::String& name, const std::vector<int32_t>& value) { return set<std::vector<int32_t>>(name, value); }
-	bool JsonFile::set_double_array(const ostd::String& name, const std::vector<double>& value) { return set<std::vector<double>>(name, value); }
-	bool JsonFile::set_string_array(const ostd::String& name, const std::vector<ostd::String>& value) { return set<std::vector<ostd::String>>(name, value); }
-	bool JsonFile::set_color_array(const ostd::String& name, const std::vector<ostd::Color>& value) { return set<std::vector<ostd::Color>>(name, value); }
-	bool JsonFile::set_rect_array(const ostd::String& name, const std::vector<ostd::Rectangle>& value) { return set<std::vector<ostd::Rectangle>>(name, value); }
+	bool JsonFile::set_bool(const String& name, bool value) { return set<bool>(name, value); }
+	bool JsonFile::set_int(const String& name, i32 value) { return set<i32>(name, value); }
+	bool JsonFile::set_double(const String& name, f64 value) { return set<f64>(name, value); }
+	bool JsonFile::set_string(const String& name, const String& value) { return set<String>(name, value); }
+	bool JsonFile::set_color(const String& name, const ostd::Color& value) { return set<ostd::Color>(name, value); }
+	bool JsonFile::set_vec2(const String& name, const ostd::Vec2& value) { return set<ostd::Vec2>(name, value); }
+	bool JsonFile::set_rect(const String& name, const ostd::Rectangle& value) { return set<ostd::Rectangle>(name, value); }
+	bool JsonFile::set_int_array(const String& name, const stdvec<i32>& value) { return set<stdvec<i32>>(name, value); }
+	bool JsonFile::set_double_array(const String& name, const stdvec<f64>& value) { return set<stdvec<f64>>(name, value); }
+	bool JsonFile::set_string_array(const String& name, const stdvec<String>& value) { return set<stdvec<String>>(name, value); }
+	bool JsonFile::set_color_array(const String& name, const stdvec<ostd::Color>& value) { return set<stdvec<ostd::Color>>(name, value); }
+	bool JsonFile::set_rect_array(const String& name, const stdvec<ostd::Rectangle>& value) { return set<stdvec<ostd::Rectangle>>(name, value); }
 
 
-	bool JsonFile::init(const ostd::String& filePath, bool writeable, const json* obj)
+	bool JsonFile::init(const String& filePath, bool writeable, const json* obj)
 	{
 		m_filePath = filePath;
 		m_rawJson = "";

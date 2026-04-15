@@ -74,11 +74,11 @@ namespace ogfx
 			}
 
 	    private:
-	    	inline static int s_refCount { 0 };
+	    	inline static i32 s_refCount { 0 };
 
 		public:
-			inline static constexpr int32_t ErrorSDLInitFailed { 1 };
-			inline static constexpr int32_t ErrorSDLTTFInitFailed { 2 };
+			inline static constexpr i32 ErrorSDLInitFailed { 1 };
+			inline static constexpr i32 ErrorSDLTTFInitFailed { 2 };
 
 	};
 }

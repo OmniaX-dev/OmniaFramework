@@ -1,29 +1,28 @@
 /*
-    OmniaFramework - A collection of useful functionality
-    Copyright (C) 2025  OmniaX-Dev
+	OmniaFramework - A collection of useful functionality
+	Copyright (C) 2025  OmniaX-Dev
 
-    This file is part of OmniaFramework.
+	This file is part of OmniaFramework.
 
-    OmniaFramework is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	OmniaFramework is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    OmniaFramework is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	OmniaFramework is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
 
-#include <vector>
 #include <unordered_map>
 #include <deque>
-#include <cstdint>
+#include <ostd/data/Types.hpp>
 #include <ostd/utils/Defines.hpp>
 
 namespace ostd
@@ -37,11 +36,11 @@ namespace ostd
 
 	struct KeyNode
 	{
-		int32_t x;
-		int32_t y;
-		float fscore;
+		i32 x;
+		i32 y;
+		f32 fscore;
 
-		KeyNode(int32_t xx = 0, int32_t yy = 0, float f = 0.0f);
+		KeyNode(i32 xx = 0, i32 yy = 0, f32 f = 0.0f);
 		bool operator==(const KeyNode &other) const;
 		bool operator<(const KeyNode &other) const;
 
@@ -57,17 +56,17 @@ namespace ostd
 		bool isEmpty(void) const;
 		void push(const KeyNode& k);
 		bool contains(const KeyNode& k);
-		const KeyNode& operator[](uint32_t index) const;
-		int32_t size(void) const;
+		const KeyNode& operator[](u32 index) const;
+		i32 size(void) const;
 		void removeLowest(void);
-		void remove(uint32_t index);
+		void remove(u32 index);
 		void clear(void);
 		KeyNode& getLowest(void);
-		int32_t getLowestIndex(void);
+		i32 getLowestIndex(void);
 
 		private:
-			int32_t m_lowest_index;
-			std::vector<KeyNode> m_list;
+			i32 m_lowest_index;
+			stdvec<KeyNode> m_list;
 			KeyNode* m_lowest;
 	};
 
@@ -75,16 +74,16 @@ namespace ostd
 	{
 		public:
 			PathFinder(void);
-			void init(int32_t w, int32_t h, eHeuristicType ht = eHeuristicType::Euclidean);
-			void setObstacle(int32_t x, int32_t y, bool obst = true);
-			void setKeyPoints(int32_t startx, int32_t starty, int32_t endx, int32_t endy);
+			void init(i32 w, i32 h, eHeuristicType ht = eHeuristicType::Euclidean);
+			void setObstacle(i32 x, i32 y, bool obst = true);
+			void setKeyPoints(i32 startx, i32 starty, i32 endx, i32 endy);
 			std::deque<KeyNode> findPath(void);
 
 		private:
-			float heuristics(KeyNode n);
+			f32 heuristics(KeyNode n);
 
 		private:
-			std::unordered_map<KeyNode, float, KeyNode::hashFunc> gscores;
+			std::unordered_map<KeyNode, f32, KeyNode::hashFunc> gscores;
 			std::unordered_map<KeyNode, KeyNode, KeyNode::hashFunc> pathMap;
 			std::unordered_map<KeyNode, bool, KeyNode::hashFunc> obstacle;
 			OpenSet openSet;
@@ -93,8 +92,8 @@ namespace ostd
 			KeyNode __goal;
 			eHeuristicType __ht;
 
-			int32_t m_width;
-			int32_t m_height;
+			i32 m_width;
+			i32 m_height;
 
 			bool m_initialized;
 	};

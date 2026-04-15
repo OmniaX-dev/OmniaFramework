@@ -22,7 +22,7 @@ namespace ostd
 
 	String& String::ltrim(void)
 	{
-		m_data.erase(m_data.begin(), std::find_if(m_data.begin(), m_data.end(), [](unsigned char ch) {
+		m_data.erase(m_data.begin(), std::find_if(m_data.begin(), m_data.end(), [](uchar ch) {
 			return !std::isspace(ch);
 		}));
 		return *this;
@@ -30,7 +30,7 @@ namespace ostd
 
 	String& String::rtrim(void)
 	{
-		m_data.erase(std::find_if(m_data.rbegin(), m_data.rend(), [](unsigned char ch) {
+		m_data.erase(std::find_if(m_data.rbegin(), m_data.rend(), [](uchar ch) {
 			return !std::isspace(ch);
 		}).base(), m_data.end());
 		return *this;
@@ -43,22 +43,22 @@ namespace ostd
 
 	String& String::toLower(void)
 	{
-		std::transform(m_data.begin(), m_data.end(), m_data.begin(), [](unsigned char c){ return std::tolower(c); });
+		std::transform(m_data.begin(), m_data.end(), m_data.begin(), [](uchar c){ return std::tolower(c); });
 		return *this;
 	}
 
 	String& String::toUpper(void)
 	{
-		std::transform(m_data.begin(), m_data.end(), m_data.begin(), [](unsigned char c){ return std::toupper(c); });
+		std::transform(m_data.begin(), m_data.end(), m_data.begin(), [](uchar c){ return std::toupper(c); });
 		return *this;
 	}
 
-	String& String::addPadding(uint32_t new_string_length, char c, ePaddingBehavior padding_behavior)
+	String& String::addPadding(u32 new_string_length, char c, ePaddingBehavior padding_behavior)
 	{
 		if (len() - 1 >= new_string_length) return *this;
-		uint32_t diff = new_string_length - len();
-		int32_t leftPadding = 0;
-		int32_t rightPadding = 0;
+		u32 diff = new_string_length - len();
+		i32 leftPadding = 0;
+		i32 rightPadding = 0;
 		switch (padding_behavior)
 		{
 			case ePaddingBehavior::ForceEvenNegative:
@@ -96,7 +96,7 @@ namespace ostd
 		return addLeftPadding(len() + leftPadding, c).addRightPadding(len() + rightPadding, c);
 	}
 
-	String& String::addLeftPadding(uint32_t new_string_length, char c)
+	String& String::addLeftPadding(u32 new_string_length, char c)
 	{
 		reverse();
 		while (len() < new_string_length)
@@ -105,7 +105,7 @@ namespace ostd
 		return *this;
 	}
 
-	String& String::addRightPadding(uint32_t new_string_length, char c)
+	String& String::addRightPadding(u32 new_string_length, char c)
 	{
 		while (len() < new_string_length)
 			m_data += c;
@@ -127,7 +127,7 @@ namespace ostd
 
 	String& String::replaceFirst(const String& what, const String& with)
 	{
-		int32_t index = indexOf(what);
+		i32 index = indexOf(what);
 		if (index == -1) return *this;
 		m_data.replace(index, what.len(), with.cpp_str());
 		return *this;
@@ -149,26 +149,26 @@ namespace ostd
 		return *this;
 	}
 
-	String& String::put(uint32_t index, char c)
+	String& String::put(u32 index, char c)
 	{
 		if (index < m_data.length())
 			m_data[index] = c;
 		return *this;
 	}
 
-	String& String::substr(uint32_t start, int32_t end)
+	String& String::substr(u32 start, i32 end)
 	{
 		if (end < 0) m_data = m_data.substr(start);
 		else m_data = m_data.substr(start, end - start);
 		return *this;
 	}
 
-	String& String::fixedLength(uint32_t length, char fill_character, const String& truncate_indicator)
+	String& String::fixedLength(u32 length, char fill_character, const String& truncate_indicator)
 	{
 		if (length < truncate_indicator.len()) return *this;
 		if (len() > length)
 		{
-			int32_t tr_len = truncate_indicator.len();
+			i32 tr_len = truncate_indicator.len();
 			substr(0, length - tr_len);
 			return add(truncate_indicator);
 		}
@@ -190,55 +190,55 @@ namespace ostd
 		return *this;
 	}
 
-	String& String::add(uint8_t i)
+	String& String::add(u8 i)
 	{
 		m_data += std::to_string(i);
 		return *this;
 	}
 
-	String& String::add(int8_t i)
+	String& String::add(i8 i)
 	{
 		m_data += std::to_string(i);
 		return *this;
 	}
 
-	String& String::add(uint16_t i)
+	String& String::add(u16 i)
 	{
 		m_data += std::to_string(i);
 		return *this;
 	}
 
-	String& String::add(int16_t i)
+	String& String::add(i16 i)
 	{
 		m_data += std::to_string(i);
 		return *this;
 	}
 
-	String& String::add(uint32_t i)
+	String& String::add(u32 i)
 	{
 		m_data += std::to_string(i);
 		return *this;
 	}
 
-	String& String::add(int32_t i)
+	String& String::add(i32 i)
 	{
 		m_data += std::to_string(i);
 		return *this;
 	}
 
-	String& String::add(uint64_t i)
+	String& String::add(u64 i)
 	{
 		m_data += std::to_string(i);
 		return *this;
 	}
 
-	String& String::add(int64_t i)
+	String& String::add(i64 i)
 	{
 		m_data += std::to_string(i);
 		return *this;
 	}
 
-	String& String::add(float f, uint8_t precision)
+	String& String::add(f32 f, u8 precision)
 	{
 		std::stringstream stream;
 		if (precision != 0)
@@ -249,7 +249,7 @@ namespace ostd
 		return add(s);
 	}
 
-	String& String::add(double f, uint8_t precision)
+	String& String::add(f64 f, u8 precision)
 	{
 		std::stringstream stream;
 		if (precision != 0)
@@ -293,19 +293,19 @@ namespace ostd
 		return __str.toUpper();
 	}
 
-	String String::new_addPadding(uint32_t new_string_length, char c, ePaddingBehavior padding_behavior) const
+	String String::new_addPadding(u32 new_string_length, char c, ePaddingBehavior padding_behavior) const
 	{
 		String __str = m_data;
 		return __str.addPadding(new_string_length, c, padding_behavior);
 	}
 
-	String String::new_addLeftPadding(uint32_t new_string_length, char c) const
+	String String::new_addLeftPadding(u32 new_string_length, char c) const
 	{
 		String __str = m_data;
 		return __str.addLeftPadding(new_string_length, c);
 	}
 
-	String String::new_addRightPadding(uint32_t new_string_length, char c) const
+	String String::new_addRightPadding(u32 new_string_length, char c) const
 	{
 		String __str = m_data;
 		return __str.addRightPadding(new_string_length, c);
@@ -335,19 +335,19 @@ namespace ostd
 		return __str.regexReplace(regex_pattern, replace_with, case_insensitive);
 	}
 
-	String String::new_put(uint32_t index, char c) const
+	String String::new_put(u32 index, char c) const
 	{
 		String __str = m_data;
 		return __str.put(index, c);
 	}
 
-	String String::new_substr(uint32_t start, int32_t end) const
+	String String::new_substr(u32 start, i32 end) const
 	{
 		String __str = m_data;
 		return __str.substr(start, end);
 	}
 
-	String String::new_fixedLength(uint32_t length, char fill_character, const String& truncate_indicator) const
+	String String::new_fixedLength(u32 length, char fill_character, const String& truncate_indicator) const
 	{
 		String __str = m_data;
 		return __str.fixedLength(length, fill_character, truncate_indicator);
@@ -366,61 +366,61 @@ namespace ostd
 		return __str.add(se);
 	}
 
-	String String::new_add(uint8_t i) const
+	String String::new_add(u8 i) const
 	{
 		String __str = m_data;
 		return __str.add(i);
 	}
 
-	String String::new_add(int8_t i) const
+	String String::new_add(i8 i) const
 	{
 		String __str = m_data;
 		return __str.add(i);
 	}
 
-	String String::new_add(uint16_t i) const
+	String String::new_add(u16 i) const
 	{
 		String __str = m_data;
 		return __str.add(i);
 	}
 
-	String String::new_add(int16_t i) const
+	String String::new_add(i16 i) const
 	{
 		String __str = m_data;
 		return __str.add(i);
 	}
 
-	String String::new_add(uint32_t i) const
+	String String::new_add(u32 i) const
 	{
 		String __str = m_data;
 		return __str.add(i);
 	}
 
-	String String::new_add(int32_t i) const
+	String String::new_add(i32 i) const
 	{
 		String __str = m_data;
 		return __str.add(i);
 	}
 
-	String String::new_add(uint64_t i) const
+	String String::new_add(u64 i) const
 	{
 		String __str = m_data;
 		return __str.add(i);
 	}
 
-	String String::new_add(int64_t i) const
+	String String::new_add(i64 i) const
 	{
 		String __str = m_data;
 		return __str.add(i);
 	}
 
-	String String::new_add(float f, uint8_t precision) const
+	String String::new_add(f32 f, u8 precision) const
 	{
 		String __str = m_data;
 		return __str.add(f, precision);
 	}
 
-	String String::new_add(double f, uint8_t precision) const
+	String String::new_add(f64 f, u8 precision) const
 	{
 		String __str = m_data;
 		return __str.add(f, precision);
@@ -429,12 +429,12 @@ namespace ostd
 
 
 	//Utility
-	int64_t String::toInt(void) const
+	i64 String::toInt(void) const
 	{
 		if (!isNumeric(false)) return 0;
-		ostd::String str = String(m_data).trim().toLower();
+		String str = String(m_data).trim().toLower();
 		if (!str.isInt()) return 0;
-		int32_t base = 10;
+		i32 base = 10;
 		if (str.cpp_str().rfind("0x", 0) == 0)
 		{
 			str = str.substr(2);
@@ -448,13 +448,13 @@ namespace ostd
 		return strtoul(str.c_str(), NULL, base);
 	}
 
-	float String::toFloat(void) const
+	f32 String::toFloat(void) const
 	{
 		if (!isNumeric(true)) return 0;
 		return std::stof(m_data);
 	}
 
-	double String::toDouble(void) const
+	f64 String::toDouble(void) const
 	{
 		if (!isNumeric(true)) return 0;
 		return std::stod(m_data);
@@ -465,7 +465,7 @@ namespace ostd
 		if (decimal)
 		{
 			std::istringstream iss(m_data);
-			double f;
+			f64 f;
 			iss >> std::noskipws >> f;
 			return iss.eof() && !iss.fail();
 		}
@@ -474,20 +474,20 @@ namespace ostd
 
 	bool String::isInt(void) const
 	{
-		ostd::String str = String(m_data).trim().toLower();
+		String str = String(m_data).trim().toLower();
 		bool isNumber = std::ranges::all_of(str.begin(), str.end(), [](char c){ return isdigit(c) != 0; });
 		return str.isHex() || str.isBin() || isNumber;
 	}
 
 	bool String::isHex(void) const
 	{
-		ostd::String hex = String(m_data).trim().toLower();
+		String hex = String(m_data).trim().toLower();
 		return hex.cpp_str().compare(0, 2, "0x") == 0 && hex.cpp_str().size() > 2 && hex.cpp_str().find_first_not_of("0123456789abcdef", 2) == std::string::npos;
 	}
 
 	bool String::isBin(void) const
 	{
-		ostd::String bin = String(m_data).trim().toLower();
+		String bin = String(m_data).trim().toLower();
 		return bin.cpp_str().compare(0, 2, "0b") == 0 && bin.cpp_str().size() > 2 && bin.cpp_str().find_first_not_of("01", 2) == std::string::npos;
 	}
 
@@ -513,56 +513,56 @@ namespace ostd
 
 	bool String::regexMatches(const String& regex_pattern, bool case_insensitive) const
 	{
-	    try
-	    {
-	        boost::regex rgx(regex_pattern.cpp_str(), case_insensitive ? boost::regex_constants::icase : boost::regex_constants::normal);
-	        return boost::regex_search(m_data, rgx);
-	    }
-	    catch (const boost::regex_error& err)
-	    {
-	        std::cerr << err.what() << '\n'; //TODO: Better error handling
-	        return false;
-	    }
+		try
+		{
+			boost::regex rgx(regex_pattern.cpp_str(), case_insensitive ? boost::regex_constants::icase : boost::regex_constants::normal);
+			return boost::regex_search(m_data, rgx);
+		}
+		catch (const boost::regex_error& err)
+		{
+			std::cerr << err.what() << '\n'; //TODO: Better error handling
+			return false;
+		}
 	}
 
-	uint32_t String::count(const String& str) const
+	u32 String::count(const String& str) const
 	{
 		Tokens tok = tokenize(str, false, true);
 		if (tok.count() < 1) return 0;
 		return tok.count() - 1;
 	}
 
-	int32_t String::indexOf(char c, uint32_t start) const
+	i32 String::indexOf(char c, u32 start) const
 	{
 		cpp_string cc = "";
 		cc += c;
-		int32_t pos = m_data.find(cc.c_str(), start);
+		i32 pos = m_data.find(cc.c_str(), start);
 		if (pos == std::string::npos) return -1;
 		return pos;
 	}
 
-	int32_t String::indexOf(const String& str, uint32_t start) const
+	i32 String::indexOf(const String& str, u32 start) const
 	{
-		int32_t pos = m_data.find(str.c_str(), start);
+		i32 pos = m_data.find(str.c_str(), start);
 		if (pos == std::string::npos) return -1;
 		return pos;
 	}
 
-	int32_t String::lastIndexOf(char c) const
+	i32 String::lastIndexOf(char c) const
 	{
 		String se(m_data);
 		se.reverse();
-		int32_t pos = se.indexOf(c);
+		i32 pos = se.indexOf(c);
 		if (pos < 0) return -1;
 		return len() - pos - 1;
 	}
 
-	int32_t String::lastIndexOf(const String& str) const
+	i32 String::lastIndexOf(const String& str) const
 	{
 		String se(m_data);
 		se.reverse();
 		String se2(str);
-		int32_t pos = se.indexOf(se2.new_reverse());
+		i32 pos = se.indexOf(se2.new_reverse());
 		if (pos < 0) return -1;
 		return len() - pos - str.len();
 	}
@@ -570,8 +570,8 @@ namespace ostd
 	String::Tokens String::tokenize(const String& delimiter, bool trim_tokens, bool allow_white_space_only_tokens) const
 	{
 		Tokens tokens;
-		int32_t sindex = 0;
-		int32_t eindex = 0;
+		i32 sindex = 0;
+		i32 eindex = 0;
 		String __token = "";
 		while ((eindex = indexOf(delimiter, sindex)) != -1)
 		{
@@ -608,91 +608,91 @@ namespace ostd
 		return tokens;
 	}
 
-	String String::getHexStr(uint64_t value, bool prefix, uint8_t nbytes)
+	String String::getHexStr(u64 value, bool prefix, u8 nbytes)
 	{
 		union {
-			uint64_t val;
-			uint8_t bytes[8];
+			u64 val;
+			u8 bytes[8];
 		} __tmp_editor;
 		__tmp_editor.val = value;
 		if (nbytes < 1 || nbytes > 8) nbytes = 1;
 		std::ostringstream oss;
 		if (prefix) oss << "0x";
-		for (int8_t b = nbytes - 1; b >= 0; b--)
-			oss << std::setw(2) << std::setfill('0') << std::uppercase << std::hex << (int)__tmp_editor.bytes[b];
+		for (i8 b = nbytes - 1; b >= 0; b--)
+			oss << std::setw(2) << std::setfill('0') << std::uppercase << std::hex << (i32)__tmp_editor.bytes[b];
 		return oss.str();
 	}
 
-	String String::getBinStr(uint64_t value, bool prefix, uint8_t nbytes)
+	String String::getBinStr(u64 value, bool prefix, u8 nbytes)
 	{
 		union {
-			uint64_t val;
-			uint8_t bytes[8];
+			u64 val;
+			u8 bytes[8];
 		} __tmp_editor;
 		__tmp_editor.val = value;
 		if (nbytes < 1 || nbytes > 8) nbytes = 1;
 		std::ostringstream oss;
 		if (prefix) oss << "0b ";
-		for (int8_t b = nbytes - 1; b >= 0; b--)
+		for (i8 b = nbytes - 1; b >= 0; b--)
 			oss << std::bitset<8>((char)__tmp_editor.bytes[b]) << " ";
 		return oss.str();
 	}
 
-	String String::duplicateChar(unsigned char c, uint16_t count)
+	String String::duplicateChar(uchar c, u16 count)
 	{
 		String str = "";
-		for (uint16_t i = 0; i < count; i++)
+		for (u16 i = 0; i < count; i++)
 			str = str += c;
 		return str;
 	}
 
-	std::vector<uint32_t> String::decodeUTF8(const ostd::String& s)
+	stdvec<u32> String::decodeUTF8(const String& s)
 	{
-		std::vector<uint32_t> out;
-	    const char* p = s.m_data.data();
-	    const char* end = p + s.m_data.size();
+		stdvec<u32> out;
+		const char* p = s.m_data.data();
+		const char* end = p + s.m_data.size();
 
-	    while (p < end)
-	        out.push_back(utf8_next(p, end));
+		while (p < end)
+			out.push_back(utf8_next(p, end));
 
-	    return out;
+		return out;
 	}
 
 
-	uint32_t String::utf8_next(const char*& p, const char* end)
+	u32 String::utf8_next(const char*& p, const char* end)
 	{
-		uint8_t c = static_cast<uint8_t>(*p++);
+		u8 c = cast<u8>(*p++);
 
-	    // ASCII fast path
-	    if (c < 0x80)
-	        return c;
+		// ASCII fast path
+		if (c < 0x80)
+			return c;
 
-	    // 2-byte sequence
-	    if ((c >> 5) == 0x6) {
-	        uint32_t cp = (c & 0x1F) << 6;
-	        cp |= (static_cast<uint8_t>(*p++) & 0x3F);
-	        return cp;
-	    }
+		// 2-byte sequence
+		if ((c >> 5) == 0x6) {
+			u32 cp = (c & 0x1F) << 6;
+			cp |= (cast<u8>(*p++) & 0x3F);
+			return cp;
+		}
 
-	    // 3-byte sequence
-	    if ((c >> 4) == 0xE) {
-	        uint32_t cp = (c & 0x0F) << 12;
-	        cp |= (static_cast<uint8_t>(*p++) & 0x3F) << 6;
-	        cp |= (static_cast<uint8_t>(*p++) & 0x3F);
-	        return cp;
-	    }
+		// 3-byte sequence
+		if ((c >> 4) == 0xE) {
+			u32 cp = (c & 0x0F) << 12;
+			cp |= (cast<u8>(*p++) & 0x3F) << 6;
+			cp |= (cast<u8>(*p++) & 0x3F);
+			return cp;
+		}
 
-	    // 4-byte sequence
-	    if ((c >> 3) == 0x1E) {
-	        uint32_t cp = (c & 0x07) << 18;
-	        cp |= (static_cast<uint8_t>(*p++) & 0x3F) << 12;
-	        cp |= (static_cast<uint8_t>(*p++) & 0x3F) << 6;
-	        cp |= (static_cast<uint8_t>(*p++) & 0x3F);
-	        return cp;
-	    }
+		// 4-byte sequence
+		if ((c >> 3) == 0x1E) {
+			u32 cp = (c & 0x07) << 18;
+			cp |= (cast<u8>(*p++) & 0x3F) << 12;
+			cp |= (cast<u8>(*p++) & 0x3F) << 6;
+			cp |= (cast<u8>(*p++) & 0x3F);
+			return cp;
+		}
 
-	    // Invalid byte → return replacement character
-	    return 0xFFFD;
+		// Invalid byte → return replacement character
+		return 0xFFFD;
 	}
 
 	String operator+(const cpp_string& str1, const String& str)

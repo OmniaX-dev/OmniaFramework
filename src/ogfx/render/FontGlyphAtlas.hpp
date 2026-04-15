@@ -34,14 +34,14 @@ namespace ogfx
 			ostd::Vec2 uvs[4];
 			SDL_Texture* atlas { nullptr };
 			ostd::Vec2 size;
-			uint32_t codepoint { 0 };
-			int32_t advance { 0 };
+			u32 codepoint { 0 };
+			i32 advance { 0 };
 		};
 		struct GlyphKey
 		{
-		    uint32_t codepoint;
-		    uint64_t fontID;
-		    uint32_t pixelSize;
+		    u32 codepoint;
+		    u64 fontID;
+		    u32 pixelSize;
 
 		    bool operator==(const GlyphKey& other) const noexcept
 			{
@@ -54,9 +54,9 @@ namespace ogfx
 		{
 			size_t operator()(const GlyphKey& k) const noexcept
 			{
-			    size_t h = std::hash<uint32_t>()(k.codepoint);
-			    h ^= std::hash<uint64_t>()(k.fontID) + 0x9e3779b9 + (h << 6) + (h >> 2);
-			    h ^= std::hash<uint32_t>()(k.pixelSize) + 0x9e3779b9 + (h << 6) + (h >> 2);
+			    size_t h = std::hash<u32>()(k.codepoint);
+			    h ^= std::hash<u64>()(k.fontID) + 0x9e3779b9 + (h << 6) + (h >> 2);
+			    h ^= std::hash<u32>()(k.pixelSize) + 0x9e3779b9 + (h << 6) + (h >> 2);
 			    return h;
 			}
 		};
@@ -64,23 +64,23 @@ namespace ogfx
 			inline FontGlyphAtlas(void) {  }
 			inline FontGlyphAtlas(BasicRenderer2D& renderer) { init(renderer); }
 			FontGlyphAtlas init(BasicRenderer2D& renderer);
-			const std::vector<const GlyphInfo*> processString(const ostd::String& str, TTF_Font* font, uint32_t fontSize);
+			const stdvec<const GlyphInfo*> processString(const String& str, TTF_Font* font, u32 fontSize);
 
 		private:
-			bool rasterize_glyph(const ostd::String& glyphStr, TTF_Font* font, uint32_t fontSize, const GlyphInfo** outGlyph);
+			bool rasterize_glyph(const String& glyphStr, TTF_Font* font, u32 fontSize, const GlyphInfo** outGlyph);
 			bool create_new_atlas(void);
 
 		public:
-			inline static constexpr uint32_t AtlasTextureDimension { 8192 };
-			inline static constexpr uint32_t MaxAtlasCount { 16 };
+			inline static constexpr u32 AtlasTextureDimension { 8192 };
+			inline static constexpr u32 MaxAtlasCount { 16 };
 
 		public:
 			std::unordered_map<GlyphKey, GlyphInfo, GlyphKeyHasher> m_uvs;
 			SDL_Texture* m_atlases[FontGlyphAtlas::MaxAtlasCount];
-			int32_t m_currentAtlasCount { 0 };
+			i32 m_currentAtlasCount { 0 };
 			BasicRenderer2D* m_renderer { nullptr };
-			int32_t m_penX { 0 };
-		    int32_t m_penY { 0 };
-		    int32_t m_rowHeight { 0 };
+			i32 m_penX { 0 };
+		    i32 m_penY { 0 };
+		    i32 m_rowHeight { 0 };
 	};
 }

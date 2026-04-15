@@ -32,17 +32,17 @@ namespace ogfx
 	class WindowResizedData : public ostd::BaseObject
 	{
 		public:
-			inline WindowResizedData(WindowCore& parent, int32_t _oldx, int32_t _oldy, int32_t _newx, int32_t _newy) : parentWindow(parent), old_width(_oldx), old_height(_oldy), new_width(_newx), new_height(_newy)
+			inline WindowResizedData(WindowCore& parent, i32 _oldx, i32 _oldy, i32 _newx, i32 _newy) : parentWindow(parent), old_width(_oldx), old_height(_oldy), new_width(_newx), new_height(_newy)
 			{
 				setTypeName("ogfx::WindowResizedData");
 				validate();
 			}
 
 		public:
-			int32_t new_width;
-			int32_t new_height;
-			int32_t old_width;
-			int32_t old_height;
+			i32 new_width;
+			i32 new_height;
+			i32 old_width;
+			i32 old_height;
 			WindowCore& parentWindow;
 	};
 	class MouseEventData : public ostd::BaseObject
@@ -50,15 +50,15 @@ namespace ogfx
 		public: enum class eButton { None = 0, Left, Middle, Right };
 		public: enum class eScrollDirection { None = 0, Up, Down };
 		public:
-			inline MouseEventData(WindowCore& parent, float mousex, float mousey, eButton btn) : parentWindow(parent), position_x(mousex), position_y(mousey), button(btn)
+			inline MouseEventData(WindowCore& parent, f32 mousex, f32 mousey, eButton btn) : parentWindow(parent), position_x(mousex), position_y(mousey), button(btn)
 			{
 				setTypeName("ogfx::MouseEventData");
 				validate();
 			}
 
 		public:
-			float position_x;
-			float position_y;
+			f32 position_x;
+			f32 position_y;
 			eButton button;
 			eScrollDirection scroll { eScrollDirection::None };
 			gui::Widget* mousePressedOnWidget { nullptr };
@@ -68,14 +68,14 @@ namespace ogfx
 	{
 		public: enum class eKeyEvent { Pressed = 0, Released, Text };
 		public:
-			inline KeyEventData(WindowCore& parent, int32_t key, char _text, eKeyEvent evt) : parentWindow(parent), keyCode(key), text(_text), eventType(evt)
+			inline KeyEventData(WindowCore& parent, i32 key, char _text, eKeyEvent evt) : parentWindow(parent), keyCode(key), text(_text), eventType(evt)
 			{
 				setTypeName("ogfx::KeyEventData");
 				validate();
 			}
 
 		public:
-			int32_t keyCode;
+			i32 keyCode;
 			char text;
 			eKeyEvent eventType;
 			WindowCore& parentWindow;
@@ -93,7 +93,7 @@ namespace ogfx
 		public:
 			eDropType dropType;
 			WindowCore& parentWindow;
-			ostd::String textOrFilePath { "" };
+			String textOrFilePath { "" };
 			ostd::BaseObject* userObject { nullptr };
 	};
 	namespace gui
@@ -111,7 +111,7 @@ namespace ogfx
 				MouseEventData* mouse { nullptr };
 				KeyEventData* keyboard { nullptr };
 				DropEventData drop;
-				uint32_t __original_signal_id { 0 };
+				u32 __original_signal_id { 0 };
 
 			private:
 				bool m_handled { false };

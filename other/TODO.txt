@@ -13,11 +13,11 @@
 ***Fix: Text rendering bug in labels
 ***Implement callback for state changes in checkbox
 ***FIX: WindowOutputHandler text rendering
+***Implement wrappers in Renderer2D to take a center and size for rects
+***find a way to add fixed update to gui::Window
 Add theme caching
-find a way to add fixed update to gui::Window
 Implement global scale (probably query desktop scale and adjust accordingly)
 Implement show/hide functionality for widgets
-Implement wrappers in Renderer2D to take a center and size for rects
 Implement Panel title
 Create reliable default stylesheet
 
@@ -43,6 +43,7 @@ Implement following widgets:
 	Progressbar
 	Save/Open File Dialogs (and folder dialogs)
 	Tab Panel
+	Hex Editor
 	Layouts
 		Vertical
 		Horizontal

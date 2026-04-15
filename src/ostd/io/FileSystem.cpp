@@ -5,9 +5,9 @@
 
 namespace ostd
 {
-	std::vector<std::filesystem::path> FileSystem::listFilesInDirectory(const String& directoryPath)
+	stdvec<std::filesystem::path> FileSystem::listFilesInDirectory(const String& directoryPath)
 	{
-		std::vector<std::filesystem::path> list;
+		stdvec<std::filesystem::path> list;
 		for (const auto& file : std::filesystem::directory_iterator(directoryPath.cpp_str()))
 		{
 			if (!std::filesystem::is_directory(file.path()))
@@ -16,9 +16,9 @@ namespace ostd
 		return list;
 	}
 
-	std::vector<std::filesystem::path> FileSystem::listDirectoriesInDirectory(const String& directoryPath)
+	stdvec<std::filesystem::path> FileSystem::listDirectoriesInDirectory(const String& directoryPath)
 	{
-		std::vector<std::filesystem::path> list;
+		stdvec<std::filesystem::path> list;
 		for (const auto& file : std::filesystem::directory_iterator(directoryPath.cpp_str()))
 		{
 			if (std::filesystem::is_directory(file.path()))
@@ -27,17 +27,17 @@ namespace ostd
 		return list;
 	}
 
-	std::vector<std::filesystem::path> FileSystem::listDirectory(const String& directoryPath)
+	stdvec<std::filesystem::path> FileSystem::listDirectory(const String& directoryPath)
 	{
-		std::vector<std::filesystem::path> list;
+		stdvec<std::filesystem::path> list;
 		for (const auto& file : std::filesystem::directory_iterator(directoryPath.cpp_str()))
 			list.push_back(file.path());
 		return list;
 	}
 
-	std::vector<std::filesystem::path> FileSystem::listFilesInDirectoryRecursive(const String& directoryPath)
+	stdvec<std::filesystem::path> FileSystem::listFilesInDirectoryRecursive(const String& directoryPath)
 	{
-		std::vector<std::filesystem::path> list;
+		stdvec<std::filesystem::path> list;
 		for (const auto& file : std::filesystem::recursive_directory_iterator(directoryPath.cpp_str()))
 		{
 			if (!std::filesystem::is_directory(file.path()))
@@ -46,9 +46,9 @@ namespace ostd
 		return list;
 	}
 
-	std::vector<std::filesystem::path> FileSystem::listDirectoriesInDirectoryRecursive(const String& directoryPath)
+	stdvec<std::filesystem::path> FileSystem::listDirectoriesInDirectoryRecursive(const String& directoryPath)
 	{
-		std::vector<std::filesystem::path> list;
+		stdvec<std::filesystem::path> list;
 		for (const auto& file : std::filesystem::recursive_directory_iterator(directoryPath.cpp_str()))
 		{
 			if (std::filesystem::is_directory(file.path()))
@@ -57,9 +57,9 @@ namespace ostd
 		return list;
 	}
 
-	std::vector<std::filesystem::path> FileSystem::listDirectoryRecursive(const String& directoryPath)
+	stdvec<std::filesystem::path> FileSystem::listDirectoryRecursive(const String& directoryPath)
 	{
-		std::vector<std::filesystem::path> list;
+		stdvec<std::filesystem::path> list;
 		for (const auto& file : std::filesystem::recursive_directory_iterator(directoryPath.cpp_str()))
 			list.push_back(file.path());
 		return list;
@@ -245,7 +245,7 @@ namespace ostd
 		}
 	}
 
-	bool FileSystem::isValidFileCreationPath(const ostd::String& filePath)
+	bool FileSystem::isValidFileCreationPath(const String& filePath)
 	{
 		namespace fs = std::filesystem;
 		try
@@ -268,7 +268,7 @@ namespace ostd
 		}
 	}
 
-	bool FileSystem::isValidDirectoryCreationPath(const ostd::String& directoryPath)
+	bool FileSystem::isValidDirectoryCreationPath(const String& directoryPath)
 	{
 		namespace fs = std::filesystem;
 		try {
@@ -290,7 +290,7 @@ namespace ostd
 		}
 	}
 
-	FileSystem::ePathStatus FileSystem::getPathStatus(const ostd::String& path)
+	FileSystem::ePathStatus FileSystem::getPathStatus(const String& path)
 	{
 		if (directoryExists(path))
 			return ePathStatus::ExistingDirectory;
@@ -302,7 +302,7 @@ namespace ostd
 	}
 
 
-	bool FileSystem::readTextFile(String fileName, std::vector<String>& outLines)
+	bool FileSystem::readTextFile(const String& fileName, stdvec<String>& outLines)
 	{
 		String line;
 		std::ifstream file(fileName.cpp_str());
@@ -313,9 +313,9 @@ namespace ostd
 		return true;
 	}
 
-	bool FileSystem::readTextFileRaw(String fileName, String& outString)
+	bool FileSystem::readTextFileRaw(const String& fileName, String& outString)
 	{
-		std::vector<ostd::String> lines;
+		stdvec<String> lines;
 		if (!readTextFile(fileName, lines))
 			return false;
 		outString.clr();
@@ -324,7 +324,7 @@ namespace ostd
 		return true;
 	}
 
-	bool FileSystem::writeTextFile(const ostd::String& filePath, const std::vector<ostd::String>& lines, bool truncate)
+	bool FileSystem::writeTextFile(const String& filePath, const stdvec<String>& lines, bool truncate)
 	{
 		namespace fs = std::filesystem;
 		ePathStatus status = getPathStatus(filePath);
@@ -356,18 +356,18 @@ namespace ostd
 	}
 
 
-	bool FileSystem::writeTextFileRaw(const ostd::String& filePath, const ostd::String& lines, bool truncate)
+	bool FileSystem::writeTextFileRaw(const String& filePath, const String& lines, bool truncate)
 	{
 		auto _lines = lines.tokenize("\n", false, true).getRawData();
 		return writeTextFile(filePath, _lines, truncate);
 	}
 
 
-	bool FileSystem::loadFileFromHppResource(String output_file_path, const char* resource_buffer, unsigned int size)
+	bool FileSystem::loadFileFromHppResource(const String& output_file_path, const char* resource_buffer, u32 size)
 	{
-		unsigned char ext_len = resource_buffer[0];
+		uchar ext_len = resource_buffer[0];
 		String ext = "";
-		for (unsigned char i = 0; i < ext_len; i++)
+		for (uchar i = 0; i < ext_len; i++)
 			ext += (char)(resource_buffer[i + 1]);
 		if (String(output_file_path).trim().toLower().endsWith(ext))
 			ext = "";

@@ -41,7 +41,7 @@ namespace ostd
 		return getTypeName().add("->uid=").add(getID()).add("/oid=").add(getCompareOID()).add("/valid=").add(STR_BOOL(isValid()));
 	}
 
-	void BaseObject::connectSignal(uint32_t signal_id)
+	void BaseObject::connectSignal(u32 signal_id)
 	{
 		SignalHandler::connect(*this, signal_id);
 	}

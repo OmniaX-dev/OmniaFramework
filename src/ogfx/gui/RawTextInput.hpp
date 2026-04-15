@@ -55,9 +55,9 @@ namespace ogfx
 					ostd::Color backgroundColor { 0, 0, 0, 0 };
 					ostd::Color cursorColor { 0, 0, 0, 0 };
 
-					uint8_t cursorWidth { 0 };
-					uint8_t extraPaddingTop { 0 };
-					uint8_t extraPaddingLeft { 0 };
+					u8 cursorWidth { 0 };
+					u8 extraPaddingTop { 0 };
+					u8 extraPaddingLeft { 0 };
 
 					bool cursorBlink { true };
 					ostd::Counter cursorBlinkCounter { 30 };
@@ -95,7 +95,7 @@ namespace ogfx
 			public: class ActionEventData : public ostd::BaseObject
 			{
 				public:
-					inline ActionEventData(RawTextInput& _sender, const ostd::String& _senderName, eActionEventType _eventType, ostd::BaseObject& _userData) :
+					inline ActionEventData(RawTextInput& _sender, const String& _senderName, eActionEventType _eventType, ostd::BaseObject& _userData) :
 																																								sender(_sender),
 																																								senderName(_senderName),
 																																								eventType(_eventType),
@@ -107,15 +107,15 @@ namespace ogfx
 
 				public:
 					RawTextInput& sender;
-					ostd::String senderName { "" };
+					String senderName { "" };
 					eActionEventType eventType { eActionEventType::None };
 					ostd::BaseObject& userData { ostd::BaseObject::InvalidRef() };
 			};
 
 			public:
 				inline RawTextInput(void) { create({ 0.0f, 0.0f }, { 200.0f, 30.0f }, "UnnamedRawTextInput"); }
-				inline RawTextInput(const ostd::Vec2& position, const ostd::Vec2& size, const ostd::String& name) { create(position, size, name); }
-				RawTextInput& create(const ostd::Vec2& position, const ostd::Vec2& size, const ostd::String& name);
+				inline RawTextInput(const ostd::Vec2& position, const ostd::Vec2& size, const String& name) { create(position, size, name); }
+				RawTextInput& create(const ostd::Vec2& position, const ostd::Vec2& size, const String& name);
 
 				virtual void render(ogfx::BasicRenderer2D& gfx);
 				virtual void update(void);
@@ -125,47 +125,47 @@ namespace ogfx
 				virtual inline void onUpdate(void) {  }
 				virtual inline void onFixedUpdate(void) {  }
 
-				void setText(const ostd::String& text);
-				void appendText(const ostd::String& text);
-				void setCursorPosition(uint16_t cursorPos);
+				void setText(const String& text);
+				void appendText(const String& text);
+				void setCursorPosition(u16 cursorPos);
 				void setTheme(Theme theme);
 
 				inline void setEventListener(EventListener& evtl) { m_eventListener = &evtl; }
 				inline void setCharacterFilter(CharacterFilter& chrf) { m_charFilter = &chrf; }
-				inline void setName(const ostd::String& name) { m_name = name; }
+				inline void setName(const String& name) { m_name = name; }
 
 				inline EventListener* getEventListener(void) const { return m_eventListener; }
 				inline CharacterFilter* getCharacterFilter(void) const { return m_charFilter; }
-				inline ostd::String getText(void) const { return m_text; }
-				inline uint16_t getCursorPosition(void) const { return m_cursorPosition; }
+				inline String getText(void) const { return m_text; }
+				inline u16 getCursorPosition(void) const { return m_cursorPosition; }
 				inline Theme& getTheme(void) { return m_theme; }
-				inline ostd::String getName(void) const { return m_name; }
+				inline String getName(void) const { return m_name; }
 				inline bool isMouseInside(void) const { return m_mouseInside; }
 
 			private:
 				EventListener* m_eventListener { nullptr };
 				CharacterFilter* m_charFilter { nullptr };
 				ogfx::BasicRenderer2D* m_gfx { nullptr };
-				int32_t m_fontSize { 20 };
-				float m_paddingX { 0 };
+				i32 m_fontSize { 20 };
+				f32 m_paddingX { 0 };
 
 			protected:
-				ostd::String m_name { "" };
+				String m_name { "" };
 
-				ostd::String m_text { "" };
-				uint16_t m_cursorPosition { 0 };
+				String m_text { "" };
+				u16 m_cursorPosition { 0 };
 				bool m_cursorState { true };
 
 				ostd::Counter m_keyRepeatCounter { 1 };
 				char m_lastChar { 0 };
-				int32_t m_lastKeyCode { 0 };
+				i32 m_lastKeyCode { 0 };
 
 				Theme m_theme;
 
 				bool m_mouseInside { false };
 
 			public:
-				inline static const uint32_t actionEventSignalID { ostd::SignalHandler::newCustomSignal(11400) };
+				inline static const u32 actionEventSignalID { ostd::SignalHandler::newCustomSignal(11400) };
 		};
 		class RawTextInputEventListener : public RawTextInput::EventListener
 		{

@@ -34,7 +34,7 @@ namespace ogfx
         m_height = 0;
     }
 
-    Image& Image::loadFromFile(const ostd::String& filePath, BasicRenderer2D& gfx)
+    Image& Image::loadFromFile(const String& filePath, BasicRenderer2D& gfx)
     {
 		if (!gfx.isInitialized())
 		    return *this;  //TODO: Error

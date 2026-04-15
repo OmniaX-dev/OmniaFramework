@@ -59,7 +59,7 @@ namespace ogfx
 				void onWindowFocused(const Event& event);
 				void onWindowFocusLost(const Event& event);
 
-				inline int32_t widgetCount(void) const { return m_widgetList.size(); }
+				inline i32 widgetCount(void) const { return m_widgetList.size(); }
 				inline WindowCore& getWindow(void) { return m_window; }
 
 			private:
@@ -68,7 +68,7 @@ namespace ogfx
 			private:
 				WindowCore& m_window;
 				Widget& m_owner;
-				std::vector<Widget*> m_widgetList;
+				stdvec<Widget*> m_widgetList;
 				Widget* m_focused { nullptr };
 				bool m_tabNavigationEnabled { true };
 				Widget* m_mousePressedOnWidget { nullptr };

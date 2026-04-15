@@ -27,61 +27,61 @@
 
 // Rotation amounts
 namespace {
-    constexpr uint32_t S11 = 7;
-    constexpr uint32_t S12 = 12;
-    constexpr uint32_t S13 = 17;
-    constexpr uint32_t S14 = 22;
-    constexpr uint32_t S21 = 5;
-    constexpr uint32_t S22 = 9;
-    constexpr uint32_t S23 = 14;
-    constexpr uint32_t S24 = 20;
-    constexpr uint32_t S31 = 4;
-    constexpr uint32_t S32 = 11;
-    constexpr uint32_t S33 = 16;
-    constexpr uint32_t S34 = 23;
-    constexpr uint32_t S41 = 6;
-    constexpr uint32_t S42 = 10;
-    constexpr uint32_t S43 = 15;
-    constexpr uint32_t S44 = 21;
+    constexpr u32 S11 = 7;
+    constexpr u32 S12 = 12;
+    constexpr u32 S13 = 17;
+    constexpr u32 S14 = 22;
+    constexpr u32 S21 = 5;
+    constexpr u32 S22 = 9;
+    constexpr u32 S23 = 14;
+    constexpr u32 S24 = 20;
+    constexpr u32 S31 = 4;
+    constexpr u32 S32 = 11;
+    constexpr u32 S33 = 16;
+    constexpr u32 S34 = 23;
+    constexpr u32 S41 = 6;
+    constexpr u32 S42 = 10;
+    constexpr u32 S43 = 15;
+    constexpr u32 S44 = 21;
 
-    inline uint32_t F(uint32_t x, uint32_t y, uint32_t z) { return (x & y) | (~x & z); }
-    inline uint32_t G(uint32_t x, uint32_t y, uint32_t z) { return (x & z) | (y & ~z); }
-    inline uint32_t H(uint32_t x, uint32_t y, uint32_t z) { return x ^ y ^ z; }
-    inline uint32_t I(uint32_t x, uint32_t y, uint32_t z) { return y ^ (x | ~z); }
+    inline u32 F(u32 x, u32 y, u32 z) { return (x & y) | (~x & z); }
+    inline u32 G(u32 x, u32 y, u32 z) { return (x & z) | (y & ~z); }
+    inline u32 H(u32 x, u32 y, u32 z) { return x ^ y ^ z; }
+    inline u32 I(u32 x, u32 y, u32 z) { return y ^ (x | ~z); }
 
-    inline uint32_t rotate_left(uint32_t x, uint32_t n) { return (x << n) | (x >> (32 - n)); }
+    inline u32 rotate_left(u32 x, u32 n) { return (x << n) | (x >> (32 - n)); }
 
-    inline void FF(uint32_t& a, uint32_t b, uint32_t c, uint32_t d, uint32_t x, uint32_t s, uint32_t ac) {
+    inline void FF(u32& a, u32 b, u32 c, u32 d, u32 x, u32 s, u32 ac) {
         a += F(b, c, d) + x + ac;
         a = rotate_left(a, s);
         a += b;
     }
-    inline void GG(uint32_t& a, uint32_t b, uint32_t c, uint32_t d, uint32_t x, uint32_t s, uint32_t ac) {
+    inline void GG(u32& a, u32 b, u32 c, u32 d, u32 x, u32 s, u32 ac) {
         a += G(b, c, d) + x + ac;
         a = rotate_left(a, s);
         a += b;
     }
-    inline void HH(uint32_t& a, uint32_t b, uint32_t c, uint32_t d, uint32_t x, uint32_t s, uint32_t ac) {
+    inline void HH(u32& a, u32 b, u32 c, u32 d, u32 x, u32 s, u32 ac) {
         a += H(b, c, d) + x + ac;
         a = rotate_left(a, s);
         a += b;
     }
-    inline void II(uint32_t& a, uint32_t b, uint32_t c, uint32_t d, uint32_t x, uint32_t s, uint32_t ac) {
+    inline void II(u32& a, u32 b, u32 c, u32 d, u32 x, u32 s, u32 ac) {
         a += I(b, c, d) + x + ac;
         a = rotate_left(a, s);
         a += b;
     }
 }
 
-ostd::String ostd::Hash::md5(const ostd::String& _str) {
+String ostd::Hash::md5(const String& _str) {
 	std::string str = _str.cpp_str();
     // Initial state (RFC 1321)
-    uint32_t state[4] = {
+    u32 state[4] = {
         0x67452301u, 0xefcdab89u, 0x98badcfeu, 0x10325476u
     };
 
     // Process input in 64-byte blocks
-    const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
+    const u8* input = reinterpret_cast<const u8*>(str.data());
     size_t inputLen = str.size();
 
     // Process full 64-byte chunks
@@ -91,7 +91,7 @@ ostd::String ostd::Hash::md5(const ostd::String& _str) {
     }
 
     // Buffer for remaining bytes + padding + length
-    uint8_t buffer[64];
+    u8 buffer[64];
     size_t rem = inputLen - i;
     std::memset(buffer, 0, sizeof(buffer));
     if (rem > 0) {
@@ -113,32 +113,32 @@ ostd::String ostd::Hash::md5(const ostd::String& _str) {
     }
 
     // Append original length in bits, little-endian
-    uint64_t bitLen = static_cast<uint64_t>(inputLen) * 8ull;
-    for (int j = 0; j < 8; ++j) {
-        buffer[56 + j] = static_cast<uint8_t>((bitLen >> (8 * j)) & 0xFF);
+    u64 bitLen = cast<u64>(inputLen) * 8ull;
+    for (i32 j = 0; j < 8; ++j) {
+        buffer[56 + j] = cast<u8>((bitLen >> (8 * j)) & 0xFF);
     }
 
     // Final transform
     __md5_transform(buffer, state);
 
     // Output digest (little-endian)
-    uint8_t digest[16];
+    u8 digest[16];
     __md5_encode(digest, state, 16);
 
     std::ostringstream oss;
     oss << std::hex << std::setfill('0');
-    for (int j = 0; j < 16; ++j) {
-        oss << std::setw(2) << static_cast<unsigned int>(digest[j]);
+    for (i32 j = 0; j < 16; ++j) {
+        oss << std::setw(2) << cast<u32>(digest[j]);
     }
     return oss.str();
 }
 
-void ostd::Hash::__md5_transform(const uint8_t block[64], uint32_t state[4]) {
-    uint32_t a = state[0];
-    uint32_t b = state[1];
-    uint32_t c = state[2];
-    uint32_t d = state[3];
-    uint32_t x[16];
+void ostd::Hash::__md5_transform(const u8 block[64], u32 state[4]) {
+    u32 a = state[0];
+    u32 b = state[1];
+    u32 c = state[2];
+    u32 d = state[3];
+    u32 x[16];
 
     __md5_decode(x, block, 64);
 
@@ -220,22 +220,22 @@ void ostd::Hash::__md5_transform(const uint8_t block[64], uint32_t state[4]) {
     state[3] += d;
 }
 
-void ostd::Hash::__md5_encode(uint8_t* output, const uint32_t* input, size_t len) {
+void ostd::Hash::__md5_encode(u8* output, const u32* input, size_t len) {
     // Convert 32-bit words to bytes (little-endian)
     for (size_t i = 0, j = 0; j < len; ++i, j += 4) {
-        output[j + 0] = static_cast<uint8_t>( input[i]        & 0xFF);
-        output[j + 1] = static_cast<uint8_t>((input[i] >> 8)  & 0xFF);
-        output[j + 2] = static_cast<uint8_t>((input[i] >> 16) & 0xFF);
-        output[j + 3] = static_cast<uint8_t>((input[i] >> 24) & 0xFF);
+        output[j + 0] = cast<u8>( input[i]        & 0xFF);
+        output[j + 1] = cast<u8>((input[i] >> 8)  & 0xFF);
+        output[j + 2] = cast<u8>((input[i] >> 16) & 0xFF);
+        output[j + 3] = cast<u8>((input[i] >> 24) & 0xFF);
     }
 }
 
-void ostd::Hash::__md5_decode(uint32_t* output, const uint8_t* input, size_t len) {
+void ostd::Hash::__md5_decode(u32* output, const u8* input, size_t len) {
     // Convert bytes to 32-bit words (little-endian)
     for (size_t i = 0, j = 0; j < len; ++i, j += 4) {
-        output[i] =  static_cast<uint32_t>(input[j + 0])
-                   | (static_cast<uint32_t>(input[j + 1]) << 8)
-                   | (static_cast<uint32_t>(input[j + 2]) << 16)
-                   | (static_cast<uint32_t>(input[j + 3]) << 24);
+        output[i] =  cast<u32>(input[j + 0])
+        | (cast<u32>(input[j + 1]) << 8)
+        | (cast<u32>(input[j + 2]) << 16)
+        | (cast<u32>(input[j + 3]) << 24);
     }
 }

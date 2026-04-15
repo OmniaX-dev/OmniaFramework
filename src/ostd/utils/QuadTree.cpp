@@ -32,7 +32,7 @@ namespace ostd
 		setValid(false);
 	}
 
-	void QuadTree::create(Rectangle bounds, uint16_t capacity)
+	void QuadTree::create(Rectangle bounds, u16 capacity)
 	{
 		m_bounds = bounds;
 		m_capacity = capacity;
@@ -89,11 +89,11 @@ namespace ostd
 		return false;
 	}
 
-	void QuadTree::query(Rectangle range, std::vector<tElement*>& list)
+	void QuadTree::query(Rectangle range, stdvec<tElement*>& list)
 	{
 		if (!m_bounds.intersects(range, true))
 			return;
-		for (uint16_t i = 0; i < m_currentSize; i++)
+		for (u16 i = 0; i < m_currentSize; i++)
 		{
 			auto& elem = m_points[i];
 			if (range.contains({ elem.pos.x, elem.pos.y }))

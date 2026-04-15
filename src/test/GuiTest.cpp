@@ -31,6 +31,20 @@ class Window : public ogfx::gui::Window
 		inline Window(void) {  }
 		inline void onInitialize(void) override
 		{
+			m_img.loadFromFile("./img.png", m_gfx);
+			ogfx::Animation::AnimationData ad;
+			ad.backwards = false;
+			ad.columns = 9;
+			ad.rows = 4;
+			ad.frame_width = 256;
+			ad.frame_height = 256;
+			ad.length = 36;
+			ad.random = false;
+			ad.still = false;
+			ad.speed = 0;
+			m_anim.create(ad);
+			m_anim.setSpriteSheet(m_img);
+
 			m_panel1.setSize(300, 140);
 			m_panel1.setPosition(350, 50);
 			m_panel1.setMousePressedCallback([&](const ogfx::gui::Event& event) -> void {
@@ -103,7 +117,7 @@ class Window : public ogfx::gui::Window
 			m_label2.setDragAndDropCallback([&](const ogfx::gui::Event& event) -> void {
 				if (event.drop.userObject->getTypeName() == "ogfx::gui::widgets::Label")
 				{
-					std::cout << static_cast<ogfx::gui::widgets::Label&>(*event.drop.userObject).getText() << "!\n";
+					std::cout << cast<ogfx::gui::widgets::Label&>(*event.drop.userObject).getText() << "!\n";
 				}
 			});
 			m_panel1.addChild(m_label2);
@@ -138,7 +152,13 @@ class Window : public ogfx::gui::Window
 
 		void onRedraw(ogfx::BasicRenderer2D& gfx) override
 		{
+			gfx.drawAnimation(m_anim, { 200, 200 });
 			wout().xy(100, 100).fg(ostd::Colors::Crimson).p("CIAO BELLA").resetColors();
+		}
+
+		void onFixedUpdate(void) override
+		{
+			m_anim.update();
 		}
 
 	private:
@@ -150,9 +170,11 @@ class Window : public ogfx::gui::Window
 		ogfx::gui::widgets::CheckBox m_check1 { *this };
 		ostd::Stylesheet m_theme;
 		ostd::Vec2 pos { 0, 0 };
+		ogfx::Animation m_anim;
+		ogfx::Image m_img;
 };
 
-int main(int argc, char** argv)
+i32 main(i32 argc, char** argv)
 {
 	ostd::initialize();
 	Window window;

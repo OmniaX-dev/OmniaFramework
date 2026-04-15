@@ -22,15 +22,14 @@
 
 #include <cmath>
 #include <algorithm>
-#include <cstdint>
 #include <ostd/string/String.hpp>
 
 #define PI 3.1415926535898f
 #define TWO_PI PI * 2.0f
 #define HALF_PI PI / 2.0f
 #define QUARTER_PI PI / 4.0f
-#define DEG_TO_RAD(deg) (float)(deg * (PI / 180.0f))
-#define RAD_TO_DEG(rad) (float)(rad * (180.0f / PI))
+#define DEG_TO_RAD(deg) (f32)(deg * (PI / 180.0f))
+#define RAD_TO_DEG(rad) (f32)(rad * (180.0f / PI))
 
 #define LERP(n1, n2, f) (n2 - n1) * f + n1
 #define CAP(n, max) (n > max ? max : n)
@@ -48,22 +47,22 @@ namespace ostd
 	struct Vec2 : public __i_stringeable
 	{
 		//======================== Data ========================
-		float x;
-		float y;
+		f32 x;
+		f32 y;
 		//======================================================
 
 
 		//==================== Construction ====================
-		inline Vec2(float xx = 0, float yy = 0) 			: x(xx), y(yy) {  }
+		inline Vec2(f32 xx = 0, f32 yy = 0) 			: x(xx), y(yy) {  }
 		inline Vec2(const Vec2& v2) 						{ set(v2); }
 		inline Vec2& set(const Vec2& v2) 					{ x = v2.x; y = v2.y; return *this; }
-		inline Vec2& set(float xx, float yy) 				{ x = xx; y = yy; return *this; }
+		inline Vec2& set(f32 xx, f32 yy) 				{ x = xx; y = yy; return *this; }
 		//======================================================
 
 
 		//================== Static Functions ==================
-		inline static Vec2 fromAngle(float angle)			{ return Vec2(std::cos(angle), std::sin(angle)); }
-		inline static float angleBetween(const Vec2& v1, const Vec2& v2) { return std::acos(v1.dot(v2) / (v1.mag() * v2.mag())); }
+		inline static Vec2 fromAngle(f32 angle)			{ return Vec2(std::cos(angle), std::sin(angle)); }
+		inline static f32 angleBetween(const Vec2& v1, const Vec2& v2) { return std::acos(v1.dot(v2) / (v1.mag() * v2.mag())); }
 		//======================================================
 
 
@@ -75,37 +74,37 @@ namespace ostd
 
 
 		//===================== Operations =====================
-		inline float mag(void) 					const 		{ return std::sqrt((x * x) + (y * y)); 					}
+		inline f32 mag(void) 					const 		{ return std::sqrt((x * x) + (y * y)); 					}
 
 		inline Vec2 add(Vec2 v2) 				const 		{ return {		x + v2.x, 			y + v2.y 		}; 	}
-		inline Vec2 add(float x2, float y2) 	const 		{ return {		x + x2, 			y + y2 			}; 	}
+		inline Vec2 add(f32 x2, f32 y2) 	const 		{ return {		x + x2, 			y + y2 			}; 	}
 		inline Vec2 sub(Vec2 v2) 				const 		{ return {		x - v2.x, 			y - v2.y 		}; 	}
-		inline Vec2 sub(float x2, float y2) 	const 		{ return {		x - x2, 			y - y2 			}; 	}
-		inline Vec2 mul(float scalar) 			const 		{ return {		x * scalar, 		y * scalar 		}; 	}
-		inline Vec2 div(float scalar) 			const 		{ return {		x / scalar, 		y / scalar 		}; 	}
+		inline Vec2 sub(f32 x2, f32 y2) 	const 		{ return {		x - x2, 			y - y2 			}; 	}
+		inline Vec2 mul(f32 scalar) 			const 		{ return {		x * scalar, 		y * scalar 		}; 	}
+		inline Vec2 div(f32 scalar) 			const 		{ return {		x / scalar, 		y / scalar 		}; 	}
 
-		inline Vec2 normalize(void)				const		{ float m = _zp(mag()); return { x / m, 	y / m 	};	}
-		inline float dist(Vec2 v2)				const		{ return std::sqrt((float)((v2.x - x) * (v2.x - x)) + ((v2.y - y) * (v2.y - y))); }
-		inline float heading(void)				const		{ return std::atan2(y, x); }
-		inline Vec2 rotate(float angle)			const		{ return Vec2(*this).rotate(angle); }
-		inline float dot(const Vec2& v2)		const		{ return (x * v2.x) + (y * v2.y); }
-		inline float cross(const Vec2& v2)		const		{ return (x * v2.y) - (v2.x * y); }
+		inline Vec2 normalize(void)				const		{ f32 m = _zp(mag()); return { x / m, 	y / m 	};	}
+		inline f32 dist(Vec2 v2)				const		{ return std::sqrt((f32)((v2.x - x) * (v2.x - x)) + ((v2.y - y) * (v2.y - y))); }
+		inline f32 heading(void)				const		{ return std::atan2(y, x); }
+		inline Vec2 rotate(f32 angle)			const		{ return Vec2(*this).rotate(angle); }
+		inline f32 dot(const Vec2& v2)		const		{ return (x * v2.x) + (y * v2.y); }
+		inline f32 cross(const Vec2& v2)		const		{ return (x * v2.y) - (v2.x * y); }
 		//======================================================
 
 
 		//===================== Modifiers ======================
 		inline Vec2& addm(const Vec2& v2) 			 		{ 		x += v2.x; 			y += v2.y; 	 	return *this;	}
-		inline Vec2& addm(const float& x2, const float& y2) { 		x += x2; 			y += y2; 		return *this; 	}
+		inline Vec2& addm(const f32& x2, const f32& y2) { 		x += x2; 			y += y2; 		return *this; 	}
 		inline Vec2& subm(const Vec2& v2) 					{ 		x -= v2.x; 			y -= v2.y; 	 	return *this;	}
-		inline Vec2& subm(const float& x2, const float& y2) { 		x -= x2; 			y -= y2; 		return *this; 	}
-		inline Vec2& mulm(const float& scalar) 				{ 		x *= scalar; 		y *= scalar; 	return *this; 	}
-		inline Vec2& divm(const float& scalar) 				{ 		x /= scalar; 		y /= scalar; 	return *this; 	}
+		inline Vec2& subm(const f32& x2, const f32& y2) { 		x -= x2; 			y -= y2; 		return *this; 	}
+		inline Vec2& mulm(const f32& scalar) 				{ 		x *= scalar; 		y *= scalar; 	return *this; 	}
+		inline Vec2& divm(const f32& scalar) 				{ 		x /= scalar; 		y /= scalar; 	return *this; 	}
 
-		inline Vec2& normalizem(void)						{ float m = _zp(mag()); x /= m; y /= m; 	return *this;	}
-		inline Vec2& setMag(const float& mag)				{ return normalizem().mulm(mag); }
-		inline Vec2& setHeading(const float& angle) 		{ float m = mag(); set(m * std::cos(angle), m * std::sin(angle)); return *this; }
-		inline Vec2& rotate(const float& angle)				{ return setHeading(heading() + angle); }
-		inline Vec2& limit(const float& max)				{ float msq = mag(); msq *= msq; if (msq > (max * max)) divm(std::sqrt(msq)).mulm(max); return *this; }
+		inline Vec2& normalizem(void)						{ f32 m = _zp(mag()); x /= m; y /= m; 	return *this;	}
+		inline Vec2& setMag(const f32& mag)				{ return normalizem().mulm(mag); }
+		inline Vec2& setHeading(const f32& angle) 		{ f32 m = mag(); set(m * std::cos(angle), m * std::sin(angle)); return *this; }
+		inline Vec2& rotate(const f32& angle)				{ return setHeading(heading() + angle); }
+		inline Vec2& limit(const f32& max)				{ f32 msq = mag(); msq *= msq; if (msq > (max * max)) divm(std::sqrt(msq)).mulm(max); return *this; }
 		//======================================================
 
 
@@ -115,22 +114,22 @@ namespace ostd
 		inline Vec2  operator-() 					const	{ return { -x, -y }; }
 		inline Vec2  operator+ (const Vec2& op2 ) 	const	{ return add(op2); }
 		inline Vec2  operator- (const Vec2& op2 ) 	const	{ return sub(op2); }
-		inline Vec2  operator+ (const float& op2) 	const	{ return add(op2, op2); }
-		inline Vec2  operator- (const float& op2) 	const	{ return sub(op2, op2); }
-		inline Vec2  operator* (const float& op2) 	const	{ return mul(op2); }
-		inline Vec2  operator/ (const float& op2) 	const	{ return div(op2); }
+		inline Vec2  operator+ (const f32& op2) 	const	{ return add(op2, op2); }
+		inline Vec2  operator- (const f32& op2) 	const	{ return sub(op2, op2); }
+		inline Vec2  operator* (const f32& op2) 	const	{ return mul(op2); }
+		inline Vec2  operator/ (const f32& op2) 	const	{ return div(op2); }
 		inline Vec2& operator= (const Vec2& val ) 			{ return set(val); }
-		inline Vec2& operator= (const float& val) 			{ return set(val, val); }
+		inline Vec2& operator= (const f32& val) 			{ return set(val, val); }
 		inline Vec2& operator+=(const Vec2& op2 ) 			{ return addm(op2); }
 		inline Vec2& operator-=(const Vec2& op2 ) 			{ return subm(op2); }
-		inline Vec2& operator+=(const float& op2) 			{ return addm(op2, op2); }
-		inline Vec2& operator-=(const float& op2) 			{ return subm(op2, op2); }
-		inline Vec2& operator*=(const float& op2) 			{ return mulm(op2); }
-		inline Vec2& operator/=(const float& op2) 			{ return divm(op2); }
+		inline Vec2& operator+=(const f32& op2) 			{ return addm(op2, op2); }
+		inline Vec2& operator-=(const f32& op2) 			{ return subm(op2, op2); }
+		inline Vec2& operator*=(const f32& op2) 			{ return mulm(op2); }
+		inline Vec2& operator/=(const f32& op2) 			{ return divm(op2); }
 		//======================================================
 
 	private:
-		inline float _zp(float n1) const { return (n1 == 0 ? 1 : n1); }
+		inline f32 _zp(f32 n1) const { return (n1 == 0 ? 1 : n1); }
 
 	};
 
@@ -146,12 +145,12 @@ namespace ostd
 			inline Point(T xx, T yy) : x(xx), y(yy) {}
 			inline Point(const Vec2& vec)								{ x = vec.x; y = vec.y; }
 			inline Point<T>& set(const Point<T>& v2) 					{ x = v2.x; y = v2.y; return *this; }
-			inline Point<T>& set(float xx, float yy) 					{ x = xx; y = yy; return *this; }
+			inline Point<T>& set(f32 xx, f32 yy) 					{ x = xx; y = yy; return *this; }
 
 			//===================== Operators ======================
 			inline bool  operator==(const Point<T>& op2 ) 		const	{ return (x == op2.x && y == op2.y); }
 			inline bool  operator!=(const Point<T>& op2 ) 		const	{ return (x != op2.x || y != op2.y); }
-			inline operator Vec2() 								const	{ return { static_cast<float>(x), static_cast<float>(y) }; }
+			inline operator Vec2() 								const	{ return { cast<f32>(x), cast<f32>(y) }; }
 			inline Point<T>  operator+ (const Point<T>& op2 ) 	const	{ return { x + op2.x, y + op2.y }; }
 			inline Point<T>  operator- (const Point<T>& op2 ) 	const	{ return { x - op2.x, y - op2.y }; }
 			inline Point<T>  operator+ (const T& op2) 			const	{ return { x + op2, y + op2 }; }
@@ -174,31 +173,31 @@ namespace ostd
 				y = (T2)(copy.y);
 			}
 
-			inline Vec2 asVec2(void) const { return { static_cast<float>(x), static_cast<float>(y) }; }
+			inline Vec2 asVec2(void) const { return { cast<f32>(x), cast<f32>(y) }; }
 
 			inline String toString(void) const override { return String("{ ").add(x).add(", ").add(y).add(" }"); }
 	};
 
-	typedef Point<float> FPoint;
-	typedef Point<double> DPoint;
-	typedef Point<uint32_t> UIPoint;
-	typedef Point<uint64_t> UI64Point;
-	typedef Point<uint16_t> UI16Point;
-	typedef Point<uint8_t> UI8Point;
-	typedef Point<int32_t> IPoint;
-	typedef Point<int64_t> I64Point;
-	typedef Point<int16_t> I16Point;
-	typedef Point<int8_t> I8Point;
+	typedef Point<f32> FPoint;
+	typedef Point<f64> DPoint;
+	typedef Point<u32> UIPoint;
+	typedef Point<u64> UI64Point;
+	typedef Point<u16> UI16Point;
+	typedef Point<u8> UI8Point;
+	typedef Point<i32> IPoint;
+	typedef Point<i64> I64Point;
+	typedef Point<i16> I16Point;
+	typedef Point<i8> I8Point;
 
 	struct Vec3 : public __i_stringeable
 	{
-		inline Vec3(float xx = 0, float yy = 0, float zz = 0)
+		inline Vec3(f32 xx = 0, f32 yy = 0, f32 zz = 0)
 		{
 			x = xx;
 			y = yy;
 			z = zz;
 		}
-		inline Vec3(const Vec2& xy, float _z = 0.0f) { x = xy.x; y = xy.y; z = _z; }
+		inline Vec3(const Vec2& xy, f32 _z = 0.0f) { x = xy.x; y = xy.y; z = _z; }
 		inline Vec2 xy(void) const { return Vec2(x, y); }
 		inline Vec2 yz(void) const { return Vec2(y, z); }
 		inline Vec2 zx(void) const { return Vec2(z, x); }
@@ -207,22 +206,22 @@ namespace ostd
 		inline bool  operator!=(const Vec3& op2 ) 	const	{ return (x != op2.x || y != op2.y || op2.z != z); }
 		inline Vec3& operator+=(const Vec3& op2 ) 			{ x += op2.x; y += op2.y; z += op2.z; return *this; }
 
-		float x;
-		float y;
-		float z;
+		f32 x;
+		f32 y;
+		f32 z;
 	};
 
 	struct Vec4 : public __i_stringeable
 	{
-		inline Vec4(float xx = 0, float yy = 0, float zz = 0, float ww = 0)
+		inline Vec4(f32 xx = 0, f32 yy = 0, f32 zz = 0, f32 ww = 0)
 		{
 			x = xx;
 			y = yy;
 			z = zz;
 			w = ww;
 		}
-		inline Vec4(const Vec2& xy, float _z = 0.0f, float _w = 0.0f) { x = xy.x; y = xy.y; z = _z; w = _w; }
-		inline Vec4(const Vec3& xyz, float _w = 0.0f) { x = xyz.x; y = xyz.y; z = xyz.z; w = _w; }
+		inline Vec4(const Vec2& xy, f32 _z = 0.0f, f32 _w = 0.0f) { x = xy.x; y = xy.y; z = _z; w = _w; }
+		inline Vec4(const Vec3& xyz, f32 _w = 0.0f) { x = xyz.x; y = xyz.y; z = xyz.z; w = _w; }
 		inline Vec4(const Vec2& xy, const Vec2& zw) { x = xy.x; y = xy.y; z = zw.x; w = zw.y; }
 		inline Vec2 xy(void) const { return Vec2(x, y); }
 		inline Vec2 yz(void) const { return Vec2(y, z); }
@@ -230,10 +229,10 @@ namespace ostd
 		inline Vec2 wx(void) const { return Vec2(w, x); }
 		inline String toString(void) const override { return String("{ ").add(x).add(", ").add(y).add(", ").add(z).add(", ").add(w).add(" }"); }
 
-		float x;
-		float y;
-		float z;
-		float w;
+		f32 x;
+		f32 y;
+		f32 z;
+		f32 w;
 	};
 
 	struct Triangle : public __i_stringeable
@@ -248,7 +247,7 @@ namespace ostd
 			vB = b;
 			vC = c;
 		}
-		inline Triangle(float ax, float ay, float bx, float by, float cx, float cy)
+		inline Triangle(f32 ax, f32 ay, f32 bx, f32 by, f32 cx, f32 cy)
 		{
 			vA.x = ax;
 			vA.y = ay;
@@ -259,7 +258,7 @@ namespace ostd
 		}
 		inline bool contains(Vec2 p)
 		{
-			float d1, d2, d3;
+			f32 d1, d2, d3;
 			bool has_neg, has_pos;
 
 			d1 = __sign(p, vA, vB);
@@ -274,7 +273,7 @@ namespace ostd
 		inline String toString(void) const override { return String("{ A: ").add(vA.toString()).add(", B: ").add(vB.toString()).add(", C: ").add(vC.toString()).add(" }"); }
 
 	private:
-		inline float __sign(Vec2 p1, Vec2 p2, Vec2 p3)
+		inline f32 __sign(Vec2 p1, Vec2 p2, Vec2 p3)
 		{
 			return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
 		}
@@ -284,10 +283,10 @@ namespace ostd
 	{
 		public:
 			inline Rectangle(void) : x(0), y(0), w(0), h(0) {}
-			inline Rectangle(float xx, float yy, float ww, float hh) : x(xx), y(yy), w(ww), h(hh) {}
-			inline Rectangle(float xw, float yh, bool position = true) { if (position) { x = xw; y = yh; } else { w = xw; h = yh; } }
-			inline Rectangle(float xx, float yy, Vec2 size) { x = xx; y = yy; w = size.x; h = size.y; }
-			inline Rectangle(Vec2 position, float ww, float hh) { x = position.x; y = position.y; w = ww; h = hh; }
+			inline Rectangle(f32 xx, f32 yy, f32 ww, f32 hh) : x(xx), y(yy), w(ww), h(hh) {}
+			inline Rectangle(f32 xw, f32 yh, bool position = true) { if (position) { x = xw; y = yh; } else { w = xw; h = yh; } }
+			inline Rectangle(f32 xx, f32 yy, Vec2 size) { x = xx; y = yy; w = size.x; h = size.y; }
+			inline Rectangle(Vec2 position, f32 ww, f32 hh) { x = position.x; y = position.y; w = ww; h = hh; }
 			inline Rectangle(Vec2 position, Vec2 size) { x = position.x; y = position.y; w = size.x; h = size.y; }
 			virtual ~Rectangle(void) = default;
 
@@ -295,75 +294,75 @@ namespace ostd
 			inline bool operator!=(const Rectangle& op2) const { return !(*this == op2); }
 			inline Rectangle operator+(const Rectangle& op2) const { return { x + op2.x, y + op2.y, w + op2.w, h + op2.h }; 	}
 			inline Rectangle operator-(const Rectangle& op2) const {  return { x - op2.x, y - op2.y, w - op2.w, h - op2.h }; }
-			inline Rectangle operator+(float s) const { return { x + s, y + s, w + s, h + s }; }
-			inline Rectangle operator-(float s) const { return { x - s, y - s, w - s, h - s }; }
-			inline Rectangle operator*(float s) const { return { x * s, y * s, w * s, h * s }; }
-			inline Rectangle operator/(float s) const { return { x / s, y / s, w / s, h / s }; }
+			inline Rectangle operator+(f32 s) const { return { x + s, y + s, w + s, h + s }; }
+			inline Rectangle operator-(f32 s) const { return { x - s, y - s, w - s, h - s }; }
+			inline Rectangle operator*(f32 s) const { return { x * s, y * s, w * s, h * s }; }
+			inline Rectangle operator/(f32 s) const { return { x / s, y / s, w / s, h / s }; }
 			inline Rectangle& operator=(const Rectangle& r) { x = r.x; y = r.y; w = r.w; h = r.h; return *this; }
-			inline Rectangle& operator=(float s) { x = s; y = s; w = s; h = s; return *this; }
+			inline Rectangle& operator=(f32 s) { x = s; y = s; w = s; h = s; return *this; }
 			inline Rectangle& operator+=(const Rectangle& op2) { x += op2.x; y += op2.y; w += op2.w; h += op2.h; return *this; }
 			inline Rectangle& operator-=(const Rectangle& op2) { x -= op2.x; y -= op2.y; w -= op2.w; h -= op2.h; return *this; }
-			inline Rectangle& operator+=(float s) { x += s; y += s; w += s; h += s; return *this; }
-			inline Rectangle& operator-=(float s) { x -= s; y -= s; w -= s; h -= s; return *this; }
-			inline Rectangle& operator*=(float s) { x *= s; y *= s; w *= s; h *= s; return *this; }
-			inline Rectangle& operator/=(float s) { x /= s; y /= s; w /= s; h /= s; return *this; }
+			inline Rectangle& operator+=(f32 s) { x += s; y += s; w += s; h += s; return *this; }
+			inline Rectangle& operator-=(f32 s) { x -= s; y -= s; w -= s; h -= s; return *this; }
+			inline Rectangle& operator*=(f32 s) { x *= s; y *= s; w *= s; h *= s; return *this; }
+			inline Rectangle& operator/=(f32 s) { x /= s; y /= s; w /= s; h /= s; return *this; }
 
-			inline virtual float getx(void) const { return x; }
-			inline virtual float gety(void) const { return y; }
-			inline virtual float getw(void) const { return w; }
-			inline virtual float geth(void) const { return h; }
-			inline virtual float getCenterX(void) const { return getx() + getw() / 2; }
-			inline virtual float getCenterY(void) const { return gety() + geth() / 2; }
+			inline virtual f32 getx(void) const { return x; }
+			inline virtual f32 gety(void) const { return y; }
+			inline virtual f32 getw(void) const { return w; }
+			inline virtual f32 geth(void) const { return h; }
+			inline virtual f32 getCenterX(void) const { return getx() + getw() / 2; }
+			inline virtual f32 getCenterY(void) const { return gety() + geth() / 2; }
 
-			inline virtual void setx(float xx) { x = xx; }
-			inline virtual void sety(float yy) { y = yy; }
-			inline virtual void setw(float ww) { w = ww; }
-			inline virtual void seth(float hh) { h = hh; }
+			inline virtual void setx(f32 xx) { x = xx; }
+			inline virtual void sety(f32 yy) { y = yy; }
+			inline virtual void setw(f32 ww) { w = ww; }
+			inline virtual void seth(f32 hh) { h = hh; }
 
 			inline virtual Vec2 getPosition(void) const { return Vec2(getx(), gety()); }
 			inline virtual Vec2 getSize(void) const { return Vec2(getw(), geth()); }
 			inline virtual Vec2 getCenter(void) const { return Vec2(getx() + getw() / 2, gety() + geth() / 2); }
 
 			inline virtual void setPosition(Vec2 pos) { setx(pos.x); sety(pos.y); }
-			inline virtual void setPosition(float xx, float yy) { setx(xx); sety(yy); }
+			inline virtual void setPosition(f32 xx, f32 yy) { setx(xx); sety(yy); }
 			inline virtual void setSize(Vec2 size) { setw(size.x); seth(size.y); }
-			inline virtual void setSize(float ww, float hh) { setw(ww); seth(hh); }
-			inline virtual void setBounds(float xx, float yy, float ww, float hh) { setx(xx); sety(yy); setw(ww); seth(hh); }
+			inline virtual void setSize(f32 ww, f32 hh) { setw(ww); seth(hh); }
+			inline virtual void setBounds(f32 xx, f32 yy, f32 ww, f32 hh) { setx(xx); sety(yy); setw(ww); seth(hh); }
 
-			inline virtual float addx(float xx) { setx(getx() + xx); return getx(); }
-			inline virtual float addy(float yy) { sety(gety() + yy); return gety(); }
-			inline virtual Vec2 addPos(float xx, float yy) { return Vec2(addx(xx), addy(yy)); }
+			inline virtual f32 addx(f32 xx) { setx(getx() + xx); return getx(); }
+			inline virtual f32 addy(f32 yy) { sety(gety() + yy); return gety(); }
+			inline virtual Vec2 addPos(f32 xx, f32 yy) { return Vec2(addx(xx), addy(yy)); }
 			inline virtual Vec2 addPos(Vec2 pos) { return addPos(pos.x, pos.y); }
-			inline virtual float addw(float ww) { setw(getw() + ww); return getw(); }
-			inline virtual float addh(float hh) { seth(geth() + hh); return geth(); }
-			inline virtual Vec2 addSize(float ww, float hh) { return Vec2(addw(ww), addh(hh)); }
+			inline virtual f32 addw(f32 ww) { setw(getw() + ww); return getw(); }
+			inline virtual f32 addh(f32 hh) { seth(geth() + hh); return geth(); }
+			inline virtual Vec2 addSize(f32 ww, f32 hh) { return Vec2(addw(ww), addh(hh)); }
 			inline virtual Vec2 addSize(Vec2 size) { return addPos(size.x, size.y); }
 
-			inline virtual float subx(float xx) { setx(getx() - xx); return getx(); }
-			inline virtual float suby(float yy) { sety(gety() - yy); return gety(); }
-			inline virtual Vec2 subPos(float xx, float yy) { return Vec2(subx(xx), suby(yy)); }
+			inline virtual f32 subx(f32 xx) { setx(getx() - xx); return getx(); }
+			inline virtual f32 suby(f32 yy) { sety(gety() - yy); return gety(); }
+			inline virtual Vec2 subPos(f32 xx, f32 yy) { return Vec2(subx(xx), suby(yy)); }
 			inline virtual Vec2 subPos(Vec2 pos) { return subPos(pos.x, pos.y); }
-			inline virtual float subw(float ww) { setw(getw() - ww); return getw(); }
-			inline virtual float subh(float hh) { seth(geth() - hh); return geth(); }
-			inline virtual Vec2 subSize(float ww, float hh) { return Vec2(subw(ww), subh(hh)); }
+			inline virtual f32 subw(f32 ww) { setw(getw() - ww); return getw(); }
+			inline virtual f32 subh(f32 hh) { seth(geth() - hh); return geth(); }
+			inline virtual Vec2 subSize(f32 ww, f32 hh) { return Vec2(subw(ww), subh(hh)); }
 			inline virtual Vec2 subSize(Vec2 size) { return subPos(size.x, size.y); }
 
-			inline virtual float mulx(float xx) { setx(getx() * xx); return getx(); }
-			inline virtual float muly(float yy) { sety(gety() * yy); return gety(); }
-			inline virtual Vec2 mulPos(float xx, float yy) { return Vec2(mulx(xx), muly(yy)); }
+			inline virtual f32 mulx(f32 xx) { setx(getx() * xx); return getx(); }
+			inline virtual f32 muly(f32 yy) { sety(gety() * yy); return gety(); }
+			inline virtual Vec2 mulPos(f32 xx, f32 yy) { return Vec2(mulx(xx), muly(yy)); }
 			inline virtual Vec2 mulPos(Vec2 pos) { return mulPos(pos.x, pos.y); }
-			inline virtual float mulw(float ww) { setw(getw() * ww); return getw(); }
-			inline virtual float mulh(float hh) { seth(geth() * hh); return geth(); }
-			inline virtual Vec2 mulSize(float ww, float hh) { return Vec2(mulw(ww), mulh(hh)); }
+			inline virtual f32 mulw(f32 ww) { setw(getw() * ww); return getw(); }
+			inline virtual f32 mulh(f32 hh) { seth(geth() * hh); return geth(); }
+			inline virtual Vec2 mulSize(f32 ww, f32 hh) { return Vec2(mulw(ww), mulh(hh)); }
 			inline virtual Vec2 mulSize(Vec2 size) { return mulPos(size.x, size.y); }
 
-			inline virtual float divx(float xx) { setx(getx() / xx); return getx(); }
-			inline virtual float divy(float yy) { sety(gety() / yy); return gety(); }
-			inline virtual Vec2 divPos(float xx, float yy) { return Vec2(divx(xx), divy(yy)); }
+			inline virtual f32 divx(f32 xx) { setx(getx() / xx); return getx(); }
+			inline virtual f32 divy(f32 yy) { sety(gety() / yy); return gety(); }
+			inline virtual Vec2 divPos(f32 xx, f32 yy) { return Vec2(divx(xx), divy(yy)); }
 			inline virtual Vec2 divPos(Vec2 pos) { return divPos(pos.x, pos.y); }
-			inline virtual float divw(float ww) { setw(getw() / ww); return getw(); }
-			inline virtual float divh(float hh) { seth(geth() / hh); return geth(); }
-			inline virtual Vec2 divSize(float ww, float hh) { return Vec2(divw(ww), divh(hh)); }
+			inline virtual f32 divw(f32 ww) { setw(getw() / ww); return getw(); }
+			inline virtual f32 divh(f32 hh) { seth(geth() / hh); return geth(); }
+			inline virtual Vec2 divSize(f32 ww, f32 hh) { return Vec2(divw(ww), divh(hh)); }
 			inline virtual Vec2 divSize(Vec2 size) { return divPos(size.x, size.y); }
 
 			inline virtual Vec2 topLeft(void) const { return getPosition(); }
@@ -371,10 +370,10 @@ namespace ostd
 			inline virtual Vec2 bottomLeft(void) const { return Vec2(getx(), gety() + geth()); }
 			inline virtual Vec2 bottomRight(void) const { return Vec2(getx() + getw(), gety() + geth()); }
 
-			inline virtual float left(void) const { return getx(); }
-			inline virtual float right(void) const { return getw(); }
-			inline virtual float top(void) const { return gety(); }
-			inline virtual float bottom(void) const { return geth(); }
+			inline virtual f32 left(void) const { return getx(); }
+			inline virtual f32 right(void) const { return getw(); }
+			inline virtual f32 top(void) const { return gety(); }
+			inline virtual f32 bottom(void) const { return geth(); }
 
 			inline String toString(void) const override { return String("{ ").add(x).add(", ").add(y).add(", ").add(w).add(", ").add(h).add(" }"); }
 
@@ -400,10 +399,10 @@ namespace ostd
 			{
 				if (!intersects(rect, includeBounds))
 					return Rectangle();
-				float leftX   = std::max(x, rect.x);
-				float rightX  = std::min(x + w, rect.x + rect.w);
-				float topY    = std::max(y, rect.y);
-				float bottomY = std::min(y + h, rect.y + rect.h);
+				f32 leftX   = std::max(x, rect.x);
+				f32 rightX  = std::min(x + w, rect.x + rect.w);
+				f32 topY    = std::max(y, rect.y);
+				f32 bottomY = std::min(y + h, rect.y + rect.h);
 				return { leftX, topY, rightX - leftX, bottomY - topY };
 			}
 			inline virtual bool contains(Vec2 p, bool includeBounds = false) const
@@ -413,15 +412,15 @@ namespace ostd
 				else
 					return p.x > x && p.y > y && p.x < x + w && p.y < y + h;
 			}
-			inline bool contains(float xx, float yy, bool includeBounds = false) const { return contains({ xx, yy }, includeBounds); }
+			inline bool contains(f32 xx, f32 yy, bool includeBounds = false) const { return contains({ xx, yy }, includeBounds); }
 
-			inline virtual float getDistance(Vec2 p) const { return sqrt(fabs((p.x - getx()) * (p.x - getx()) + (p.y - gety()) * (p.y - gety()))); }
+			inline virtual f32 getDistance(Vec2 p) const { return sqrt(fabs((p.x - getx()) * (p.x - getx()) + (p.y - gety()) * (p.y - gety()))); }
 
 		public:
-			float x;
-			float y;
-			float w;
-			float h;
+			f32 x;
+			f32 y;
+			f32 w;
+			f32 h;
 	};
 
 	template<class T>
@@ -439,16 +438,16 @@ namespace ostd
 			Point<T> size;
 	};
 
-	typedef Rect<float> FRect;
-	typedef Rect<double> DRect;
-	typedef Rect<uint32_t> UIRect;
-	typedef Rect<uint64_t> UI64Rect;
-	typedef Rect<float> UI16Rect;
-	typedef Rect<uint8_t> UI8Rect;
-	typedef Rect<int32_t> IRect;
-	typedef Rect<int64_t> I64Rect;
-	typedef Rect<int16_t> I16Rect;
-	typedef Rect<int8_t> I8Rect;
+	typedef Rect<f32> FRect;
+	typedef Rect<f64> DRect;
+	typedef Rect<u32> UIRect;
+	typedef Rect<u64> UI64Rect;
+	typedef Rect<u16> UI16Rect;
+	typedef Rect<u8> UI8Rect;
+	typedef Rect<i32> IRect;
+	typedef Rect<i64> I64Rect;
+	typedef Rect<i16> I16Rect;
+	typedef Rect<i8> I8Rect;
 
 	template<class T>
 	class Line : public __i_stringeable
@@ -465,14 +464,14 @@ namespace ostd
 			Point<T> p2;
 	};
 
-	typedef Line<float> FLine;
-	typedef Line<double> DLine;
-	typedef Line<uint32_t> UILine;
-	typedef Line<uint64_t> UI64Line;
-	typedef Line<float> UI16Line;
-	typedef Line<uint8_t> UI8Line;
-	typedef Line<int32_t> ILine;
-	typedef Line<int64_t> I64Line;
-	typedef Line<int16_t> I16Line;
-	typedef Line<int8_t> I8Line;
+	typedef Line<f32> FLine;
+	typedef Line<f64> DLine;
+	typedef Line<u32> UILine;
+	typedef Line<u64> UI64Line;
+	typedef Line<f32> UI16Line;
+	typedef Line<u8> UI8Line;
+	typedef Line<i32> ILine;
+	typedef Line<i64> I64Line;
+	typedef Line<i16> I16Line;
+	typedef Line<i8> I8Line;
 }

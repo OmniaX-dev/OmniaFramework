@@ -1,2 +1,4 @@
 CompileFlags:
     CompilationDatabase: bin
+Diagnostics:
+    MissingIncludes: None

@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include <vector>
+
 #include <filesystem>
 #include <ostd/string/String.hpp>
 
@@ -31,12 +31,12 @@ namespace ostd
 		public: enum class ePathStatus { Invalid = 0, ExistingDirectory, ExistingFile, ValidNewPath };
 
 		public:
-			static std::vector<std::filesystem::path> listFilesInDirectory(const String& directoryPath);
-			static std::vector<std::filesystem::path> listDirectoriesInDirectory(const String& directoryPath);
-			static std::vector<std::filesystem::path> listDirectory(const String& directoryPath);
-			static std::vector<std::filesystem::path> listFilesInDirectoryRecursive(const String& directoryPath);
-			static std::vector<std::filesystem::path> listDirectoriesInDirectoryRecursive(const String& directoryPath);
-			static std::vector<std::filesystem::path> listDirectoryRecursive(const String& directoryPath);
+			static stdvec<std::filesystem::path> listFilesInDirectory(const String& directoryPath);
+			static stdvec<std::filesystem::path> listDirectoriesInDirectory(const String& directoryPath);
+			static stdvec<std::filesystem::path> listDirectory(const String& directoryPath);
+			static stdvec<std::filesystem::path> listFilesInDirectoryRecursive(const String& directoryPath);
+			static stdvec<std::filesystem::path> listDirectoriesInDirectoryRecursive(const String& directoryPath);
+			static stdvec<std::filesystem::path> listDirectoryRecursive(const String& directoryPath);
 
 			static std::filesystem::path getHomeDirPath(void);
 			static std::filesystem::path getWorkingDirPath(void);
@@ -49,15 +49,15 @@ namespace ostd
 			static bool directoryExists(const String& directoryPath);
 			static bool fileExists(const String& filePath);
 			static bool pathExists(const String& path);
-			static bool isValidFileCreationPath(const ostd::String& filePath);
-			static bool isValidDirectoryCreationPath(const ostd::String& directoryPath);
-			static ePathStatus getPathStatus(const ostd::String& path);
+			static bool isValidFileCreationPath(const String& filePath);
+			static bool isValidDirectoryCreationPath(const String& directoryPath);
+			static ePathStatus getPathStatus(const String& path);
 
-			static bool readTextFile(String fileName, std::vector<String>& outLines);
-			static bool readTextFileRaw(String fileName, String& outString);
-			static bool writeTextFile(const ostd::String& filePath, const std::vector<ostd::String>& lines, bool truncate = true);
-			static bool writeTextFileRaw(const ostd::String& filePath, const ostd::String& lines, bool truncate = true);
+			static bool readTextFile(const String& fileName, stdvec<String>& outLines);
+			static bool readTextFileRaw(const String& fileName, String& outString);
+			static bool writeTextFile(const String& filePath, const stdvec<String>& lines, bool truncate = true);
+			static bool writeTextFileRaw(const String& filePath, const String& lines, bool truncate = true);
 
-			static bool loadFileFromHppResource(String output_file_path, const char* resource_buffer, unsigned int size);
+			static bool loadFileFromHppResource(const String& output_file_path, const char* resource_buffer, u32 size);
 	};
 }

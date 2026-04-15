@@ -7,7 +7,7 @@ namespace ostd
 	{
 		if (!str.validate()) return os;
 		ostd::ConsoleOutputHandler out;
-		for (int32_t i = 0; i < str.text.len(); i++)
+		for (i32 i = 0; i < str.text.len(); i++)
 			out.bg(str.backgroundColors[i].consoleColor).fg(str.foregroundColors[i].consoleColor).pChar(str.text[i]);
 		out.reset();
 		return os;
@@ -33,7 +33,7 @@ namespace ostd
 		text += str;
 		background.background = true;
 		foreground.background = false;
-		for (int32_t i = 0; i < str.len(); i++)
+		for (i32 i = 0; i < str.len(); i++)
 		{
 			backgroundColors.push_back(background);
 			foregroundColors.push_back(foreground);
@@ -55,7 +55,7 @@ namespace ostd
 		tStyledString rstring;
 		bool insideBlock = false;
 		bool validBlockStart = false;
-		int32_t countBlockStart = 0;
+		i32 countBlockStart = 0;
 		defaultBackgorundColor.background = true;
 		defaultForegroundColor.background = false;
 		s_defaultBackgroundColor = defaultBackgorundColor;
@@ -64,7 +64,7 @@ namespace ostd
 		tColor bgcol = defaultBackgorundColor;
 		String blockText = "";
 		String _styledString = String(styledString).trim();
-		for (int32_t i = 0; i < _styledString.len(); i++)
+		for (i32 i = 0; i < _styledString.len(); i++)
 		{
 			char c = _styledString[i];
 			if (c == '[')
@@ -223,70 +223,70 @@ namespace ostd
 		return *this;
 	}
 
-	TextStyleBuilder::Console& TextStyleBuilder::Console::add(uint8_t i)
+	TextStyleBuilder::Console& TextStyleBuilder::Console::add(u8 i)
 	{
 		String edit("");
 		edit.add(i);
 		return add(edit);
 	}
 
-	TextStyleBuilder::Console& TextStyleBuilder::Console::add(int8_t i)
+	TextStyleBuilder::Console& TextStyleBuilder::Console::add(i8 i)
 	{
 		String edit("");
 		edit.add(i);
 		return add(edit);
 	}
 
-	TextStyleBuilder::Console& TextStyleBuilder::Console::add(uint16_t i)
+	TextStyleBuilder::Console& TextStyleBuilder::Console::add(u16 i)
 	{
 		String edit("");
 		edit.add(i);
 		return add(edit);
 	}
 
-	TextStyleBuilder::Console& TextStyleBuilder::Console::add(int16_t i)
+	TextStyleBuilder::Console& TextStyleBuilder::Console::add(i16 i)
 	{
 		String edit("");
 		edit.add(i);
 		return add(edit);
 	}
 
-	TextStyleBuilder::Console& TextStyleBuilder::Console::add(uint32_t i)
+	TextStyleBuilder::Console& TextStyleBuilder::Console::add(u32 i)
 	{
 		String edit("");
 		edit.add(i);
 		return add(edit);
 	}
 
-	TextStyleBuilder::Console& TextStyleBuilder::Console::add(int32_t i)
+	TextStyleBuilder::Console& TextStyleBuilder::Console::add(i32 i)
 	{
 		String edit("");
 		edit.add(i);
 		return add(edit);
 	}
 
-	TextStyleBuilder::Console& TextStyleBuilder::Console::add(uint64_t i)
+	TextStyleBuilder::Console& TextStyleBuilder::Console::add(u64 i)
 	{
 		String edit("");
 		edit.add(i);
 		return add(edit);
 	}
 
-	TextStyleBuilder::Console& TextStyleBuilder::Console::add(int64_t i)
+	TextStyleBuilder::Console& TextStyleBuilder::Console::add(i64 i)
 	{
 		String edit("");
 		edit.add(i);
 		return add(edit);
 	}
 
-	TextStyleBuilder::Console& TextStyleBuilder::Console::add(float f)
+	TextStyleBuilder::Console& TextStyleBuilder::Console::add(f32 f)
 	{
 		String edit("");
 		edit.add(f);
 		return add(edit);
 	}
 
-	TextStyleBuilder::Console& TextStyleBuilder::Console::add(double f)
+	TextStyleBuilder::Console& TextStyleBuilder::Console::add(f64 f)
 	{
 		String edit("");
 		edit.add(f);

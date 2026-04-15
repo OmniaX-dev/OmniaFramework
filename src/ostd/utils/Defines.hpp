@@ -55,5 +55,5 @@
 		#define OX_RELEASE_BUILD
 	#endif
 #else
-	#define _DEBUG(n) std::cout << (int)n << "\n";
+	#define _DEBUG(n) std::cout << (i32)n << "\n";
 #endif

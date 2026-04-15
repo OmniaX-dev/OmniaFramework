@@ -62,8 +62,8 @@ namespace ogfx
 						onSignalHandled(signal);
 						return;
 					}
-					ostd::String s1 = parent.m_text.new_substr(0, parent.m_cursorPosition);
-					ostd::String s2 = "";
+					String s1 = parent.m_text.new_substr(0, parent.m_cursorPosition);
+					String s2 = "";
 					if (parent.m_cursorPosition < parent.m_text.len())
 						s2 = parent.m_text.new_substr(parent.m_cursorPosition);
 					s1.addChar(data.text).add(s2);
@@ -101,8 +101,8 @@ namespace ogfx
 						onSignalHandled(signal);
 						return;
 					}
-					ostd::String s1 = parent.m_text.new_substr(0, parent.m_cursorPosition - 1);
-					ostd::String s2 = "";
+					String s1 = parent.m_text.new_substr(0, parent.m_cursorPosition - 1);
+					String s2 = "";
 					if (parent.m_cursorPosition < parent.m_text.len())
 						s2 = parent.m_text.new_substr(parent.m_cursorPosition);
 					parent.m_text = s1 + s2;
@@ -146,7 +146,7 @@ namespace ogfx
 			else if (signal.ID == ostd::BuiltinSignals::MouseMoved)
 			{
 				auto& data = (ogfx::MouseEventData&)signal.userData;
-				if (parent.contains((float)data.position_x, (float)data.position_y))
+				if (parent.contains((f32)data.position_x, (f32)data.position_y))
 					parent.m_mouseInside = true;
 				else
 					parent.m_mouseInside = false;
@@ -156,27 +156,27 @@ namespace ogfx
 				auto& data = (ogfx::MouseEventData&)signal.userData;
 				if (data.button == ogfx::MouseEventData::eButton::Left && parent.m_gfx != nullptr && parent.m_mouseInside)
 				{
-					ostd::String text = parent.m_text;
-					ostd::Vec2 relativePosition = { (float)data.position_x, (float)data.position_y };
+					String text = parent.m_text;
+					ostd::Vec2 relativePosition = { (f32)data.position_x, (f32)data.position_y };
 					relativePosition -= (parent.getPosition() + parent.m_paddingX + parent.m_theme.extraPaddingLeft);
 					if (text.len() > 0)
 					{
-						ostd::String tmpStr1 = "";
-						ostd::String tmpStr2 = "";
+						String tmpStr1 = "";
+						String tmpStr2 = "";
 						bool found = false;
-						for (int32_t i = 0; i < text.len(); i++)
+						for (i32 i = 0; i < text.len(); i++)
 						{
 							tmpStr2 = "";
 							char c = text[i];
 							tmpStr1 += c;
-							int32_t strWidth1 = parent.m_gfx->getStringDimensions(tmpStr1, parent.m_fontSize).x;
+							i32 strWidth1 = parent.m_gfx->getStringDimensions(tmpStr1, parent.m_fontSize).x;
 							if (relativePosition.x > strWidth1)
 								continue;
 							found = true;
 							tmpStr2 = tmpStr1.new_substr(0, tmpStr1.len() - 1);
-							int32_t strWidth2 = (tmpStr2.len() > 0 ? parent.m_gfx->getStringDimensions(tmpStr2, parent.m_fontSize).x : 0);
-							int32_t d1 = (int32_t)std::abs(relativePosition.x - strWidth2);
-							int32_t d2 = (int32_t)std::abs(strWidth1 - relativePosition.x);
+							i32 strWidth2 = (tmpStr2.len() > 0 ? parent.m_gfx->getStringDimensions(tmpStr2, parent.m_fontSize).x : 0);
+							i32 d1 = (i32)std::abs(relativePosition.x - strWidth2);
+							i32 d2 = (i32)std::abs(strWidth1 - relativePosition.x);
 							if (d1 > d2)
 								parent.m_cursorPosition = tmpStr1.len();
 							else
@@ -196,7 +196,7 @@ namespace ogfx
 
 
 
-		RawTextInput& RawTextInput::create(const ostd::Vec2& position, const ostd::Vec2& size, const ostd::String& name)
+		RawTextInput& RawTextInput::create(const ostd::Vec2& position, const ostd::Vec2& size, const String& name)
 		{
 			setPosition(position);
 			setSize(size);
@@ -212,15 +212,15 @@ namespace ogfx
 		void RawTextInput::render(ogfx::BasicRenderer2D& gfx)
 		{
 			m_gfx = &gfx;
-			double text_size_scale = 0.66666666666666;
+			f64 text_size_scale = 0.66666666666666;
 			m_paddingX = (4.0f * geth()) / 30.0f;
-			m_fontSize = (int32_t)(geth() * 0.66);
-			float cursor_height_scale = 0.75f;
+			m_fontSize = (i32)(geth() * 0.66);
+			f32 cursor_height_scale = 0.75f;
 
 			ostd::IPoint strSize { 0, 0 };
 			if (m_cursorPosition > 0 && m_text != "")
 			{
-				ostd::String s1 = m_text.new_substr(0, m_cursorPosition);
+				String s1 = m_text.new_substr(0, m_cursorPosition);
 				strSize = gfx.getStringDimensions(s1, m_fontSize);
 			}
 
@@ -229,7 +229,7 @@ namespace ogfx
 				gfx.drawString(m_text, getPosition() + ostd::Vec2 { m_paddingX + m_theme.extraPaddingLeft, m_paddingX + m_theme.extraPaddingTop}, m_theme.textColor, m_fontSize);
 
 			if (m_cursorState || !m_theme.cursorBlink)
-				gfx.fillRect({ getx() + m_paddingX + m_theme.extraPaddingLeft + strSize.x - 1, gety() + m_paddingX + m_theme.extraPaddingTop, (float)m_theme.cursorWidth, (float)m_fontSize * cursor_height_scale }, m_theme.cursorColor);
+				gfx.fillRect({ getx() + m_paddingX + m_theme.extraPaddingLeft + strSize.x - 1, gety() + m_paddingX + m_theme.extraPaddingTop, (f32)m_theme.cursorWidth, (f32)m_fontSize * cursor_height_scale }, m_theme.cursorColor);
 
 			onRender(gfx);
 		}
@@ -254,19 +254,19 @@ namespace ogfx
 			onFixedUpdate();
 		}
 
-		void RawTextInput::setText(const ostd::String& text)
+		void RawTextInput::setText(const String& text)
 		{
 			m_text = text;
 			m_cursorPosition = m_text.len();
 		}
 
-		void RawTextInput::appendText(const ostd::String& text)
+		void RawTextInput::appendText(const String& text)
 		{
 			m_text.add(text);
 			m_cursorPosition = m_text.len();
 		}
 
-		void RawTextInput::setCursorPosition(uint16_t cursorPos)
+		void RawTextInput::setCursorPosition(u16 cursorPos)
 		{
 			if (cursorPos > m_text.len())
 				cursorPos = m_text.len();

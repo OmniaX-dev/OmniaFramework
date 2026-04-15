@@ -1,39 +1,40 @@
 /*
-    OmniaFramework - A collection of useful functionality
-    Copyright (C) 2025  OmniaX-Dev
+	OmniaFramework - A collection of useful functionality
+	Copyright (C) 2025  OmniaX-Dev
 
-    This file is part of OmniaFramework.
+	This file is part of OmniaFramework.
 
-    OmniaFramework is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	OmniaFramework is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    OmniaFramework is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	OmniaFramework is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
 
 #include <cstdint>
 #include <ostd/utils/Defines.hpp>
+#include <ostd/data/Types.hpp>
 
-#define get_bit(__bit_field, __bit_n		) __bit_field.bits.b##__bit_n
-#define set_bit(__bit_field, __bit_n		) __bit_field.bits.b##__bit_n = true
-#define clr_bit(__bit_field, __bit_n		) __bit_field.bits.b##__bit_n = false
-#define tgl_bit(__bit_field, __bit_n		) __bit_field.bits.b##__bit_n = !__bit_field.bits.b##__bit_n
-#define val_bit(__bit_field, __bit_n, __val	) __bit_field.bits.b##__bit_n = __val
+#define get_bit(__bit_field, __bit_n        ) __bit_field.bits.b##__bit_n
+#define set_bit(__bit_field, __bit_n        ) __bit_field.bits.b##__bit_n = true
+#define clr_bit(__bit_field, __bit_n        ) __bit_field.bits.b##__bit_n = false
+#define tgl_bit(__bit_field, __bit_n        ) __bit_field.bits.b##__bit_n = !__bit_field.bits.b##__bit_n
+#define val_bit(__bit_field, __bit_n, __val    ) __bit_field.bits.b##__bit_n = __val
 
 namespace ostd
 {
 	union BitField_8
 	{
-		uint8_t value = 0;
+		u8 value = 0;
 		struct {
 			bool b0 : 1;
 			bool b1 : 1;
@@ -47,7 +48,7 @@ namespace ostd
 	};
 	union BitField_16
 	{
-		uint16_t value = 0;
+		u16 value = 0;
 		struct {
 			bool b0 : 1;
 			bool b1 : 1;
@@ -69,7 +70,7 @@ namespace ostd
 	};
 	union BitField_32
 	{
-		uint32_t value = 0;
+		u32 value = 0;
 		struct {
 			bool b0 : 1;
 			bool b1 : 1;
@@ -107,7 +108,7 @@ namespace ostd
 	};
 	union BitField_64
 	{
-		uint64_t value = 0;
+		u64 value = 0;
 		struct {
 			bool b0 : 1;
 			bool b1 : 1;
@@ -180,7 +181,7 @@ namespace ostd
 	{
 		public:
 			//8-Bit field
-			static inline bool get(const BitField_8& bf, const uint8_t& bit)
+			static inline bool get(const BitField_8& bf, const u8& bit)
 			{
 				switch (bit)
 				{
@@ -195,7 +196,7 @@ namespace ostd
 					default: return false;
 				}
 			}
-			static inline void set(BitField_8& bf, const uint8_t& bit)
+			static inline void set(BitField_8& bf, const u8& bit)
 			{
 				switch (bit)
 				{
@@ -210,7 +211,7 @@ namespace ostd
 					default: break;
 				}
 			}
-			static inline void clr(BitField_8& bf, const uint8_t& bit)
+			static inline void clr(BitField_8& bf, const u8& bit)
 			{
 				switch (bit)
 				{
@@ -225,7 +226,7 @@ namespace ostd
 					default: break;
 				}
 			}
-			static inline void tgl(BitField_8& bf, const uint8_t& bit)
+			static inline void tgl(BitField_8& bf, const u8& bit)
 			{
 				switch (bit)
 				{
@@ -240,7 +241,7 @@ namespace ostd
 					default: break;
 				}
 			}
-			static inline void val(BitField_8& bf, const uint8_t& bit, bool value)
+			static inline void val(BitField_8& bf, const u8& bit, bool value)
 			{
 				switch (bit)
 				{
@@ -257,7 +258,7 @@ namespace ostd
 			}
 
 			//16-Bit field
-			static inline bool get(const BitField_16& bf, const uint8_t& bit)
+			static inline bool get(const BitField_16& bf, const u8& bit)
 			{
 				switch (bit)
 				{
@@ -280,7 +281,7 @@ namespace ostd
 					default: return false;
 				}
 			}
-			static inline void set(BitField_16& bf, const uint8_t& bit)
+			static inline void set(BitField_16& bf, const u8& bit)
 			{
 				switch (bit)
 				{
@@ -303,7 +304,7 @@ namespace ostd
 					default: break;
 				}
 			}
-			static inline void clr(BitField_16& bf, const uint8_t& bit)
+			static inline void clr(BitField_16& bf, const u8& bit)
 			{
 				switch (bit)
 				{
@@ -326,7 +327,7 @@ namespace ostd
 					default: break;
 				}
 			}
-			static inline void tgl(BitField_16& bf, const uint8_t& bit)
+			static inline void tgl(BitField_16& bf, const u8& bit)
 			{
 				switch (bit)
 				{
@@ -349,7 +350,7 @@ namespace ostd
 					default: break;
 				}
 			}
-			static inline void val(BitField_16& bf, const uint8_t& bit, bool value)
+			static inline void val(BitField_16& bf, const u8& bit, bool value)
 			{
 				switch (bit)
 				{
@@ -374,7 +375,7 @@ namespace ostd
 			}
 
 			//32-Bit field
-			static inline bool get(const BitField_32& bf, const uint8_t& bit)
+			static inline bool get(const BitField_32& bf, const u8& bit)
 			{
 				switch (bit)
 				{
@@ -413,7 +414,7 @@ namespace ostd
 					default: return false;
 				}
 			}
-			static inline void set(BitField_32& bf, const uint8_t& bit)
+			static inline void set(BitField_32& bf, const u8& bit)
 			{
 				switch (bit)
 				{
@@ -452,7 +453,7 @@ namespace ostd
 					default: break;
 				}
 			}
-			static inline void clr(BitField_32& bf, const uint8_t& bit)
+			static inline void clr(BitField_32& bf, const u8& bit)
 			{
 				switch (bit)
 				{
@@ -491,7 +492,7 @@ namespace ostd
 					default: break;
 				}
 			}
-			static inline void tgl(BitField_32& bf, const uint8_t& bit)
+			static inline void tgl(BitField_32& bf, const u8& bit)
 			{
 				switch (bit)
 				{
@@ -530,7 +531,7 @@ namespace ostd
 					default: break;
 				}
 			}
-			static inline void val(BitField_32& bf, const uint8_t& bit, bool value)
+			static inline void val(BitField_32& bf, const u8& bit, bool value)
 			{
 				switch (bit)
 				{
@@ -571,7 +572,7 @@ namespace ostd
 			}
 
 			//64-Bit field
-			static inline bool get(const BitField_64& bf, const uint8_t& bit)
+			static inline bool get(const BitField_64& bf, const u8& bit)
 			{
 				switch (bit)
 				{
@@ -642,7 +643,7 @@ namespace ostd
 					default: return false;
 				}
 			}
-			static inline void set(BitField_64& bf, const uint8_t& bit)
+			static inline void set(BitField_64& bf, const u8& bit)
 			{
 				switch (bit)
 				{
@@ -713,7 +714,7 @@ namespace ostd
 					default: break;
 				}
 			}
-			static inline void clr(BitField_64& bf, const uint8_t& bit)
+			static inline void clr(BitField_64& bf, const u8& bit)
 			{
 				switch (bit)
 				{
@@ -784,7 +785,7 @@ namespace ostd
 					default: break;
 				}
 			}
-			static inline void tgl(BitField_64& bf, const uint8_t& bit)
+			static inline void tgl(BitField_64& bf, const u8& bit)
 			{
 				switch (bit)
 				{
@@ -855,7 +856,7 @@ namespace ostd
 					default: break;
 				}
 			}
-			static inline void val(BitField_64& bf, const uint8_t& bit, bool value)
+			static inline void val(BitField_64& bf, const u8& bit, bool value)
 			{
 				switch (bit)
 				{

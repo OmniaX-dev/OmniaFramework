@@ -4,7 +4,7 @@
 
 namespace ostd
 {
-	KeyNode::KeyNode(int32_t xx, int32_t yy, float f)
+	KeyNode::KeyNode(i32 xx, i32 yy, f32 f)
 	{
 		x = xx;
 		y = yy;
@@ -56,12 +56,12 @@ namespace ostd
 		return false;
 	}
 
-	const KeyNode& OpenSet::operator[](uint32_t index) const
+	const KeyNode& OpenSet::operator[](u32 index) const
 	{
 		return m_list[index];
 	}
 
-	int32_t OpenSet::size(void) const
+	i32 OpenSet::size(void) const
 	{
 		return m_list.size();
 	}
@@ -71,7 +71,7 @@ namespace ostd
 		remove(m_lowest_index);
 	}
 
-	void OpenSet::remove(uint32_t index)
+	void OpenSet::remove(u32 index)
 	{
 		if (isEmpty() || index >= size()) return;
 		if (size() == 1)
@@ -84,7 +84,7 @@ namespace ostd
 		{
 			m_lowest = &m_list[0];
 			m_lowest_index = 0;
-			for (uint32_t i = 1; i < m_list.size(); i++)
+			for (u32 i = 1; i < m_list.size(); i++)
 			{
 				auto& k = m_list[i];
 				if (k.fscore < m_lowest->fscore)
@@ -108,7 +108,7 @@ namespace ostd
 		return *m_lowest;
 	}
 
-	int32_t OpenSet::getLowestIndex(void)
+	i32 OpenSet::getLowestIndex(void)
 	{
 		return m_lowest_index;
 	}
@@ -120,7 +120,7 @@ namespace ostd
 		init(32, 32);
 	}
 
-	void PathFinder::init(int32_t w, int32_t h, eHeuristicType ht)
+	void PathFinder::init(i32 w, i32 h, eHeuristicType ht)
 	{
 		m_initialized = true;
 		openSet.clear();
@@ -130,21 +130,21 @@ namespace ostd
 		__ht = ht;
 		m_width = w;
 		m_height = h;
-		for (int32_t y = 0; y < h; y++)
+		for (i32 y = 0; y < h; y++)
 		{
-			for (int32_t x = 0; x < w; x++)
+			for (i32 x = 0; x < w; x++)
 			{
-				gscores[{x, y, 0}] = std::numeric_limits<float>::infinity();
+				gscores[{x, y, 0}] = std::numeric_limits<f32>::infinity();
 			}
 		}
 	}
 
-	void PathFinder::setObstacle(int32_t x, int32_t y, bool obst)
+	void PathFinder::setObstacle(i32 x, i32 y, bool obst)
 	{
 		obstacle[{x, y, 0}] = obst;
 	}
 
-	void PathFinder::setKeyPoints(int32_t startx, int32_t starty, int32_t endx, int32_t endy)
+	void PathFinder::setKeyPoints(i32 startx, i32 starty, i32 endx, i32 endy)
 	{
 		if (!m_initialized) return;
 		init(m_width, m_height, __ht);
@@ -173,13 +173,13 @@ namespace ostd
 				return path;
 			}
 			openSet.removeLowest();
-			int32_t tmpx = current.x;
-			int32_t tmpy = current.y;
-			float tg = 0;
+			i32 tmpx = current.x;
+			i32 tmpy = current.y;
+			f32 tg = 0;
 			KeyNode neighbor;
-			for (int8_t x = -1; x <= 1; x++)
+			for (i8 x = -1; x <= 1; x++)
 			{
-				for (int8_t y = -1; y <= 1; y++)
+				for (i8 y = -1; y <= 1; y++)
 				{
 					if (x == 0 && y == 0) continue;
 					if (tmpx + x < 0 || tmpx + x >= m_width || tmpy + y < 0 || tmpy + y >= m_height) continue;
@@ -201,13 +201,13 @@ namespace ostd
 		return std::deque<KeyNode>();
 	}
 
-	float PathFinder::heuristics(KeyNode n)
+	f32 PathFinder::heuristics(KeyNode n)
 	{
-		float hh = 0;
+		f32 hh = 0;
 		switch (__ht)
 		{
 			case eHeuristicType::Euclidean:
-				hh = (float)std::sqrt(std::pow(n.x - __goal.x, 2) + std::pow(n.y - __goal.y, 2));
+				hh = (f32)std::sqrt(std::pow(n.x - __goal.x, 2) + std::pow(n.y - __goal.y, 2));
 				break;
 			case eHeuristicType::Manhattan:
 				hh = std::abs(n.x - __goal.x) + std::abs(n.y - __goal.y);

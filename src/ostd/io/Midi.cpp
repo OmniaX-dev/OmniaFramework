@@ -1,5 +1,5 @@
 #include "Midi.hpp"
-#include <vector>
+
 #include <stdexcept>
 #include <string>
 #include <array>
@@ -8,7 +8,7 @@
 namespace ostd
 {
 	//TODO: Errors
-	std::vector<MidiParser::NoteEvent> MidiParser::parseFile(const ostd::String& filePath)
+	stdvec<MidiParser::NoteEvent> MidiParser::parseFile(const String& filePath)
 	{
 	    smf::MidiFile midi;
 
@@ -23,10 +23,10 @@ namespace ostd
 	    midi.doTimeAnalysis();
 	    midi.linkNotePairs();
 
-	    std::vector<NoteEvent> notes;
+	    stdvec<NoteEvent> notes;
 	    notes.reserve(256);
 
-	    for (int e = 0; e < midi[0].size(); ++e)
+	    for (i32 e = 0; e < midi[0].size(); ++e)
 		{
 	        auto& ev = midi[0][e];
 	        if (ev.isNoteOn())
@@ -46,7 +46,7 @@ namespace ostd
 	    }
 
 	    NoteEvent* notePtr = nullptr;
-	    double noteTime = 0.0;
+	    f64 noteTime = 0.0;
 	    for (auto& note : notes)
 	    {
 	    	if (note.endTime > noteTime)
@@ -74,7 +74,7 @@ namespace ostd
 	    return notes;
 	}
 
-	MidiParser::NoteInfo MidiParser::getNoteInfo(int midiPitch)
+	MidiParser::NoteInfo MidiParser::getNoteInfo(i32 midiPitch)
 	{
 	    static const std::array<std::string, 12> noteNames = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
 

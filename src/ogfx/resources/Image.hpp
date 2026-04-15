@@ -31,18 +31,18 @@ namespace ogfx
     {
         public:
             inline Image(void) { invalidate(); }
-            inline Image(const ostd::String& filePath, BasicRenderer2D& gfx) { loadFromFile(filePath, gfx); }
+            inline Image(const String& filePath, BasicRenderer2D& gfx) { loadFromFile(filePath, gfx); }
             inline ~Image(void) { destroy(); }
             void destroy(void);
-            Image& loadFromFile(const ostd::String& filePath, BasicRenderer2D& gfx);
+            Image& loadFromFile(const String& filePath, BasicRenderer2D& gfx);
             inline ostd::Vec2 getSize(void) const { return { m_width, m_height }; }
             inline bool isLoaded(void) const { return m_loaded; }
             inline SDL_Texture* getSDLTexture(void) const { return m_sdl_texture; }
 
         private:
             SDL_Texture* m_sdl_texture { nullptr };
-            float m_width { 0 };
-            float m_height { 0 };
+            f32 m_width { 0 };
+            f32 m_height { 0 };
             bool m_loaded { false };
     };
 }

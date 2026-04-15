@@ -23,7 +23,7 @@
 
 namespace ostd
 {
-	void Memory::printByteStream(const ByteStream& data, StreamIndex start, uint8_t line_len, uint16_t n_rows, OutputHandlerBase& out, int32_t addrHighlight, uint32_t highlightRange, const String& title)
+	void Memory::printByteStream(const ByteStream& data, StreamIndex start, u8 line_len, u16 n_rows, OutputHandlerBase& out, i32 addrHighlight, u32 highlightRange, const String& title)
 	{
 		StreamIndex end = start + (n_rows * line_len);
 		if (end > data.size()) end = data.size();
@@ -32,21 +32,21 @@ namespace ostd
 			titleEdit = titleEdit.substr(0, 12);
 		else if (titleEdit.len() < 12)
 		{
-			int32_t diff = 12 - titleEdit.len();
-			for (int32_t i = 0; i < diff; i++)
+			i32 diff = 12 - titleEdit.len();
+			for (i32 i = 0; i < diff; i++)
 				titleEdit.addChar(' ');
 		}
 		bool highlight = addrHighlight >= 0;
-		uint8_t i = 1;
+		u8 i = 1;
 		ByteStream tmp;
-		uint16_t linew = 1 + 1 + 6 + 1 + 1 + 2 + ((2 + 2) * line_len) + 1 + 4;
+		u16 linew = 1 + 1 + 6 + 1 + 1 + 2 + ((2 + 2) * line_len) + 1 + 4;
 		out.fg(ConsoleColors::BrightBlue).p(String::duplicateChar('=', linew)).nl();
 		if (line_len <= 0xFF)
 		{
 			out.fg(ConsoleColors::BrightBlue).p("|");
 			out.fg(ConsoleColors::BrightMagenta).p(titleEdit);
 			out.fg(ConsoleColors::BrightBlue).p("|  ");
-			for (int32_t i = 0; i < line_len; i++)
+			for (i32 i = 0; i < line_len; i++)
 				out.fg(ConsoleColors::Green).p(String::getHexStr(i, false, 1)).p("  ");
 			out.fg(ConsoleColors::BrightBlue).p("|").nl();
 			out.fg(ConsoleColors::BrightBlue).p(String::duplicateChar('=', linew)).nl();
@@ -57,7 +57,7 @@ namespace ostd
 		for (StreamIndex addr = start; addr < end; addr++)
 		{
 			tmp.push_back(data[addr]);
-			if (highlight && (addr >= (uint32_t)addrHighlight && addr < (uint32_t)(addrHighlight + highlightRange)))
+			if (highlight && (addr >= (u32)addrHighlight && addr < (u32)(addrHighlight + highlightRange)))
 				out.fg(ConsoleColors::Red);
 			else if (data[addr] == 0)
 				out.fg(ConsoleColors::BrightGray);
@@ -102,7 +102,7 @@ namespace ostd
 	{
 		std::ifstream rf(filePath.cpp_str(), std::ios::out | std::ios::binary);
 		if(!rf) return false; //TODO: Error
-		uint8_t cell = 0;
+		u8 cell = 0;
 		while(rf.read((char*)&cell, sizeof(cell)))
 			outStream.push_back(cell);
 		if (outStream.size() == 0) return false; //TODO: Error
@@ -113,14 +113,14 @@ namespace ostd
 	{
 		ByteStream bstream;
 		for (auto& c : data)
-			bstream.push_back((int8_t)c);
+			bstream.push_back((i8)c);
 		return bstream;
 	}
 
 	String Memory::byteStreamToString(const ByteStream& data)
 	{
 		String out_string = "";
-		for (int64_t i = 0; i < data.size(); i++)
+		for (i64 i = 0; i < data.size(); i++)
 		{
 			if (data[i] == 0) break;
 			out_string.addChar((char)data[i]);

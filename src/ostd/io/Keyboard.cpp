@@ -32,10 +32,10 @@ namespace ostd
 	}
 
 #ifndef WINDOWS_OS
-	int KeyboardController::kbhit(void)
+	i32 KeyboardController::kbhit(void)
 	{
-		unsigned char ch;
-		int nread;
+		uchar ch;
+		i32 nread;
 		if (peek_character != -1) return 1;
 		new_settings.c_cc[VMIN] = 0;
 		tcsetattr(0, TCSANOW, &new_settings);
@@ -51,7 +51,7 @@ namespace ostd
 		return 0;
 	}
 
-	int KeyboardController::getch(void)
+	i32 KeyboardController::getch(void)
 	{
 		char ch;
 
@@ -110,7 +110,7 @@ namespace ostd
 
 	eKeys KeyboardController::getPressedKey(void)
 	{
-		int k1 = 0, k2 = 0, k3 = 0;
+		i32 k1 = 0, k2 = 0, k3 = 0;
 		eKeys key;
 		if(kbhit())
 		{

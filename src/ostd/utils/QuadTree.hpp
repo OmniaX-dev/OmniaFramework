@@ -20,7 +20,6 @@
 
 #pragma once
 
-#include <vector>
 #include <memory>
 #include <ostd/data/BaseObject.hpp>
 #include <ostd/math/Geometry.hpp>
@@ -41,18 +40,18 @@ namespace ostd
 									m_se(nullptr),m_ne(nullptr), m_subdivided(false),
 									m_capacity(0), m_currentSize(0)
 									{ invalidate(); }
-			inline QuadTree(Rectangle bounds, uint16_t capacity) { create(bounds, capacity); }
+			inline QuadTree(Rectangle bounds, u16 capacity) { create(bounds, capacity); }
 			inline ~QuadTree(void) { destroy(); }
 			void destroy(void);
-			void create(Rectangle bounds, uint16_t capacity);
+			void create(Rectangle bounds, u16 capacity);
 			void subdivide(void);
 			bool insert(Vec2 point, void* data = nullptr);
-			void query(Rectangle range, std::vector<tElement*>& list);
+			void query(Rectangle range, stdvec<tElement*>& list);
 
 		private:
 			tElement* m_points;
-			uint16_t m_currentSize;
-			uint16_t m_capacity;
+			u16 m_currentSize;
+			u16 m_capacity;
 			Rectangle m_bounds;
 			bool m_subdivided;
 			std::unique_ptr<QuadTree> m_nw;

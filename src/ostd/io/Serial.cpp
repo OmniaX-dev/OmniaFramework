@@ -5,10 +5,10 @@ namespace ostd
 {
 	namespace serial
 	{
-		bool SerialIO::init(uint64_t size, uint8_t endianness)
+		bool SerialIO::init(u64 size, u8 endianness)
 		{
 			if (size < 1) return false;
-			for (uint64_t i = 0; i < size; i++)
+			for (u64 i = 0; i < size; i++)
 				m_data.push_back(0);
 			m_endianness = endianness;
 			return true;
@@ -110,7 +110,7 @@ namespace ostd
 			return true;
 		}
 
-		bool SerialIO::r_Float(StreamIndex addr, float& outVal)
+		bool SerialIO::r_Float(StreamIndex addr, f32& outVal)
 		{
 			if (!is_validAddr(addr, tTypeSize::FLOAT)) return false;
 			__float_parser fp;
@@ -133,7 +133,7 @@ namespace ostd
 			return true;
 		}
 
-		bool SerialIO::r_Double(StreamIndex addr, double& outVal)
+		bool SerialIO::r_Double(StreamIndex addr, f64& outVal)
 		{
 			if (!is_validAddr(addr, tTypeSize::DOUBLE)) return false;
 			__double_parser dp;
@@ -167,7 +167,7 @@ namespace ostd
 		bool SerialIO::r_ByteStream(StreamIndex addr, ByteStream& outStream)
 		{
 			if (!is_validAddr(addr, tTypeSize::ADDR)) return false;
-			uint32_t stream_size;
+			u32 stream_size;
 			if (!r_Addr(addr, stream_size)) return false;
 			addr += tTypeSize::ADDR;
 			if (!is_validAddr(addr, stream_size)) return false;
@@ -178,7 +178,7 @@ namespace ostd
 			return true;
 		}
 
-		bool SerialIO::r_ByteStream(StreamIndex addr, ByteStream& outStream, uint32_t size)
+		bool SerialIO::r_ByteStream(StreamIndex addr, ByteStream& outStream, u32 size)
 		{
 			if (!is_validAddr(addr, size)) return false;
 			outStream.clear();
@@ -191,7 +191,7 @@ namespace ostd
 		bool SerialIO::r_String(StreamIndex addr, String& outString)
 		{
 			if (!is_validAddr(addr, tTypeSize::ADDR)) return false;
-			uint32_t stream_size;
+			u32 stream_size;
 			if (!r_Addr(addr, stream_size)) return false;
 			addr += tTypeSize::ADDR;
 			if (!is_validAddr(addr, stream_size)) return false;
@@ -201,7 +201,7 @@ namespace ostd
 			return true;
 		}
 
-		bool SerialIO::r_String(StreamIndex addr, String& outString, uint32_t size)
+		bool SerialIO::r_String(StreamIndex addr, String& outString, u32 size)
 		{
 			if (!is_validAddr(addr, size)) return false;
 			outString = "";
@@ -213,7 +213,7 @@ namespace ostd
 		bool SerialIO::r_NullTerminatedString(StreamIndex addr, String& outString)
 		{
 			outString = "";
-			int8_t c = 0;
+			i8 c = 0;
 			if (!r_Byte(addr, c)) return false;
 			addr += tTypeSize::BYTE;
 			while (c != 0)
@@ -326,7 +326,7 @@ namespace ostd
 			return true;
 		}
 
-		bool SerialIO::w_Float(StreamIndex addr, float val)
+		bool SerialIO::w_Float(StreamIndex addr, f32 val)
 		{
 			m_statuWriting = true;
 			if (!is_validAddr(addr, tTypeSize::FLOAT)) return false;
@@ -350,7 +350,7 @@ namespace ostd
 			return true;
 		}
 
-		bool SerialIO::w_Double(StreamIndex addr, double val)
+		bool SerialIO::w_Double(StreamIndex addr, f64 val)
 		{
 			m_statuWriting = true;
 			if (!is_validAddr(addr, tTypeSize::DOUBLE)) return false;
@@ -385,7 +385,7 @@ namespace ostd
 		bool SerialIO::w_ByteStream(StreamIndex addr, const ByteStream& stream, bool store_size)
 		{
 			m_statuWriting = true;
-			uint32_t stream_size = stream.size();
+			u32 stream_size = stream.size();
 			if (store_size)
 			{
 				if (!is_validAddr(addr, tTypeSize::ADDR + stream_size)) return false;
@@ -402,7 +402,7 @@ namespace ostd
 		{
 			m_statuWriting = true;
 			auto stream = Memory::stringToByteStream(str);
-			uint32_t stream_size = stream.size();
+			u32 stream_size = stream.size();
 			if (store_size && !null_terminate)
 			{
 				if (!is_validAddr(addr, tTypeSize::ADDR + stream_size)) return false;
@@ -425,7 +425,7 @@ namespace ostd
 			{
 				if (isAutoResizeEnabled() && m_statuWriting)
 				{
-					for (uint32_t i = 0; i <= m_resizeAmount; i++)
+					for (u32 i = 0; i <= m_resizeAmount; i++)
 						m_data.push_back(0);
 					m_statuWriting = false;
 					return true;
@@ -442,8 +442,8 @@ namespace ostd
 
 		void SerialIO::print(StreamIndex start, OutputHandlerBase& out)
 		{
-			uint32_t line_len = 32;
-			uint64_t power = 1;
+			u32 line_len = 32;
+			u64 power = 1;
 			while(power < size())
 				power *= 2;
 			Memory::printByteStream(m_data, start, line_len, power / line_len, out);

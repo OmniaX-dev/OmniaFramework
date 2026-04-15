@@ -12,14 +12,14 @@ namespace ostd
 		BaseObject::setValid(true);
 	}
 
-	Color::Color(uint8_t rgb_single_value, uint8_t alpha) : r(*this), g(*this), b(*this), a(*this)
+	Color::Color(u8 rgb_single_value, u8 alpha) : r(*this), g(*this), b(*this), a(*this)
 	{
 		set(rgb_single_value, alpha);
 		setTypeName("ox::Color");
 		BaseObject::setValid(true);
 	}
 
-	Color::Color(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t alpha) : r(*this), g(*this), b(*this), a(*this)
+	Color::Color(u8 _r, u8 _g, u8 _b, u8 alpha) : r(*this), g(*this), b(*this), a(*this)
 	{
 		set(_r, _g, _b, alpha);
 		setTypeName("ox::Color");
@@ -42,10 +42,10 @@ namespace ostd
 
 	Color::Color(const Color& copy) : BaseObject(copy), r(*this), g(*this), b(*this), a(*this)
 	{
-		r = static_cast<uint8_t>(copy.r);
-		g = static_cast<uint8_t>(copy.g);
-		b = static_cast<uint8_t>(copy.b);
-		a = static_cast<uint8_t>(copy.a);
+		r = cast<u8>(copy.r);
+		g = cast<u8>(copy.g);
+		b = cast<u8>(copy.b);
+		a = cast<u8>(copy.a);
 	}
 
 	bool Color::operator==(const Color& col2)
@@ -61,10 +61,10 @@ namespace ostd
 	Color& Color::operator=(const Color& copy)
 	{
 		BaseObject::operator=(copy);
-		r = static_cast<uint8_t>(copy.r);
-		g = static_cast<uint8_t>(copy.g);
-		b = static_cast<uint8_t>(copy.b);
-		a = static_cast<uint8_t>(copy.a);
+		r = cast<u8>(copy.r);
+		g = cast<u8>(copy.g);
+		b = cast<u8>(copy.b);
+		a = cast<u8>(copy.a);
 		return *this;
 	}
 
@@ -77,7 +77,7 @@ namespace ostd
 		return *this;
 	}
 
-	Color& Color::set(uint8_t rgb_single_value, uint8_t alpha)
+	Color& Color::set(u8 rgb_single_value, u8 alpha)
 	{
 		r = rgb_single_value;
 		g = rgb_single_value;
@@ -86,7 +86,7 @@ namespace ostd
 		return *this;
 	}
 
-	Color& Color::set(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t alpha)
+	Color& Color::set(u8 _r, u8 _g, u8 _b, u8 alpha)
 	{
 		r = _r;
 		g = _g;
@@ -111,12 +111,12 @@ namespace ostd
 		}
 		if (se.startsWith("0x"))
 		{
-			int64_t ic = se.toInt();
+			i64 ic = se.toInt();
 			union uC32 {
-				uint8_t data[4];
-				uint32_t value;
+				u8 data[4];
+				u32 value;
 			} c32_u;
-			c32_u.value = static_cast<uint32_t>(ic);
+			c32_u.value = cast<u32>(ic);
 			a = c32_u.data[0];
 			b = c32_u.data[1];
 			g = c32_u.data[2];
@@ -147,14 +147,14 @@ namespace ostd
 
 	Color& Color::set(const FloatCol& normalized_color)
 	{
-		r = static_cast<uint8_t>(std::round(normalized_color.r * 255));
-		g = static_cast<uint8_t>(std::round(normalized_color.g * 255));
-		b = static_cast<uint8_t>(std::round(normalized_color.b * 255));
-		a = static_cast<uint8_t>(std::round(normalized_color.a * 255));
+		r = cast<u8>(std::round(normalized_color.r * 255));
+		g = cast<u8>(std::round(normalized_color.g * 255));
+		b = cast<u8>(std::round(normalized_color.b * 255));
+		a = cast<u8>(std::round(normalized_color.a * 255));
 		return *this;
 	}
 
-	String Color::hexString(bool include_alpha, String prefix) const
+	String Color::hexString(bool include_alpha, const String& prefix) const
 	{
 		String hex = "";
 		hex += String::getHexStr(r, false, 1);
@@ -181,11 +181,11 @@ namespace ostd
 		return rgb;
 	}
 
-	uint32_t Color::asInteger(eColorFormat format) const
+	u32 Color::asInteger(eColorFormat format) const
 	{
 		union uC32 {
-			uint8_t data[4];
-			uint32_t value;
+			u8 data[4];
+			u32 value;
 		} c32_u;
 		if (format == eColorFormat::RGBA)
 		{
@@ -235,11 +235,11 @@ namespace ostd
 		}
 	}
 
-	void Color::RGBtoHSV(float r, float g, float b, float& h, float& s, float& v)
+	void Color::RGBtoHSV(f32 r, f32 g, f32 b, f32& h, f32& s, f32& v)
 	{
-	    float max = std::max({r, g, b});
-	    float min = std::min({r, g, b});
-	    float d = max - min;
+	    f32 max = std::max({r, g, b});
+	    f32 min = std::min({r, g, b});
+	    f32 d = max - min;
 
 	    v = max;
 
@@ -259,13 +259,13 @@ namespace ostd
 	    h /= 6.0f;
 	}
 
-	void Color::HSVtoRGB(float h, float s, float v, float& r, float& g, float& b)
+	void Color::HSVtoRGB(f32 h, f32 s, f32 v, f32& r, f32& g, f32& b)
 	{
-	    int i = static_cast<int>(h * 6);
-	    float f = h * 6 - i;
-	    float p = v * (1 - s);
-	    float q = v * (1 - f * s);
-	    float t = v * (1 - (1 - f) * s);
+	    i32 i = cast<i32>(h * 6);
+	    f32 f = h * 6 - i;
+	    f32 p = v * (1 - s);
+	    f32 q = v * (1 - f * s);
+	    f32 t = v * (1 - (1 - f) * s);
 
 	    switch (i % 6)
 	    {

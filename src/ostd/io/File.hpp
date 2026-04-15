@@ -21,7 +21,7 @@
 #pragma once
 
 #include <filesystem>
-#include <vector>
+
 #include <ostd/data/BaseObject.hpp>
 #include <ostd/data/Types.hpp>
 
@@ -42,7 +42,7 @@ namespace ostd
 			inline const String& name(void) const { return m_name; }
 
 			inline const String& rawContent(void) { return m_buffer; }
-			std::vector<String> getLines(const String& separator = "\n", bool trim_tokens = true, bool allow_white_space_only_tokens = false);
+			stdvec<String> getLines(const String& separator = "\n", bool trim_tokens = true, bool allow_white_space_only_tokens = false);
 
 			inline bool exists(void) { return isValid(); }
 

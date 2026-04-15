@@ -27,7 +27,7 @@ namespace ogfx
 	{
 		namespace widgets
 		{
-			CheckBox& CheckBox::create(const ostd::String& text)
+			CheckBox& CheckBox::create(const String& text)
 			{
 				setText(text);
 				setPadding({ 5, 5, 5, 5 });
@@ -45,16 +45,16 @@ namespace ogfx
 				setCheckBoxColor(getThemeValue<ostd::Color>(theme, "checkbox.checkBoxColor", ostd::Colors::White));
 				setTextColor(getThemeValue<ostd::Color>(theme, "checkbox.textColor", ostd::Colors::Black));
 				setBackGroundColor(getThemeValue<ostd::Color>(theme, "checkbox.backgroundColor", ostd::Colors::Transparent));
-				setFontSize(getThemeValue<int32_t>(theme, "checkbox.fontSize", 28));
-				setBorderRadius(getThemeValue<int32_t>(theme, "checkbox.borderRadius", 10));
-				setBorderWidth(getThemeValue<int32_t>(theme, "checkbox.borderWidth", 2));
+				setFontSize(getThemeValue<i32>(theme, "checkbox.fontSize", 28));
+				setBorderRadius(getThemeValue<i32>(theme, "checkbox.borderRadius", 10));
+				setBorderWidth(getThemeValue<i32>(theme, "checkbox.borderWidth", 2));
 				enableBorder(getThemeValue<bool>(theme, "checkbox.showBorder", false));
 				setBorderColor(getThemeValue<ostd::Color>(theme, "checkbox.borderColor", ostd::Colors::White));
 				enableBackground(getThemeValue<bool>(theme, "checkbox.showBackground", false));
 				setPadding(getThemeValue<ostd::Rectangle>(theme, "checkbox.padding", { 5, 5, 5, 5 }));
 				setMargin(getThemeValue<ostd::Rectangle>(theme, "checkbox.margin", { 0, 0, 0, 0 }));
-				m_checkBorderRadius = getThemeValue<int32_t>(theme, "checkbox.checkBorderRadius", 5);
-				m_checkBorderWidth = getThemeValue<int32_t>(theme, "checkbox.checkBorderWidth", 1);
+				m_checkBorderRadius = getThemeValue<i32>(theme, "checkbox.checkBorderRadius", 5);
+				m_checkBorderWidth = getThemeValue<i32>(theme, "checkbox.checkBorderWidth", 1);
 			}
 
 			void CheckBox::onDraw(ogfx::BasicRenderer2D& gfx)
@@ -74,7 +74,7 @@ namespace ogfx
 				setChecked(!isChecked());
 			}
 
-			void CheckBox::setText(const ostd::String& text)
+			void CheckBox::setText(const String& text)
 			{
 				m_text = text;
 				m_textChanged = true;
@@ -82,7 +82,9 @@ namespace ogfx
 
 			void CheckBox::setChecked(bool checked)
 			{
-				m_checked = !m_checked;
+				if (m_checked == checked)
+					return;
+				m_checked = checked;
 				setThemeQualifier("active", m_checked);
 				if (callback_onStateChanged)
 					callback_onStateChanged(*this, m_checked);
@@ -91,13 +93,13 @@ namespace ogfx
 			void CheckBox::__update_size(ogfx::BasicRenderer2D& gfx)
 			{
 				auto size = gfx.getStringDimensions(getText(), getFontSize());
-				m_checkSize = { static_cast<float>(size.y), static_cast<float>(size.y) };
+				m_checkSize = { cast<f32>(size.y), cast<f32>(size.y) };
 				size.x += m_spacing + m_checkSize.x;
 				size.x += getPadding().left();
 				size.x += getPadding().right();
 				size.y += getPadding().top();
 				size.y += getPadding().bottom();
-				setSize({ static_cast<float>(size.x), static_cast<float>(size.y) });
+				setSize({ cast<f32>(size.x), cast<f32>(size.y) });
 				m_textChanged = false;
 			}
 		}

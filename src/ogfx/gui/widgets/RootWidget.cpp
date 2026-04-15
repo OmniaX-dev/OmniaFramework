@@ -32,13 +32,13 @@ namespace ogfx
 			{
 				disableDrawBox();
 				m_rootChild = true;
-				setSize(static_cast<float>(window.getWindowWidth()), static_cast<float>(window.getWindowHeight()));
+				setSize(cast<f32>(window.getWindowWidth()), cast<f32>(window.getWindowHeight()));
 				setTypeName("ogfx::gui::widgets::RootWidget");
 			}
 
 			void RootWidget::onWindowResized(const Event& event)
 			{
-				setSize(static_cast<float>(event.windowResized->new_width), static_cast<float>(event.windowResized->new_height));
+				setSize(cast<f32>(event.windowResized->new_width), cast<f32>(event.windowResized->new_height));
 			}
 
 			void RootWidget::applyTheme(const ostd::Stylesheet& theme)
@@ -48,7 +48,7 @@ namespace ogfx
 
 			void RootWidget::onDraw(ogfx::BasicRenderer2D& gfx)
 			{
-				gfx.fillRect({ 0, 0, static_cast<float>(getWindow().getWindowWidth()), static_cast<float>(getWindow().getWindowHeight()) }, m_color);
+				gfx.fillRect({ 0, 0, cast<f32>(getWindow().getWindowWidth()), cast<f32>(getWindow().getWindowHeight()) }, m_color);
 			}
 		}
 	}

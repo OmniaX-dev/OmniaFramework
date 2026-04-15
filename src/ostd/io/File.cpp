@@ -38,7 +38,7 @@ namespace ostd
 		return *this;
 	}
 
-	std::vector<String> TextFileBuffer::getLines(const String& separator, bool trim_tokens, bool allow_white_space_only_tokens)
+	stdvec<String> TextFileBuffer::getLines(const String& separator, bool trim_tokens, bool allow_white_space_only_tokens)
 	{
 		if (!exists()) return { };
 		auto st = String(m_buffer);

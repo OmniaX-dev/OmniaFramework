@@ -86,7 +86,7 @@ namespace ogfx
 			setThemeQualifier("disabled", !enable);
 		}
 
-		void Widget::addThemeOverride(const ostd::String& fullKey, ostd::Stylesheet::TypeVariant value)
+		void Widget::addThemeOverride(const String& fullKey, ostd::Stylesheet::TypeVariant value)
 		{
 			m_themeOverrides.push_back({ fullKey, value });
 		}
@@ -103,10 +103,10 @@ namespace ogfx
 			struct tBackup {
 				const ostd::Stylesheet::TypeVariant* ptr;
 				ostd::Stylesheet::TypeVariant val;
-				ostd::String key;
+				String key;
 			};
 
-			std::vector<tBackup> backup;
+			stdvec<tBackup> backup;
 			for (auto& rule : m_themeOverrides)
 			{
 				auto currentValuePtr = theme.getFull(rule.fullKey);
@@ -126,7 +126,7 @@ namespace ogfx
 			}
 		}
 
-		void Widget::setThemeQualifier(const ostd::String& qualifier, bool value)
+		void Widget::setThemeQualifier(const String& qualifier, bool value)
 		{
 		    for (auto& [name, state] : m_qualifierList)
 		    {
@@ -140,7 +140,7 @@ namespace ogfx
 		    }
 		}
 
-		bool Widget::getThemeQualifier(const ostd::String& qualifier) const
+		bool Widget::getThemeQualifier(const String& qualifier) const
 		{
 			for (auto& [name, state] : m_qualifierList)
 			{
@@ -150,7 +150,7 @@ namespace ogfx
 			return false;
 		}
 
-		bool Widget::addThemeID(const ostd::String& id)
+		bool Widget::addThemeID(const String& id)
 		{
 			if (STDVEC_CONTAINS(m_themeIDList, id))
 				return false;
@@ -158,7 +158,7 @@ namespace ogfx
 			return true;
 		}
 
-		bool Widget::removeThemeID(const ostd::String& id)
+		bool Widget::removeThemeID(const String& id)
 		{
 			if (!STDVEC_CONTAINS(m_themeIDList, id))
 				return false;

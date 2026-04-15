@@ -27,8 +27,8 @@ namespace ostd
 	class MathUtils
 	{
 		public:
-			static float map_value(float input, float input_start, float input_end, float output_start, float output_end);
+			static f32 map_value(f32 input, f32 input_start, f32 input_end, f32 output_start, f32 output_end);
 			//Implemented in <ShuntingYard.cpp>
-			static int32_t solveIntegerExpression(const String& expr);
+			static i32 solveIntegerExpression(const String& expr);
 	};
 }

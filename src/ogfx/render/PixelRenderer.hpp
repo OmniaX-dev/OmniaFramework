@@ -24,7 +24,7 @@
 #include <ostd/string/String.hpp>
 #include <ostd/data/Color.hpp>
 #include <ogfx/utils/SDLInclude.hpp>
-#include <unordered_map>
+
 
 namespace ogfx
 {
@@ -34,42 +34,42 @@ namespace ogfx
 		public: class TextRenderer
 		{
 			private:
-				inline static std::unordered_map<char, int32_t> characterMap;
+				inline static stdumap<char, i32> characterMap;
 
 			public:
 				static void initialize(void);
-				static bool drawString(ostd::String str, uint32_t column, uint32_t row, uint32_t* screenPixels, int32_t screenWidth, int32_t screenHeight, uint32_t* fontPixels,  ostd::Color color = { 255, 255, 255, 255 }, ostd::Color background = { 255, 255, 255, 0 });
+				static bool drawString(const String& str, u32 column, u32 row, u32* screenPixels, i32 screenWidth, i32 screenHeight, u32* fontPixels,  const ostd::Color& color = { 255, 255, 255, 255 }, const ostd::Color& background = { 255, 255, 255, 0 });
 
 			private:
-				static int32_t getCharacterIndex(char c);
-				static ostd::Color applyTint(ostd::Color baseColor, ostd::Color tintColor);
-				static void drawCharacter(uint8_t* screenPixels, int32_t screenWidth, int32_t screenHeight, uint8_t* fontPixels, int32_t x, int32_t y, char c, ostd::Color color = { 255, 255, 255, 255 }, ostd::Color background = { 255, 255, 255, 0 });
+				static i32 getCharacterIndex(char c);
+				static ostd::Color applyTint(const ostd::Color& baseColor, const ostd::Color& tintColor);
+				static void drawCharacter(u8* screenPixels, i32 screenWidth, i32 screenHeight, u8* fontPixels, i32 x, i32 y, char c, const ostd::Color& color = { 255, 255, 255, 255 }, const ostd::Color& background = { 255, 255, 255, 0 });
 
 			public:
-				inline static constexpr int32_t FONT_CHAR_W = 11;
-				inline static constexpr int32_t FONT_CHAR_H = 26;
-				inline static constexpr int32_t FONT_V_CHARS = 6;
-				inline static constexpr int32_t FONT_H_CHARS = 16;
-				inline static constexpr int32_t CONSOLE_CHARS_H = 90;
-				inline static constexpr int32_t CONSOLE_CHARS_V = 21;
+				inline static constexpr i32 FONT_CHAR_W = 11;
+				inline static constexpr i32 FONT_CHAR_H = 26;
+				inline static constexpr i32 FONT_V_CHARS = 6;
+				inline static constexpr i32 FONT_H_CHARS = 16;
+				inline static constexpr i32 CONSOLE_CHARS_H = 90;
+				inline static constexpr i32 CONSOLE_CHARS_V = 21;
 
-				inline static int8_t s_cursor_pos_x = 0;
+				inline static i8 s_cursor_pos_x = 0;
 		};
 		public: class Font
 		{
 			public:
 				inline Font(void) {  }
-				inline Font(const ostd::String& fontPath)
+				inline Font(const String& fontPath)
 				{
 					init(fontPath);
 				}
-				inline void init(const ostd::String& fontPath)
+				inline void init(const String& fontPath)
 				{
 					ostd::ConsoleOutputHandler out;
 					m_fontSurface = SDL_LoadBMP(fontPath.c_str());
 					if (m_fontSurface == NULL)
 						out.bg(ostd::ConsoleColors::Red).p("Error loading pixel font.").reset().nl();
-					m_fontPixels = (uint32_t*)m_fontSurface->pixels;
+					m_fontPixels = (u32*)m_fontSurface->pixels;
 				}
 				inline ~Font(void)
 				{
@@ -78,7 +78,7 @@ namespace ogfx
 
 			public:
 				SDL_Surface* m_fontSurface { nullptr };
-				uint32_t* m_fontPixels { nullptr };
+				u32* m_fontPixels { nullptr };
 		};
 		public:
 			inline PixelRenderer(void) { invalidate(); }
@@ -87,15 +87,15 @@ namespace ogfx
 			void handleSignal(ostd::Signal& signal) override;
 			void updateBuffer(void);
 			void displayBuffer(void);
-			inline uint32_t* getScreenPixels(void) { return m_pixels; }
+			inline u32* getScreenPixels(void) { return m_pixels; }
 
 			void clear(const ostd::Color& color);
 
 		private:
-			uint32_t* m_pixels { nullptr };
+			u32* m_pixels { nullptr };
 			SDL_Texture* m_texture { nullptr };
 			WindowCore* m_parent { nullptr };
-			int32_t m_windowWidth { 0 };
-			int32_t m_windowHeight { 0 };
+			i32 m_windowWidth { 0 };
+			i32 m_windowHeight { 0 };
 	};
 }

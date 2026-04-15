@@ -1,21 +1,21 @@
 /*
-    OmniaFramework - A collection of useful functionality
-    Copyright (C) 2025  OmniaX-Dev
+	OmniaFramework - A collection of useful functionality
+	Copyright (C) 2025  OmniaX-Dev
 
-    This file is part of OmniaFramework.
+	This file is part of OmniaFramework.
 
-    OmniaFramework is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	OmniaFramework is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    OmniaFramework is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	OmniaFramework is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "Logic.hpp"
@@ -26,28 +26,27 @@
 
 namespace ostd
 {
-	bool LogicEvaluator::eval(String exp)
+	bool LogicEvaluator::eval(const String& _exp)
 	{
-		String se(exp);
-		se = se.replaceAll("true", "1");
-		se = se.replaceAll("false", "0");
-		se = se.replaceAll("and", "&");
-		se = se.replaceAll("or", "+");
-		se = se.replaceAll("xor", "^");
-		se = se.replaceAll("nand", "%");
-		se = se.replaceAll("nor", "*");
-		se = se.replaceAll("xnor", ">");
-		se = se.replaceAll("not", "!");
-		se = se.replaceAll(" ", "");
-		se = se.replaceAll("!1", "0");
-		se = se.replaceAll("!0", "1");
-		se = se.trim();
-		exp = se;
+		String exp(_exp);
+		exp.replaceAll("true", "1");
+		exp.replaceAll("false", "0");
+		exp.replaceAll("and", "&");
+		exp.replaceAll("or", "+");
+		exp.replaceAll("xor", "^");
+		exp.replaceAll("nand", "%");
+		exp.replaceAll("nor", "*");
+		exp.replaceAll("xnor", ">");
+		exp.replaceAll("not", "!");
+		exp.replaceAll(" ", "");
+		exp.replaceAll("!1", "0");
+		exp.replaceAll("!0", "1");
+		exp.trim();
 
 		std::stack<bool> values;
 		std::stack<eLogicOp> ops;
 		char c = 0;
-		for (unsigned int i = 0; i < exp.len(); i++)
+		for (u32 i = 0; i < exp.len(); i++)
 		{
 			c = exp[i];
 			if (c == ' ' || c == '#') continue;

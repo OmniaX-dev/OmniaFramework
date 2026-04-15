@@ -37,8 +37,8 @@ namespace ostd
 
 		public: struct tStyledString {
 			String text { "" };
-			std::vector<tColor> backgroundColors;
-			std::vector<tColor> foregroundColors;
+			stdvec<tColor> backgroundColors;
+			stdvec<tColor> foregroundColors;
 
 			void add(const String& str, tColor background, tColor foreground);
 			bool validate(void) const;
@@ -71,9 +71,9 @@ namespace ostd
 				friend std::ostream& operator<<(std::ostream&, IRichStringBase const&);
 
 				inline void setDefaultBackgroundColor(TextStyleParser::tColor color) { m_defaultBackgroundColor = color; }
-				inline void setDefaultBackgroundColor(Color color) { m_defaultBackgroundColor = { color, "", true }; }
+				inline void setDefaultBackgroundColor(const Color& color) { m_defaultBackgroundColor = { color, "", true }; }
 				inline void setDefaultForegroundColor(TextStyleParser::tColor color) { m_defaultForegroundColor = color; }
-				inline void setDefaultForegroundColor(Color color) { m_defaultForegroundColor = { color, "", true }; }
+				inline void setDefaultForegroundColor(const Color& color) { m_defaultForegroundColor = { color, "", true }; }
 
 				inline TextStyleParser::tColor getDefaultBackgroundColor(void) { return m_defaultBackgroundColor; }
 				inline TextStyleParser::tColor getDefaultForegroundColor(void) { return m_defaultForegroundColor; }
@@ -90,16 +90,16 @@ namespace ostd
 				Console& fg(const String& consoleColor);
 				Console& clr(void);
 				Console& add(const String& text);
-				Console& add(uint8_t i);
-				Console& add(int8_t i);
-				Console& add(uint16_t i);
-				Console& add(int16_t i);
-				Console& add(uint32_t i);
-				Console& add(int32_t i);
-				Console& add(uint64_t i);
-				Console& add(int64_t i);
-				Console& add(float f);
-				Console& add(double f);
+				Console& add(u8 i);
+				Console& add(i8 i);
+				Console& add(u16 i);
+				Console& add(i16 i);
+				Console& add(u32 i);
+				Console& add(i32 i);
+				Console& add(u64 i);
+				Console& add(i64 i);
+				Console& add(f32 f);
+				Console& add(f64 f);
 				Console& addc(char c);
 
 				Console& print(OutputHandlerBase& out);

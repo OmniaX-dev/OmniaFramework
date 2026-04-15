@@ -20,10 +20,10 @@ namespace ostd
 		m_totalSeconds = 0.0f;
 	}
 
-	const float& GameClock::start(void)
+	const f32& GameClock::start(void)
 	{
 		m_rtClock.start(false, "", eTimeUnits::Seconds);
-		m_timeOfDay = CAP((1.0f / ((float)(TM_G_MINUTES_FOR_G_HOUR * TM_G_HOURS_FOR_G_DAY))) * ((hours * TM_G_MINUTES_FOR_G_HOUR) + (minutes)), 1.0f);
+		m_timeOfDay = CAP((1.0f / ((f32)(TM_G_MINUTES_FOR_G_HOUR * TM_G_HOURS_FOR_G_DAY))) * ((hours * TM_G_MINUTES_FOR_G_HOUR) + (minutes)), 1.0f);
 		return m_timeOfDay;
 	}
 
@@ -31,13 +31,13 @@ namespace ostd
 	{
 		std::ostringstream ss;
 		ss << "Time: " << getFormattedTime() << " / ";
-		ss << (int32_t)(days + 1) << " " << convertMonth() << " " << (int32_t)(years);
+		ss << (i32)(days + 1) << " " << convertMonth() << " " << (i32)(years);
 		return String(ss.str());
 	}
 
 	void GameClock::update(void)
 	{
-		int64_t elapsed = m_rtClock.start(false, "", eTimeUnits::Seconds);
+		i64 elapsed = m_rtClock.start(false, "", eTimeUnits::Seconds);
 		if (hours == 255)
 			hours = TM_G_HOURS_FOR_G_DAY - 1;
 		else if (hours >= TM_G_HOURS_FOR_G_DAY)
@@ -51,26 +51,26 @@ namespace ostd
 				if (hours >= TM_G_HOURS_FOR_G_DAY)
 				{
 					days++;
-					if ((months == (uint8_t)eMonths::January || months == (uint8_t)eMonths::March ||
-						months == (uint8_t)eMonths::May || months == (uint8_t)eMonths::July ||
-						months == (uint8_t)eMonths::August || months == (uint8_t)eMonths::October ||
-						months == (uint8_t)eMonths::December) && days >= TM_G_DAYS_FOR_G_LONG_MONTH)
+					if ((months == (u8)eMonths::January || months == (u8)eMonths::March ||
+						months == (u8)eMonths::May || months == (u8)eMonths::July ||
+						months == (u8)eMonths::August || months == (u8)eMonths::October ||
+						months == (u8)eMonths::December) && days >= TM_G_DAYS_FOR_G_LONG_MONTH)
 					{
 						months++;
-						if (months > (uint8_t)eMonths::December)
+						if (months > (u8)eMonths::December)
 						{
 							years++;
-							months = (uint8_t)eMonths::January;
+							months = (u8)eMonths::January;
 						}
 						days = 0;
 					}
-					else if ((months == (uint8_t)eMonths::April || months == (uint8_t)eMonths::June ||
-							months == (uint8_t)eMonths::September || months == (uint8_t)eMonths::November) && days >= TM_G_DAYS_FOR_G_MEDIUM_MONTH)
+					else if ((months == (u8)eMonths::April || months == (u8)eMonths::June ||
+							months == (u8)eMonths::September || months == (u8)eMonths::November) && days >= TM_G_DAYS_FOR_G_MEDIUM_MONTH)
 					{
 						months++;
 						days = 0;
 					}
-					else if (months == (uint8_t)eMonths::February)
+					else if (months == (u8)eMonths::February)
 					{
 						if ((years % 4 == 0 && days >= TM_G_DAYS_FOR_G_SHORT_MONTH + 1) ||
 							(years % 4 != 0 && days >= TM_G_DAYS_FOR_G_SHORT_MONTH))
@@ -85,16 +85,16 @@ namespace ostd
 			}
 			m_totalSeconds += elapsed;
 			m_rtClock.start(false, "", eTimeUnits::Seconds);
-			m_timeOfDay = CAP((1.0f / ((float)(TM_G_MINUTES_FOR_G_HOUR * TM_G_HOURS_FOR_G_DAY))) * ((hours * TM_G_MINUTES_FOR_G_HOUR) + (minutes)), 1.0f);
+			m_timeOfDay = CAP((1.0f / ((f32)(TM_G_MINUTES_FOR_G_HOUR * TM_G_HOURS_FOR_G_DAY))) * ((hours * TM_G_MINUTES_FOR_G_HOUR) + (minutes)), 1.0f);
 		}
 	}
 
 	String GameClock::getFormattedTime(void)
 	{
-		bool zh = (int32_t)(hours / 10) < 1;
-		bool zm = (int32_t)(minutes / 10) < 1;
+		bool zh = (i32)(hours / 10) < 1;
+		bool zm = (i32)(minutes / 10) < 1;
 		std::ostringstream ss;
-		ss << (zh ? "0" : "") << (int32_t)hours << ":" << (zm ? "0" : "") << (int32_t)minutes;
+		ss << (zh ? "0" : "") << (i32)hours << ":" << (zm ? "0" : "") << (i32)minutes;
 		return String(ss.str());
 	}
 
@@ -102,29 +102,29 @@ namespace ostd
 	{
 		switch (months)
 		{
-			case (uint8_t)eMonths::January:
+			case (u8)eMonths::January:
 				return "January";
-			case (uint8_t)eMonths::February:
+			case (u8)eMonths::February:
 				return "February";
-			case (uint8_t)eMonths::March:
+			case (u8)eMonths::March:
 				return "March";
-			case (uint8_t)eMonths::April:
+			case (u8)eMonths::April:
 				return "April";
-			case (uint8_t)eMonths::May:
+			case (u8)eMonths::May:
 				return "May";
-			case (uint8_t)eMonths::June:
+			case (u8)eMonths::June:
 				return "June";
-			case (uint8_t)eMonths::July:
+			case (u8)eMonths::July:
 				return "July";
-			case (uint8_t)eMonths::August:
+			case (u8)eMonths::August:
 				return "August";
-			case (uint8_t)eMonths::September:
+			case (u8)eMonths::September:
 				return "September";
-			case (uint8_t)eMonths::October:
+			case (u8)eMonths::October:
 				return "October";
-			case (uint8_t)eMonths::November:
+			case (u8)eMonths::November:
 				return "November";
-			case (uint8_t)eMonths::December:
+			case (u8)eMonths::December:
 				return "December";
 			default:
 				break;
@@ -154,43 +154,43 @@ namespace ostd
 		return ss.str();
 	}
 
-	int32_t LocalTime::hours(void) const
+	i32 LocalTime::hours(void) const
 	{
 		__get_local_time();
 		return __now_t->tm_hour;
 	}
 
-	int32_t LocalTime::minutes(void) const
+	i32 LocalTime::minutes(void) const
 	{
 		__get_local_time();
 		return __now_t->tm_min;
 	}
 
-	int32_t LocalTime::seconds(void) const
+	i32 LocalTime::seconds(void) const
 	{
 		__get_local_time();
 		return __now_t->tm_sec;
 	}
 
-	int32_t LocalTime::day(void) const
+	i32 LocalTime::day(void) const
 	{
 		__get_local_time();
 		return __now_t->tm_mday;
 	}
 
-	int32_t LocalTime::month(void) const
+	i32 LocalTime::month(void) const
 	{
 		__get_local_time();
 		return __now_t->tm_mon + 1;
 	}
 
-	int32_t LocalTime::year(void) const
+	i32 LocalTime::year(void) const
 	{
 		__get_local_time();
 		return __now_t->tm_year + 1900;
 	}
 
-	int32_t LocalTime::weekDay(void) const
+	i32 LocalTime::weekDay(void) const
 	{
 		__get_local_time();
 		return __now_t->tm_wday;
@@ -199,78 +199,78 @@ namespace ostd
 	String LocalTime::shours(bool leading_zero) const
 	{
 		std::ostringstream ss;
-		int32_t h = hours();
+		i32 h = hours();
 		if (leading_zero && h < 10)
-			ss << "0" << (int32_t)h;
+			ss << "0" << (i32)h;
 		else
-			ss << (int32_t)h;
+			ss << (i32)h;
 		return ss.str();
 	}
 
 	String LocalTime::sminutes(bool leading_zero) const
 	{
 		std::ostringstream ss;
-		int32_t h = minutes();
+		i32 h = minutes();
 		if (leading_zero && h < 10)
-			ss << "0" << (int32_t)h;
+			ss << "0" << (i32)h;
 		else
-			ss << (int32_t)h;
+			ss << (i32)h;
 		return ss.str();
 	}
 
 	String LocalTime::sseconds(bool leading_zero) const
 	{
 		std::ostringstream ss;
-		int32_t h = seconds();
+		i32 h = seconds();
 		if (leading_zero && h < 10)
-			ss << "0" << (int32_t)h;
+			ss << "0" << (i32)h;
 		else
-			ss << (int32_t)h;
+			ss << (i32)h;
 		return ss.str();
 	}
 
 	String LocalTime::sday(bool leading_zero) const
 	{
 		std::ostringstream ss;
-		int32_t h = day();
+		i32 h = day();
 		if (leading_zero && h < 10)
-			ss << "0" << (int32_t)h;
+			ss << "0" << (i32)h;
 		else
-			ss << (int32_t)h;
+			ss << (i32)h;
 		return ss.str();
 	}
 
 	String LocalTime::smonth(bool leading_zero, bool month_name) const
 	{
-		int32_t h = month();
+		i32 h = month();
 		if (month_name) return monthToText(h);
 		std::ostringstream ss;
 		if (leading_zero && h < 10)
-			ss << "0" << (int32_t)h;
+			ss << "0" << (i32)h;
 		else
-			ss << (int32_t)h;
+			ss << (i32)h;
 		return ss.str();
 	}
 
 	String LocalTime::syear(void) const
 	{
 		std::ostringstream ss;
-		int32_t h = year();
-		ss << (int32_t)h;
+		i32 h = year();
+		ss << (i32)h;
 		return ss.str();
 	}
 
 	String LocalTime::sWeekDay(bool day_name) const
 	{
-		int32_t h = weekDay();
+		i32 h = weekDay();
 		if (day_name)
 			return weekDayToText(h);
 		std::ostringstream ss;
-		ss << (int32_t)h;
+		ss << (i32)h;
 		return ss.str();
 	}
 
-	String LocalTime::monthToText(int32_t month) const
+	String LocalTime::monthToText(i32 month) const
 	{
 		switch (month)
 		{
@@ -290,7 +290,7 @@ namespace ostd
 		}
 	}
 
-	String LocalTime::weekDayToText(int32_t day) const
+	String LocalTime::weekDayToText(i32 day) const
 	{
 		switch (day)
 		{
@@ -305,7 +305,7 @@ namespace ostd
 		}
 	}
 
-	String LocalTime_IT::monthToText(int32_t month) const
+	String LocalTime_IT::monthToText(i32 month) const
 	{
 		switch (month)
 		{
@@ -325,7 +325,7 @@ namespace ostd
 		}
 	}
 
-	String LocalTime_IT::weekDayToText(int32_t day) const
+	String LocalTime_IT::weekDayToText(i32 day) const
 	{
 		switch (day)
 		{
@@ -340,7 +340,7 @@ namespace ostd
 		}
 	}
 
-	String LocalTime_ES::monthToText(int32_t month) const
+	String LocalTime_ES::monthToText(i32 month) const
 	{
 		switch (month)
 		{
@@ -360,7 +360,7 @@ namespace ostd
 		}
 	}
 
-	String LocalTime_ES::weekDayToText(int32_t day) const
+	String LocalTime_ES::weekDayToText(i32 day) const
 	{
 		switch (day)
 		{
@@ -375,7 +375,7 @@ namespace ostd
 		}
 	}
 
-	String LocalTime_DE::monthToText(int32_t month) const
+	String LocalTime_DE::monthToText(i32 month) const
 	{
 		switch (month)
 		{
@@ -395,7 +395,7 @@ namespace ostd
 		}
 	}
 
-	String LocalTime_DE::weekDayToText(int32_t day) const
+	String LocalTime_DE::weekDayToText(i32 day) const
 	{
 		switch (day)
 		{
@@ -412,7 +412,7 @@ namespace ostd
 
 
 
-	uint64_t Timer::start(bool print, String name, eTimeUnits timeUnit, OutputHandlerBase* __destination)
+	u64 Timer::start(bool print, const String& name, eTimeUnits timeUnit, OutputHandlerBase* __destination)
 	{
 		m_timeUnit = timeUnit;
 		m_started = true;
@@ -459,7 +459,7 @@ namespace ostd
 		return 0;
 	}
 
-	uint64_t Timer::startCount(eTimeUnits timeUnit)
+	u64 Timer::startCount(eTimeUnits timeUnit)
 	{
 		m_timeUnit = timeUnit;
 		m_started = true;
@@ -483,12 +483,12 @@ namespace ostd
 		return 0;
 	}
 
-	uint64_t Timer::end(bool print)
+	u64 Timer::end(bool print)
 	{
 		if (!m_started) return 0;
 		m_started = false;
 		m_dest = nullptr;
-		int64_t diff;
+		i64 diff;
 		String unit;
 		switch (m_timeUnit)
 		{
@@ -537,11 +537,11 @@ namespace ostd
 		return diff;
 	}
 
-	uint64_t Timer::endCount(bool stop)
+	u64 Timer::endCount(bool stop)
 	{
 		if (!m_started) return 0;
 		m_started = !stop;
-		int64_t diff;
+		i64 diff;
 		switch (m_timeUnit)
 		{
 			case eTimeUnits::Nanoseconds:
@@ -562,19 +562,19 @@ namespace ostd
 		return diff;
 	}
 
-	uint64_t Timer::restart(eTimeUnits timeUnit)
+	u64 Timer::restart(eTimeUnits timeUnit)
 	{
 		if (!m_started)
 		{
 			startCount(timeUnit);
 			return 0;
 		}
-		uint64_t elapsed = endCount();
+		u64 elapsed = endCount();
 		startCount(timeUnit);
 		return elapsed;
 	}
 
-	uint64_t Timer::getEpoch(eTimeUnits timeUnit)
+	u64 Timer::getEpoch(eTimeUnits timeUnit)
 	{
 		switch (timeUnit)
 		{
@@ -597,7 +597,7 @@ namespace ostd
 
 
 
-	StepTimer& StepTimer::create(double updatesPerSecond, StepTimer::Callback callback)
+	StepTimer& StepTimer::create(f64 updatesPerSecond, StepTimer::Callback callback)
 	{
 	    m_targetDt = 1.0 / updatesPerSecond;
 	    m_callback = std::move(callback);
@@ -616,10 +616,10 @@ namespace ostd
 		m_prevTime = currentTime;
 
 		// Convert to seconds
-		double frameTime = std::chrono::duration<double>(frameDuration).count();
+		f64 frameTime = std::chrono::duration<f64>(frameDuration).count();
 
 		// Clamp to prevent spiral of death (5 FPS minimum)
-		constexpr double MAX_FRAME_TIME = 0.2;
+		constexpr f64 MAX_FRAME_TIME = 0.2;
 		if (frameTime > MAX_FRAME_TIME)
 			frameTime = MAX_FRAME_TIME;
 
@@ -649,7 +649,7 @@ namespace ostd
 		s_startTime_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 	}
 
-	void Time::sleep(uint32_t __time, eTimeUnits __unit)
+	void Time::sleep(u32 __time, eTimeUnits __unit)
 	{
 		switch (__unit)
 		{
@@ -669,16 +669,16 @@ namespace ostd
 		}
 	}
 
-	uint64_t Time::getRunningTime_ms(void)
+	u64 Time::getRunningTime_ms(void)
 	{
 		return std::chrono::duration_cast<std::chrono::milliseconds> (std::chrono::system_clock::now().time_since_epoch()).count() - s_startTime_ms;
 	}
 
-	String Time::secondsToFormattedString(int32_t totalSeconds)
+	String Time::secondsToFormattedString(i32 totalSeconds)
 	{
-			int32_t hours   = totalSeconds / 3600;
-			int32_t minutes = (totalSeconds % 3600) / 60;
-			int32_t seconds = totalSeconds % 60;
+			i32 hours   = totalSeconds / 3600;
+			i32 minutes = (totalSeconds % 3600) / 60;
+			i32 seconds = totalSeconds % 60;
 			String fmtstr = "";
 			fmtstr.add(String("").add(hours).addLeftPadding(2, '0')).add(":");
 			fmtstr.add(String("").add(minutes).addLeftPadding(2, '0')).add(":");

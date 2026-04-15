@@ -32,7 +32,7 @@ namespace ostd
 	class Memory
 	{
 		public:
-			static void printByteStream(const ByteStream& data, StreamIndex start, uint8_t line_len, uint16_t n_rows, OutputHandlerBase& out, int32_t addrHighlight = -1, uint32_t highlightRange = 1, const String& title = "");
+			static void printByteStream(const ByteStream& data, StreamIndex start, u8 line_len, u16 n_rows, OutputHandlerBase& out, i32 addrHighlight = -1, u32 highlightRange = 1, const String& title = "");
 			static bool saveByteStreamToFile(const ByteStream& stream, const String& filePath);
 			static bool loadByteStreamFromFile(const String& filePath, ByteStream& outStream);
 			static ByteStream stringToByteStream(const String& data);

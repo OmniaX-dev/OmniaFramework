@@ -30,7 +30,6 @@
 #else
 	#include <conio.h>
 #endif
-#include <vector>
 
 namespace ostd
 {
@@ -38,11 +37,11 @@ namespace ostd
 	{
 		public:
 			static void clearConsole(void);
-			static void getConsoleSize(int32_t& outColumns, int32_t& outRows);
-			static void setConsoleCursorPosition(int32_t x, int32_t y);
+			static void getConsoleSize(i32& outColumns, i32& outRows);
+			static void setConsoleCursorPosition(i32 x, i32 y);
 			static IPoint getConsoleCursorPosition(void);
-			static int32_t getConsoleWidth(void);
-			static int32_t getConsoleHeight(void);
+			static i32 getConsoleWidth(void);
+			static i32 getConsoleHeight(void);
 	};
 
 	class InteractiveConsole : public OutputHandlerBase
@@ -69,16 +68,16 @@ namespace ostd
 			OutputHandlerBase& pObject(const BaseObject& bo) override;
 
 			OutputHandlerBase& p(const String& se) override;
-			OutputHandlerBase& p(uint8_t i) override;
-			OutputHandlerBase& p(int8_t i) override;
-			OutputHandlerBase& p(uint16_t i) override;
-			OutputHandlerBase& p(int16_t i) override;
-			OutputHandlerBase& p(uint32_t i) override;
-			OutputHandlerBase& p(int32_t i) override;
-			OutputHandlerBase& p(uint64_t i) override;
-			OutputHandlerBase& p(int64_t i) override;
-			OutputHandlerBase& p(float f, uint8_t precision = 0) override;
-			OutputHandlerBase& p(double f, uint8_t precision = 0) override;
+			OutputHandlerBase& p(u8 i) override;
+			OutputHandlerBase& p(i8 i) override;
+			OutputHandlerBase& p(u16 i) override;
+			OutputHandlerBase& p(i16 i) override;
+			OutputHandlerBase& p(u32 i) override;
+			OutputHandlerBase& p(i32 i) override;
+			OutputHandlerBase& p(u64 i) override;
+			OutputHandlerBase& p(i64 i) override;
+			OutputHandlerBase& p(f32 f, u8 precision = 0) override;
+			OutputHandlerBase& p(f64 f, u8 precision = 0) override;
 
 			OutputHandlerBase& nl(void) override;
 			OutputHandlerBase& flush(void) override;
@@ -86,17 +85,17 @@ namespace ostd
 			OutputHandlerBase& clear(void) override;
 
 			inline OutputHandlerBase& xy(IPoint position) override { m_cursorPosition = position; __set_cursor(); return *this; }
-			inline OutputHandlerBase& xy(int32_t x, int32_t y) override { m_cursorPosition = { x, y }; __set_cursor(); return *this; }
-			inline OutputHandlerBase& x(int32_t x) override { m_cursorPosition.x = x; __set_cursor(); return *this; }
-			inline OutputHandlerBase& y(int32_t y) override { m_cursorPosition.y = y; __set_cursor(); return *this; }
+			inline OutputHandlerBase& xy(i32 x, i32 y) override { m_cursorPosition = { x, y }; __set_cursor(); return *this; }
+			inline OutputHandlerBase& x(i32 x) override { m_cursorPosition.x = x; __set_cursor(); return *this; }
+			inline OutputHandlerBase& y(i32 y) override { m_cursorPosition.y = y; __set_cursor(); return *this; }
 
-			void getConsoleSize(int32_t& outColumns, int32_t& outRows) override;
+			void getConsoleSize(i32& outColumns, i32& outRows) override;
 			IPoint getConsoleSize(void) override;
 
 			inline IPoint getCursorPosition(void) override { return m_cursorPosition; }
-			inline void getCursorPosition(int32_t& outX, int32_t& outY) override { outX = m_cursorPosition.x; outY = m_cursorPosition.y; }
-			inline int32_t getCursorX(void) override { return m_cursorPosition.x; }
-			inline int32_t getCursorY(void) override { return m_cursorPosition.y; }
+			inline void getCursorPosition(i32& outX, i32& outY) override { outX = m_cursorPosition.x; outY = m_cursorPosition.y; }
+			inline i32 getCursorX(void) override { return m_cursorPosition.x; }
+			inline i32 getCursorY(void) override { return m_cursorPosition.y; }
 
 			//InteractiveConsole
 			inline void enableDirectMode(void) { m_mode = eMode::Direct; }
@@ -117,8 +116,8 @@ namespace ostd
 			IPoint m_cursorPosition { 0, 0 };
 			IPoint m_oldConsoleSize { 0, 0 };
 			eMode m_mode { eMode::Direct };
-			std::vector<tRichChar> m_buffer;
-			std::vector<tRichChar> m_secondBuffer;
+			stdvec<tRichChar> m_buffer;
+			stdvec<tRichChar> m_secondBuffer;
 			bool m_validBuffer { false };
 
 			tRichChar m_emptyChar {
@@ -202,17 +201,17 @@ namespace ostd
 			String flushKeyBuffer(void);
 
 #ifndef WINDOWS_OS
-			int kbhit(void);
-			int getch(void);
+			i32 kbhit(void);
+			i32 getch(void);
 #endif
 
 
 		private:
 #ifndef WINDOWS_OS
 			struct termios initial_settings, new_settings;
-			int peek_character;
+			i32 peek_character;
 #endif
-			std::vector<eKeys> m_key_buff;
+			stdvec<eKeys> m_key_buff;
 			String m_cmd;
 			bool m_output_enabled;
 			bool m_cmd_buffer_enabled;

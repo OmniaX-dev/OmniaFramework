@@ -7,7 +7,7 @@ namespace ostd
 {
 	OutputHandlerBase* Logger::m_out = new ConsoleOutputHandler;
 
-	void Logger::__log_output(uint8_t log_level, String message, ...)
+	void Logger::__log_output(u8 log_level, String message, ...)
 	{
 		String level_str[6] = { "[  FATAL  ]: ", "[  ERROR  ]: ", "[ WARNING ]: ", "[  INFO   ]: ", "[  DEBUG  ]: ", "[  TRACE  ]: " };
 

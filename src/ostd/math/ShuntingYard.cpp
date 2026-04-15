@@ -1,7 +1,7 @@
 #include "MathUtils.hpp"
 #include "../string/String.hpp"
 #include <string>
-#include <vector>
+
 #include <deque>
 #include <stdio.h>
 #include <math.h>
@@ -25,7 +25,7 @@ namespace ostd
 
         Token(Type type,
             const std::string& s,
-            int precedence = -1,
+            i32 precedence = -1,
             bool rightAssociative = false,
             bool unary = false
         )
@@ -38,7 +38,7 @@ namespace ostd
 
         const Type type;
         const std::string str;
-        const int precedence;
+        const i32 precedence;
         const bool rightAssociative;
         const bool unary;
     };
@@ -95,13 +95,13 @@ namespace ostd
                     exit(0);
                     return {};
                 }
-                int64_t tmpInt = String(s).toInt();
+                i64 tmpInt = String(s).toInt();
                 //-------------------------------------------------
                 tokens.push_back(Token { Token::Type::Number, String().add(tmpInt) });
                 --p;
             } else {
                 Token::Type t = Token::Type::Unknown;
-                int precedence = -1;
+                i32 precedence = -1;
                 bool rightAssociative = false;
                 bool unary = false;
                 char c = *p;
@@ -145,7 +145,7 @@ namespace ostd
 
     std::deque<Token> shuntingYard(const std::deque<Token>& tokens) {
         std::deque<Token> queue;
-        std::vector<Token> stack;
+        stdvec<Token> stack;
 
         // While there are tokens to be read:
         for(auto token : tokens) {
@@ -253,15 +253,15 @@ namespace ostd
         return queue;
     }
 
-    int32_t MathUtils::solveIntegerExpression(const String& expr)
+    i32 MathUtils::solveIntegerExpression(const String& expr)
     {
         // printf("Tokenize\n");
         // printf(reportFmt, "Token", "Queue", "Stack", "");
         const auto tokens = exprToTokens(expr);
         auto queue = shuntingYard(tokens);
-        std::vector<int> stack;
+        stdvec<i32> stack;
 
-        // printf("\nCalculation\n");
+        // pri32f("\nCalculation\n");
         // printf(reportFmt, "Token", "Queue", "Stack", "");
 
         while(! queue.empty()) {
@@ -304,7 +304,7 @@ namespace ostd
                             exit(0);
                             break;
                         case '^':
-                            stack.push_back(static_cast<int>(pow(lhs, rhs)));
+                            stack.push_back(cast<i32>(pow(lhs, rhs)));
                             break;
                         case '*':
                             stack.push_back(lhs * rhs);

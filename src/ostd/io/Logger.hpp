@@ -26,19 +26,19 @@ namespace ostd
 {
 	struct tLogLevel
 	{
-		inline static const uint8_t Fatal = 0;
-		inline static const uint8_t Error = 1;
-		inline static const uint8_t Warning = 2;
-		inline static const uint8_t Info = 3;
-		inline static const uint8_t Debug = 4;
-		inline static const uint8_t Trace = 5;
+		inline static const u8 Fatal = 0;
+		inline static const u8 Error = 1;
+		inline static const u8 Warning = 2;
+		inline static const u8 Info = 3;
+		inline static const u8 Debug = 4;
+		inline static const u8 Trace = 5;
 	};
 
 	class OutputHandlerBase;
 	class Logger
 	{
 		public:
-			static void __log_output(uint8_t log_level, String message, ...);
+			static void __log_output(u8 log_level, String message, ...);
 			static void setOutputHandler(OutputHandlerBase& __destination);
 			static void destroy(void);
 			static inline OutputHandlerBase& getOutputHandler(void) { return *m_out; }

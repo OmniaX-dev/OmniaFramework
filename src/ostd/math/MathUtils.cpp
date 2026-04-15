@@ -23,9 +23,9 @@
 
 namespace ostd
 {
-	float MathUtils::map_value(float input, float input_start, float input_end, float output_start, float output_end)
+	f32 MathUtils::map_value(f32 input, f32 input_start, f32 input_end, f32 output_start, f32 output_end)
 	{
-		float slope = 1.0 * (output_end - output_start) / (input_end - input_start);
+		f32 slope = 1.0 * (output_end - output_start) / (input_end - input_start);
 		return output_start + round(slope * (input - input_start));
 	}
 }

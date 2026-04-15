@@ -30,8 +30,8 @@ namespace ostd
 			static String md5(const String& str);
 
 		private:
-			static void __md5_transform(const uint8_t block[64], uint32_t state[4]);
-			static void __md5_encode(uint8_t* output, const uint32_t* input, size_t len);
-			static void __md5_decode(uint32_t* output, const uint8_t* input, size_t len);
+			static void __md5_transform(const u8 block[64], u32 state[4]);
+			static void __md5_encode(u8* output, const u32* input, size_t len);
+			static void __md5_decode(u32* output, const u8* input, size_t len);
 	};
 }

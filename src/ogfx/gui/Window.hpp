@@ -34,44 +34,44 @@ namespace ogfx
 {
 	class WindowCore : public ostd::BaseObject
 	{
-		public: enum class eCursor : uint8_t
+		public: enum class eCursor : u8
 		{
-		    Default = 0,
-		    Text,
-		    Wait,
-		    Crosshair,
-		    Progress,
-		    NWSE_Resize,
-		    NESW_Resize,
-		    EW_Resize,
-		    NS_Resize,
-		    Move,
-		    NotAllowed,
-		    Pointer,
-		    NW_Resize,
-		    N_Resize,
-		    NE_Resize,
-		    E_Resize,
-		    SE_Resize,
-		    S_Resize,
-		    SW_Resize,
-		    W_Resize,
+			Default = 0,
+			Text,
+			Wait,
+			Crosshair,
+			Progress,
+			NWSE_Resize,
+			NESW_Resize,
+			EW_Resize,
+			NS_Resize,
+			Move,
+			NotAllowed,
+			Pointer,
+			NW_Resize,
+			N_Resize,
+			NE_Resize,
+			E_Resize,
+			SE_Resize,
+			S_Resize,
+			SW_Resize,
+			W_Resize,
 
-		    Count
+			Count
 		};
 		public:
 			inline WindowCore(void) {  }
 			virtual ~WindowCore(void);
-			inline WindowCore(int32_t width, int32_t height, const ostd::String& title) { initialize(width, height, title); }
-			void initialize(int32_t width, int32_t height, const ostd::String& title);
+			inline WindowCore(i32 width, i32 height, const String& title) { initialize(width, height, title); }
+			void initialize(i32 width, i32 height, const String& title);
 			void mainLoop(void);
 			void close(void);
-			void setSize(int32_t width, int32_t height);
-			void setTitle(const ostd::String& title);
+			void setSize(i32 width, i32 height);
+			void setTitle(const String& title);
 			void setCursor(eCursor cursor);
 			void enableResizable(bool enable = true);
-			void setIcon(const ostd::String& iconFilePath);
-			void setBlockingEventsRefreshFPS(uint32_t fps);
+			void setIcon(const String& iconFilePath);
+			void setBlockingEventsRefreshFPS(u32 fps);
 			void requestRedraw(void);
 			void handleSignal(ostd::Signal& signal) override;
 
@@ -86,9 +86,9 @@ namespace ogfx
 			inline bool isResizeable(void) const { return m_resizeable; }
 			inline void hide(void) { SDL_HideWindow(m_window); m_visible = false; }
 			inline void show(void) { SDL_ShowWindow(m_window); m_visible = true; }
-			inline ostd::String getTitle(void) const { return m_title; }
-			inline int32_t getWindowWidth(void) const { return m_windowWidth; }
-			inline int32_t getWindowHeight(void) const { return m_windowHeight; }
+			inline String getTitle(void) const { return m_title; }
+			inline i32 getWindowWidth(void) const { return m_windowWidth; }
+			inline i32 getWindowHeight(void) const { return m_windowHeight; }
 			inline ostd::Color getClearColor(void) const { return m_clearColor; }
 			inline void setClearColor(const ostd::Color& color) { m_clearColor = color; }
 			inline SDL_Renderer* getSDLRenderer(void) { return m_renderer; }
@@ -103,10 +103,12 @@ namespace ogfx
 			virtual void before_render(void);
 			virtual void after_render(void);
 			inline virtual void __on_event(SDL_Event& event) {  }
-			inline virtual void __on_window_init(int32_t width, int32_t height, const ostd::String& title) {  }
+			inline virtual void __on_window_init(i32 width, i32 height, const String& title) {  }
 			inline virtual void __on_window_destroy(void) {  }
 			inline virtual void __on_window_close(void) {  }
 			inline virtual void __on_signal(ostd::Signal& signal) {  }
+			inline virtual void __on_update(f64 delta) {  }
+			inline virtual void __on_fixed_update(void) {  }
 			inline virtual void __main_loop(void) = 0;
 
 		private:
@@ -123,10 +125,10 @@ namespace ogfx
 		private:
 			ostd::Color m_clearColor { 10, 10, 10, 255 };
 
-			int32_t m_windowWidth { 0 };
-			int32_t m_windowHeight { 0 };
-			ostd::String m_title { "" };
-			int32_t m_blockingEventsDelay { 33 };
+			i32 m_windowWidth { 0 };
+			i32 m_windowHeight { 0 };
+			String m_title { "" };
+			i32 m_blockingEventsDelay { 33 };
 
 			bool m_running { false };
 			bool m_initialized { false };
@@ -157,33 +159,33 @@ namespace ogfx
 			SDL_Cursor* m_cursor_W_Resize     { nullptr };
 
 		public:
-			inline static constexpr int32_t MaxBlockingEventsFPS { 240 };
-			inline static constexpr int32_t DefaultBlockingEventsFPS { 30 };
+			inline static constexpr i32 MaxBlockingEventsFPS { 240 };
+			inline static constexpr i32 DefaultBlockingEventsFPS { 30 };
 
 		private:
 			inline static ostd::Stylesheet DefaultTheme;
-			std::unordered_map<ostd::String, std::pair<ostd::String, bool>> m_defaultStylesheetVariables;
+			stdumap<String, std::pair<String, bool>> m_defaultStylesheetVariables;
 
 	};
 	class GraphicsWindow : public WindowCore
 	{
 		public:
 			inline GraphicsWindow(void) {  }
-			inline GraphicsWindow(int32_t width, int32_t height, const ostd::String& title) { initialize(width, height, title); }
+			inline GraphicsWindow(i32 width, i32 height, const String& title) { initialize(width, height, title); }
 
 			inline virtual void onRender(void) {  }
 			inline virtual void onUpdate(void) {  }
-			inline virtual void onFixedUpdate(double frameTime_s) {  }
+			inline virtual void onFixedUpdate(f64 frameTime_s) {  }
 			inline virtual void onInitialize(void) {  }
 			inline virtual void onDestroy(void) {  }
 			inline virtual void onClose(void) { }
 			inline virtual void onSDLEvent(SDL_Event& event) { }
 			inline virtual void onSignal(ostd::Signal& signal) {  }
 
-			inline int32_t getFPS(void) const { return m_fps; }
+			inline i32 getFPS(void) const { return m_fps; }
 
 		protected:
-			void __on_window_init(int32_t width, int32_t height, const ostd::String& title) override;
+			void __on_window_init(i32 width, i32 height, const String& title) override;
 			void __on_event(SDL_Event& event) override;
 			void __on_window_destroy(void) override;
 			void __on_window_close(void) override;
@@ -191,12 +193,12 @@ namespace ogfx
 			void __on_signal(ostd::Signal& signal) override;
 
 		private:
-			int32_t m_fps { 0 };
+			i32 m_fps { 0 };
 			ostd::StepTimer m_fixedUpdateTImer;
 			ostd::StepTimer m_fpsUpdateTimer;
 			ostd::Timer m_fpsUpdateClock;
-			uint64_t m_frameTimeAcc { 0 };
-			int32_t m_frameCount { 0 };
+			u64 m_frameTimeAcc { 0 };
+			i32 m_frameCount { 0 };
 	};
 	namespace gui
 	{
@@ -204,7 +206,7 @@ namespace ogfx
 		{
 			public:
 				inline Window(void) {  }
-				inline Window(int32_t width, int32_t height, const ostd::String& title) { initialize(width, height, title); }
+				inline Window(i32 width, i32 height, const String& title) { initialize(width, height, title); }
 				void addWidget(Widget& widget);
 				void setTheme(const ostd::Stylesheet& theme) override;
 
@@ -213,20 +215,25 @@ namespace ogfx
 				inline virtual void onClose(void) {  }
 				inline virtual void onSDLEvent(SDL_Event& event) {  }
 				inline virtual void onRedraw(BasicRenderer2D& gfx) {  }
-				inline virtual void onUpdate(double delta) {  }
+				inline virtual void onUpdate(f64 delta) {  }
+				inline virtual void onFixedUpdate(void) {  }
 				inline virtual void onSignal(ostd::Signal& signal) {  }
 
 			protected:
-				void __on_window_init(int32_t width, int32_t height, const ostd::String& title) override;
+				void __on_window_init(i32 width, i32 height, const String& title) override;
 				void __on_event(SDL_Event& event) override;
 				void __on_window_destroy(void) override;
 				void __on_window_close(void) override;
 				void __main_loop(void) override;
 				void __on_signal(ostd::Signal& signal) override;
+				void __on_update(f64 delta) override;
+				void __on_fixed_update(void) override;
 
 			protected:
 				BasicRenderer2D m_gfx;
 				widgets::RootWidget m_rootWidget { *this };
+				ostd::StepTimer m_fixedUpdateTimer;
+				ostd::StepTimer::TimePoint m_lastFrameTime;
 		};
 	}
 }

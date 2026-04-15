@@ -31,7 +31,7 @@ void BasicConsole::clearConsole(void)
 	SetConsoleCursorPosition( hStdOut, homeCoords );
 }
 
-void BasicConsole::getConsoleSize(int32_t& outColumns, int32_t& outRows)
+void BasicConsole::getConsoleSize(i32& outColumns, i32& outRows)
 {
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
@@ -39,7 +39,7 @@ void BasicConsole::getConsoleSize(int32_t& outColumns, int32_t& outRows)
 	outRows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 }
 
-void BasicConsole::setConsoleCursorPosition(int32_t x, int32_t y)
+void BasicConsole::setConsoleCursorPosition(i32 x, i32 y)
 {
    COORD coord;
    coord.X = x; coord.Y = y;
@@ -63,7 +63,7 @@ void BasicConsole::clearConsole(void)
 {
 	if (!cur_term)
 	{
-		int result;
+		i32 result;
 		setupterm(NULL, STDOUT_FILENO, &result);
 		if (result <= 0) return;
 	}
@@ -71,7 +71,7 @@ void BasicConsole::clearConsole(void)
 	putp(tigetstr( "clear" ));
 }
 
-void BasicConsole::getConsoleSize(int32_t& outColumns, int32_t& outRows)
+void BasicConsole::getConsoleSize(i32& outColumns, i32& outRows)
 {
 	struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
@@ -79,7 +79,7 @@ void BasicConsole::getConsoleSize(int32_t& outColumns, int32_t& outRows)
 	outColumns = w.ws_col;
 }
 
-void BasicConsole::setConsoleCursorPosition(int32_t x, int32_t y)
+void BasicConsole::setConsoleCursorPosition(i32 x, i32 y)
 {
    printf("\033[%d;%dH",y+1,x+1);
 }
@@ -100,7 +100,7 @@ IPoint BasicConsole::getConsoleCursorPosition(void)
     std::fflush(stdout);
 
     // Read response: ESC [ row ; col R
-    int row = 0, col = 0;
+    i32 row = 0, col = 0;
     if (std::scanf("\033[%d;%dR", &row, &col) != 2) {
         // Failed to parse
         row = col = -1;
@@ -126,7 +126,7 @@ void BasicConsole::clearConsole(void)
     std::fflush(stdout);
 }
 
-void BasicConsole::getConsoleSize(int32_t& outColumns, int32_t& outRows)
+void BasicConsole::getConsoleSize(i32& outColumns, i32& outRows)
 {
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
@@ -134,7 +134,7 @@ void BasicConsole::getConsoleSize(int32_t& outColumns, int32_t& outRows)
     outColumns = w.ws_col;
 }
 
-void BasicConsole::setConsoleCursorPosition(int32_t x, int32_t y)
+void BasicConsole::setConsoleCursorPosition(i32 x, i32 y)
 {
     // ANSI escape sequence: move cursor to (y+1, x+1)
     std::printf("\033[%d;%dH", y + 1, x + 1);
@@ -157,7 +157,7 @@ IPoint BasicConsole::getConsoleCursorPosition(void)
     std::fflush(stdout);
 
     // Read response: ESC [ row ; col R
-    int row = 0, col = 0;
+    i32 row = 0, col = 0;
     if (std::scanf("\033[%d;%dR", &row, &col) != 2) {
         // Failed to parse
         row = col = -1;
@@ -173,16 +173,16 @@ IPoint BasicConsole::getConsoleCursorPosition(void)
 #endif
 
 
-int32_t BasicConsole::getConsoleWidth(void)
+i32 BasicConsole::getConsoleWidth(void)
 {
-	int32_t rows = 0, cols = 0;
+	i32 rows = 0, cols = 0;
 	getConsoleSize(cols, rows);
 	return cols;
 }
 
-int32_t BasicConsole::getConsoleHeight(void)
+i32 BasicConsole::getConsoleHeight(void)
 {
-	int32_t rows = 0, cols = 0;
+	i32 rows = 0, cols = 0;
 	getConsoleSize(rows, cols);
 	return rows;
 }
@@ -263,55 +263,55 @@ OutputHandlerBase& InteractiveConsole::p(const String& se)
 	return *this;
 }
 
-OutputHandlerBase& InteractiveConsole::p(uint8_t i)
+OutputHandlerBase& InteractiveConsole::p(u8 i)
 {
-	std::cout << (uint8_t)i;
+	std::cout << (u8)i;
 	return *this;
 }
 
-OutputHandlerBase& InteractiveConsole::p(int8_t i)
+OutputHandlerBase& InteractiveConsole::p(i8 i)
 {
-	std::cout << (int8_t)i;
+	std::cout << (i8)i;
 	return *this;
 }
 
-OutputHandlerBase& InteractiveConsole::p(uint16_t i)
+OutputHandlerBase& InteractiveConsole::p(u16 i)
 {
-	std::cout << (uint16_t)i;
+	std::cout << (u16)i;
 	return *this;
 }
 
-OutputHandlerBase& InteractiveConsole::p(int16_t i)
+OutputHandlerBase& InteractiveConsole::p(i16 i)
 {
-	std::cout << (int16_t)i;
+	std::cout << (i16)i;
 	return *this;
 }
 
-OutputHandlerBase& InteractiveConsole::p(uint32_t i)
+OutputHandlerBase& InteractiveConsole::p(u32 i)
 {
-	std::cout << (uint32_t)i;
+	std::cout << (u32)i;
 	return *this;
 }
 
-OutputHandlerBase& InteractiveConsole::p(int32_t i)
+OutputHandlerBase& InteractiveConsole::p(i32 i)
 {
-	std::cout << (int32_t)i;
+	std::cout << (i32)i;
 	return *this;
 }
 
-OutputHandlerBase& InteractiveConsole::p(uint64_t i)
+OutputHandlerBase& InteractiveConsole::p(u64 i)
 {
-	std::cout << (uint64_t)i;
+	std::cout << (u64)i;
 	return *this;
 }
 
-OutputHandlerBase& InteractiveConsole::p(int64_t i)
+OutputHandlerBase& InteractiveConsole::p(i64 i)
 {
-	std::cout << (int64_t)i;
+	std::cout << (i64)i;
 	return *this;
 }
 
-OutputHandlerBase& InteractiveConsole::p(float f, uint8_t precision)
+OutputHandlerBase& InteractiveConsole::p(f32 f, u8 precision)
 {
 	if (precision == 0)
 	{
@@ -326,7 +326,7 @@ OutputHandlerBase& InteractiveConsole::p(float f, uint8_t precision)
 	return *this;
 }
 
-OutputHandlerBase& InteractiveConsole::p(double f, uint8_t precision)
+OutputHandlerBase& InteractiveConsole::p(f64 f, u8 precision)
 {
 	if (precision == 0)
 	{
@@ -365,14 +365,14 @@ OutputHandlerBase& InteractiveConsole::clear(void)
 	return *this;
 }
 
-void InteractiveConsole::getConsoleSize(int32_t& outColumns, int32_t& outRows)
+void InteractiveConsole::getConsoleSize(i32& outColumns, i32& outRows)
 {
 	BasicConsole::getConsoleSize(outColumns, outRows);
 }
 
 IPoint InteractiveConsole::getConsoleSize(void)
 {
-	int32_t x = 0, y = 0;
+	i32 x = 0, y = 0;
 	BasicConsole::getConsoleSize(x, y);
 	return { x, y };
 }
@@ -397,7 +397,7 @@ void InteractiveConsole::__construct_buffer(void)
 		return;
 	}
 	m_oldConsoleSize = console_size;
-	int32_t linear_size = m_oldConsoleSize.x * m_oldConsoleSize.y;
+	i32 linear_size = m_oldConsoleSize.x * m_oldConsoleSize.y;
 	m_buffer.resize(linear_size);
 	m_secondBuffer.resize(linear_size);
 	m_validBuffer = false;
@@ -414,7 +414,7 @@ void InteractiveConsole::__swap_buffers(void)
 void InteractiveConsole::__validate_and_clear_buffers(void)
 {
 	if (m_validBuffer) return;
-	for (int32_t i = 0; i < m_buffer.size(); i++)
+	for (i32 i = 0; i < m_buffer.size(); i++)
 		m_buffer[i] = m_secondBuffer[i] = m_emptyChar;
 	m_validBuffer = true;
 }

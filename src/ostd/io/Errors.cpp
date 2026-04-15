@@ -4,7 +4,7 @@
 
 namespace ostd
 {
-	RuntimeError& RuntimeError::create(uint8_t group, uint64_t code, uint8_t level, const String &msg)
+	RuntimeError& RuntimeError::create(u8 group, u64 code, u8 level, const String &msg)
 	{
 		m_errGroup = group;
 		m_errCode = code;
@@ -15,7 +15,7 @@ namespace ostd
 		return *this;
 	}
 
-	void RuntimeError::fire(const String& extraMessage, OutputHandlerBase* outputHandler, BaseObject& userData, int32_t _line_num, const String& _file_name)
+	void RuntimeError::fire(const String& extraMessage, OutputHandlerBase* outputHandler, BaseObject& userData, i32 _line_num, const String& _file_name)
 	{
 		if (isInvalid() || m_errGroup == 0x0 || m_errLevel == tErrorLevel::NoError || m_errCode == 0x0) return;
 		String errorMessage = m_message + "\n";

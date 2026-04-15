@@ -55,7 +55,7 @@ namespace ostd
 
 	OutputHandlerBase& ConsoleOutputHandler::bg(const Color& color)
 	{
-		std::cout << "\033[48;2;" << (int)color.r << ";" << (int)color.g << ";" << (int)color.b << "m";
+		std::cout << "\033[48;2;" << (i32)color.r << ";" << (i32)color.g << ";" << (i32)color.b << "m";
 		return *this;
 	}
 
@@ -73,7 +73,7 @@ namespace ostd
 
 	OutputHandlerBase& ConsoleOutputHandler::fg(const Color& color)
 	{
-		std::cout << "\033[38;2;" << (int)color.r << ";" << (int)color.g << ";" << (int)color.b << "m";
+		std::cout << "\033[38;2;" << (i32)color.r << ";" << (i32)color.g << ";" << (i32)color.b << "m";
 		return *this;
 	}
 
@@ -124,55 +124,55 @@ namespace ostd
 		return *this;
 	}
 
-	OutputHandlerBase& ConsoleOutputHandler::p(uint8_t i)
+	OutputHandlerBase& ConsoleOutputHandler::p(u8 i)
 	{
-		std::cout << (uint8_t)i;
+		std::cout << (u8)i;
 		return *this;
 	}
 
-	OutputHandlerBase& ConsoleOutputHandler::p(int8_t i)
+	OutputHandlerBase& ConsoleOutputHandler::p(i8 i)
 	{
-		std::cout << (int8_t)i;
+		std::cout << (i8)i;
 		return *this;
 	}
 
-	OutputHandlerBase& ConsoleOutputHandler::p(uint16_t i)
+	OutputHandlerBase& ConsoleOutputHandler::p(u16 i)
 	{
-		std::cout << (uint16_t)i;
+		std::cout << (u16)i;
 		return *this;
 	}
 
-	OutputHandlerBase& ConsoleOutputHandler::p(int16_t i)
+	OutputHandlerBase& ConsoleOutputHandler::p(i16 i)
 	{
-		std::cout << (int16_t)i;
+		std::cout << (i16)i;
 		return *this;
 	}
 
-	OutputHandlerBase& ConsoleOutputHandler::p(uint32_t i)
+	OutputHandlerBase& ConsoleOutputHandler::p(u32 i)
 	{
-		std::cout << (uint32_t)i;
+		std::cout << (u32)i;
 		return *this;
 	}
 
-	OutputHandlerBase& ConsoleOutputHandler::p(int32_t i)
+	OutputHandlerBase& ConsoleOutputHandler::p(i32 i)
 	{
-		std::cout << (int32_t)i;
+		std::cout << (i32)i;
 		return *this;
 	}
 
-	OutputHandlerBase& ConsoleOutputHandler::p(uint64_t i)
+	OutputHandlerBase& ConsoleOutputHandler::p(u64 i)
 	{
-		std::cout << (uint64_t)i;
+		std::cout << (u64)i;
 		return *this;
 	}
 
-	OutputHandlerBase& ConsoleOutputHandler::p(int64_t i)
+	OutputHandlerBase& ConsoleOutputHandler::p(i64 i)
 	{
-		std::cout << (int64_t)i;
+		std::cout << (i64)i;
 		return *this;
 	}
 
-	OutputHandlerBase& ConsoleOutputHandler::p(float f, uint8_t precision)
+	OutputHandlerBase& ConsoleOutputHandler::p(f32 f, u8 precision)
 	{
 		if (precision == 0)
 		{
@@ -187,7 +187,7 @@ namespace ostd
 		return *this;
 	}
 
-	OutputHandlerBase& ConsoleOutputHandler::p(double f, uint8_t precision)
+	OutputHandlerBase& ConsoleOutputHandler::p(f64 f, u8 precision)
 	{
 		if (precision == 0)
 		{
@@ -232,21 +232,21 @@ namespace ostd
 		return *this;
 	}
 
-	OutputHandlerBase& ConsoleOutputHandler::xy(int32_t x, int32_t y)
+	OutputHandlerBase& ConsoleOutputHandler::xy(i32 x, i32 y)
 	{
 		BasicConsole::setConsoleCursorPosition(x, y);
 		return *this;
 	}
 
-	OutputHandlerBase& ConsoleOutputHandler::x(int32_t x)
+	OutputHandlerBase& ConsoleOutputHandler::x(i32 x)
 	{
-		int32_t y = getCursorPosition().y;
+		i32 y = getCursorPosition().y;
 		return xy(x, y);
 	}
 
-	OutputHandlerBase& ConsoleOutputHandler::y(int32_t y)
+	OutputHandlerBase& ConsoleOutputHandler::y(i32 y)
 	{
-		int32_t x = getCursorPosition().x;
+		i32 x = getCursorPosition().x;
 		return xy(x, y);
 	}
 
@@ -255,26 +255,26 @@ namespace ostd
 		return BasicConsole::getConsoleCursorPosition();
 	}
 
-	void ConsoleOutputHandler::getCursorPosition(int32_t& outX, int32_t& outY)
+	void ConsoleOutputHandler::getCursorPosition(i32& outX, i32& outY)
 	{
 		auto pos = BasicConsole::getConsoleCursorPosition();;
 		outX = pos.x;
 		outY = pos.y;
 	}
 
-	int32_t ConsoleOutputHandler::getCursorX(void)
+	i32 ConsoleOutputHandler::getCursorX(void)
 	{
 		auto pos = BasicConsole::getConsoleCursorPosition();;
 		return pos.x;
 	}
 
-	int32_t ConsoleOutputHandler::getCursorY(void)
+	i32 ConsoleOutputHandler::getCursorY(void)
 	{
 		auto pos = BasicConsole::getConsoleCursorPosition();;
 		return pos.y;
 	}
 
-	void ConsoleOutputHandler::getConsoleSize(int32_t& outColumns, int32_t& outRows)
+	void ConsoleOutputHandler::getConsoleSize(i32& outColumns, i32& outRows)
 	{
 		BasicConsole::getConsoleSize(outColumns, outRows);
 	}

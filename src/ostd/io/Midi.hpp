@@ -29,12 +29,12 @@ namespace ostd
 	    public: class NoteEvent
 	    {
 	        public:
-	            int32_t pitch               { 0 };          // MIDI note number (0-127)
-	            double startTime            { 0.0 };        // Start time in seconds
-	            double endTime              { 0.0 };        // Start time in seconds
-	            double duration             { 0.0 };        // Duration in seconds
-	            int32_t velocity            { 0 };          // Attack velocity (1-127)
-	            int32_t channel             { 0 };          // MIDI channel (0-15)
+	            i32 pitch               { 0 };          // MIDI note number (0-127)
+	            f64 startTime            { 0.0 };        // Start time in seconds
+	            f64 endTime              { 0.0 };        // Start time in seconds
+	            f64 duration             { 0.0 };        // Duration in seconds
+	            i32 velocity            { 0 };          // Attack velocity (1-127)
+	            i32 channel             { 0 };          // MIDI channel (0-15)
 
 	            bool hit { false };
 	            bool rightHand { false };
@@ -48,9 +48,9 @@ namespace ostd
 						return pitch < other.pitch;
 	                return startTime < other.startTime;
 	            }
-	            inline ostd::String toString(void) const
+	            inline String toString(void) const
 	            {
-	                ostd::String str = "Pitch: ";
+	                String str = "Pitch: ";
 	                str.add(pitch);
 	                str.add("\nstartTime: ").add(startTime);
 	                str.add("\nendTime: ").add(endTime);
@@ -64,10 +64,10 @@ namespace ostd
 		public: class NoteInfo
 		{
 	        public:
-	            ostd::String name               { "" };     // e.g., "A", "C#", "F"
-	            int octave                      { 0 };      // e.g., 4 for C4
-	            int noteInOctave                { 0 };      // 0-11
-	            int keyIndex                    { 0 };      // 0-based index for 88-key piano (A0=0), -1 if out of range
+	            String name               { "" };     // e.g., "A", "C#", "F"
+	            i32 octave                      { 0 };      // e.g., 4 for C4
+	            i32 noteInOctave                { 0 };      // 0-11
+	            i32 keyIndex                    { 0 };      // 0-based index for 88-key piano (A0=0), -1 if out of range
 
 	        public:
 	            inline bool isWhiteKey(void) const
@@ -77,9 +77,9 @@ namespace ostd
 	                noteInOctave == 11;
 	            }
 	            inline bool isBlackKey(void) const { return !isWhiteKey(); }
-	            inline ostd::String toString(void) const
+	            inline String toString(void) const
 	            {
-	                ostd::String str = "NOTE INFO: ";
+	                String str = "NOTE INFO: ";
 	                str.add(name).add(octave);
 	                str.add("  -  noteInOctave: ").add(noteInOctave);
 	                str.add("  -  keyIndex: ").add(keyIndex);
@@ -87,19 +87,19 @@ namespace ostd
 	                return str;
 	            }
 
-	            static inline bool isWhiteKey(int32_t noteInOctave)
+	            static inline bool isWhiteKey(i32 noteInOctave)
 	            {
 	                return noteInOctave == 0 || noteInOctave == 2 || noteInOctave == 4 ||
 	                noteInOctave == 5 || noteInOctave == 7 || noteInOctave == 9 ||
 	                noteInOctave == 11;
 	            }
-	            static inline bool isBlackKey(int32_t noteInOctave) { return !NoteInfo::isWhiteKey(noteInOctave); }
+	            static inline bool isBlackKey(i32 noteInOctave) { return !NoteInfo::isWhiteKey(noteInOctave); }
 		};
 
 	    public:
 			// Parses a single-track MIDI file and returns a vector of NoteEvents
-	        static std::vector<NoteEvent> parseFile(const ostd::String& filePath);
+	        static stdvec<NoteEvent> parseFile(const String& filePath);
 			// Convert MIDI pitch to NoteInfo
-			static NoteInfo getNoteInfo(int midiPitch);
+			static NoteInfo getNoteInfo(i32 midiPitch);
 	};
 }

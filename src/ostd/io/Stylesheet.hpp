@@ -20,32 +20,32 @@
 
 #pragma once
 
-#include "string/TextStyleParser.hpp"
+#include <ostd/string/TextStyleParser.hpp>
 #include <ostd/data/Color.hpp>
 #include <ostd/math/Geometry.hpp>
 #include <variant>
-#include <unordered_map>
+
 
 namespace ostd
 {
 	class Stylesheet
 	{
-		public: using QualifierList = std::vector<std::pair<const ostd::String, bool>>;
-		public: using VariableList = std::unordered_map<ostd::String, std::pair<ostd::String, bool>>;
-		public: using TypeVariant = std::variant<int32_t, float, bool, ostd::String, ostd::Color, ostd::Rectangle, ostd::Vec2>;
+		public: using QualifierList = stdvec<std::pair<const String, bool>>;
+		public: using VariableList = stdumap<String, std::pair<String, bool>>;
+		public: using TypeVariant = std::variant<i32, f32, bool, String, ostd::Color, ostd::Rectangle, ostd::Vec2>;
 		public:
 			Stylesheet(void);
 			Stylesheet& clear(void);
-			Stylesheet& loadFromFile(const ostd::String& filePath, bool clearCurrentRules = true, VariableList variables = {});
-			Stylesheet& loadFromString(const ostd::String& content, const ostd::String& filePath = "memory://", bool clearCurrentRules = true, VariableList variables = {});
-			void set(const std::string& key, TypeVariant value, const ostd::String& themeID);
-			void removeRule(const ostd::String& fullKey);
-			void setFull(const ostd::String& fullKey, TypeVariant value);
-			const TypeVariant* getVariant(const ostd::String& key, const std::vector<ostd::String>& themeIDList, const QualifierList& qualifierList) const;
-			const TypeVariant* getFull(const ostd::String& fullKey) const;
+			Stylesheet& loadFromFile(const String& filePath, bool clearCurrentRules = true, VariableList variables = {});
+			Stylesheet& loadFromString(const String& content, const String& filePath = "memory://", bool clearCurrentRules = true, VariableList variables = {});
+			void set(const std::string& key, TypeVariant value, const String& themeID);
+			void removeRule(const String& fullKey);
+			void setFull(const String& fullKey, TypeVariant value);
+			const TypeVariant* getVariant(const String& key, const stdvec<String>& themeIDList, const QualifierList& qualifierList) const;
+			const TypeVariant* getFull(const String& fullKey) const;
 
 			template<typename T>
-			inline T get(const ostd::String& key, const T& fallback, const std::vector<ostd::String>& themeIDList, const QualifierList& qualifierList) const
+			inline T get(const String& key, const T& fallback, const stdvec<String>& themeIDList, const QualifierList& qualifierList) const
 			{
 				if (auto v = getVariant(key, themeIDList, qualifierList))
 				{
@@ -56,16 +56,16 @@ namespace ostd
 			}
 
 			void debugPrint(void);
-			ostd::String typeVariantToString(const TypeVariant& v);
-			std::vector<ostd::RegexRichString> getRichStringLines(const std::vector<ostd::String>& lines);
+			String typeVariantToString(const TypeVariant& v);
+			stdvec<ostd::RegexRichString> getRichStringLines(const stdvec<String>& lines);
 
 		private:
-			bool parseThemeFileLine(const ostd::String& line, const VariableList& variables, bool exitCondition = false);
-			ostd::String parseGroupSelector(const ostd::String& rawSelector) const;
-			std::vector<ostd::String> parseGroup(const ostd::String& selector, const std::vector<ostd::String>& group);
+			bool parseThemeFileLine(const String& line, const VariableList& variables, bool exitCondition = false);
+			String parseGroupSelector(const String& rawSelector) const;
+			stdvec<String> parseGroup(const String& selector, const stdvec<String>& group);
 
 		private:
-			std::unordered_map<ostd::String, TypeVariant> m_values;
-			const ostd::String m_validNameRegex { "^[A-Za-z_][A-Za-z0-9_]*$" };
+			stdumap<String, TypeVariant> m_values;
+			const String m_validNameRegex { "^[A-Za-z_][A-Za-z0-9_]*$" };
 	};
 }
