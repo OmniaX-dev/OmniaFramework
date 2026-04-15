@@ -46,6 +46,7 @@ namespace ogfx
 			{
 				if (w == nullptr) continue;
 				if (w->isInvalid()) continue;
+				if (!w->isVisible()) continue;
 				if (w->m_focused)
 				{
 					w->m_focused = false;
@@ -105,6 +106,7 @@ namespace ogfx
 			{
 				if (w == nullptr) continue;
 				if (w->isInvalid()) continue;
+				if (!w->isVisible()) continue;
 				gfx.pushClippingRect({ w->getGlobalPosition(), w->getSize() }, true);
 				w->__draw(gfx);
 				gfx.popClippingRect();
@@ -138,6 +140,7 @@ namespace ogfx
 				Widget* w = m_widgetList[i];
 				if (w == nullptr) continue;
 				if (w->isInvalid()) continue;
+				if (!w->isVisible()) continue;
 				if (!w->contains(event.mouse->position_x, event.mouse->position_y, true))
 					continue;
 				w->__onMousePressed(event);
@@ -160,6 +163,7 @@ namespace ogfx
 				Widget* w = m_widgetList[i];
 				if (w == nullptr) continue;
 				if (w->isInvalid()) continue;
+				if (!w->isVisible()) continue;
 				if (w == m_mousePressedOnWidget) continue;
 				event.mouse->mousePressedOnWidget = m_mousePressedOnWidget;
 				w->__onMouseReleased(event);
@@ -178,6 +182,7 @@ namespace ogfx
 				Widget* w = m_widgetList[i];
 				if (w == nullptr) continue;
 				if (w->isInvalid()) continue;
+				if (!w->isVisible()) continue;
 				if (!w->contains(event.mouse->position_x, event.mouse->position_y, true))
 				{
 					if (w->m_mouseInside)
@@ -223,6 +228,7 @@ namespace ogfx
 				Widget* w = m_widgetList[i];
 				if (w == nullptr) continue;
 				if (w->isInvalid()) continue;
+				if (!w->isVisible()) continue;
 				if (!w->contains(event.mouse->position_x, event.mouse->position_y, true))
 					continue;
 				w->__onMouseScrolled(event);
@@ -238,6 +244,7 @@ namespace ogfx
 				Widget* w = m_widgetList[i];
 				if (w == nullptr) continue;
 				if (w->isInvalid()) continue;
+				if (!w->isVisible()) continue;
 				if (!w->contains(event.mouse->position_x, event.mouse->position_y, true))
 					continue;
 				w->__onMouseDragged(event);
@@ -248,13 +255,13 @@ namespace ogfx
 
 		void WidgetManager::onKeyPressed(const Event& event)
 		{
-			if (!m_focused) return;
+			if (!m_focused || !m_focused->isVisible()) return;
 			m_focused->__onKeyPressed(event);
 		}
 
 		void WidgetManager::onKeyReleased(const Event& event)
 		{
-			if (!m_focused) return;
+			if (!m_focused || !m_focused->isVisible()) return;
 			m_focused->__onKeyReleased(event);
 			if (m_tabNavigationEnabled && event.keyboard->keyCode == KeyCode::Tab)
 				focusNext();
@@ -262,7 +269,7 @@ namespace ogfx
 
 		void WidgetManager::onTextEntered(const Event& event)
 		{
-			if (!m_focused) return;
+			if (!m_focused || !m_focused->isVisible()) return;
 			m_focused->__onTextEntered(event);
 		}
 
@@ -317,6 +324,7 @@ namespace ogfx
 		void WidgetManager::processDragAndDrop(Widget* widget, const Event& event)
 		{
 			if (widget == nullptr) return;
+			if (!widget->isVisible()) return;
 			if (!widget->isDragAndDropEnabled()) return;
 			if (!widget->isMouseInside()) return;
 			if (Widget::s_dragAndDropData != nullptr)

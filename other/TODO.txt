@@ -17,9 +17,9 @@
 ***find a way to add fixed update to gui::Window
 ***Add triangle drawing functions to BasicRenderer2D
 ***Implement Panel title
+***Implement show/hide functionality for widgets
 Add theme caching
 Implement global scale (probably query desktop scale and adjust accordingly)
-Implement show/hide functionality for widgets
 Create reliable default stylesheet
 Implement cursors in Stylesheet
 

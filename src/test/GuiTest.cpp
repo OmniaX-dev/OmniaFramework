@@ -89,7 +89,7 @@ class Window : public ogfx::gui::Window
 			m_check1.setPosition(30, 30);
 			m_check1.setText("Check this out!");
 			m_check1.setStateChangedCallback([&](ogfx::gui::widgets::CheckBox& sender, bool state) -> void {
-				std::cout << STR_BOOL(state) << "\n";
+				m_panel1.setVisible(state);
 			});
 			addWidget(m_check1);
 
@@ -124,13 +124,16 @@ class Window : public ogfx::gui::Window
 
 			m_label1.addThemeOverride("@:pressed.label.textColor", Colors::Crimson);
 
-			m_theme.loadFromFile("./testTheme.txt", true, getDefaultStylesheetVariableList());
+			m_theme.loadFromFile("./testTheme.oss", true, getDefaultStylesheetVariableList());
 
 			m_label2.addThemeOverride("@:hover.label.showBackground", true);
 			m_label2.addThemeOverride("@:hover.label.backgroundColor", Colors::DarkGreen);
 
 			m_label3.setPosition(0, 30);
 			m_label3.setText("Bella!");
+			m_label3.setMousePressedCallback([&](const ogfx::gui::Event& event) -> void {
+				std::cout << "BALALLA!\n";
+			});
 			m_label3.addThemeID("label3");
 			m_panel1.addChild(m_label3);
 

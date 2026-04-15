@@ -11,7 +11,7 @@ $accentColor = rgb(255, 0, 0)
 
 (label) {
 	textColor = $accentColor
-	backgroundColor = #000000FF
+	backgroundColor = Color(#000000FF)
 	borderColor = $accentColor
 	fontSize = 20
 	borderRadius = 0

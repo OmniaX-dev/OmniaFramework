@@ -57,6 +57,7 @@ namespace ogfx
 				bool getThemeQualifier(const String& qualifier) const;
 				bool addThemeID(const String& id);
 				bool removeThemeID(const String& id);
+				void setVisible(bool v);
 				inline const ostd::Stylesheet::QualifierList& getThemeQualifierList(void) const { return m_qualifierList; }
 
 				inline virtual void onDraw(ogfx::BasicRenderer2D& gfx) {  }
@@ -152,6 +153,9 @@ namespace ogfx
 				inline i32 getBorderRadius(void) const { return m_borderRadius; }
 				inline void setBorderWidth(i32 bw) { m_borderWidth = bw; }
 				inline i32 getBorderWidth(void) const { return m_borderWidth; }
+				inline bool isVisible(void) const { return m_visible; }
+				inline void show(void) { setVisible(true); }
+				inline void hide(void) { setVisible(false); }
 
 				template<typename T>
 				inline T getThemeValue(const ostd::Stylesheet &theme, const String& key, const T& fallback)
@@ -210,6 +214,7 @@ namespace ogfx
 				bool m_stopEvents { true };
 				bool m_clipContents { true };
 				bool m_acceptDragAndDrop { false };
+				bool m_visible { true };
 				MouseEventData::eButton m_pressedButton { MouseEventData::eButton::None };
 
 				stdvec<String> m_themeIDList;

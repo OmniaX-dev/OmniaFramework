@@ -128,16 +128,16 @@ namespace ogfx
 
 		void Widget::setThemeQualifier(const String& qualifier, bool value)
 		{
-		    for (auto& [name, state] : m_qualifierList)
-		    {
-		        if (name == qualifier)
-		        {
+			for (auto& [name, state] : m_qualifierList)
+			{
+				if (name == qualifier)
+				{
 					if (state == value) return;
-		            state = value;
+					state = value;
 					reloadTheme();
-		            return;
-		        }
-		    }
+					return;
+				}
+			}
 		}
 
 		bool Widget::getThemeQualifier(const String& qualifier) const
@@ -166,8 +166,15 @@ namespace ogfx
 			return true;
 		}
 
+		void Widget::setVisible(bool v)
+		{
+			m_visible = v;
+		}
+
 		void Widget::__draw(ogfx::BasicRenderer2D& gfx)
 		{
+			if (!isVisible())
+				return;
 			if (isDrawBoxEnabled())
 				gfx.fillRect({ getGlobalPosition(), getSize() }, getDrawBoxColor());
 			else
