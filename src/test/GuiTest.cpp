@@ -124,7 +124,7 @@ class Window : public ogfx::gui::Window
 
 			m_label1.addThemeOverride("@:pressed.label.textColor", Colors::Crimson);
 
-			m_theme.loadFromFile("./testTheme.oss", true, getDefaultStylesheetVariableList());
+			m_theme.loadFromFile("./DefaultTheme.oss", true, getDefaultStylesheetVariableList());
 
 			m_label2.addThemeOverride("@:hover.label.showBackground", true);
 			m_label2.addThemeOverride("@:hover.label.backgroundColor", Colors::DarkGreen);
@@ -155,13 +155,12 @@ class Window : public ogfx::gui::Window
 
 		void onRedraw(ogfx::BasicRenderer2D& gfx) override
 		{
-			gfx.drawAnimation(m_anim, { 200, 200 });
-			gfx.outlinedTriangle({ 30, 30 }, { 100, 50 }, { 60, 90 }, { 255, 0, 0, 80 }, Colors::DarkBlue, 5);
+			// gfx.drawAnimation(m_anim, { 200, 200 });
 		}
 
 		void onFixedUpdate(void) override
 		{
-			m_anim.update();
+			// m_anim.update();
 		}
 
 	private:

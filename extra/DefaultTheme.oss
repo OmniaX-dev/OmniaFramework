@@ -1,0 +1,87 @@
+% ================== DefaultTheme.oss ==================
+
+
+% ---- Variables ----
+const $accentColor = #DC143CFF
+const $textColor = #111111FF
+const $accentColorLight = #F16A85FF
+const $accentColorDark = #6B0A1DFF
+% -------------------
+
+
+% ------ Root Widget ------
+window.backgroundColor = rgba(160, 160, 160, 255)
+% -------------------------
+
+
+% ------ Panel ------
+(panel) {
+	backgroundColor = #AAAAAAFF
+	titleColor =  $accentColorDark
+	titlebarColor = #999999FF
+	titlebarBorderColor = #909090FF
+	borderColor = #909090FF
+	borderRadius = 10
+	borderWidth = 2
+	titlebarBorderWidth = 2
+	showBorder = true
+	showBackground = true
+	titlebarType =  full
+	titlebarHeight = 18
+	titlebarFontSize = 18
+	titlebarTextAlign = text_left
+	padding = Rect(15, 15, 15, 15)
+	margin = Rect(0, 0, 0, 0)
+}
+% -------------------
+
+
+
+% ------ CheckBox ------
+(checkbox) {
+	checkBorderColor = $accentColorDark
+	checkBoxColor = $accentColor
+	textColor = $textColor
+	backgroundColor = color_transparent
+	borderColor = color_transparent
+	fontSize = 20
+	borderRadius = 0
+	borderWidth = 0
+	checkBorderRadius = 6
+	checkBorderWidth = 2
+	showBackground = false
+	showBorder = false
+	padding = Rect(15, 15, 15, 15)
+	margin = Rect(0, 0, 0, 0)
+}
+(checkbox:hover) {
+	checkBorderColor = $accentColorLight
+}
+(checkbox:pressed) {
+	checkBoxColor = $accentColor
+	textColor = $accentColorDark
+	checkBorderColor = $accentColor
+}
+(checkbox:active) {
+	checkBoxColor = $accentColor
+	checkBorderColor = $accentColor
+	textColor = $accentColorDark
+}
+% ----------------------
+
+
+
+% ------ Label ------
+(label) {
+	textColor = $textColor
+	backgroundColor = color_transparent
+	borderColor = color_transparent
+	fontSize = 20
+	borderRadius = 0
+	borderWidth = 0
+	showBackground = false
+	showBorder = false
+	padding = Rect(15, 15, 15, 15)
+	margin = Rect(0, 0, 0, 0)
+}
+% -------------------

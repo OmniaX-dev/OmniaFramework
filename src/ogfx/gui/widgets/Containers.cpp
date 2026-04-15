@@ -48,6 +48,7 @@ namespace ogfx
 				enableBackground(getThemeValue<bool>(theme, "panel.showBackground", true));
 				setBorderColor(getThemeValue<Color>(theme, "panel.borderColor", Colors::Black));
 				setPadding(getThemeValue<Rectangle>(theme, "panel.padding", { 15, 15, 15, 15 }));
+				setMargin(getThemeValue<Rectangle>(theme, "panel.margin", { 0, 0, 0, 0 }));
 				m_basePadding = getPadding();
 				m_titleColor = getThemeValue<Color>(theme, "panel.titleColor", Colors::Black);
 				m_titlebarColor = getThemeValue<Color>(theme, "panel.titlebarColor", Colors::Transparent);
