@@ -157,7 +157,7 @@ namespace ogfx
 				if (data.button == ogfx::MouseEventData::eButton::Left && parent.m_gfx != nullptr && parent.m_mouseInside)
 				{
 					String text = parent.m_text;
-					ostd::Vec2 relativePosition = { (f32)data.position_x, (f32)data.position_y };
+					Vec2 relativePosition = { (f32)data.position_x, (f32)data.position_y };
 					relativePosition -= (parent.getPosition() + parent.m_paddingX + parent.m_theme.extraPaddingLeft);
 					if (text.len() > 0)
 					{
@@ -196,7 +196,7 @@ namespace ogfx
 
 
 
-		RawTextInput& RawTextInput::create(const ostd::Vec2& position, const ostd::Vec2& size, const String& name)
+		RawTextInput& RawTextInput::create(const Vec2& position, const Vec2& size, const String& name)
 		{
 			setPosition(position);
 			setSize(size);
@@ -217,7 +217,7 @@ namespace ogfx
 			m_fontSize = (i32)(geth() * 0.66);
 			f32 cursor_height_scale = 0.75f;
 
-			ostd::IPoint strSize { 0, 0 };
+			IPoint strSize { 0, 0 };
 			if (m_cursorPosition > 0 && m_text != "")
 			{
 				String s1 = m_text.new_substr(0, m_cursorPosition);
@@ -226,7 +226,7 @@ namespace ogfx
 
 			gfx.outlinedRect(*this, m_theme.backgroundColor, m_theme.borderColor, 2);
 			if (m_text.len() > 0)
-				gfx.drawString(m_text, getPosition() + ostd::Vec2 { m_paddingX + m_theme.extraPaddingLeft, m_paddingX + m_theme.extraPaddingTop}, m_theme.textColor, m_fontSize);
+				gfx.drawString(m_text, getPosition() + Vec2 { m_paddingX + m_theme.extraPaddingLeft, m_paddingX + m_theme.extraPaddingTop}, m_theme.textColor, m_fontSize);
 
 			if (m_cursorState || !m_theme.cursorBlink)
 				gfx.fillRect({ getx() + m_paddingX + m_theme.extraPaddingLeft + strSize.x - 1, gety() + m_paddingX + m_theme.extraPaddingTop, (f32)m_theme.cursorWidth, (f32)m_fontSize * cursor_height_scale }, m_theme.cursorColor);

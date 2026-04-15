@@ -43,7 +43,7 @@ namespace ogfx
 
 			void RootWidget::applyTheme(const ostd::Stylesheet& theme)
 			{
-				m_color = getThemeValue<ostd::Color>(theme, "window.backgroundColor", getWindow().getClearColor());
+				m_color = getThemeValue<Color>(theme, "window.backgroundColor", getWindow().getClearColor());
 			}
 
 			void RootWidget::onDraw(ogfx::BasicRenderer2D& gfx)

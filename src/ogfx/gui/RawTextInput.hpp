@@ -27,7 +27,7 @@ namespace ogfx
 {
 	namespace gui
 	{
-		class RawTextInput : public ostd::Rectangle
+		class RawTextInput : public Rectangle
 		{
 			public: class EventListener : public ostd::BaseObject
 			{
@@ -50,10 +50,10 @@ namespace ogfx
 			public: class Theme
 			{
 				public:
-					ostd::Color textColor { 0, 0, 0, 0 };
-					ostd::Color borderColor { 0, 0, 0, 0 };
-					ostd::Color backgroundColor { 0, 0, 0, 0 };
-					ostd::Color cursorColor { 0, 0, 0, 0 };
+					Color textColor { 0, 0, 0, 0 };
+					Color borderColor { 0, 0, 0, 0 };
+					Color backgroundColor { 0, 0, 0, 0 };
+					Color cursorColor { 0, 0, 0, 0 };
 
 					u8 cursorWidth { 0 };
 					u8 extraPaddingTop { 0 };
@@ -114,8 +114,8 @@ namespace ogfx
 
 			public:
 				inline RawTextInput(void) { create({ 0.0f, 0.0f }, { 200.0f, 30.0f }, "UnnamedRawTextInput"); }
-				inline RawTextInput(const ostd::Vec2& position, const ostd::Vec2& size, const String& name) { create(position, size, name); }
-				RawTextInput& create(const ostd::Vec2& position, const ostd::Vec2& size, const String& name);
+				inline RawTextInput(const Vec2& position, const Vec2& size, const String& name) { create(position, size, name); }
+				RawTextInput& create(const Vec2& position, const Vec2& size, const String& name);
 
 				virtual void render(ogfx::BasicRenderer2D& gfx);
 				virtual void update(void);

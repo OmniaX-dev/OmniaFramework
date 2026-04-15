@@ -37,7 +37,7 @@ namespace ogfx
 					void onDraw(ogfx::BasicRenderer2D& gfx) override;
 
 				private:
-					ostd::Color m_color { ostd::Colors::Transparent };
+					Color m_color { Colors::Transparent };
 			};
 		}
 	}

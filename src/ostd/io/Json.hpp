@@ -46,28 +46,28 @@ namespace ostd
 	        i32 get_int(const String& name);
 	        f64 get_double(const String& name);
 	        String get_string(const String& name);
-	        ostd::Color get_color(const String& name);
-	        ostd::Vec2 get_vec2(const String& name);
-	        ostd::Rectangle get_rect(const String& name);
+	        Color get_color(const String& name);
+	        Vec2 get_vec2(const String& name);
+	        Rectangle get_rect(const String& name);
 	        stdvec<i32> get_int_array(const String& name);
 	        stdvec<f64> get_double_array(const String& name);
 	        stdvec<String> get_string_array(const String& name);
-	        stdvec<ostd::Color> get_color_array(const String& name);
-	        stdvec<ostd::Rectangle> get_rect_array(const String& name);
+	        stdvec<Color> get_color_array(const String& name);
+	        stdvec<Rectangle> get_rect_array(const String& name);
 
 	        // --- SETTERS ---
 	       	bool set_bool(const String& name, bool value);
 	        bool set_int(const String& name, i32 value);
 	        bool set_double(const String& name, f64 value);
 	        bool set_string(const String& name, const String& value);
-	        bool set_color(const String& name, const ostd::Color& value);
-	        bool set_vec2(const String& name, const ostd::Vec2& value);
-	        bool set_rect(const String& name, const ostd::Rectangle& value);
+	        bool set_color(const String& name, const Color& value);
+	        bool set_vec2(const String& name, const Vec2& value);
+	        bool set_rect(const String& name, const Rectangle& value);
 	        bool set_int_array(const String& name, const stdvec<i32>& value);
 	        bool set_double_array(const String& name, const stdvec<f64>& value);
 	        bool set_string_array(const String& name, const stdvec<String>& value);
-	        bool set_color_array(const String& name, const stdvec<ostd::Color>& value);
-	        bool set_rect_array(const String& name, const stdvec<ostd::Rectangle>& value);
+	        bool set_color_array(const String& name, const stdvec<Color>& value);
+	        bool set_rect_array(const String& name, const stdvec<Rectangle>& value);
 
 	        // --- WRAPPERS ---
 	        inline f32 get_float(const String& name) { return cast<f32>(get_double(name)); }

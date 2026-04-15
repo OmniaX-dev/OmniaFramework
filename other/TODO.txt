@@ -20,6 +20,7 @@ Implement global scale (probably query desktop scale and adjust accordingly)
 Implement show/hide functionality for widgets
 Implement Panel title
 Create reliable default stylesheet
+Implement cursors in Stylesheet
 
 
 

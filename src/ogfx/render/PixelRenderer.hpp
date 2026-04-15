@@ -38,12 +38,12 @@ namespace ogfx
 
 			public:
 				static void initialize(void);
-				static bool drawString(const String& str, u32 column, u32 row, u32* screenPixels, i32 screenWidth, i32 screenHeight, u32* fontPixels,  const ostd::Color& color = { 255, 255, 255, 255 }, const ostd::Color& background = { 255, 255, 255, 0 });
+				static bool drawString(const String& str, u32 column, u32 row, u32* screenPixels, i32 screenWidth, i32 screenHeight, u32* fontPixels,  const Color& color = { 255, 255, 255, 255 }, const Color& background = { 255, 255, 255, 0 });
 
 			private:
 				static i32 getCharacterIndex(char c);
-				static ostd::Color applyTint(const ostd::Color& baseColor, const ostd::Color& tintColor);
-				static void drawCharacter(u8* screenPixels, i32 screenWidth, i32 screenHeight, u8* fontPixels, i32 x, i32 y, char c, const ostd::Color& color = { 255, 255, 255, 255 }, const ostd::Color& background = { 255, 255, 255, 0 });
+				static Color applyTint(const Color& baseColor, const Color& tintColor);
+				static void drawCharacter(u8* screenPixels, i32 screenWidth, i32 screenHeight, u8* fontPixels, i32 x, i32 y, char c, const Color& color = { 255, 255, 255, 255 }, const Color& background = { 255, 255, 255, 0 });
 
 			public:
 				inline static constexpr i32 FONT_CHAR_W = 11;
@@ -89,7 +89,7 @@ namespace ogfx
 			void displayBuffer(void);
 			inline u32* getScreenPixels(void) { return m_pixels; }
 
-			void clear(const ostd::Color& color);
+			void clear(const Color& color);
 
 		private:
 			u32* m_pixels { nullptr };

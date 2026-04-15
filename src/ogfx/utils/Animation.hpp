@@ -87,7 +87,7 @@ namespace ogfx
 		inline i32 getColumnOffset(void) const { return m_column_offset; }
 		inline i32 getRowOffset(void) const { return m_row_offset; }
 		inline bool isStill(void) const { return m_still; }
-		inline ostd::Rectangle getFrameRect(void) const { return m_frame_rect; }
+		inline Rectangle getFrameRect(void) const { return m_frame_rect; }
 		inline const Image& getSpriteSheet(void) const { return (m_spriteSheet != nullptr ? *m_spriteSheet : InvalidImage); }
 		inline Image& getSpriteSheet(void) { return (m_spriteSheet != nullptr ? *m_spriteSheet : InvalidImage); }
 		inline bool hasImage(void) const { return m_spriteSheet != nullptr; }
@@ -114,6 +114,6 @@ namespace ogfx
 		bool m_still;
 		bool m_random;
 
-		ostd::Rectangle m_frame_rect;
+		Rectangle m_frame_rect;
 	};
 }

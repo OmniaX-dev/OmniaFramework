@@ -30,18 +30,26 @@ namespace ogfx
 		{
 			class Panel : public Widget
 			{
+				public: struct TitleBarTypes
+				{
+					inline static const String None { "none" };
+					inline static const String Full { "full" };
+					inline static const String Minimal { "monimal" };
+				};
 				public:
 					inline Panel(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
 					Panel& create(void);
 					void applyTheme(const ostd::Stylesheet& theme) override;
 					void onDraw(ogfx::BasicRenderer2D& gfx) override;
-					inline void setBackGroundColor(const ostd::Color& color) { m_backgroundColor = color; }
-					inline ostd::Color getBackgroundColor(void) { return m_backgroundColor; }
+					void setTitlebarType(const String& type);
+					inline void setBackGroundColor(const Color& color) { m_backgroundColor = color; }
+					inline Color getBackgroundColor(void) { return m_backgroundColor; }
+					inline String getTitlebarType(void) const { return m_titleType; }
 
 				private:
-					ostd::Color m_titleColor { 0, 0, 0 };
+					Color m_titleColor { 0, 0, 0 };
 					bool m_showTitle { false };
-					String m_titleType = "full";
+					String m_titleType = TitleBarTypes::None;
 					f32 m_titleHeight { 30 };
 			};
 		}

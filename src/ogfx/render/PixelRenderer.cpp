@@ -31,7 +31,7 @@ namespace ogfx
 			characterMap[c] = getCharacterIndex(c);
 	}
 
-	bool PixelRenderer::TextRenderer::drawString(const String& str, u32 column, u32 row, u32* screenPixels, i32 screenWidth, i32 screenHeight, u32* fontPixels, const ostd::Color& color, const ostd::Color& background)
+	bool PixelRenderer::TextRenderer::drawString(const String& str, u32 column, u32 row, u32* screenPixels, i32 screenWidth, i32 screenHeight, u32* fontPixels, const Color& color, const Color& background)
 	{
 		String se(str);
 		if (se == "") return false;
@@ -64,7 +64,7 @@ namespace ogfx
 		return charIndex;
 	}
 
-	ostd::Color PixelRenderer::TextRenderer::applyTint(const ostd::Color& baseColor, const ostd::Color& tintColor)
+	Color PixelRenderer::TextRenderer::applyTint(const Color& baseColor, const Color& tintColor)
 	{
 		auto nBase = baseColor.getNormalizedColor();
 		auto nTint = tintColor.getNormalizedColor();
@@ -73,12 +73,12 @@ namespace ogfx
 		f32 g = nBase.r * nTint.g;
 		f32 b = nBase.r * nTint.b;
 
-		ostd::Color::FloatCol nTinted(r, g, b, 1.0f);
+		Color::FloatCol nTinted(r, g, b, 1.0f);
 
-		return ostd::Color(nTinted);
+		return Color(nTinted);
 	}
 
-	void PixelRenderer::TextRenderer::drawCharacter(u8* screenPixels, i32 screenWidth, i32 screenHeight, u8* fontPixels, i32 x, i32 y, char c, const ostd::Color& color, const ostd::Color& background)
+	void PixelRenderer::TextRenderer::drawCharacter(u8* screenPixels, i32 screenWidth, i32 screenHeight, u8* fontPixels, i32 x, i32 y, char c, const Color& color, const Color& background)
 	{
 		using namespace ostd;
 		i32 charIndex = characterMap[c];
@@ -86,7 +86,7 @@ namespace ogfx
 
 		i32 screenx = x * 4, screeny = y;
 
-		ostd::Color tintedColor;
+		Color tintedColor;
 
 		bool applyBackground = false;
 		for (i32 y = charCoords.y; y < charCoords.y + (FONT_CHAR_H); y += 1)
@@ -176,7 +176,7 @@ namespace ogfx
 		SDL_RenderTexture(m_parent->getSDLRenderer(), m_texture, NULL, &rect);
 	}
 
-	void PixelRenderer::clear(const ostd::Color& color)
+	void PixelRenderer::clear(const Color& color)
 	{
 		if (isInvalid()) return;
 		for (i32 y = 0; y < m_windowHeight; y++)
@@ -184,7 +184,7 @@ namespace ogfx
 			for (u32 x = 0; x < m_windowWidth; x++)
 			{
 				i32 index = CONVERT_2D_1D(x, y, m_windowWidth);
-				m_pixels[index] = color.asInteger(ostd::Color::eColorFormat::ARGB);
+				m_pixels[index] = color.asInteger(Color::eColorFormat::ARGB);
 			}
 		}
 	}

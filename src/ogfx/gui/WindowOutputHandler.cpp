@@ -440,7 +440,7 @@ namespace ogfx
 			if (l_endOfConsole()) return;
 			if (string.len() == 0) return;
 			f32 vertical_margin = 4;
-			Vec2 pos = m_consolePosition + ostd::Vec2 { m_charSize.x * m_curosrPosition.x, m_charSize.y * m_curosrPosition.y };
+			Vec2 pos = m_consolePosition + Vec2 { m_charSize.x * m_curosrPosition.x, m_charSize.y * m_curosrPosition.y };
 			if (m_backgroundColor.a > 0)
 				m_renderer.fillRect({ pos.x, pos.y + vertical_margin, m_charSize.x * string.len(), m_charSize.y - vertical_margin }, m_backgroundColor);
 			if (m_foregroundColor.a > 0)

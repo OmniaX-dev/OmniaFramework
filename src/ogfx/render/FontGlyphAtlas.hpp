@@ -31,9 +31,9 @@ namespace ogfx
 	{
 		public: struct GlyphInfo
 		{
-			ostd::Vec2 uvs[4];
+			Vec2 uvs[4];
 			SDL_Texture* atlas { nullptr };
-			ostd::Vec2 size;
+			Vec2 size;
 			u32 codepoint { 0 };
 			i32 advance { 0 };
 		};

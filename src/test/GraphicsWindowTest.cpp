@@ -50,7 +50,7 @@ class Window : public ogfx::GraphicsWindow
 				return rnd::getVec2({ 0, (f32)getWindowWidth() }, { 0, (f32)getWindowHeight() });
 			};
 			for (i32 i = 0; i < 10000; i++)
-				m_gfx.drawLine({ l_rndPoint(), l_rndPoint() }, ostd::Colors::Crimson, 10);
+				m_gfx.drawLine({ l_rndPoint(), l_rndPoint() }, Colors::Crimson, 10);
 			m_gfx.endFrame();
 		}
 

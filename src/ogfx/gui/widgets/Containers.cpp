@@ -40,17 +40,17 @@ namespace ogfx
 
 			void Panel::applyTheme(const ostd::Stylesheet& theme)
 			{
-				setBackGroundColor(getThemeValue<ostd::Color>(theme, "panel.backgroundColor", ostd::Colors::Gray));
+				setBackGroundColor(getThemeValue<Color>(theme, "panel.backgroundColor", Colors::Gray));
 				setBorderRadius(getThemeValue<i32>(theme, "panel.borderRadius", 8));
 				setBorderWidth(getThemeValue<i32>(theme, "panel.borderWidth", 2));
 				enableBorder(getThemeValue<bool>(theme, "panel.showBorder", true));
 				enableBackground(getThemeValue<bool>(theme, "panel.showBackground", true));
-				setBorderColor(getThemeValue<ostd::Color>(theme, "panel.borderColor", ostd::Colors::Black));
-				m_titleColor = getThemeValue<ostd::Color>(theme, "panel.titleColor", ostd::Colors::Black);
+				setBorderColor(getThemeValue<Color>(theme, "panel.borderColor", Colors::Black));
+				m_titleColor = getThemeValue<Color>(theme, "panel.titleColor", Colors::Black);
 				m_showTitle = getThemeValue<bool>(theme, "panel.showTitle", false);
 				m_titleHeight = getThemeValue<f32>(theme, "panel.titleHeight", 30);
-				m_titleType = getThemeValue<String>(theme, "panel.titleHeight", "text");
-				setPadding(getThemeValue<ostd::Rectangle>(theme, "panel.padding", { 15, 15, 15, 15 }));
+				m_titleType = getThemeValue<String>(theme, "panel.titlebarType", TitleBarTypes::None);
+				setPadding(getThemeValue<Rectangle>(theme, "panel.padding", { 15, 15, 15, 15 }));
 			}
 
 			void Panel::onDraw(ogfx::BasicRenderer2D& gfx)

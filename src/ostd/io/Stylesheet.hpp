@@ -32,7 +32,7 @@ namespace ostd
 	{
 		public: using QualifierList = stdvec<std::pair<const String, bool>>;
 		public: using VariableList = stdumap<String, std::pair<String, bool>>;
-		public: using TypeVariant = std::variant<i32, f32, bool, String, ostd::Color, ostd::Rectangle, ostd::Vec2>;
+		public: using TypeVariant = std::variant<i32, f32, bool, String, Color, Rectangle, Vec2>;
 		public:
 			Stylesheet(void);
 			Stylesheet& clear(void);

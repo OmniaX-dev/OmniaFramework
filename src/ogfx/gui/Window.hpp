@@ -89,8 +89,8 @@ namespace ogfx
 			inline String getTitle(void) const { return m_title; }
 			inline i32 getWindowWidth(void) const { return m_windowWidth; }
 			inline i32 getWindowHeight(void) const { return m_windowHeight; }
-			inline ostd::Color getClearColor(void) const { return m_clearColor; }
-			inline void setClearColor(const ostd::Color& color) { m_clearColor = color; }
+			inline Color getClearColor(void) const { return m_clearColor; }
+			inline void setClearColor(const Color& color) { m_clearColor = color; }
 			inline SDL_Renderer* getSDLRenderer(void) { return m_renderer; }
 			inline void enableBlockingEvents(bool enable = true) { m_blockingEvents = enable; }
 			inline bool isBlockingEventsEnabled(void) const { return m_blockingEvents; }
@@ -123,7 +123,7 @@ namespace ogfx
 			const ostd::Stylesheet* m_guiTheme { nullptr };
 
 		private:
-			ostd::Color m_clearColor { 10, 10, 10, 255 };
+			Color m_clearColor { 10, 10, 10, 255 };
 
 			i32 m_windowWidth { 0 };
 			i32 m_windowHeight { 0 };

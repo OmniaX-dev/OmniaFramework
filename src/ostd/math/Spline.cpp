@@ -19,7 +19,7 @@ namespace ostd
 		// 	ogfx::MouseEventData& evt = cast<ogfx::MouseEventData&>(signal.userData);
 		// 	for (auto& node : m_points)
 		// 	{
-		// 		if (ostd::Rectangle(node.position.x - 20, node.position.y - 20, 40, 40).contains((f32)evt.position_x, (f32)evt.position_y))
+		// 		if (Rectangle(node.position.x - 20, node.position.y - 20, 40, 40).contains((f32)evt.position_x, (f32)evt.position_y))
 		// 		{
 		// 			m_selectedNode = &node;
 		// 			return;

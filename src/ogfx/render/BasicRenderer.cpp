@@ -91,11 +91,11 @@ namespace ogfx
 		m_drawCallCount = 0;
 	}
 
-	void BasicRenderer2D::pushClippingRect(const ostd::Rectangle& rect, bool additive)
+	void BasicRenderer2D::pushClippingRect(const Rectangle& rect, bool additive)
 	{
 		if (!m_initialized) return;
 
-		ostd::Rectangle finalRect = rect;
+		Rectangle finalRect = rect;
 
 		if (additive && !m_clipStack.empty())
 			finalRect = m_clipStack.back().getIntersection(rect, false);
@@ -212,7 +212,7 @@ namespace ogfx
 		return set_error_state(tErrors::NoError);
 	}
 
-	ostd::Vec2 BasicRenderer2D::getStringDimensions(const String& message, i32 fontSize, TTF_Font* font)
+	Vec2 BasicRenderer2D::getStringDimensions(const String& message, i32 fontSize, TTF_Font* font)
 	{
 		if (!isValid()) return { 0, 0 };
 	    if (fontSize <= 0) fontSize = m_fontSize;
@@ -244,7 +244,7 @@ namespace ogfx
 
 
 	// ===================================================== SPECIALIZED =====================================================
-	void BasicRenderer2D::drawImage(const ogfx::Image& image, const ostd::Vec2& position, const ostd::Vec2& size, const ostd::Rectangle& srcRect)
+	void BasicRenderer2D::drawImage(const ogfx::Image& image, const Vec2& position, const Vec2& size, const Rectangle& srcRect)
 	{
 		if (!m_initialized || !image.isLoaded())
 			return;
@@ -253,7 +253,7 @@ namespace ogfx
 		if (!tex)
 			return;
 
-		ostd::Vec2 texSize = image.getSize();
+		Vec2 texSize = image.getSize();
 
 		// 1. Resolve source rectangle
 		f32 sx, sy, sw, sh;
@@ -284,7 +284,7 @@ namespace ogfx
 		f32 y2 = dy + dh;
 
 		// 3. Build quad vertices
-		ostd::Vec2 verts[4] = {
+		Vec2 verts[4] = {
 			{ x1, y1 },
 			{ x2, y1 },
 			{ x2, y2 },
@@ -292,7 +292,7 @@ namespace ogfx
 		};
 
 		// 4. Build UVs (normalized)
-		ostd::Vec2 uvs[4] = {
+		Vec2 uvs[4] = {
 			{ sx / texSize.x,         sy / texSize.y },
 			{ (sx + sw) / texSize.x,  sy / texSize.y },
 			{ (sx + sw) / texSize.x, (sy + sh) / texSize.y },
@@ -301,10 +301,10 @@ namespace ogfx
 
 		// 5. Push quad
 		u32 inds[6] = QUAD_INDICES_ARR;
-		push_polygon(verts, uvs, 4, inds, 6, ostd::Colors::White, tex);
+		push_polygon(verts, uvs, 4, inds, 6, Colors::White, tex);
 	}
 
-	void BasicRenderer2D::drawAnimation(const Animation& anim, const ostd::Vec2& position, const ostd::Vec2& size)
+	void BasicRenderer2D::drawAnimation(const Animation& anim, const Vec2& position, const Vec2& size)
 	{
 		if (!m_initialized) return;
 		if (!anim.hasImage()) return;
@@ -313,7 +313,7 @@ namespace ogfx
 		drawImage(img, position, size, anim.getFrameRect());
 	}
 
-	void BasicRenderer2D::drawString(const String& str, const ostd::Vec2& position, const ostd::Color& color, i32 fontSize, f32 scale)
+	void BasicRenderer2D::drawString(const String& str, const Vec2& position, const Color& color, i32 fontSize, f32 scale)
 	{
 		if (!isValid()) return;
 		if (fontSize <= 0)
@@ -339,7 +339,7 @@ namespace ogfx
 				x += (kern * scale);
 			}
 
-			ostd::Vec2 verts[4] = {
+			Vec2 verts[4] = {
 				{ x,                        y },
 				{ x + g->size.x * scale,     y },
 				{ x + g->size.x * scale,     y + g->size.y * scale },
@@ -353,15 +353,15 @@ namespace ogfx
 		setFontSize(oldFontSize);
 	}
 
-	void BasicRenderer2D::drawCenteredString(const String& str, const ostd::Vec2& center, const ostd::Color& color, i32 fontSize, f32 scale)
+	void BasicRenderer2D::drawCenteredString(const String& str, const Vec2& center, const Color& color, i32 fontSize, f32 scale)
 	{
 		auto dims = getStringDimensions(str, fontSize);
 		drawString(str, { center.x - (dims.x * scale) * 0.5f, center.y - (dims.y * scale) * 0.5f }, color, fontSize, scale);
 	}
 
-	void BasicRenderer2D::drawCenteredString(const String& str, const ostd::Rectangle& bounds, const ostd::Color& color, i32 fontSize, f32 scale)
+	void BasicRenderer2D::drawCenteredString(const String& str, const Rectangle& bounds, const Color& color, i32 fontSize, f32 scale)
 	{
-	    drawCenteredString(str, ostd::Vec2 { bounds.x + bounds.w * 0.5f, bounds.y + bounds.h * 0.5f }, color, fontSize, scale);
+	    drawCenteredString(str, Vec2 { bounds.x + bounds.w * 0.5f, bounds.y + bounds.h * 0.5f }, color, fontSize, scale);
 	}
 	// ===================================================== SPECIALIZED =====================================================
 
@@ -370,7 +370,7 @@ namespace ogfx
 
 
 	// ===================================================== PRIMITIVES =====================================================
-	void BasicRenderer2D::drawLine(const ostd::FLine& line, const ostd::Color& color, i32 thickness, bool rounded)
+	void BasicRenderer2D::drawLine(const FLine& line, const Color& color, i32 thickness, bool rounded)
 	{
 		if (!m_initialized || thickness <= 0) return;
 
@@ -384,7 +384,7 @@ namespace ogfx
 		f32 half = thickness * 0.5f;
 		Vec2 off = perp * half;
 
-		std::array<ostd::Vec2, 4> verts = {{
+		std::array<Vec2, 4> verts = {{
 			p1 - off,
 			p1 + off,
 			p2 + off,
@@ -402,7 +402,7 @@ namespace ogfx
 		generate_half_circle(p2, dir, half, segments, color);
 	}
 
-	void BasicRenderer2D::drawRect(const ostd::Rectangle& rect, const ostd::Color& color, i32 thickness)
+	void BasicRenderer2D::drawRect(const Rectangle& rect, const Color& color, i32 thickness)
 	{
 		if (!m_initialized || thickness <= 0)
 			return;
@@ -428,12 +428,12 @@ namespace ogfx
 		drawLine({ {x1, y2 + half}, {x1, y1 - half} }, color, thickness, false);
 	}
 
-	void BasicRenderer2D::drawRect(const ostd::Vec2& center, const ostd::Vec2& size, const ostd::Color& color, i32 thickness)
+	void BasicRenderer2D::drawRect(const Vec2& center, const Vec2& size, const Color& color, i32 thickness)
 	{
 	    drawRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, color, thickness);
 	}
 
-	void BasicRenderer2D::drawRoundRect(const ostd::Rectangle& rect, const ostd::Color& color, f32 radius, i32 thickness)
+	void BasicRenderer2D::drawRoundRect(const Rectangle& rect, const Color& color, f32 radius, i32 thickness)
 	{
 		if (!m_initialized || thickness <= 0)
 			return;
@@ -450,10 +450,10 @@ namespace ogfx
 		f32 y2 = rect.y + rect.h - half;
 
 		// Corner centers
-		ostd::Vec2 TL { x1 + radius, y1 + radius };
-		ostd::Vec2 TR { x2 - radius, y1 + radius };
-		ostd::Vec2 BR { x2 - radius, y2 - radius };
-		ostd::Vec2 BL { x1 + radius, y2 - radius };
+		Vec2 TL { x1 + radius, y1 + radius };
+		Vec2 TR { x2 - radius, y1 + radius };
+		Vec2 BR { x2 - radius, y2 - radius };
+		Vec2 BL { x1 + radius, y2 - radius };
 
 		// Straight edges (shortened to meet the arcs cleanly)
 		drawLine({ {x1 + radius, y1}, {x2 - radius, y1} }, color, thickness, false); // top
@@ -471,12 +471,12 @@ namespace ogfx
 		generate_ellipse_stroke(BL, radius, radius, thickness, M_PI * 0.5f, M_PI, color, segments); // BL
 	}
 
-	void BasicRenderer2D::drawRoundRect(const ostd::Vec2& center, const ostd::Vec2& size, const ostd::Color& color, f32 radius, i32 thickness)
+	void BasicRenderer2D::drawRoundRect(const Vec2& center, const Vec2& size, const Color& color, f32 radius, i32 thickness)
 	{
 	    drawRoundRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, color, radius, thickness);
 	}
 
-	void BasicRenderer2D::drawCircle(const ostd::Vec2& center, f32 radius, const ostd::Color& color, i32 thickness)
+	void BasicRenderer2D::drawCircle(const Vec2& center, f32 radius, const Color& color, i32 thickness)
 	{
 		if (!m_initialized || thickness <= 0)
 			return;
@@ -484,12 +484,12 @@ namespace ogfx
 		generate_ellipse_stroke(center, radius, radius, thickness, 0.0f, 2.0f * M_PI, color, segments);
 	}
 
-	void BasicRenderer2D::drawCircle(const ostd::Rectangle& rect, const ostd::Color& color, i32 thickness)
+	void BasicRenderer2D::drawCircle(const Rectangle& rect, const Color& color, i32 thickness)
 	{
 		if (!m_initialized || thickness <= 0)
 			return;
 
-		ostd::Vec2 center {
+		Vec2 center {
 			rect.x + rect.w * 0.5f,
 			rect.y + rect.h * 0.5f
 		};
@@ -498,12 +498,12 @@ namespace ogfx
 		drawCircle(center, radius, color, thickness);
 	}
 
-	void BasicRenderer2D::drawEllipse(const ostd::Rectangle& rect, const ostd::Color& color, i32 thickness)
+	void BasicRenderer2D::drawEllipse(const Rectangle& rect, const Color& color, i32 thickness)
 	{
 	  if (!m_initialized || thickness <= 0)
 		  return;
 
-		ostd::Vec2 center = { rect.x + rect.w*0.5f, rect.y + rect.h*0.5f };
+		Vec2 center = { rect.x + rect.w*0.5f, rect.y + rect.h*0.5f };
 		f32 rx = rect.w * 0.5f;
 		f32 ry = rect.h * 0.5f;
 
@@ -511,7 +511,7 @@ namespace ogfx
 		generate_ellipse_stroke(center, rx, ry, thickness, 0.0f, 2.0f * M_PI, color, segments);
 	}
 
-	void BasicRenderer2D::fillRect(const ostd::Rectangle& rect, const ostd::Color& color)
+	void BasicRenderer2D::fillRect(const Rectangle& rect, const Color& color)
 	{
 		if (!m_initialized)
 			return;
@@ -521,7 +521,7 @@ namespace ogfx
 		f32 x2 = rect.x + rect.w;
 		f32 y2 = rect.y + rect.h;
 
-		ostd::Vec2 verts[4] = {
+		Vec2 verts[4] = {
 			{ x1, y1 },
 			{ x2, y1 },
 			{ x2, y2 },
@@ -531,12 +531,12 @@ namespace ogfx
 		push_polygon(verts, nullptr, 4, inds, 6, color, nullptr);
 	}
 
-	void BasicRenderer2D::fillRect(const ostd::Vec2& center, const ostd::Vec2& size, const ostd::Color& color)
+	void BasicRenderer2D::fillRect(const Vec2& center, const Vec2& size, const Color& color)
 	{
 		fillRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, color);
 	}
 
-	void BasicRenderer2D::fillRoundRect(const ostd::Rectangle& rect, const ostd::Color& color, f32 radius)
+	void BasicRenderer2D::fillRoundRect(const Rectangle& rect, const Color& color, f32 radius)
 	{
 		if (!m_initialized)
 			return;
@@ -561,7 +561,7 @@ namespace ogfx
 		// 1. Fill the center rectangle
 		//
 		{
-			ostd::Vec2 verts[4] = {
+			Vec2 verts[4] = {
 				{ cx1, cy1 },
 				{ cx2, cy1 },
 				{ cx2, cy2 },
@@ -578,7 +578,7 @@ namespace ogfx
 		// Top
 		if (radius > 0)
 		{
-			ostd::Vec2 verts[4] = {
+			Vec2 verts[4] = {
 				{ x1 + radius, y1 },
 				{ x2 - radius, y1 },
 				{ x2 - radius, y1 + radius },
@@ -590,7 +590,7 @@ namespace ogfx
 
 		// Bottom
 		{
-			ostd::Vec2 verts[4] = {
+			Vec2 verts[4] = {
 				{ x1 + radius, y2 - radius },
 				{ x2 - radius, y2 - radius },
 				{ x2 - radius, y2 },
@@ -602,7 +602,7 @@ namespace ogfx
 
 		// Left
 		{
-			ostd::Vec2 verts[4] = {
+			Vec2 verts[4] = {
 				{ x1, y1 + radius },
 				{ x1 + radius, y1 + radius },
 				{ x1 + radius, y2 - radius },
@@ -614,7 +614,7 @@ namespace ogfx
 
 		// Right
 		{
-			ostd::Vec2 verts[4] = {
+			Vec2 verts[4] = {
 				{ x2 - radius, y1 + radius },
 				{ x2, y1 + radius },
 				{ x2, y2 - radius },
@@ -634,12 +634,12 @@ namespace ogfx
 		generate_filled_ellipse_stroke({cx1, cy2}, radius, radius, 0.5f * M_PI, color, segments);     // BL
 	}
 
-	void BasicRenderer2D::fillRoundRect(const ostd::Vec2& center, const ostd::Vec2& size, const ostd::Color& color, f32 radius)
+	void BasicRenderer2D::fillRoundRect(const Vec2& center, const Vec2& size, const Color& color, f32 radius)
 	{
 		fillRoundRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, color, radius);
 	}
 
-	void BasicRenderer2D::fillCircle(const ostd::Vec2& center, f32 radius, const ostd::Color& color)
+	void BasicRenderer2D::fillCircle(const Vec2& center, f32 radius, const Color& color)
 	{
 		if (!m_initialized)
 			return;
@@ -648,12 +648,12 @@ namespace ogfx
 		generate_filled_ellipse(center, radius, radius, color, segments);
 	}
 
-	void BasicRenderer2D::fillCircle(const ostd::Rectangle& rect, const ostd::Color& color)
+	void BasicRenderer2D::fillCircle(const Rectangle& rect, const Color& color)
 	{
 		if (!m_initialized)
 			return;
 
-		ostd::Vec2 center {
+		Vec2 center {
 			rect.x + rect.w * 0.5f,
 			rect.y + rect.h * 0.5f
 		};
@@ -662,12 +662,12 @@ namespace ogfx
 		fillCircle(center, radius, color);
 	}
 
-	void BasicRenderer2D::fillEllipse(const ostd::Rectangle& rect, const ostd::Color& color)
+	void BasicRenderer2D::fillEllipse(const Rectangle& rect, const Color& color)
 	{
 		if (!m_initialized)
 			return;
 
-		ostd::Vec2 center {
+		Vec2 center {
 			rect.x + rect.w * 0.5f,
 			rect.y + rect.h * 0.5f
 		};
@@ -679,45 +679,45 @@ namespace ogfx
 		generate_filled_ellipse(center, radiusX, radiusY, color, segments);
 	}
 
-	void BasicRenderer2D::outlinedRect(const ostd::Rectangle& rect, const ostd::Color& fillColor, const ostd::Color& outlineColor, i32 outlineThickness)
+	void BasicRenderer2D::outlinedRect(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, i32 outlineThickness)
 	{
 		if (!m_initialized) return;
-		ostd::Rectangle offset = { 1, 1, -2, -2 };
+		Rectangle offset = { 1, 1, -2, -2 };
 		fillRect(rect + offset, fillColor);
 		drawRect(rect, outlineColor, outlineThickness);
 	}
 
-	void BasicRenderer2D::outlinedRect(const ostd::Vec2& center, const ostd::Vec2& size, const ostd::Color& fillColor, const ostd::Color& outlineColor, i32 outlineThickness)
+	void BasicRenderer2D::outlinedRect(const Vec2& center, const Vec2& size, const Color& fillColor, const Color& outlineColor, i32 outlineThickness)
 	{
 		outlinedRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, fillColor, outlineColor, outlineThickness);
 	}
 
-	void BasicRenderer2D::outlinedRoundRect(const ostd::Rectangle& rect, const ostd::Color& fillColor, const ostd::Color& outlineColor, f32 radius, i32 outlineThickness)
+	void BasicRenderer2D::outlinedRoundRect(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, f32 radius, i32 outlineThickness)
 	{
 		if (!m_initialized) return;
-		ostd::Rectangle offset = { 1, 1, -2, -2 };
+		Rectangle offset = { 1, 1, -2, -2 };
 		fillRoundRect(rect + offset, fillColor, radius);
 		drawRoundRect(rect, outlineColor, radius, outlineThickness);
 	}
 
-	void BasicRenderer2D::outlinedRoundRect(const ostd::Vec2& center, const ostd::Vec2& size, const ostd::Color& fillColor, const ostd::Color& outlineColor, f32 radius, i32 outlineThickness)
+	void BasicRenderer2D::outlinedRoundRect(const Vec2& center, const Vec2& size, const Color& fillColor, const Color& outlineColor, f32 radius, i32 outlineThickness)
 	{
 		outlinedRoundRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, fillColor, outlineColor, radius, outlineThickness);
 	}
 
-	void BasicRenderer2D::outlinedCircle(const ostd::Vec2& center, f32 radius, const ostd::Color& fillColor, const ostd::Color& outlineColor, i32 outlineThickness)
+	void BasicRenderer2D::outlinedCircle(const Vec2& center, f32 radius, const Color& fillColor, const Color& outlineColor, i32 outlineThickness)
 	{
 		if (!m_initialized) return;
 		fillCircle(center, radius - 1, fillColor);
 		drawCircle(center, radius, outlineColor, outlineThickness);
 	}
 
-	void BasicRenderer2D::outlinedCircle(const ostd::Rectangle& rect, const ostd::Color& fillColor, const ostd::Color& outlineColor, i32 outlineThickness)
+	void BasicRenderer2D::outlinedCircle(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, i32 outlineThickness)
 	{
 		if (!m_initialized)
 			return;
 
-		ostd::Vec2 center {
+		Vec2 center {
 			rect.x + rect.w * 0.5f,
 			rect.y + rect.h * 0.5f
 		};
@@ -726,10 +726,10 @@ namespace ogfx
 		outlinedCircle(center, radius, fillColor, outlineColor, outlineThickness);
 	}
 
-	void BasicRenderer2D::outlinedEllipse(const ostd::Rectangle& rect, const ostd::Color& fillColor, const ostd::Color& outlineColor, i32 outlineThickness)
+	void BasicRenderer2D::outlinedEllipse(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, i32 outlineThickness)
 	{
 		if (!m_initialized) return;
-		ostd::Rectangle offset = { 1, 1, -2, -2 };
+		Rectangle offset = { 1, 1, -2, -2 };
 		fillEllipse(rect + offset, fillColor);
 		drawEllipse(rect, outlineColor, outlineThickness);
 	}
@@ -744,7 +744,7 @@ namespace ogfx
 	{
 		for (auto& v : m_vertices)
 		{
-			v.color = COLOR_CAST(ostd::Colors::Transparent);
+			v.color = COLOR_CAST(Colors::Transparent);
 			v.position = { 0, 0 };
 			v.tex_coord = { 0, 0 };
 		}
@@ -752,7 +752,7 @@ namespace ogfx
 			i = 0;
 	}
 
-	void BasicRenderer2D::generate_half_circle(const ostd::Vec2& center, const ostd::Vec2& dir, f32 radius, i32 segments, const ostd::Color& color)
+	void BasicRenderer2D::generate_half_circle(const Vec2& center, const Vec2& dir, f32 radius, i32 segments, const Color& color)
 	{
 		// Ensure we have room
 		if (m_vertexCount + segments + 2 >= MaxVertices ||  m_indexCount + segments * 3 >= MaxIndices)
@@ -802,7 +802,7 @@ namespace ogfx
 		}
 	}
 
-	void BasicRenderer2D::generate_quarter_circle(const ostd::Vec2& center, f32 radius, f32 thickness, f32 startAngle, const ostd::Color& color, i32 segments)
+	void BasicRenderer2D::generate_quarter_circle(const Vec2& center, f32 radius, f32 thickness, f32 startAngle, const Color& color, i32 segments)
 	{
 		f32 half = thickness * 0.5f;
 
@@ -866,7 +866,7 @@ namespace ogfx
 		}
 	}
 
-	void BasicRenderer2D::generate_circle_stroke(const ostd::Vec2& center, f32 radius, f32 thickness, const ostd::Color& color, i32 segments)
+	void BasicRenderer2D::generate_circle_stroke(const Vec2& center, f32 radius, f32 thickness, const Color& color, i32 segments)
 	{
 		f32 half = thickness * 0.5f;
 
@@ -927,7 +927,7 @@ namespace ogfx
 		}
 	}
 
-	void BasicRenderer2D::generate_ellipse_stroke(const ostd::Vec2& center, f32 radiusX, f32 radiusY, f32 thickness, f32 startAngle, f32 endAngle, const ostd::Color& color, i32 segments)
+	void BasicRenderer2D::generate_ellipse_stroke(const Vec2& center, f32 radiusX, f32 radiusY, f32 thickness, f32 startAngle, f32 endAngle, const Color& color, i32 segments)
 	{
 		f32 half = thickness * 0.5f;
 
@@ -993,7 +993,7 @@ namespace ogfx
 		}
 	}
 
-	void BasicRenderer2D::generate_filled_ellipse_stroke(const ostd::Vec2& center, f32 radiusX, f32 radiusY, f32 startAngle, const ostd::Color& color, i32 segments)
+	void BasicRenderer2D::generate_filled_ellipse_stroke(const Vec2& center, f32 radiusX, f32 radiusY, f32 startAngle, const Color& color, i32 segments)
 	{
 		// Ensure capacity
 		if (m_vertexCount + segments + 2 >= MaxVertices || m_indexCount + segments * 3 >= MaxIndices)
@@ -1036,7 +1036,7 @@ namespace ogfx
 		}
 	}
 
-	void BasicRenderer2D::generate_filled_ellipse(const ostd::Vec2& center, f32 radiusX, f32 radiusY, const ostd::Color& color, i32 segments)
+	void BasicRenderer2D::generate_filled_ellipse(const Vec2& center, f32 radiusX, f32 radiusY, const Color& color, i32 segments)
 	{
 		// Ensure capacity
 		if (m_vertexCount + segments + 2 >= MaxVertices || m_indexCount + segments * 3 >= MaxIndices)
@@ -1078,7 +1078,7 @@ namespace ogfx
 		}
 	}
 
-	void BasicRenderer2D::push_polygon(const ostd::Vec2* verts, const ostd::Vec2* texCoords, u32 vertCount, const u32* inds, u32 indexCount, const ostd::Color& color, SDL_Texture* texture)
+	void BasicRenderer2D::push_polygon(const Vec2* verts, const Vec2* texCoords, u32 vertCount, const u32* inds, u32 indexCount, const Color& color, SDL_Texture* texture)
 	{
 		if (!m_initialized || vertCount <= 0 || indexCount <= 0)
 			return;
@@ -1100,7 +1100,7 @@ namespace ogfx
 		bool hasTexCoords = texCoords != nullptr;
 		for (i32 i = 0; i < vertCount; i++)
 		{
-			ostd::Vec2 tc { 0.0f, 0.0f };
+			Vec2 tc { 0.0f, 0.0f };
 			if (hasTexCoords)
 				tc = texCoords[i];
 			m_vertices[m_vertexCount++] = {

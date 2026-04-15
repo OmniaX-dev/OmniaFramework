@@ -31,7 +31,7 @@ namespace ogfx
 		ostd::BaseObject* Widget::s_dragAndDropData { nullptr };
 		bool Widget::s_hasDragAndDropData { false };
 
-		Widget::Widget(const ostd::Rectangle& bounds, WindowCore& window) : Rectangle(bounds), m_widgets(window, *this)
+		Widget::Widget(const Rectangle& bounds, WindowCore& window) : Rectangle(bounds), m_widgets(window, *this)
 		{
 			m_window = &window;
 		}
@@ -44,40 +44,40 @@ namespace ogfx
 			return m_widgets.addWidget(child);
 		}
 
-		ostd::Vec2 Widget::getGlobalPosition(void) const
+		Vec2 Widget::getGlobalPosition(void) const
 		{
-			ostd::Vec2 glob = getPosition();
+			Vec2 glob = getPosition();
 			if (!m_rootChild && m_parent != nullptr)
 				glob += m_parent->getGlobalPosition() + m_parent->getPadding().getPosition();
 			glob += m_margin.getPosition();
 			return glob;
 		}
 
-		ostd::Vec2 Widget::getGlobalContentPosition(void) const
+		Vec2 Widget::getGlobalContentPosition(void) const
 		{
 			return getGlobalPosition() + getContentBounds().getPosition();
 		}
 
-		ostd::Rectangle Widget::getGlobalBounds(void) const
+		Rectangle Widget::getGlobalBounds(void) const
 		{
 			return { getGlobalPosition(), getSize() + (m_margin.getSize() * 2) };
 		}
 
-		ostd::Rectangle Widget::getContentBounds(void) const
+		Rectangle Widget::getContentBounds(void) const
 		{
 			auto pad = getPadding();
 			return { pad.getPosition(), (getSize() - (pad.getSize() * 2)) };
 		}
 
-		ostd::Rectangle Widget::getGlobalContentBounds(void) const
+		Rectangle Widget::getGlobalContentBounds(void) const
 		{
 			auto pad = getPadding();
 			return { getGlobalContentPosition(), getContentBounds().getSize() };
 		}
 
-		bool Widget::contains(ostd::Vec2 p, bool includeBounds) const
+		bool Widget::contains(Vec2 p, bool includeBounds) const
 		{
-			return ostd::Rectangle(getGlobalPosition(), getSize()).contains(p, includeBounds);
+			return Rectangle(getGlobalPosition(), getSize()).contains(p, includeBounds);
 		}
 
 		void Widget::enable(bool enable)

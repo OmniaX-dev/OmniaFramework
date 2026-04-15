@@ -35,7 +35,7 @@ namespace ogfx
             inline ~Image(void) { destroy(); }
             void destroy(void);
             Image& loadFromFile(const String& filePath, BasicRenderer2D& gfx);
-            inline ostd::Vec2 getSize(void) const { return { m_width, m_height }; }
+            inline Vec2 getSize(void) const { return { m_width, m_height }; }
             inline bool isLoaded(void) const { return m_loaded; }
             inline SDL_Texture* getSDLTexture(void) const { return m_sdl_texture; }
 

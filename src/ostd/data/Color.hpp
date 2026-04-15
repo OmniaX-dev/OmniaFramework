@@ -154,3 +154,9 @@ namespace ostd
 		inline static const Color DarkYellow    { 204, 204,   0, 255 };
 	};
 }
+
+using Colors = ostd::Colors;
+namespace ogfx
+{
+	using Color = ostd::Color;
+}

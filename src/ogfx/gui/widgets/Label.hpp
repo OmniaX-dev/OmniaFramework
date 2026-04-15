@@ -39,8 +39,8 @@ namespace ogfx
 					void onDraw(ogfx::BasicRenderer2D& gfx) override;
 					void setText(const String& text);
 					inline String getText(void) const { return m_text; }
-					inline ostd::Color getColor(void) const { return m_color; }
-					inline void setColor(const ostd::Color& color) { m_color = color; }
+					inline Color getColor(void) const { return m_color; }
+					inline void setColor(const Color& color) { m_color = color; }
 					inline i32 getFontSize(void) const { return m_fontSize; }
 					inline void setFontSize(i32 fontSize) { m_fontSize = fontSize; }
 
@@ -51,7 +51,7 @@ namespace ogfx
 					String m_text { "" };
 					bool m_textChanged { false };
 					i32 m_fontSize { 20 };
-					ostd::Color m_color { 255, 255, 255 };
+					Color m_color { 255, 255, 255 };
 			};
 		}
 	}

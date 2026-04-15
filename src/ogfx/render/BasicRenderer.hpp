@@ -61,14 +61,14 @@ namespace ogfx
 			SDL_Renderer* getSDLRenderer(void) const;
 			void flushBatch(void);
 			void endFrame(void);
-			void pushClippingRect(const ostd::Rectangle& rect, bool additive = false);
+			void pushClippingRect(const Rectangle& rect, bool additive = false);
 			void popClippingRect(void);
 			i32 loadDefaultFont(i32 fontSize = 0);
 			void closeFont(void);
 			i32 openFont(const String& fontPath, i32 fontSize = 0);
 			i32 openFont(const ostd::UByte resource_data[], u32 data_size, i32 fontSize = 0);
 			i32 setFontSize(i32 fontSize);
-			ostd::Vec2 getStringDimensions(const String& message, i32 fontSize = 0, TTF_Font* font = nullptr);
+			Vec2 getStringDimensions(const String& message, i32 fontSize = 0, TTF_Font* font = nullptr);
 
 			inline u32 getDrawCallCount(void) { return m_drawCallCount; }
 			inline bool hasOpenFont(void) { return m_fontOpen; }
@@ -80,48 +80,48 @@ namespace ogfx
 			inline bool isInitialized(void) { return m_initialized; }
 			inline FontGlyphAtlas& getFontGlyphAtlas(void) { return m_fontGlyphAtlas; }
 
-			void drawImage(const ogfx::Image& image, const ostd::Vec2& position, const ostd::Vec2& size = { 0, 0 }, const ostd::Rectangle& srcRect = { 0, 0, 0, 0 });
-			void drawAnimation(const Animation& anim, const ostd::Vec2& position, const ostd::Vec2& size = { 0, 0 });
+			void drawImage(const ogfx::Image& image, const Vec2& position, const Vec2& size = { 0, 0 }, const Rectangle& srcRect = { 0, 0, 0, 0 });
+			void drawAnimation(const Animation& anim, const Vec2& position, const Vec2& size = { 0, 0 });
 
-			void drawString(const String& str, const ostd::Vec2& position, const ostd::Color& color, i32 fontSize = 0, f32 scale = 1.0f);
-			void drawCenteredString(const String& str, const ostd::Vec2& center, const ostd::Color& color, i32 fontSize = 0, f32 scale = 1.0f);
-			void drawCenteredString(const String& str, const ostd::Rectangle& bounds, const ostd::Color& color, i32 fontSize = 0, f32 scale = 1.0f);
+			void drawString(const String& str, const Vec2& position, const Color& color, i32 fontSize = 0, f32 scale = 1.0f);
+			void drawCenteredString(const String& str, const Vec2& center, const Color& color, i32 fontSize = 0, f32 scale = 1.0f);
+			void drawCenteredString(const String& str, const Rectangle& bounds, const Color& color, i32 fontSize = 0, f32 scale = 1.0f);
 
-			void drawLine(const ostd::FLine& line, const ostd::Color& color, i32 thickness = 1, bool rounded = true);
+			void drawLine(const FLine& line, const Color& color, i32 thickness = 1, bool rounded = true);
 
-			void drawRect(const ostd::Rectangle& rect, const ostd::Color& color, i32 thickness = 1);
-			void drawRect(const ostd::Vec2& center, const ostd::Vec2& size, const ostd::Color& color, i32 thickness = 1);
-			void drawRoundRect(const ostd::Vec2& center, const ostd::Vec2& size, const ostd::Color& color, f32 radius, i32 thickness = 1);
-			void drawRoundRect(const ostd::Rectangle& rect, const ostd::Color& color, f32 radius, i32 thickness = 1);
-			void drawCircle(const ostd::Vec2& center, f32 radius, const ostd::Color& color, i32 thickness = 1);
-			void drawCircle(const ostd::Rectangle& rect, const ostd::Color& color, i32 thickness = 1);
-			void drawEllipse(const ostd::Rectangle& rect, const ostd::Color& color, i32 thickness = 1);
+			void drawRect(const Rectangle& rect, const Color& color, i32 thickness = 1);
+			void drawRect(const Vec2& center, const Vec2& size, const Color& color, i32 thickness = 1);
+			void drawRoundRect(const Vec2& center, const Vec2& size, const Color& color, f32 radius, i32 thickness = 1);
+			void drawRoundRect(const Rectangle& rect, const Color& color, f32 radius, i32 thickness = 1);
+			void drawCircle(const Vec2& center, f32 radius, const Color& color, i32 thickness = 1);
+			void drawCircle(const Rectangle& rect, const Color& color, i32 thickness = 1);
+			void drawEllipse(const Rectangle& rect, const Color& color, i32 thickness = 1);
 
-			void fillRect(const ostd::Rectangle& rect, const ostd::Color& color);
-			void fillRect(const ostd::Vec2& center, const ostd::Vec2& size, const ostd::Color& color);
-			void fillRoundRect(const ostd::Rectangle& rect, const ostd::Color& color, f32 radius);
-			void fillRoundRect(const ostd::Vec2& center, const ostd::Vec2& size, const ostd::Color& color, f32 radius);
-			void fillCircle(const ostd::Vec2& center, f32 radius, const ostd::Color& color);
-			void fillCircle(const ostd::Rectangle& rect, const ostd::Color& color);
-			void fillEllipse(const ostd::Rectangle& rect, const ostd::Color& color);
+			void fillRect(const Rectangle& rect, const Color& color);
+			void fillRect(const Vec2& center, const Vec2& size, const Color& color);
+			void fillRoundRect(const Rectangle& rect, const Color& color, f32 radius);
+			void fillRoundRect(const Vec2& center, const Vec2& size, const Color& color, f32 radius);
+			void fillCircle(const Vec2& center, f32 radius, const Color& color);
+			void fillCircle(const Rectangle& rect, const Color& color);
+			void fillEllipse(const Rectangle& rect, const Color& color);
 
-			void outlinedRect(const ostd::Vec2& center, const ostd::Vec2& size, const ostd::Color& fillColor, const ostd::Color& outlineColor, i32 outlineThickness = 1);
-			void outlinedRect(const ostd::Rectangle& rect, const ostd::Color& fillColor, const ostd::Color& outlineColor, i32 outlineThickness = 1);
-			void outlinedRoundRect(const ostd::Rectangle& rect, const ostd::Color& fillColor, const ostd::Color& outlineColor, f32 radius, i32 outlineThickness = 1);
-			void outlinedRoundRect(const ostd::Vec2& center, const ostd::Vec2& size, const ostd::Color& fillColor, const ostd::Color& outlineColor, f32 radius, i32 outlineThickness = 1);
-			void outlinedCircle(const ostd::Vec2& center, f32 radius, const ostd::Color& fillColor, const ostd::Color& outlineColor, i32 outlineThickness = 1);
-			void outlinedCircle(const ostd::Rectangle& rect, const ostd::Color& fillColor, const ostd::Color& outlineColor, i32 outlineThickness = 1);
-			void outlinedEllipse(const ostd::Rectangle& rect, const ostd::Color& fillColor, const ostd::Color& outlineColor, i32 outlineThickness = 1);
+			void outlinedRect(const Vec2& center, const Vec2& size, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1);
+			void outlinedRect(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1);
+			void outlinedRoundRect(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, f32 radius, i32 outlineThickness = 1);
+			void outlinedRoundRect(const Vec2& center, const Vec2& size, const Color& fillColor, const Color& outlineColor, f32 radius, i32 outlineThickness = 1);
+			void outlinedCircle(const Vec2& center, f32 radius, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1);
+			void outlinedCircle(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1);
+			void outlinedEllipse(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1);
 
 		private:
 			void init_arrays(void);
-			void generate_half_circle(const ostd::Vec2& center, const ostd::Vec2& dir, f32 radius, i32 segments, const ostd::Color& color);
-			void generate_quarter_circle(const ostd::Vec2& center, f32 radius, f32 thickness, f32 startAngle, const ostd::Color& color, i32 segments);
-			void generate_circle_stroke(const ostd::Vec2& center, f32 radius, f32 thickness, const ostd::Color& color, i32 segments);
-			void generate_ellipse_stroke(const ostd::Vec2& center, f32 radiusX, f32 radiusY, f32 thickness, f32 startAngle, f32 endAngle, const ostd::Color& color, i32 segments);
-			void generate_filled_ellipse_stroke(const ostd::Vec2& center, f32 radiusX, f32 radiusY, f32 startAngle, const ostd::Color& color, i32 segments);
-			void generate_filled_ellipse(const ostd::Vec2& center, f32 radiusX, f32 radiusY, const ostd::Color& color, i32 segments);
-			void push_polygon(const ostd::Vec2* verts, const ostd::Vec2* texCoords, u32 vertCount, const u32* inds, u32 indexCount, const ostd::Color& color, SDL_Texture* texture);
+			void generate_half_circle(const Vec2& center, const Vec2& dir, f32 radius, i32 segments, const Color& color);
+			void generate_quarter_circle(const Vec2& center, f32 radius, f32 thickness, f32 startAngle, const Color& color, i32 segments);
+			void generate_circle_stroke(const Vec2& center, f32 radius, f32 thickness, const Color& color, i32 segments);
+			void generate_ellipse_stroke(const Vec2& center, f32 radiusX, f32 radiusY, f32 thickness, f32 startAngle, f32 endAngle, const Color& color, i32 segments);
+			void generate_filled_ellipse_stroke(const Vec2& center, f32 radiusX, f32 radiusY, f32 startAngle, const Color& color, i32 segments);
+			void generate_filled_ellipse(const Vec2& center, f32 radiusX, f32 radiusY, const Color& color, i32 segments);
+			void push_polygon(const Vec2* verts, const Vec2* texCoords, u32 vertCount, const u32* inds, u32 indexCount, const Color& color, SDL_Texture* texture);
 			void print_ttf_error(const String& funcName);
 			inline i32 set_error_state(i32 err) { m_errorState = err; return m_errorState; }
 
@@ -132,7 +132,7 @@ namespace ogfx
 			WindowCore* m_window { nullptr };
 			ostd::ConsoleOutputHandler m_out;
 			bool m_initialized { false };
-			stdvec<ostd::Rectangle> m_clipStack;
+			stdvec<Rectangle> m_clipStack;
 
 			std::array<SDL_Vertex, MaxVertices> m_vertices;
 			std::array<i32, MaxIndices> m_indices;

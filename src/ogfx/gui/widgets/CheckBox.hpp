@@ -42,12 +42,12 @@ namespace ogfx
 					void setText(const String& text);
 					void setChecked(bool checked);
 					inline String getText(void) const { return m_text; }
-					inline ostd::Color getCheckBorderColor(void) const { return m_checkBorderColor; }
-					inline void setCheckBorderColor(const ostd::Color& color) { m_checkBorderColor = color; }
-					inline ostd::Color getCheckBoxColor(void) const { return m_checkBoxColor; }
-					inline void setCheckBoxColor(const ostd::Color& color) { m_checkBoxColor = color; }
-					inline ostd::Color getTextColor(void) const { return m_textColor; }
-					inline void setTextColor(const ostd::Color& color) { m_textColor = color; }
+					inline Color getCheckBorderColor(void) const { return m_checkBorderColor; }
+					inline void setCheckBorderColor(const Color& color) { m_checkBorderColor = color; }
+					inline Color getCheckBoxColor(void) const { return m_checkBoxColor; }
+					inline void setCheckBoxColor(const Color& color) { m_checkBoxColor = color; }
+					inline Color getTextColor(void) const { return m_textColor; }
+					inline void setTextColor(const Color& color) { m_textColor = color; }
 					inline i32 getFontSize(void) const { return m_fontSize; }
 					inline void setFontSize(i32 fontSize) { m_fontSize = fontSize; }
 					inline bool isChecked(void) const { return m_checked; }
@@ -61,13 +61,13 @@ namespace ogfx
 					String m_text { "" };
 					bool m_textChanged { false };
 					i32 m_fontSize { 20 };
-					ostd::Color m_textColor { 255, 255, 255 };
+					Color m_textColor { 255, 255, 255 };
 					f32 m_spacing { 10 };
-					ostd::Vec2 m_checkSize  { 0, 0 };
+					Vec2 m_checkSize  { 0, 0 };
 					i32 m_checkBorderRadius { 5 };
 					i32 m_checkBorderWidth { 1 };
-					ostd::Color m_checkBorderColor { 255, 255, 255 };
-					ostd::Color m_checkBoxColor { 255, 255, 255 };
+					Color m_checkBorderColor { 255, 255, 255 };
+					Color m_checkBoxColor { 255, 255, 255 };
 
 					std::function<void(CheckBox&, bool)> callback_onStateChanged { nullptr };
 			};

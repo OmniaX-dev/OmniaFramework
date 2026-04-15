@@ -252,7 +252,7 @@ custom_continue:
 		else if (value.startsWith("color(") && value.endsWith(")"))
 		{
 			value.substr(6, value.len() - 1).trim();
-			set(key, ostd::Color(value), themeID);
+			set(key, Color(value), themeID);
 		}
 		else if (value.startsWith("vec2(") && value.endsWith(")"))
 		{
@@ -267,7 +267,7 @@ custom_continue:
 					return false;
 				vec.push_back(tok.toFloat());
 			}
-			set(key, ostd::Vec2(vec[0], vec[1]), themeID);
+			set(key, Vec2(vec[0], vec[1]), themeID);
 		}
 		else if (value.startsWith("rect(") && value.endsWith(")"))
 		{
@@ -282,7 +282,7 @@ custom_continue:
 					return false;
 				vec.push_back(tok.toFloat());
 			}
-			set(key, ostd::Rectangle(vec[0], vec[1], vec[2], vec[3]), themeID);
+			set(key, Rectangle(vec[0], vec[1], vec[2], vec[3]), themeID);
 		}
 		else
 		{
@@ -361,11 +361,11 @@ custom_continue:
 			return STR_BOOL(*p);
 		else if (auto p = std::get_if<String>(&v))
 			return *p;
-		else if (auto p = std::get_if<ostd::Color>(&v))
+		else if (auto p = std::get_if<Color>(&v))
 			return *p;
-		else if (auto p = std::get_if<ostd::Rectangle>(&v))
+		else if (auto p = std::get_if<Rectangle>(&v))
 			return *p;
-		else if (auto p = std::get_if<ostd::Vec2>(&v))
+		else if (auto p = std::get_if<Vec2>(&v))
 			return *p;
 		return "";
 	}

@@ -41,16 +41,16 @@ namespace ogfx
 
 			void Label::applyTheme(const ostd::Stylesheet& theme)
 			{
-				setColor(getThemeValue<ostd::Color>(theme, "label.textColor", ostd::Colors::White));
-				setBackGroundColor(getThemeValue<ostd::Color>(theme, "label.backgroundColor", ostd::Colors::Transparent));
+				setColor(getThemeValue<Color>(theme, "label.textColor", Colors::White));
+				setBackGroundColor(getThemeValue<Color>(theme, "label.backgroundColor", Colors::Transparent));
 				setFontSize(getThemeValue<i32>(theme, "label.fontSize", 20));
 				setBorderRadius(getThemeValue<i32>(theme, "label.borderRadius", 10));
 				setBorderWidth(getThemeValue<i32>(theme, "label.borderWidth", 2));
 				enableBorder(getThemeValue<bool>(theme, "label.showBorder", false));
-				setBorderColor(getThemeValue<ostd::Color>(theme, "label.borderColor", ostd::Colors::White));
+				setBorderColor(getThemeValue<Color>(theme, "label.borderColor", Colors::White));
 				enableBackground(getThemeValue<bool>(theme, "label.showBackground", false));
-				setPadding(getThemeValue<ostd::Rectangle>(theme, "label.padding", { 5, 5, 5, 5 }));
-				setMargin(getThemeValue<ostd::Rectangle>(theme, "label.margin", { 0, 0, 0, 0 }));
+				setPadding(getThemeValue<Rectangle>(theme, "label.padding", { 5, 5, 5, 5 }));
+				setMargin(getThemeValue<Rectangle>(theme, "label.margin", { 0, 0, 0, 0 }));
 			}
 
 			void Label::onDraw(ogfx::BasicRenderer2D& gfx)

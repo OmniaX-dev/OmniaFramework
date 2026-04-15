@@ -122,12 +122,12 @@ class Window : public ogfx::gui::Window
 			});
 			m_panel1.addChild(m_label2);
 
-			m_label1.addThemeOverride("@:pressed.label.textColor", ostd::Colors::Crimson);
+			m_label1.addThemeOverride("@:pressed.label.textColor", Colors::Crimson);
 
 			m_theme.loadFromFile("./testTheme.txt", true, getDefaultStylesheetVariableList());
 
 			m_label2.addThemeOverride("@:hover.label.showBackground", true);
-			m_label2.addThemeOverride("@:hover.label.backgroundColor", ostd::Colors::DarkGreen);
+			m_label2.addThemeOverride("@:hover.label.backgroundColor", Colors::DarkGreen);
 
 			m_label3.setPosition(0, 30);
 			m_label3.setText("Bella!");
@@ -153,7 +153,7 @@ class Window : public ogfx::gui::Window
 		void onRedraw(ogfx::BasicRenderer2D& gfx) override
 		{
 			gfx.drawAnimation(m_anim, { 200, 200 });
-			wout().xy(100, 100).fg(ostd::Colors::Crimson).p("CIAO BELLA").resetColors();
+			wout().xy(100, 100).fg(Colors::Crimson).p("CIAO BELLA").resetColors();
 		}
 
 		void onFixedUpdate(void) override

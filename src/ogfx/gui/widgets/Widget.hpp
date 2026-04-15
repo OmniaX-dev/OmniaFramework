@@ -31,7 +31,7 @@ namespace ogfx
 {
 	namespace gui
 	{
-		class Widget : public ostd::BaseObject, public ostd::Rectangle
+		class Widget : public ostd::BaseObject, public Rectangle
 		{
 			private: struct ThemeOverride
 			{
@@ -40,15 +40,15 @@ namespace ogfx
 			};
 			public: using EventCallback = std::function<void(const Event&)>;
 			public:
-				Widget(const ostd::Rectangle& bounds, WindowCore& window);
+				Widget(const Rectangle& bounds, WindowCore& window);
 				bool addChild(Widget& child);
-				virtual ostd::Vec2 getGlobalPosition(void) const;
-				virtual ostd::Vec2 getGlobalContentPosition(void) const;
-				virtual ostd::Rectangle getGlobalBounds(void) const;
-				virtual ostd::Rectangle getContentBounds(void) const;
-				virtual ostd::Rectangle getGlobalContentBounds(void) const;
-				using ostd::Rectangle::contains;
-				bool contains(ostd::Vec2 p, bool includeBounds = false) const override;
+				virtual Vec2 getGlobalPosition(void) const;
+				virtual Vec2 getGlobalContentPosition(void) const;
+				virtual Rectangle getGlobalBounds(void) const;
+				virtual Rectangle getContentBounds(void) const;
+				virtual Rectangle getGlobalContentBounds(void) const;
+				using Rectangle::contains;
+				bool contains(Vec2 p, bool includeBounds = false) const override;
 				void enable(bool enable = true);
 				virtual void applyTheme(const ostd::Stylesheet& theme) = 0;
 				void addThemeOverride(const String& fullKey, ostd::Stylesheet::TypeVariant value);
@@ -124,8 +124,8 @@ namespace ogfx
 				inline Widget* getParent(void) { return m_parent; }
 				inline i32 getZIndex(void) const { return m_zIndex; }
 				inline bool isChildrenEnabled(void) const { return m_allowChildren; }
-				inline void setPadding(const ostd::Rectangle& pad) { m_padding = pad; }
-				inline void setMargin(const ostd::Rectangle& margin) { m_margin = margin; }
+				inline void setPadding(const Rectangle& pad) { m_padding = pad; }
+				inline void setMargin(const Rectangle& margin) { m_margin = margin; }
 				inline Rectangle getPadding(void) const { return m_padding; }
 				inline Rectangle getMargin(void) const { return m_margin; }
 				inline bool isMouseInside(void) const { return m_mouseInside; }
@@ -140,12 +140,12 @@ namespace ogfx
 				inline bool isDragAndDropEnabled(void) const { return m_acceptDragAndDrop; }
 				inline void enableDragAndDrop(bool enable = true) { m_acceptDragAndDrop = enable; }
 				inline void disableDragAndDrop(void) { enableDragAndDrop(false); }
-				inline void setBackGroundColor(const ostd::Color& color) { m_backgroundColor = color; }
-				inline ostd::Color getBackgroundColor(void) { return m_backgroundColor; }
+				inline void setBackGroundColor(const Color& color) { m_backgroundColor = color; }
+				inline Color getBackgroundColor(void) { return m_backgroundColor; }
 				inline void enableBackground(bool enable = true) { m_showBackground = enable; }
 				inline bool isBackgoundEnabled(void) const { return m_showBackground; }
-				inline void setBorderColor(const ostd::Color& color) { m_borderColor = color; }
-				inline ostd::Color getBorderColor(void) { return m_borderColor; }
+				inline void setBorderColor(const Color& color) { m_borderColor = color; }
+				inline Color getBorderColor(void) { return m_borderColor; }
 				inline void enableBorder(bool enable = true) { m_showBorder = enable; }
 				inline bool isBorderEnabled(void) const { return m_showBorder; }
 				inline void setBorderRadius(i32 br) { m_borderRadius = br; }
@@ -168,16 +168,16 @@ namespace ogfx
 				inline void disableDrawBox(void) { m_drawBox = false; }
 				inline void enableDrawBox(void) { m_drawBox = true; }
 				inline bool isDrawBoxEnabled(void) const { return m_drawBox; }
-				inline void setDrawBoxColor(const ostd::Color& color) { m_drawBoxColor = color; }
-				inline ostd::Color getDrawBoxColor(void) { return m_drawBoxColor; }
+				inline void setDrawBoxColor(const Color& color) { m_drawBoxColor = color; }
+				inline Color getDrawBoxColor(void) { return m_drawBoxColor; }
 
 			protected:
 				bool m_rootChild { false };
 				i32 m_borderRadius { 10 };
 				i32 m_borderWidth { 2 };
-				ostd::Color m_borderColor { 255, 255, 255 };
+				Color m_borderColor { 255, 255, 255 };
 				bool m_showBorder { false };
-				ostd::Color m_backgroundColor { ostd::Colors::Transparent };
+				Color m_backgroundColor { Colors::Transparent };
 				bool m_showBackground { false };
 
 				EventCallback callback_onMousePressed { nullptr };
@@ -223,10 +223,10 @@ namespace ogfx
 				stdvec<ThemeOverride> m_themeOverrides;
 
 				bool m_drawBox { true };
-				ostd::Color m_drawBoxColor { 255, 0, 0 };
+				Color m_drawBoxColor { 255, 0, 0 };
 
-				ostd::Rectangle m_padding { 0, 0, 0, 0 };
-				ostd::Rectangle m_margin { 0, 0, 0, 0 };
+				Rectangle m_padding { 0, 0, 0, 0 };
+				Rectangle m_margin { 0, 0, 0, 0 };
 
 				static ostd::BaseObject* s_dragAndDropData;
 				static bool s_hasDragAndDropData;
