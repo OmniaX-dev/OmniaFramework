@@ -215,27 +215,27 @@ namespace ogfx
 	Vec2 BasicRenderer2D::getStringDimensions(const String& message, i32 fontSize, TTF_Font* font)
 	{
 		if (!isValid()) return { 0, 0 };
-	    if (fontSize <= 0) fontSize = m_fontSize;
-	    if (!font) font = m_font;
+		if (fontSize <= 0) fontSize = m_fontSize;
+		if (!font) font = m_font;
 		i32 oldFontSize = getFontSize();
-	    setFontSize(fontSize);
+		setFontSize(fontSize);
 
-	    auto glyphs = m_fontGlyphAtlas.processString(message, font, fontSize);
-	    if (glyphs.empty()) return { 0, 0 };
+		auto glyphs = m_fontGlyphAtlas.processString(message, font, fontSize);
+		if (glyphs.empty()) return { 0, 0 };
 
-	    f32 totalWidth = 0;
-	    for (size_t i = 0; i < glyphs.size(); i++)
-	    {
-	        totalWidth += glyphs[i]->advance;
-	        if (i > 0)
-	        {
-	            i32 kern = 0;
-	            TTF_GetGlyphKerning(font, glyphs[i - 1]->codepoint, glyphs[i]->codepoint, &kern);
-	            totalWidth += kern;
-	        }
-	    }
+		f32 totalWidth = 0;
+		for (size_t i = 0; i < glyphs.size(); i++)
+		{
+			totalWidth += glyphs[i]->advance;
+			if (i > 0)
+			{
+				i32 kern = 0;
+				TTF_GetGlyphKerning(font, glyphs[i - 1]->codepoint, glyphs[i]->codepoint, &kern);
+				totalWidth += kern;
+			}
+		}
 		setFontSize(oldFontSize);
-	    return { totalWidth, glyphs[0]->size.y };
+		return { totalWidth, glyphs[0]->size.y };
 	}
 	// ===================================================== UTILS =====================================================
 
@@ -361,7 +361,7 @@ namespace ogfx
 
 	void BasicRenderer2D::drawCenteredString(const String& str, const Rectangle& bounds, const Color& color, i32 fontSize, f32 scale)
 	{
-	    drawCenteredString(str, Vec2 { bounds.x + bounds.w * 0.5f, bounds.y + bounds.h * 0.5f }, color, fontSize, scale);
+		drawCenteredString(str, Vec2 { bounds.x + bounds.w * 0.5f, bounds.y + bounds.h * 0.5f }, color, fontSize, scale);
 	}
 	// ===================================================== SPECIALIZED =====================================================
 
@@ -430,7 +430,7 @@ namespace ogfx
 
 	void BasicRenderer2D::drawRect(const Vec2& center, const Vec2& size, const Color& color, i32 thickness)
 	{
-	    drawRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, color, thickness);
+		drawRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, color, thickness);
 	}
 
 	void BasicRenderer2D::drawRoundRect(const Rectangle& rect, const Color& color, f32 radius, i32 thickness)
@@ -473,7 +473,7 @@ namespace ogfx
 
 	void BasicRenderer2D::drawRoundRect(const Vec2& center, const Vec2& size, const Color& color, f32 radius, i32 thickness)
 	{
-	    drawRoundRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, color, radius, thickness);
+		drawRoundRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, color, radius, thickness);
 	}
 
 	void BasicRenderer2D::drawCircle(const Vec2& center, f32 radius, const Color& color, i32 thickness)
@@ -510,6 +510,25 @@ namespace ogfx
 		i32 segments = std::max(12, i32(std::max(rx, ry) * 0.75f));
 		generate_ellipse_stroke(center, rx, ry, thickness, 0.0f, 2.0f * M_PI, color, segments);
 	}
+
+	void BasicRenderer2D::drawTriangle(const Triangle& tri, const Color& color, i32 thickness)
+	{
+		if (!m_initialized)
+			return;
+		drawTriangle(tri.vA, tri.vB, tri.vC, color, thickness);
+	}
+
+	void BasicRenderer2D::drawTriangle(const Vec2& A, const Vec2& B, const Vec2& C, const Color& color, i32 thickness)
+	{
+		if (!m_initialized)
+			return;
+		drawLine({ A, B }, color, thickness, false);
+		drawLine({ B, C }, color, thickness, false);
+		drawLine({ C, A }, color, thickness, false);
+	}
+	
+	
+	
 
 	void BasicRenderer2D::fillRect(const Rectangle& rect, const Color& color)
 	{
@@ -679,6 +698,26 @@ namespace ogfx
 		generate_filled_ellipse(center, radiusX, radiusY, color, segments);
 	}
 
+	void BasicRenderer2D::fillTriangle(const Triangle& tri, const Color& color)
+	{
+		if (!m_initialized)
+			return;
+		fillTriangle(tri.vA, tri.vB, tri.vC, color);
+	}
+
+	void BasicRenderer2D::fillTriangle(const Vec2& A, const Vec2& B, const Vec2& C, const Color& color)
+	{
+		if (!m_initialized)
+			return;
+		Vec2 verts[3] = { A, B, C };
+		Vec2 texCoords[3] = { {0, 0}, {0, 0}, {0, 0} };
+		u32 inds[3] = { 0, 1, 2 };
+		push_polygon(verts, texCoords, 3, inds, 3, color, nullptr);
+	}
+	
+	
+	
+
 	void BasicRenderer2D::outlinedRect(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, i32 outlineThickness)
 	{
 		if (!m_initialized) return;
@@ -732,6 +771,32 @@ namespace ogfx
 		Rectangle offset = { 1, 1, -2, -2 };
 		fillEllipse(rect + offset, fillColor);
 		drawEllipse(rect, outlineColor, outlineThickness);
+	}
+
+	void BasicRenderer2D::outlinedTriangle(const Triangle& tri, const Color& fillColor, const Color& outlineColor, i32 outlineThickness)
+	{
+		if (!m_initialized) return;
+		outlinedTriangle(tri.vA, tri.vB, tri.vC, fillColor, outlineColor, outlineThickness);
+	}
+
+	void BasicRenderer2D::outlinedTriangle(const Vec2& A, const Vec2& B, const Vec2& C, const Color& fillColor, const Color& outlineColor, i32 outlineThickness)
+	{
+		if (!m_initialized) return;
+		drawTriangle(A, B, C, outlineColor, outlineThickness);
+		// Inset the fill triangle so it doesn't bleed past the outline
+		f32 inset = cast<f32>(outlineThickness);
+		Vec2 centroid = { (A.x + B.x + C.x) / 3.0f, (A.y + B.y + C.y) / 3.0f };
+
+		auto shrink = [&](const Vec2& v) -> Vec2 {
+			Vec2 dir = { centroid.x - v.x, centroid.y - v.y };
+			f32 len = std::sqrt(dir.x * dir.x + dir.y * dir.y);
+			if (len < 0.001f) return v;
+			dir.x /= len;
+			dir.y /= len;
+			return { v.x + dir.x * inset, v.y + dir.y * inset };
+		};
+
+		fillTriangle(shrink(A), shrink(B), shrink(C), fillColor);
 	}
 	// ===================================================== PRIMITIVES =====================================================
 

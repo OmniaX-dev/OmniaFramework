@@ -96,6 +96,8 @@ namespace ogfx
 			void drawCircle(const Vec2& center, f32 radius, const Color& color, i32 thickness = 1);
 			void drawCircle(const Rectangle& rect, const Color& color, i32 thickness = 1);
 			void drawEllipse(const Rectangle& rect, const Color& color, i32 thickness = 1);
+			void drawTriangle(const Triangle& tri, const Color& color, i32 thickness = 1);
+			void drawTriangle(const Vec2& A, const Vec2& B, const Vec2& C, const Color& color, i32 thickness = 1);
 
 			void fillRect(const Rectangle& rect, const Color& color);
 			void fillRect(const Vec2& center, const Vec2& size, const Color& color);
@@ -104,6 +106,8 @@ namespace ogfx
 			void fillCircle(const Vec2& center, f32 radius, const Color& color);
 			void fillCircle(const Rectangle& rect, const Color& color);
 			void fillEllipse(const Rectangle& rect, const Color& color);
+			void fillTriangle(const Triangle& tri, const Color& color);
+			void fillTriangle(const Vec2& A, const Vec2& B, const Vec2& C, const Color& color);
 
 			void outlinedRect(const Vec2& center, const Vec2& size, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1);
 			void outlinedRect(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1);
@@ -112,6 +116,8 @@ namespace ogfx
 			void outlinedCircle(const Vec2& center, f32 radius, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1);
 			void outlinedCircle(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1);
 			void outlinedEllipse(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1);
+			void outlinedTriangle(const Triangle& tri, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1);
+			void outlinedTriangle(const Vec2& A, const Vec2& B, const Vec2& C, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1);
 
 		private:
 			void init_arrays(void);

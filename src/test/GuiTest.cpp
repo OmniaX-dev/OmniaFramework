@@ -153,7 +153,8 @@ class Window : public ogfx::gui::Window
 		void onRedraw(ogfx::BasicRenderer2D& gfx) override
 		{
 			gfx.drawAnimation(m_anim, { 200, 200 });
-			wout().xy(100, 100).fg(Colors::Crimson).p("CIAO BELLA").resetColors();
+			gfx.outlinedTriangle({ 30, 30 }, { 100, 50 }, { 60, 90 }, Colors::Crimson, Colors::DarkBlue, 5);
+			gfx.endFrame();
 		}
 
 		void onFixedUpdate(void) override
