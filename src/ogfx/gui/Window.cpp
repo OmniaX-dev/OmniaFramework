@@ -494,6 +494,10 @@ namespace ogfx
 		m_defaultStylesheetVariables["color_darkcyan"]      = { "Color(" + Colors::DarkCyan.hexString(true, "#") + ")", true };
 		m_defaultStylesheetVariables["color_darkmagenta"]   = { "Color(" + Colors::DarkMagenta.hexString(true, "#") + ")", true };
 		m_defaultStylesheetVariables["color_darkyellow"]    = { "Color(" + Colors::DarkYellow.hexString(true, "#") + ")", true };
+
+		//Text Align
+		m_defaultStylesheetVariables["text_center"]   = { String("").add(cast<i32>(eTextAlign::Center)), true };
+		m_defaultStylesheetVariables["text_left"]   = { String("").add(cast<i32>(eTextAlign::Left)), true };
 	}
 
 

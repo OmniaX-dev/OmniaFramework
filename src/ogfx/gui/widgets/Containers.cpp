@@ -20,6 +20,7 @@
 
 #include "Containers.hpp"
 #include "../../render/BasicRenderer.hpp"
+#include "../Window.hpp"
 
 namespace ogfx
 {
@@ -46,15 +47,85 @@ namespace ogfx
 				enableBorder(getThemeValue<bool>(theme, "panel.showBorder", true));
 				enableBackground(getThemeValue<bool>(theme, "panel.showBackground", true));
 				setBorderColor(getThemeValue<Color>(theme, "panel.borderColor", Colors::Black));
-				m_titleColor = getThemeValue<Color>(theme, "panel.titleColor", Colors::Black);
-				m_showTitle = getThemeValue<bool>(theme, "panel.showTitle", false);
-				m_titleHeight = getThemeValue<f32>(theme, "panel.titleHeight", 30);
-				m_titleType = getThemeValue<String>(theme, "panel.titlebarType", TitleBarTypes::None);
 				setPadding(getThemeValue<Rectangle>(theme, "panel.padding", { 15, 15, 15, 15 }));
+				m_basePadding = getPadding();
+				m_titleColor = getThemeValue<Color>(theme, "panel.titleColor", Colors::Black);
+				m_titlebarColor = getThemeValue<Color>(theme, "panel.titlebarColor", Colors::Transparent);
+				m_titlebarBorderColor = getThemeValue<Color>(theme, "panel.titlebarBorderColor", Colors::Black);
+				m_titlebarHeight = getThemeValue<f32>(theme, "panel.titlebarHeight", 30);
+				m_titlebarBorderWidth = getThemeValue<i32>(theme, "panel.titlebarBorderWidth", 1);
+				m_titlebarFontSize = getThemeValue<i32>(theme, "panel.titlebarFontSize", 26);
+				m_titleTextAlign = getThemeValue<i32>(theme, "panel.titlebarTextAlign", cast<i32>(WindowCore::eTextAlign::Left));
+				setTitlebarType(getThemeValue<String>(theme, "panel.titlebarType", TitleBarTypes::None));
 			}
 
 			void Panel::onDraw(ogfx::BasicRenderer2D& gfx)
 			{
+				draw_titlebar(gfx);
+			}
+
+			void Panel::setTitlebarType(const String& type)
+			{
+				String t = type.new_toLower().trim();
+				if (t == TitleBarTypes::None)
+				{
+					setPadding(m_basePadding);
+					m_titlebarType = TitleBarTypes::NoneValue;
+				}
+				else if (t == TitleBarTypes::Minimal)
+				{
+					setPadding(m_basePadding + Rectangle { 0, m_titlebarHeight, 0, 0 });
+					m_titlebarType = TitleBarTypes::MinimalValue;
+				}
+				else if (t == TitleBarTypes::Full)
+				{
+					setPadding(m_basePadding + Rectangle { 0, m_titlebarHeight, 0, 0 });
+					m_titlebarType = TitleBarTypes::FullValue;
+				}
+			}
+
+			String Panel::getTitlebarType(void) const
+			{
+				switch (m_titlebarType)
+				{
+					case TitleBarTypes::FullValue: return TitleBarTypes::Full;
+					case TitleBarTypes::MinimalValue: return TitleBarTypes::Minimal;
+					case TitleBarTypes::NoneValue: return TitleBarTypes::None;
+					default: return TitleBarTypes::None;
+				}
+			}
+
+			void Panel::draw_titlebar(BasicRenderer2D& gfx)
+			{
+				f32 br = cast<f32>(getBorderWidth());
+				br /= 2;
+				Rectangle titleBarBounds {
+					getGlobalPosition() + Vec2 { br, br },
+					Vec2 { getw(), m_titlebarHeight } - Vec2 { br * 2, br * 2 }
+				};
+				switch (m_titlebarType)
+				{
+					case TitleBarTypes::FullValue:
+					{
+						gfx.outlinedRoundRect(titleBarBounds, m_titlebarColor, m_titlebarColor, { cast<f32>(getBorderRadius()), cast<f32>(getBorderRadius()), 0, 0 }, getBorderWidth());
+						gfx.drawLine({ getGlobalPosition() + Vec2 { 0, m_titlebarHeight - 2 }, getGlobalPosition() + Vec2 { getGlobalBounds().w, m_titlebarHeight - 2 } }, m_titlebarBorderColor, m_titlebarBorderWidth);
+						if (m_titleTextAlign == cast<i32>(WindowCore::eTextAlign::Center))
+							gfx.drawCenteredString(m_title, titleBarBounds, m_titleColor, m_titlebarFontSize);
+						else
+							gfx.drawString(m_title, titleBarBounds.getPosition() + Vec2 { 10, 5 }, m_titleColor, m_titlebarFontSize);
+						break;
+					}
+					case TitleBarTypes::MinimalValue:
+					{
+						if (m_titleTextAlign == cast<i32>(WindowCore::eTextAlign::Center))
+							gfx.drawCenteredString(m_title, titleBarBounds, m_titleColor, m_titlebarFontSize);
+						else
+							gfx.drawString(m_title, titleBarBounds.getPosition() + Vec2 { 10, 5 }, m_titleColor, m_titlebarFontSize);
+						break;
+					}
+					case TitleBarTypes::NoneValue:
+					default: break;
+				}
 			}
 		}
 	}

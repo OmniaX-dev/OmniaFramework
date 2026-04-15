@@ -60,6 +60,7 @@ namespace ogfx
 	{
 		m_window = &window;
 		if (m_initialized) return set_error_state(tErrors::NoError);
+		SDL_SetRenderDrawBlendMode(m_window->getSDLRenderer(), SDL_BLENDMODE_BLEND);
 		init_arrays();
 		m_initialized = true;
 		loadDefaultFont(20);
@@ -435,45 +436,51 @@ namespace ogfx
 
 	void BasicRenderer2D::drawRoundRect(const Rectangle& rect, const Color& color, f32 radius, i32 thickness)
 	{
+		drawRoundRect(rect, color, { radius, radius, radius, radius }, thickness);
+	}
+
+	void BasicRenderer2D::drawRoundRect(const Vec2& center, const Vec2& size, const Color& color, f32 radius, i32 thickness)
+	{
+		drawRoundRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, color, { radius, radius, radius, radius }, thickness);
+	}
+
+	void BasicRenderer2D::drawRoundRect(const Vec2& center, const Vec2& size, const Color& color, const Rectangle& radii, i32 thickness)
+	{
+		drawRoundRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, color, radii, thickness);
+	}
+
+	void BasicRenderer2D::drawRoundRect(const Rectangle& rect, const Color& color, const Rectangle& radii, i32 thickness)
+	{
 		if (!m_initialized || thickness <= 0)
 			return;
 
-		// Clamp radius so it never exceeds half the smallest dimension
-		radius = std::max(0.0f, std::min(radius, std::min(rect.w, rect.h) * 0.5f));
+		// radii: x=TL, y=TR, w=BR, h=BL
+		f32 maxR = std::min(rect.w, rect.h) * 0.5f;
+		f32 rTL = std::max(0.0f, std::min(radii.x, maxR));
+		f32 rTR = std::max(0.0f, std::min(radii.y, maxR));
+		f32 rBR = std::max(0.0f, std::min(radii.w, maxR));
+		f32 rBL = std::max(0.0f, std::min(radii.h, maxR));
 
 		f32 half = thickness * 0.5f;
 
-		// Inset rectangle so the border stays INSIDE the given bounds
 		f32 x1 = rect.x + half;
 		f32 y1 = rect.y + half;
 		f32 x2 = rect.x + rect.w - half;
 		f32 y2 = rect.y + rect.h - half;
 
-		// Corner centers
-		Vec2 TL { x1 + radius, y1 + radius };
-		Vec2 TR { x2 - radius, y1 + radius };
-		Vec2 BR { x2 - radius, y2 - radius };
-		Vec2 BL { x1 + radius, y2 - radius };
+		// Straight edges
+		drawLine({ {x1 + rTL, y1}, {x2 - rTR, y1} }, color, thickness, false); // top
+		drawLine({ {x2, y1 + rTR}, {x2, y2 - rBR} }, color, thickness, false); // right
+		drawLine({ {x2 - rBR, y2}, {x1 + rBL, y2} }, color, thickness, false); // bottom
+		drawLine({ {x1, y2 - rBL}, {x1, y1 + rTL} }, color, thickness, false); // left
 
-		// Straight edges (shortened to meet the arcs cleanly)
-		drawLine({ {x1 + radius, y1}, {x2 - radius, y1} }, color, thickness, false); // top
-		drawLine({ {x2, y1 + radius}, {x2, y2 - radius} }, color, thickness, false); // right
-		drawLine({ {x2 - radius, y2}, {x1 + radius, y2} }, color, thickness, false); // bottom
-		drawLine({ {x1, y2 - radius}, {x1, y1 + radius} }, color, thickness, false); // left
+		// Corner arcs
+		auto segments = [](f32 r) -> i32 { return std::max(6, i32(r * 0.75f)); };
 
-		// Number of segments for smooth arcs
-		i32 segments = std::max(6, i32(radius * 0.75f));
-
-		// Quarter‑ellipse strokes (each is 90°)
-		generate_ellipse_stroke(TL, radius, radius, thickness, M_PI, M_PI + M_PI * 0.5f, color, segments); // TL
-		generate_ellipse_stroke(TR, radius, radius, thickness, 1.5f * M_PI, 2.0f * M_PI, color, segments); // TR
-		generate_ellipse_stroke(BR, radius, radius, thickness, 0.0f, M_PI * 0.5f, color, segments); // BR
-		generate_ellipse_stroke(BL, radius, radius, thickness, M_PI * 0.5f, M_PI, color, segments); // BL
-	}
-
-	void BasicRenderer2D::drawRoundRect(const Vec2& center, const Vec2& size, const Color& color, f32 radius, i32 thickness)
-	{
-		drawRoundRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, color, radius, thickness);
+		if (rTL > 0) generate_ellipse_stroke({ x1 + rTL, y1 + rTL }, rTL, rTL, thickness, M_PI, M_PI * 1.5f, color, segments(rTL));
+		if (rTR > 0) generate_ellipse_stroke({ x2 - rTR, y1 + rTR }, rTR, rTR, thickness, M_PI * 1.5f, M_PI * 2.0f, color, segments(rTR));
+		if (rBR > 0) generate_ellipse_stroke({ x2 - rBR, y2 - rBR }, rBR, rBR, thickness, 0.0f, M_PI * 0.5f, color, segments(rBR));
+		if (rBL > 0) generate_ellipse_stroke({ x1 + rBL, y2 - rBL }, rBL, rBL, thickness, M_PI * 0.5f, M_PI, color, segments(rBL));
 	}
 
 	void BasicRenderer2D::drawCircle(const Vec2& center, f32 radius, const Color& color, i32 thickness)
@@ -500,7 +507,7 @@ namespace ogfx
 
 	void BasicRenderer2D::drawEllipse(const Rectangle& rect, const Color& color, i32 thickness)
 	{
-	  if (!m_initialized || thickness <= 0)
+		if (!m_initialized || thickness <= 0)
 		  return;
 
 		Vec2 center = { rect.x + rect.w*0.5f, rect.y + rect.h*0.5f };
@@ -526,9 +533,9 @@ namespace ogfx
 		drawLine({ B, C }, color, thickness, false);
 		drawLine({ C, A }, color, thickness, false);
 	}
-	
-	
-	
+
+
+
 
 	void BasicRenderer2D::fillRect(const Rectangle& rect, const Color& color)
 	{
@@ -557,105 +564,171 @@ namespace ogfx
 
 	void BasicRenderer2D::fillRoundRect(const Rectangle& rect, const Color& color, f32 radius)
 	{
+		fillRoundRect(rect, color, { radius, radius, radius, radius });
+	}
+
+	void BasicRenderer2D::fillRoundRect(const Vec2& center, const Vec2& size, const Color& color, f32 radius)
+	{
+		fillRoundRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, color, { radius, radius, radius, radius });
+	}
+
+	void BasicRenderer2D::fillRoundRect(const Vec2& center, const Vec2& size, const Color& color, const Rectangle& radii)
+	{
+		fillRoundRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, color, radii);
+	}
+
+	void BasicRenderer2D::fillRoundRect(const Rectangle& rect, const Color& color, const Rectangle& radii)
+	{
 		if (!m_initialized)
 			return;
 
-		// Clamp radius
-		radius = std::max(0.0f, std::min(radius, std::min(rect.w, rect.h) * 0.5f));
+		f32 maxR = std::min(rect.w, rect.h) * 0.5f;
+		f32 rTL = std::max(0.0f, std::min(radii.x, maxR));
+		f32 rTR = std::max(0.0f, std::min(radii.y, maxR));
+		f32 rBR = std::max(0.0f, std::min(radii.w, maxR));
+		f32 rBL = std::max(0.0f, std::min(radii.h, maxR));
 
 		f32 x1 = rect.x;
 		f32 y1 = rect.y;
 		f32 x2 = rect.x + rect.w;
 		f32 y2 = rect.y + rect.h;
 
-		f32 cx1 = x1 + radius;
-		f32 cy1 = y1 + radius;
-		f32 cx2 = x2 - radius;
-		f32 cy2 = y2 - radius;
+		// The largest corner radius on each side determines the inset for that side
+		f32 topInset    = std::max(rTL, rTR);
+		f32 bottomInset = std::max(rBL, rBR);
+		f32 leftInset   = std::max(rTL, rBL);
+		f32 rightInset  = std::max(rTR, rBR);
 
-		// Number of segments for smooth corners
-		i32 segments = std::max(6, i32(radius * 0.75f));
-
-		//
-		// 1. Fill the center rectangle
-		//
+		// Center rectangle
 		{
 			Vec2 verts[4] = {
-				{ cx1, cy1 },
-				{ cx2, cy1 },
-				{ cx2, cy2 },
-				{ cx1, cy2 }
+				{ x1 + leftInset, y1 + topInset },
+				{ x2 - rightInset, y1 + topInset },
+				{ x2 - rightInset, y2 - bottomInset },
+				{ x1 + leftInset, y2 - bottomInset }
 			};
-			u32 inds[6] = { 0,1,2, 2,3,0 };
+			u32 inds[6] = QUAD_INDICES_ARR;
 			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr);
 		}
 
-		//
-		// 2. Fill the four side rectangles
-		//
-
-		// Top
-		if (radius > 0)
+		// Top strip
 		{
 			Vec2 verts[4] = {
-				{ x1 + radius, y1 },
-				{ x2 - radius, y1 },
-				{ x2 - radius, y1 + radius },
-				{ x1 + radius, y1 + radius }
+				{ x1 + rTL, y1 },
+				{ x2 - rTR, y1 },
+				{ x2 - rTR, y1 + topInset },
+				{ x1 + rTL, y1 + topInset }
 			};
-			u32 inds[6] = { 0,1,2, 2,3,0 };
+			u32 inds[6] = QUAD_INDICES_ARR;
 			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr);
 		}
 
-		// Bottom
+		// Bottom strip
 		{
 			Vec2 verts[4] = {
-				{ x1 + radius, y2 - radius },
-				{ x2 - radius, y2 - radius },
-				{ x2 - radius, y2 },
-				{ x1 + radius, y2 }
+				{ x1 + rBL, y2 - bottomInset },
+				{ x2 - rBR, y2 - bottomInset },
+				{ x2 - rBR, y2 },
+				{ x1 + rBL, y2 }
 			};
-			u32 inds[6] = { 0,1,2, 2,3,0 };
+			u32 inds[6] = QUAD_INDICES_ARR;
 			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr);
 		}
 
-		// Left
+		// Left strip
 		{
 			Vec2 verts[4] = {
-				{ x1, y1 + radius },
-				{ x1 + radius, y1 + radius },
-				{ x1 + radius, y2 - radius },
-				{ x1, y2 - radius }
+				{ x1, y1 + rTL },
+				{ x1 + leftInset, y1 + rTL },
+				{ x1 + leftInset, y2 - rBL },
+				{ x1, y2 - rBL }
 			};
-			u32 inds[6] = { 0,1,2, 2,3,0 };
+			u32 inds[6] = QUAD_INDICES_ARR;
 			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr);
 		}
 
-		// Right
+		// Right strip
 		{
 			Vec2 verts[4] = {
-				{ x2 - radius, y1 + radius },
-				{ x2, y1 + radius },
-				{ x2, y2 - radius },
-				{ x2 - radius, y2 - radius }
+				{ x2 - rightInset, y1 + rTR },
+				{ x2, y1 + rTR },
+				{ x2, y2 - rBR },
+				{ x2 - rightInset, y2 - rBR }
 			};
-			u32 inds[6] = { 0,1,2, 2,3,0 };
+			u32 inds[6] = QUAD_INDICES_ARR;
 			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr);
 		}
 
-		//
-		// 3. Fill the four rounded corners (quarter ellipses)
-		//
+		// Fill gaps between corners and strips when radii differ on the same side
+		// Top-left gap (if rTL < topInset, there's a rectangular gap below the TL corner)
+		if (rTL < topInset)
+		{
+			Vec2 verts[4] = {
+				{ x1, y1 + rTL },
+				{ x1 + leftInset, y1 + rTL },
+				{ x1 + leftInset, y1 + topInset },
+				{ x1, y1 + topInset }
+			};
+			u32 inds[6] = QUAD_INDICES_ARR;
+			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr);
+		}
 
-		generate_filled_ellipse_stroke({cx1, cy1}, radius, radius, M_PI, color, segments);            // TL
-		generate_filled_ellipse_stroke({cx2, cy1}, radius, radius, 1.5f * M_PI, color, segments);     // TR
-		generate_filled_ellipse_stroke({cx2, cy2}, radius, radius, 0.0f, color, segments);            // BR
-		generate_filled_ellipse_stroke({cx1, cy2}, radius, radius, 0.5f * M_PI, color, segments);     // BL
-	}
+		// Top-right gap
+		if (rTR < topInset)
+		{
+			Vec2 verts[4] = {
+				{ x2 - rightInset, y1 + rTR },
+				{ x2, y1 + rTR },
+				{ x2, y1 + topInset },
+				{ x2 - rightInset, y1 + topInset }
+			};
+			u32 inds[6] = QUAD_INDICES_ARR;
+			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr);
+		}
 
-	void BasicRenderer2D::fillRoundRect(const Vec2& center, const Vec2& size, const Color& color, f32 radius)
-	{
-		fillRoundRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, color, radius);
+		// Bottom-left gap
+		if (rBL < bottomInset)
+		{
+			Vec2 verts[4] = {
+				{ x1, y2 - bottomInset },
+				{ x1 + leftInset, y2 - bottomInset },
+				{ x1 + leftInset, y2 - rBL },
+				{ x1, y2 - rBL }
+			};
+			u32 inds[6] = QUAD_INDICES_ARR;
+			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr);
+		}
+
+		// Bottom-right gap
+		if (rBR < bottomInset)
+		{
+			Vec2 verts[4] = {
+				{ x2 - rightInset, y2 - bottomInset },
+				{ x2, y2 - bottomInset },
+				{ x2, y2 - rBR },
+				{ x2 - rightInset, y2 - rBR }
+			};
+			u32 inds[6] = QUAD_INDICES_ARR;
+			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr);
+		}
+
+		// Left-side gap (if rTL != rBL, leftInset is the max, smaller one needs a gap)
+		if (rTL < leftInset && rTL < topInset)
+		{
+			// Already covered by TL gap above
+		}
+		if (rBL < leftInset && rBL < bottomInset)
+		{
+			// Already covered by BL gap above
+		}
+
+		// Corner fills
+		auto segments = [](f32 r) -> i32 { return std::max(6, i32(r * 0.75f)); };
+
+		if (rTL > 0) generate_filled_ellipse_stroke({ x1 + rTL, y1 + rTL }, rTL, rTL, M_PI, color, segments(rTL));
+		if (rTR > 0) generate_filled_ellipse_stroke({ x2 - rTR, y1 + rTR }, rTR, rTR, M_PI * 1.5f, color, segments(rTR));
+		if (rBR > 0) generate_filled_ellipse_stroke({ x2 - rBR, y2 - rBR }, rBR, rBR, 0.0f, color, segments(rBR));
+		if (rBL > 0) generate_filled_ellipse_stroke({ x1 + rBL, y2 - rBL }, rBL, rBL, M_PI * 0.5f, color, segments(rBL));
 	}
 
 	void BasicRenderer2D::fillCircle(const Vec2& center, f32 radius, const Color& color)
@@ -714,9 +787,9 @@ namespace ogfx
 		u32 inds[3] = { 0, 1, 2 };
 		push_polygon(verts, texCoords, 3, inds, 3, color, nullptr);
 	}
-	
-	
-	
+
+
+
 
 	void BasicRenderer2D::outlinedRect(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, i32 outlineThickness)
 	{
@@ -733,15 +806,25 @@ namespace ogfx
 
 	void BasicRenderer2D::outlinedRoundRect(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, f32 radius, i32 outlineThickness)
 	{
-		if (!m_initialized) return;
-		Rectangle offset = { 1, 1, -2, -2 };
-		fillRoundRect(rect + offset, fillColor, radius);
-		drawRoundRect(rect, outlineColor, radius, outlineThickness);
+		outlinedRoundRect(rect, fillColor, outlineColor, { radius, radius, radius, radius }, outlineThickness);
 	}
 
 	void BasicRenderer2D::outlinedRoundRect(const Vec2& center, const Vec2& size, const Color& fillColor, const Color& outlineColor, f32 radius, i32 outlineThickness)
 	{
-		outlinedRoundRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, fillColor, outlineColor, radius, outlineThickness);
+		outlinedRoundRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, fillColor, outlineColor, { radius, radius, radius, radius }, outlineThickness);
+	}
+
+	void BasicRenderer2D::outlinedRoundRect(const Vec2& center, const Vec2& size, const Color& fillColor, const Color& outlineColor, const Rectangle& radii, i32 outlineThickness)
+	{
+		outlinedRoundRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, fillColor, outlineColor, radii, outlineThickness);
+	}
+
+	void BasicRenderer2D::outlinedRoundRect(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, const Rectangle& radii, i32 outlineThickness)
+	{
+		if (!m_initialized) return;
+		Rectangle offset = { 1, 1, -2, -2 };
+		fillRoundRect(rect + offset, fillColor, radii);
+		drawRoundRect(rect, outlineColor, radii, outlineThickness);
 	}
 
 	void BasicRenderer2D::outlinedCircle(const Vec2& center, f32 radius, const Color& fillColor, const Color& outlineColor, i32 outlineThickness)

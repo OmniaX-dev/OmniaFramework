@@ -153,8 +153,7 @@ class Window : public ogfx::gui::Window
 		void onRedraw(ogfx::BasicRenderer2D& gfx) override
 		{
 			gfx.drawAnimation(m_anim, { 200, 200 });
-			gfx.outlinedTriangle({ 30, 30 }, { 100, 50 }, { 60, 90 }, Colors::Crimson, Colors::DarkBlue, 5);
-			gfx.endFrame();
+			gfx.outlinedTriangle({ 30, 30 }, { 100, 50 }, { 60, 90 }, { 255, 0, 0, 80 }, Colors::DarkBlue, 5);
 		}
 
 		void onFixedUpdate(void) override

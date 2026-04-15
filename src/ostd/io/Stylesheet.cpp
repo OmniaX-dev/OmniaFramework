@@ -217,7 +217,7 @@ custom_continue:
 	{
 		auto it = m_values.find(fullKey);
 		// if (it != m_values.end())
-		// 	std::cout << "    GET: " << fullKey << "\n";
+		//     std::cout << "    GET: " << fullKey << "\n";
 		return it != m_values.end() ? &it->second : nullptr;
 	}
 
@@ -231,6 +231,24 @@ custom_continue:
 		if (key == "")
 			return false;
 		String themeID = "";
+
+		auto l_parseColor = [this](const String& _value) -> String {
+			String value = _value.new_toLower().trim();
+			if (value.startsWith("color(") && value.endsWith(")"))
+			{
+				value.substr(6, value.len() - 1).trim();
+				return value;
+			}
+			else if ((value.startsWith("#") && (value.len() == 7 || value.len() == 9)) ||
+					 (value.startsWith("rgb(") && value.endsWith(")")) ||
+					 (value.startsWith("rgba(") && value.endsWith(")")))
+			{
+
+				return value;
+			}
+			return "";
+		};
+
 		if (key.startsWith("@"))
 		{
 			if (key.indexOf(" ") < 2)
@@ -249,10 +267,9 @@ custom_continue:
 			valuePreserveCase.substr(1, value.len() - 1);
 			set(key, valuePreserveCase, themeID);
 		}
-		else if (value.startsWith("color(") && value.endsWith(")"))
+		else if (String v = l_parseColor(value); v != "")
 		{
-			value.substr(6, value.len() - 1).trim();
-			set(key, Color(value), themeID);
+			set(key, Color(v), themeID);
 		}
 		else if (value.startsWith("vec2(") && value.endsWith(")"))
 		{
@@ -283,6 +300,11 @@ custom_continue:
 				vec.push_back(tok.toFloat());
 			}
 			set(key, Rectangle(vec[0], vec[1], vec[2], vec[3]), themeID);
+		}
+		else if (exitCondition)
+		{
+			//Defaulting anything that isn't recognized as any value_type/variable to String type
+			set(key, valuePreserveCase, themeID);
 		}
 		else
 		{

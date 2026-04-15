@@ -16,10 +16,10 @@
 ***Implement wrappers in Renderer2D to take a center and size for rects
 ***find a way to add fixed update to gui::Window
 ***Add triangle drawing functions to BasicRenderer2D
+***Implement Panel title
 Add theme caching
 Implement global scale (probably query desktop scale and adjust accordingly)
 Implement show/hide functionality for widgets
-Implement Panel title
 Create reliable default stylesheet
 Implement cursors in Stylesheet
 
@@ -28,10 +28,10 @@ Implement cursors in Stylesheet
 Implement following widgets:
 	***Label
 	***Checkbox
+	***Panel / Container
+		***Title Label
 	Button
 		Image/Icon
-	Panel / Container
-		Title Label
 	Radio Button
 		Grouping
 	Text Input

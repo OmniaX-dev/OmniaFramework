@@ -34,7 +34,11 @@ namespace ogfx
 				{
 					inline static const String None { "none" };
 					inline static const String Full { "full" };
-					inline static const String Minimal { "monimal" };
+					inline static const String Minimal { "minimal" };
+
+					inline static constexpr i32 NoneValue = 0;
+					inline static constexpr i32 FullValue = 1;
+					inline static constexpr i32 MinimalValue = 2;
 				};
 				public:
 					inline Panel(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
@@ -42,15 +46,27 @@ namespace ogfx
 					void applyTheme(const ostd::Stylesheet& theme) override;
 					void onDraw(ogfx::BasicRenderer2D& gfx) override;
 					void setTitlebarType(const String& type);
+					String getTitlebarType(void) const;
 					inline void setBackGroundColor(const Color& color) { m_backgroundColor = color; }
 					inline Color getBackgroundColor(void) { return m_backgroundColor; }
-					inline String getTitlebarType(void) const { return m_titleType; }
+					inline String getTitle(void) const { return m_title; }
+					inline void setTitle(const String& title) { m_title = title; }
 
 				private:
-					Color m_titleColor { 0, 0, 0 };
-					bool m_showTitle { false };
-					String m_titleType = TitleBarTypes::None;
-					f32 m_titleHeight { 30 };
+					void draw_titlebar(BasicRenderer2D& gfx);
+
+				private:
+					String m_title { "Panel" };
+
+					Color m_titleColor { Colors::Black  };
+					i32 m_titlebarType = TitleBarTypes::NoneValue;
+					f32 m_titlebarHeight { 30 };
+					i32 m_titlebarBorderWidth { 1 };
+					i32 m_titlebarFontSize { 26 };
+					Color m_titlebarColor { Colors::Transparent };
+					Color m_titlebarBorderColor { Colors::Black };
+					Rectangle m_basePadding { 0, 0, 0, 0 };
+					i32 m_titleTextAlign { 0 };
 			};
 		}
 	}

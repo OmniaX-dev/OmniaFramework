@@ -59,6 +59,11 @@ namespace ogfx
 
 			Count
 		};
+		public: enum class eTextAlign : u8 {
+			Default = 0,
+			Center,
+			Left
+		};
 		public:
 			inline WindowCore(void) {  }
 			virtual ~WindowCore(void);
