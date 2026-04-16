@@ -323,7 +323,7 @@ namespace ostd
 			inline virtual Vec2 getSize(void) const { return Vec2(getw(), geth()); }
 			inline virtual Vec2 getCenter(void) const { return Vec2(getx() + getw() / 2, gety() + geth() / 2); }
 
-			inline virtual void setPosition(Vec2 pos) { setx(pos.x); sety(pos.y); }
+			inline virtual void setPosition(const Vec2& pos) { setx(pos.x); sety(pos.y); }
 			inline virtual void setPosition(f32 xx, f32 yy) { setx(xx); sety(yy); }
 			inline virtual void setSize(Vec2 size) { setw(size.x); seth(size.y); }
 			inline virtual void setSize(f32 ww, f32 hh) { setw(ww); seth(hh); }

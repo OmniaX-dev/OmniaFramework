@@ -49,11 +49,15 @@ namespace ogfx
 					void onMouseScrolled(const Event& event) override;
 					void setTitlebarType(const String& type);
 					String getTitlebarType(void) const;
+					void setScrollOffset(const Vec2& offset) override;
+					void addScrollOffset(const Vec2& offset) override;
+					bool needsScroll(void) const override;
 					inline void setBackGroundColor(const Color& color) { m_backgroundColor = color; }
 					inline Color getBackgroundColor(void) { return m_backgroundColor; }
 					inline String getTitle(void) const { return m_title; }
 					inline void setTitle(const String& title) { m_title = title; }
 					inline Vec2 getScrollOffset(void) const override { return m_scrollOffset; }
+					inline f32 getTitlebarHeight(void) const { return m_titlebarHeight; }
 
 				private:
 					void draw_titlebar(BasicRenderer2D& gfx);

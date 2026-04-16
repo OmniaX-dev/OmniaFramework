@@ -50,7 +50,14 @@ namespace ogfx
 		{
 			Vec2 glob = getPosition();
 			if (!m_rootChild && m_parent != nullptr)
-				glob += m_parent->getGlobalPosition() + m_parent->getPadding().getPosition() + m_parent->getScrollOffset();
+			{
+				glob += m_parent->getGlobalPosition();
+				if (!isIgnoreScrollAllowed())
+				{
+					glob += m_parent->getPadding().getPosition();
+					glob += m_parent->getScrollOffset();
+				}
+			}
 			glob += m_margin.getPosition();
 			return glob;
 		}
@@ -83,6 +90,7 @@ namespace ogfx
 			for (auto* child : m_widgets.getWidgets())
 			{
 				if (!child || child->isInvalid()) continue;
+				if (child->isIgnoreScrollAllowed()) continue;
 				Vec2 localPos = getPadding().getPosition() + child->getPosition() + child->getMargin().getPosition() + child->getContentBounds().getPosition();
 				maxX = std::max(maxX, localPos.x + child->getw() + child->getMargin().w);
 				maxY = std::max(maxY, localPos.y + child->geth() + child->getMargin().h);

@@ -144,6 +144,7 @@ namespace ogfx
 				if (!w->isVisible()) continue;
 				if (!w->contains(event.mouse->position_x, event.mouse->position_y, true))
 					continue;
+				event.mouse->mousePressedOnWidget = w;
 				w->__onMousePressed(event);
 				m_mousePressedOnWidget = w;
 				if (event.isHandled() || w->m_stopEvents)
@@ -178,6 +179,12 @@ namespace ogfx
 
 		void WidgetManager::onMouseMoved(const Event& event)
 		{
+			if (m_mousePressedOnWidget != nullptr &&
+				m_mousePressedOnWidget->m_pressedButton != MouseEventData::eButton::None &&
+				!m_mousePressedOnWidget->contains(event.mouse->position_x, event.mouse->position_y, true))
+			{
+				m_mousePressedOnWidget->__onMouseDragged(event);
+			}
 			for (i32 i = m_widgetList.size() - 1; i >= 0; i--)
 			{
 				Widget* w = m_widgetList[i];
@@ -200,7 +207,7 @@ namespace ogfx
 				}
 				else
 				{
-					if (w->m_pressedButton != ogfx::MouseEventData::eButton::None)
+					if (w->m_pressedButton != MouseEventData::eButton::None)
 						w->__onMouseDragged(event);
 					else
 						w->__onMouseMoved(event);
@@ -246,8 +253,8 @@ namespace ogfx
 				if (w == nullptr) continue;
 				if (w->isInvalid()) continue;
 				if (!w->isVisible()) continue;
-				if (!w->contains(event.mouse->position_x, event.mouse->position_y, true))
-					continue;
+				// if (!w->contains(event.mouse->position_x, event.mouse->position_y, true))
+				//     continue;
 				w->__onMouseDragged(event);
 				if (event.isHandled())
 					break;

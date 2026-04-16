@@ -50,6 +50,7 @@ class Window : public ogfx::gui::Window
 			m_label1.setText("Show Panel2");
 			m_label1.setMousePressedCallback([&](const ogfx::gui::Event& event) -> void {
 				m_check1.setChecked(!m_check1.isChecked());
+				m_label1.addy(10);
 			});
 			m_label1.addThemeOverride("@.label.showBackground", true);
 			m_label1.addThemeOverride("@.label.backgroundColor", Colors::Beige);
@@ -75,11 +76,14 @@ class Window : public ogfx::gui::Window
 
 			m_panel2.setSize(600, 400);
 
+			m_scroll.setMargin({ 0, m_panel2.getTitlebarHeight(), 0, 0 });
+
 			m_panel1.addWidget(m_label2);
 
 			m_panel2.addWidget(m_label3);
 			m_panel2.addWidget(m_panel1, { 0, 50 });
-			m_panel2.addWidget(m_label1, { 0, 340 });
+			m_panel2.addWidget(m_label1, { 0, 500 });
+			m_panel2.addWidget(m_scroll);
 
 			addWidget(m_check1, { 30, 30 });
 			addWidget(m_panel2, { 30, 100 });
@@ -115,6 +119,8 @@ class Window : public ogfx::gui::Window
 		ogfx::gui::widgets::Panel m_panel1 { *this };
 		ogfx::gui::widgets::Panel m_panel2 { *this };
 		ogfx::gui::widgets::CheckBox m_check1 { *this };
+		ogfx::gui::widgets::VerticalScrollBar m_scroll { *this };
+
 		ostd::Stylesheet m_theme;
 		ogfx::Animation m_anim;
 		ogfx::Image m_img;

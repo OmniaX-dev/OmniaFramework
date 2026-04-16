@@ -23,3 +23,4 @@
 #include <ogfx/gui/widgets/Containers.hpp>
 #include <ogfx/gui/widgets/Label.hpp>
 #include <ogfx/gui/widgets/CheckBox.hpp>
+#include <ogfx/gui/widgets/Scrollbar.hpp>

@@ -53,6 +53,9 @@ namespace ogfx
 				void enable(bool enable = true);
 				virtual void applyTheme(const ostd::Stylesheet& theme) = 0;
 				inline virtual Vec2 getScrollOffset(void) const { return { 0, 0 }; }
+				inline virtual void setScrollOffset(const Vec2& offset) {  }
+				inline virtual void addScrollOffset(const Vec2& offset) {  }
+				inline virtual bool needsScroll(void) const { return false; }
 				void addThemeOverride(const String& fullKey, ostd::Stylesheet::TypeVariant value);
 				void reloadTheme(bool propagate = false);
 				void setThemeQualifier(const String& qualifier, bool value = true);
@@ -161,6 +164,8 @@ namespace ogfx
 				inline void hide(void) { setVisible(false); }
 				inline void allowScroll(bool allow = true) { m_allowScroll = allow; }
 				inline bool isScrollAllowed(void) const { return m_allowScroll; }
+				inline void allowIgnoreScroll(bool allow = true) { m_ignoreScroll = allow; }
+				inline bool isIgnoreScrollAllowed(void) const { return m_ignoreScroll; }
 
 				template<typename T>
 				inline T getThemeValue(const ostd::Stylesheet &theme, const String& key, const T& fallback)
@@ -221,6 +226,7 @@ namespace ogfx
 				bool m_acceptDragAndDrop { false };
 				bool m_visible { true };
 				bool m_allowScroll { false };
+				bool m_ignoreScroll { false};
 				MouseEventData::eButton m_pressedButton { MouseEventData::eButton::None };
 
 				stdvec<String> m_themeIDList;

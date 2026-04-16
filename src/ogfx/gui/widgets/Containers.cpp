@@ -64,8 +64,8 @@ namespace ogfx
 
 			void Panel::onDraw(ogfx::BasicRenderer2D& gfx)
 			{
-				if (isScrollAllowed())
-					gfx.fillRect(getContentExtents() + Rectangle { getGlobalPosition(), 0, 0 }, { 80, 0, 0, 30 });
+				// if (isScrollAllowed())
+				//     gfx.fillRect(getContentExtents() + Rectangle { getGlobalPosition(), 0, 0 }, { 80, 0, 0, 30 });
 			}
 
 			void Panel::afterDraw(ogfx::BasicRenderer2D& gfx)
@@ -77,21 +77,12 @@ namespace ogfx
 			{
 				if (!isScrollAllowed())
 					return;
-				auto ext = getContentExtents();
-				auto cont = getContentBounds();
-				f32 maxScroll = -(ext.h - cont.h);
-				if (event.mouse->scroll == MouseEventData::eScrollDirection::Down && m_scrollOffset.y > maxScroll)
-				{
-					m_scrollOffset.y -= (m_scrollSpeed.y * 15.0f);
-					if (m_scrollOffset.y < maxScroll)
-						m_scrollOffset.y = maxScroll;
-				}
-				else if (event.mouse->scroll == MouseEventData::eScrollDirection::Up && m_scrollOffset.y < 0)
-				{
-					m_scrollOffset.y += (m_scrollSpeed.y * 15.0f);
-					if (m_scrollOffset.y > 0)
-						m_scrollOffset.y = 0;
-				}
+				f32 offset_y = 0;
+				if (event.mouse->scroll == MouseEventData::eScrollDirection::Down)
+					offset_y = -(m_scrollSpeed.y * 15.0f);
+				else if (event.mouse->scroll == MouseEventData::eScrollDirection::Up)
+					offset_y = (m_scrollSpeed.y * 15.0f);
+				addScrollOffset({ 0, offset_y });
 				event.handle();
 			}
 
@@ -124,6 +115,35 @@ namespace ogfx
 					case TitleBarTypes::NoneValue: return TitleBarTypes::None;
 					default: return TitleBarTypes::None;
 				}
+			}
+
+			void Panel::setScrollOffset(const Vec2& offset)
+			{
+				auto ext = getContentExtents();
+				auto cont = getContentBounds();
+				f32 maxScroll = -(ext.h - cont.h);
+				m_scrollOffset = offset;
+				if (m_scrollOffset.y < maxScroll)
+					m_scrollOffset.y = maxScroll;
+				if (m_scrollOffset.y > 0)
+					m_scrollOffset.y = 0;
+			}
+
+			void Panel::addScrollOffset(const Vec2& offset)
+			{
+				auto ext = getContentExtents();
+				auto cont = getContentBounds();
+				f32 maxScroll = -(ext.h - cont.h);
+				m_scrollOffset += offset;
+				if (m_scrollOffset.y < maxScroll)
+					m_scrollOffset.y = maxScroll;
+				if (m_scrollOffset.y > 0)
+					m_scrollOffset.y = 0;
+			}
+
+			bool Panel::needsScroll(void) const
+			{
+				return getContentExtents().h > getContentBounds().h;
 			}
 
 			void Panel::draw_titlebar(BasicRenderer2D& gfx)

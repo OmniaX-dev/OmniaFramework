@@ -18,9 +18,9 @@
 ***Add triangle drawing functions to BasicRenderer2D
 ***Implement Panel title
 ***Implement show/hide functionality for widgets
+***Create reliable default stylesheet
 Add theme caching
 Implement global scale (probably query desktop scale and adjust accordingly)
-Create reliable default stylesheet
 Implement cursors in Stylesheet
 
 
@@ -30,6 +30,7 @@ Implement following widgets:
 	***Checkbox
 	***Panel / Container
 		***Title Label
+	***ScrollView
 	Button
 		Image/Icon
 	Radio Button
@@ -38,7 +39,6 @@ Implement following widgets:
 	Horizontal Slider
 	Vertical Slider
 	Image / Icon
-	ScrollView
 	ListBox
 	ComboBox
 	TreeView
