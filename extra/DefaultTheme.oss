@@ -30,7 +30,7 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 	titlebarHeight = 18
 	titlebarFontSize = 18
 	titlebarTextAlign = text_left
-	% scrollSpeed = Vec2(0.8, 0.8)
+	scrollSpeed = Vec2(0.8, 0.8)
 	padding = Rect(15, 15, 15, 15)
 	margin = Rect(0, 0, 0, 0)
 }
@@ -39,11 +39,25 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 
 
 % ====== Scrollbar ======
-% (scrollbar) {
-% 	(handle) {
-
-% 	}
-% }
+(scrollbar) {
+	width = 20
+	(handle) {
+		color = #333333FF
+	}
+	(track) {
+		color = #555555FF
+	}
+}
+(scrollbar:handle_hover) {
+	(handle) {
+		color = $accentColorDark
+	}
+}
+(scrollbar:handle_pressed) {
+	(handle) {
+		color = $accentColorDark
+	}
+}
 % =======================
 
 

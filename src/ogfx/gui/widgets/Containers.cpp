@@ -82,13 +82,13 @@ namespace ogfx
 				f32 maxScroll = -(ext.h - cont.h);
 				if (event.mouse->scroll == MouseEventData::eScrollDirection::Down && m_scrollOffset.y > maxScroll)
 				{
-					m_scrollOffset -= (m_scrollSpeed * 15.0f);
+					m_scrollOffset.y -= (m_scrollSpeed.y * 15.0f);
 					if (m_scrollOffset.y < maxScroll)
 						m_scrollOffset.y = maxScroll;
 				}
 				else if (event.mouse->scroll == MouseEventData::eScrollDirection::Up && m_scrollOffset.y < 0)
 				{
-					m_scrollOffset += (m_scrollSpeed * 15.0f);
+					m_scrollOffset.y += (m_scrollSpeed.y * 15.0f);
 					if (m_scrollOffset.y > 0)
 						m_scrollOffset.y = 0;
 				}

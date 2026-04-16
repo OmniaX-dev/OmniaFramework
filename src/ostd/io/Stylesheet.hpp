@@ -57,7 +57,6 @@ namespace ostd
 
 			void debugPrint(void);
 			String typeVariantToString(const TypeVariant& v);
-			stdvec<ostd::RegexRichString> getRichStringLines(const stdvec<String>& lines);
 
 		private:
 			bool parseThemeFileLine(const String& line, const VariableList& variables, bool exitCondition = false);

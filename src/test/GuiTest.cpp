@@ -58,6 +58,7 @@ class Window : public ogfx::gui::Window
 			m_label1.addThemeOverride("@.label.borderColor", Colors::DarkMagenta);
 			m_label1.addThemeOverride("@:pressed.label.backgroundColor", Colors::Crimson);
 			m_label1.addThemeOverride("@:hover.label.backgroundColor", Colors::DarkRed);
+			m_label1.addThemeOverride("@:hover.label.cursor", cast<i32>(ogfx::WindowCore::eCursor::Pointer));
 			m_label1.reloadTheme();
 
 			m_check1.setText("Check this out!");

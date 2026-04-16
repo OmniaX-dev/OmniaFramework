@@ -142,6 +142,8 @@ namespace ogfx
 		connectSignal(ostd::BuiltinSignals::FileDragAndDropped);
 		connectSignal(ostd::BuiltinSignals::TextDragAndDropped);
 
+		setCursor(eCursor::Default);
+
 		__on_window_init(width, height, title);
 		setSize(m_windowWidth, m_windowHeight);
 	}
@@ -237,10 +239,39 @@ namespace ogfx
 			case eCursor::W_Resize:
 				SDL_SetCursor(m_cursor_W_Resize);
 			break;
+			case eCursor::NoCursor:
 			default:
 				SDL_SetCursor(m_cursor_Default);
 			break;
 		}
+	}
+
+	WindowCore::eCursor WindowCore::getCurosr(void) const
+	{
+		auto cur = SDL_GetCursor();
+		if (cur == m_cursor_Default)     return eCursor::Default;
+		if (cur == m_cursor_Text)        return eCursor::Text;
+		if (cur == m_cursor_Wait)        return eCursor::Wait;
+		if (cur == m_cursor_Crosshair)   return eCursor::Crosshair;
+		if (cur == m_cursor_Progress)    return eCursor::Progress;
+		if (cur == m_cursor_NWSE_Resize) return eCursor::NWSE_Resize;
+		if (cur == m_cursor_NESW_Resize) return eCursor::NESW_Resize;
+		if (cur == m_cursor_EW_Resize)   return eCursor::EW_Resize;
+		if (cur == m_cursor_NS_Resize)   return eCursor::NS_Resize;
+		if (cur == m_cursor_Move)        return eCursor::Move;
+		if (cur == m_cursor_NotAllowed)  return eCursor::NotAllowed;
+		if (cur == m_cursor_Pointer)     return eCursor::Pointer;
+
+		if (cur == m_cursor_NW_Resize)   return eCursor::NW_Resize;
+		if (cur == m_cursor_N_Resize)    return eCursor::N_Resize;
+		if (cur == m_cursor_NE_Resize)   return eCursor::NE_Resize;
+		if (cur == m_cursor_E_Resize)    return eCursor::E_Resize;
+		if (cur == m_cursor_SE_Resize)   return eCursor::SE_Resize;
+		if (cur == m_cursor_S_Resize)    return eCursor::S_Resize;
+		if (cur == m_cursor_SW_Resize)   return eCursor::SW_Resize;
+		if (cur == m_cursor_W_Resize)    return eCursor::W_Resize;
+
+		return eCursor::Default;
 	}
 
 	void WindowCore::enableResizable(bool enable)
@@ -443,6 +474,7 @@ namespace ogfx
 		m_defaultStylesheetVariables["cursor_s_resize"] = { String("").add(cast<i32>(eCursor::S_Resize)), true };
 		m_defaultStylesheetVariables["cursor_sw_resize"] = { String("").add(cast<i32>(eCursor::SW_Resize)), true };
 		m_defaultStylesheetVariables["cursor_w_resize"] = { String("").add(cast<i32>(eCursor::W_Resize)), true };
+		m_defaultStylesheetVariables["cursor_inherit"] = { String("").add(cast<i32>(eCursor::NoCursor)), true };
 
 		// Colors
 		m_defaultStylesheetVariables["color_transparent"]   = { "Color(" + Colors::Transparent.hexString(true, "#") + ")", true };

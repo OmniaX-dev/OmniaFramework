@@ -57,7 +57,8 @@ namespace ogfx
 			SW_Resize,
 			W_Resize,
 
-			Count
+			Count,
+			NoCursor = 255
 		};
 		public: enum class eTextAlign : u8 {
 			Default = 0,
@@ -74,6 +75,7 @@ namespace ogfx
 			void setSize(i32 width, i32 height);
 			void setTitle(const String& title);
 			void setCursor(eCursor cursor);
+			eCursor getCurosr(void) const;
 			void enableResizable(bool enable = true);
 			void setIcon(const String& iconFilePath);
 			void setBlockingEventsRefreshFPS(u32 fps);

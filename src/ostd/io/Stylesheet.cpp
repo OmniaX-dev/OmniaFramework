@@ -26,6 +26,7 @@ namespace ostd
 {
 	Stylesheet::Stylesheet(void)
 	{
+		//
 	}
 
 	Stylesheet& Stylesheet::clear(void)
@@ -47,10 +48,9 @@ namespace ostd
 			m_values.clear();
 		stdvec<String> lines = content.tokenize("\n", false, true).getRawData();
 		stdvec<String> originalLines = lines;
-		auto richLines = getRichStringLines(lines);
 		u32 lineNumber = 0;
 		auto l_warn = [&](const String& msg) -> void {
-			OX_WARN("%s in theme line. File: <%s:%d>", msg.c_str(), filePath.c_str(), lineNumber, originalLines[lineNumber - 1].c_str());
+			OX_WARN("%s in theme line. File: <%s:%d>\n  %s", msg.c_str(), filePath.c_str(), lineNumber, originalLines[lineNumber - 1].c_str());
 		};
 		auto l_parseLine = [&](String& line) -> void {
 			if (!parseThemeFileLine(line, variables))
@@ -60,17 +60,18 @@ namespace ostd
 		String groupSelector = "";
 		bool groupLines = true;
 		stdvec<String> group;
+		u32 groupSelectorCount = 0;
 		bool debug_print = false;
 		for (auto& line : lines)
 		{
 			lineNumber++;
 			line.trim();
 			if (line.startsWith("%"))
-				goto custom_continue;
+				continue;
 			if (line.contains("%"))
 				line.substr(0, line.indexOf("%")).trim();
 			if (line == "")
-				goto custom_continue;
+				continue;
 			if (line.startsWith("const ") || line.startsWith("$"))
 			{
 				bool is_const = false;
@@ -83,29 +84,37 @@ namespace ostd
 				if (line.count("=") != 1 || line.endsWith("="))
 				{
 					l_warn("Invalid variable");
-					goto custom_continue;
+					continue;
 				}
 				String varName = line.new_substr(0, line.indexOf("=")).trim();
 				String varValue = line.new_substr(line.indexOf("=") + 1).trim();
 				if (!varName.regexMatches(m_validNameRegex))
 				{
 					l_warn("Invalid variable name");
-					goto custom_continue;
+					continue;
 				}
 				auto var = variables.find("$" + varName);
 				if (var != variables.end() && var->second.second)
 				{
 					l_warn("Trying to re-assign a const variable");
-					goto custom_continue;
+					continue;
 				}
 				variables["$" + varName] = { varValue, is_const };
-				goto custom_continue;
+				continue;
 			}
 			if (groupSelector != "")
 			{
 				if (groupLines)
 				{
-					if (line == "}")
+					if (line.endsWith("{"))
+					{
+						groupSelectorCount++;
+					}
+					else if (line == "}" && groupSelectorCount > 1)
+					{
+						groupSelectorCount--;
+					}
+					else if (line == "}" && groupSelectorCount == 1)
 					{
 						groupLines = false;
 						auto newLines = parseGroup(groupSelector, group);
@@ -117,31 +126,35 @@ namespace ostd
 							lineNumber++;
 						}
 						groupSelector = "";
+						groupSelectorCount = 0;
 						group.clear();
-						goto custom_continue;
+						continue;
 					}
 					group.push_back(line);
 				}
 				else
 				{
 					if (line == "{")
+					{
 						groupLines = true;
+						groupSelectorCount++;
+					}
 				}
-				goto custom_continue;
+				continue;
 			}
 			if (line.startsWith("("))
 			{
 				if (line.count(")") != 1 || line.indexOf(")") < 3)
 				{
 					l_warn("Invalid group selector");
-					goto custom_continue;
+					continue;
 				}
 				String rawSelector = line.new_substr(1, line.indexOf(")")).trim();
 				groupSelector = parseGroupSelector(rawSelector);
 				if (groupSelector == "")
 				{
 					l_warn("Invalid group selector");
-					goto custom_continue;
+					continue;
 				}
 				if (line.contains("{"))
 				{
@@ -149,17 +162,15 @@ namespace ostd
 					if (line != "{")
 					{
 						l_warn("Invalid group selector");
-						goto custom_continue;
+						continue;
 					}
 					groupLines = true;
+					groupSelectorCount = 1;
 				}
-				goto custom_continue;
+				continue;
 			}
 			l_parseLine(line);
 			continue;
-custom_continue:
-			if (debug_print)
-				std::cout << String("").add(lineNumber).addLeftPadding(lineNumberMaxWidth, ' ') << "|  " << richLines[lineNumber - 1] << "\n";
 		}
 		return *this;
 	}
@@ -243,7 +254,6 @@ custom_continue:
 					 (value.startsWith("rgb(") && value.endsWith(")")) ||
 					 (value.startsWith("rgba(") && value.endsWith(")")))
 			{
-
 				return value;
 			}
 			return "";
@@ -273,7 +283,7 @@ custom_continue:
 		}
 		else if (value.startsWith("vec2(") && value.endsWith(")"))
 		{
-			value.substr(4, value.len() - 1).trim();
+			value.substr(5, value.len() - 1).trim();
 			auto tokens = value.tokenize(",");
 			if (tokens.count() != 2)
 				return false;
@@ -359,8 +369,35 @@ custom_continue:
 		if (selector.new_trim() == "" || group.size() == 0)
 			return {};
 		stdvec<String> newLines;
+		stdvec<String> subSelectorStack;
 		for (const auto& property : group)
-			newLines.push_back(selector.new_add(".").new_add(property));
+		{
+			String p = property.new_trim();
+			if (p.startsWith("(") && p.lastIndexOf(")") > 1 && p.endsWith("{") && p.len() > 3)
+			{
+				String ss = p.substr(1, p.lastIndexOf(")")).trim();
+				if (!ss.regexMatches(m_validNameRegex))
+					return {};
+				subSelectorStack.push_back(ss);
+			}
+			else if (p == "}")
+			{
+				if (subSelectorStack.size() > 0)
+					subSelectorStack.pop_back();
+				else
+					return {};
+			}
+			else
+			{
+				String fullSelector = selector;
+				for (const auto& ss : subSelectorStack)
+					fullSelector.add(".").add(ss);
+				newLines.push_back(fullSelector.new_add(".").new_add(property));
+			}
+		}
+		// for (const auto& l : newLines)
+		//     std::cout << l << "\n";
+		// std::cout << "\n\n\n";
 		return newLines;
 	}
 
@@ -390,21 +427,5 @@ custom_continue:
 		else if (auto p = std::get_if<Vec2>(&v))
 			return *p;
 		return "";
-	}
-
-	stdvec<ostd::RegexRichString> Stylesheet::getRichStringLines(const stdvec<String>& lines)
-	{
-		stdvec<ostd::RegexRichString> richLines;
-		for (auto line : lines)
-		{
-			ostd::RegexRichString rgxrstr(line);
-			rgxrstr.fg("\\{|\\}|\\+|\\*|\\-|\\/|\\(|\\)|\\[|\\]", "Red"); //Operators
-			rgxrstr.fg("0x[0-9A-Fa-f]+|0b[0-1]+|(?<!\\w)[0-9]+(?!\\w)", "Blue"); //Number Constants
-			rgxrstr.fg("(?<!\\w)(r[1-9]|r10|fl|pp|rv|fp|sp|ip|acc)(?!\\w)", "BrightGreen", true); //Registers
-			rgxrstr.fg("\\%low", "Magenta");
-			rgxrstr.fg("\\$\\w+", "Cyan"); //Labels
-			richLines.push_back(rgxrstr);
-		}
-		return richLines;
 	}
 }
