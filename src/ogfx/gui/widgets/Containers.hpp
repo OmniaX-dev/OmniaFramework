@@ -45,18 +45,22 @@ namespace ogfx
 					Panel& create(void);
 					void applyTheme(const ostd::Stylesheet& theme) override;
 					void onDraw(ogfx::BasicRenderer2D& gfx) override;
+					void afterDraw(ogfx::BasicRenderer2D& gfx) override;
+					void onMouseScrolled(const Event& event) override;
 					void setTitlebarType(const String& type);
 					String getTitlebarType(void) const;
 					inline void setBackGroundColor(const Color& color) { m_backgroundColor = color; }
 					inline Color getBackgroundColor(void) { return m_backgroundColor; }
 					inline String getTitle(void) const { return m_title; }
 					inline void setTitle(const String& title) { m_title = title; }
+					inline Vec2 getScrollOffset(void) const override { return m_scrollOffset; }
 
 				private:
 					void draw_titlebar(BasicRenderer2D& gfx);
 
 				private:
 					String m_title { "Panel" };
+					Vec2 m_scrollOffset { 0, 0 };
 
 					Color m_titleColor { Colors::Black  };
 					i32 m_titlebarType = TitleBarTypes::NoneValue;
@@ -67,6 +71,7 @@ namespace ogfx
 					Color m_titlebarBorderColor { Colors::Black };
 					Rectangle m_basePadding { 0, 0, 0, 0 };
 					i32 m_titleTextAlign { 0 };
+					Vec2 m_scrollSpeed { 0.8f, 0.8f };
 			};
 		}
 	}

@@ -212,7 +212,7 @@ namespace ogfx
 			public:
 				inline Window(void) {  }
 				inline Window(i32 width, i32 height, const String& title) { initialize(width, height, title); }
-				void addWidget(Widget& widget);
+				void addWidget(Widget& widget, const Vec2& position = { 0, 0 });
 				void setTheme(const ostd::Stylesheet& theme) override;
 
 				inline virtual void onInitialize(void) {  }

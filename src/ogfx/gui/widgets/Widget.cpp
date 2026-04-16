@@ -36,10 +36,12 @@ namespace ogfx
 			m_window = &window;
 		}
 
-		bool Widget::addChild(Widget& child)
+		bool Widget::addWidget(Widget& child, const Vec2& position)
 		{
 			if (!m_allowChildren)
 				return false;
+			if (position.x != 0 || position.y != 0)
+				child.setPosition(position);
 			child.reloadTheme();
 			return m_widgets.addWidget(child);
 		}
@@ -48,7 +50,7 @@ namespace ogfx
 		{
 			Vec2 glob = getPosition();
 			if (!m_rootChild && m_parent != nullptr)
-				glob += m_parent->getGlobalPosition() + m_parent->getPadding().getPosition();
+				glob += m_parent->getGlobalPosition() + m_parent->getPadding().getPosition() + m_parent->getScrollOffset();
 			glob += m_margin.getPosition();
 			return glob;
 		}
@@ -75,6 +77,19 @@ namespace ogfx
 			return { getGlobalContentPosition(), getContentBounds().getSize() };
 		}
 
+		Rectangle Widget::getContentExtents(void) const
+		{
+			f32 maxX = 0, maxY = 0;
+			for (auto* child : m_widgets.getWidgets())
+			{
+				if (!child || child->isInvalid()) continue;
+				Vec2 localPos = getPadding().getPosition() + child->getPosition() + child->getMargin().getPosition() + child->getContentBounds().getPosition();
+				maxX = std::max(maxX, localPos.x + child->getw() + child->getMargin().w);
+				maxY = std::max(maxY, localPos.y + child->geth() + child->getMargin().h);
+			}
+			return { 0, 0, maxX, maxY };
+		}
+
 		bool Widget::contains(Vec2 p, bool includeBounds) const
 		{
 			return Rectangle(getGlobalPosition(), getSize()).contains(p, includeBounds);
@@ -91,7 +106,7 @@ namespace ogfx
 			m_themeOverrides.push_back({ fullKey, value });
 		}
 
-		void Widget::reloadTheme(void)
+		void Widget::reloadTheme(bool propagate)
 		{
 			if (getWindow().theme() == nullptr)
 				return;
@@ -116,7 +131,7 @@ namespace ogfx
 				backup.push_back({ currentValuePtr, currentValue, rule.fullKey });
 				const_cast_theme.setFull(rule.fullKey, rule.value);
 			}
-			__applyTheme(const_cast_theme, false);
+			__applyTheme(const_cast_theme, propagate);
 			for (auto&[ptr, val, key] : backup)
 			{
 				if (ptr == nullptr)
@@ -189,6 +204,7 @@ namespace ogfx
 				m_widgets.draw(gfx);
 			if (m_showBorder)
 				gfx.drawRoundRect({ getGlobalPosition(), getSize() }, m_borderColor, m_borderRadius, m_borderWidth);
+			afterDraw(gfx);
 		}
 
 		void Widget::__update(void)

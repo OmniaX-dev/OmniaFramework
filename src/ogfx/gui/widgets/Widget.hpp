@@ -41,18 +41,20 @@ namespace ogfx
 			public: using EventCallback = std::function<void(const Event&)>;
 			public:
 				Widget(const Rectangle& bounds, WindowCore& window);
-				bool addChild(Widget& child);
+				bool addWidget(Widget& child, const Vec2& position = { 0, 0 });
 				virtual Vec2 getGlobalPosition(void) const;
 				virtual Vec2 getGlobalContentPosition(void) const;
 				virtual Rectangle getGlobalBounds(void) const;
 				virtual Rectangle getContentBounds(void) const;
 				virtual Rectangle getGlobalContentBounds(void) const;
+				virtual Rectangle getContentExtents(void) const;
 				using Rectangle::contains;
 				bool contains(Vec2 p, bool includeBounds = false) const override;
 				void enable(bool enable = true);
 				virtual void applyTheme(const ostd::Stylesheet& theme) = 0;
+				inline virtual Vec2 getScrollOffset(void) const { return { 0, 0 }; }
 				void addThemeOverride(const String& fullKey, ostd::Stylesheet::TypeVariant value);
-				void reloadTheme(void);
+				void reloadTheme(bool propagate = false);
 				void setThemeQualifier(const String& qualifier, bool value = true);
 				bool getThemeQualifier(const String& qualifier) const;
 				bool addThemeID(const String& id);
@@ -61,6 +63,7 @@ namespace ogfx
 				inline const ostd::Stylesheet::QualifierList& getThemeQualifierList(void) const { return m_qualifierList; }
 
 				inline virtual void onDraw(ogfx::BasicRenderer2D& gfx) {  }
+				inline virtual void afterDraw(ogfx::BasicRenderer2D& gfx) {  }
 				inline virtual void onUpdate(void) {  }
 
 				inline virtual void onMousePressed(const Event& event) {  }
@@ -156,6 +159,8 @@ namespace ogfx
 				inline bool isVisible(void) const { return m_visible; }
 				inline void show(void) { setVisible(true); }
 				inline void hide(void) { setVisible(false); }
+				inline void allowScroll(bool allow = true) { m_allowScroll = allow; }
+				inline bool isScrollAllowed(void) const { return m_allowScroll; }
 
 				template<typename T>
 				inline T getThemeValue(const ostd::Stylesheet &theme, const String& key, const T& fallback)
@@ -215,6 +220,7 @@ namespace ogfx
 				bool m_clipContents { true };
 				bool m_acceptDragAndDrop { false };
 				bool m_visible { true };
+				bool m_allowScroll { false };
 				MouseEventData::eButton m_pressedButton { MouseEventData::eButton::None };
 
 				stdvec<String> m_themeIDList;

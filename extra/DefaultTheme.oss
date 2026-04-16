@@ -1,20 +1,20 @@
 % ================== DefaultTheme.oss ==================
 
 
-% ---- Variables ----
+% ==== Variables ====
 const $accentColor = #DC143CFF
 const $textColor = #111111FF
 const $accentColorLight = #F16A85FF
 const $accentColorDark = #6B0A1DFF
-% -------------------
+% ===================
 
 
-% ------ Root Widget ------
+% ====== Root Widget ======
 window.backgroundColor = rgba(160, 160, 160, 255)
-% -------------------------
+% =========================
 
 
-% ------ Panel ------
+% ====== Panel ======
 (panel) {
 	backgroundColor = #AAAAAAFF
 	titleColor =  $accentColorDark
@@ -30,14 +30,25 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 	titlebarHeight = 18
 	titlebarFontSize = 18
 	titlebarTextAlign = text_left
+	% scrollSpeed = Vec2(0.8, 0.8)
 	padding = Rect(15, 15, 15, 15)
 	margin = Rect(0, 0, 0, 0)
 }
-% -------------------
+% ===================
 
 
 
-% ------ CheckBox ------
+% ====== Scrollbar ======
+% (scrollbar) {
+% 	(handle) {
+
+% 	}
+% }
+% =======================
+
+
+
+% ====== CheckBox ======
 (checkbox) {
 	checkBorderColor = $accentColorDark
 	checkBoxColor = $accentColor
@@ -67,11 +78,11 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 	checkBorderColor = $accentColor
 	textColor = $accentColorDark
 }
-% ----------------------
+% ======================
 
 
 
-% ------ Label ------
+% ====== Label ======
 (label) {
 	textColor = $textColor
 	backgroundColor = color_transparent
@@ -84,4 +95,4 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 	padding = Rect(15, 15, 15, 15)
 	margin = Rect(0, 0, 0, 0)
 }
-% -------------------
+% ===================

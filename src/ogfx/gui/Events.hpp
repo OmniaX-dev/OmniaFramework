@@ -1,21 +1,21 @@
 /*
-    OmniaFramework - A collection of useful functionality
-    Copyright (C) 2025  OmniaX-Dev
+	OmniaFramework - A collection of useful functionality
+	Copyright (C) 2025  OmniaX-Dev
 
-    This file is part of OmniaFramework.
+	This file is part of OmniaFramework.
 
-    OmniaFramework is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	OmniaFramework is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    OmniaFramework is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	OmniaFramework is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
@@ -102,7 +102,7 @@ namespace ogfx
 		{
 			public:
 				inline Event(WindowCore& _window) : window(_window), drop(window, DropEventData::eDropType::None) {  }
-				inline void handle(void) { m_handled = true; }
+				inline void handle(void) const { m_handled = true; }
 				inline bool isHandled(void) const { return m_handled; }
 
 			public:
@@ -114,7 +114,7 @@ namespace ogfx
 				u32 __original_signal_id { 0 };
 
 			private:
-				bool m_handled { false };
+				mutable bool m_handled { false };
 		};
 	}
 }

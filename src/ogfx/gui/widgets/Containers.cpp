@@ -35,6 +35,7 @@ namespace ogfx
 				disableDrawBox();
 				disableFocus();
 				enableStopEvents();
+				allowScroll(true);
 				validate();
 				return *this;
 			}
@@ -49,6 +50,7 @@ namespace ogfx
 				setBorderColor(getThemeValue<Color>(theme, "panel.borderColor", Colors::Black));
 				setPadding(getThemeValue<Rectangle>(theme, "panel.padding", { 15, 15, 15, 15 }));
 				setMargin(getThemeValue<Rectangle>(theme, "panel.margin", { 0, 0, 0, 0 }));
+				m_scrollSpeed = getThemeValue<Vec2>(theme, "panel.scrollSpeed", { 0.0f, 0.8f });
 				m_basePadding = getPadding();
 				m_titleColor = getThemeValue<Color>(theme, "panel.titleColor", Colors::Black);
 				m_titlebarColor = getThemeValue<Color>(theme, "panel.titlebarColor", Colors::Transparent);
@@ -62,7 +64,35 @@ namespace ogfx
 
 			void Panel::onDraw(ogfx::BasicRenderer2D& gfx)
 			{
+				if (isScrollAllowed())
+					gfx.fillRect(getContentExtents() + Rectangle { getGlobalPosition(), 0, 0 }, { 80, 0, 0, 30 });
+			}
+
+			void Panel::afterDraw(ogfx::BasicRenderer2D& gfx)
+			{
 				draw_titlebar(gfx);
+			}
+
+			void Panel::onMouseScrolled(const Event& event)
+			{
+				if (!isScrollAllowed())
+					return;
+				auto ext = getContentExtents();
+				auto cont = getContentBounds();
+				f32 maxScroll = -(ext.h - cont.h);
+				if (event.mouse->scroll == MouseEventData::eScrollDirection::Down && m_scrollOffset.y > maxScroll)
+				{
+					m_scrollOffset -= (m_scrollSpeed * 15.0f);
+					if (m_scrollOffset.y < maxScroll)
+						m_scrollOffset.y = maxScroll;
+				}
+				else if (event.mouse->scroll == MouseEventData::eScrollDirection::Up && m_scrollOffset.y < 0)
+				{
+					m_scrollOffset += (m_scrollSpeed * 15.0f);
+					if (m_scrollOffset.y > 0)
+						m_scrollOffset.y = 0;
+				}
+				event.handle();
 			}
 
 			void Panel::setTitlebarType(const String& type)

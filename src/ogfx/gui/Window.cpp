@@ -562,9 +562,9 @@ namespace ogfx
 
 	namespace gui
 	{
-		void Window::addWidget(Widget& widget)
+		void Window::addWidget(Widget& widget, const Vec2& position)
 		{
-			m_rootWidget.addChild(widget);
+			m_rootWidget.addWidget(widget, position);
 			setTheme(*m_guiTheme);
 		}
 
@@ -572,6 +572,7 @@ namespace ogfx
 		{
 			m_guiTheme = &theme;
 			m_rootWidget.__applyTheme(theme, true);
+			m_rootWidget.reloadTheme(true);
 		}
 
 		void Window::__on_window_init(i32 width, i32 height, const String& title)
