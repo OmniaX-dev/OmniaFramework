@@ -1,119 +1,130 @@
 /*
-    OmniaFramework - A collection of useful functionality
-    Copyright (C) 2025  OmniaX-Dev
+	OmniaFramework - A collection of useful functionality
+	Copyright (C) 2025  OmniaX-Dev
 
-    This file is part of OmniaFramework.
+	This file is part of OmniaFramework.
 
-    OmniaFramework is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	OmniaFramework is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    OmniaFramework is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	OmniaFramework is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
 
 #include <ostd/data/Types.hpp>
 #include <ostd/math/Geometry.hpp>
+#include <ostd/utils/Time.hpp>
 #include <ogfx/resources/Image.hpp>
 
 namespace ogfx
 {
 	class Animation
 	{
-		public: struct AnimationData {
-				i32 length;
-				i32 speed;
-				i32 still_frame;
+		public: struct AnimationData : public ostd::__i_stringeable {
+				i32 frameCount { 1 };
+				i32 stillFrame { 0 };
+				f64 fps { 60.0 };
 
-				i32 row_offset;
-				i32 column_offset;
+				i32 rowOffset { 0 };
+				i32 columnOffset { 0 };
+				f32 pixelOffsetX { 0.0f };
+				f32 pixelOffsetY { 0.0f };
+				i32 rows { 1 };
+				i32 columns { 1 };
+				f32 frameWidth{ 32 };
+				f32 frameHeight { 32 };
 
-				i32 rows;
-				i32 columns;
+				bool still { false };
+				bool turnBack { false };
+				bool random { false };
 
-				i32 frame_width;
-				i32 frame_height;
-
-				bool still;
-				bool backwards;
-				bool random;
-
-				AnimationData(void)
+				inline String toString(void) const override
 				{
-					length = 3;
-					speed = 10;
-					row_offset = 0;
-					column_offset = 0;
-					rows = 1;
-					columns = 3;
-					frame_width = 32;
-					frame_height = 32;
-					still = false;
-					backwards = true;
-					random = false;
-					still_frame = 1;
+					String str = "";
+					str.add("AnimData {");
+					str.add("  ").add("frameCount: ").add(frameCount).add(",\n");
+					str.add("  ").add("stillFrame: ").add(stillFrame).add(",\n");
+					str.add("  ").add("rowOffset: ").add(rowOffset).add(",\n");
+					str.add("  ").add("columnOffset: ").add(columnOffset).add(",\n");
+					str.add("  ").add("pixelOffsetX: ").add(pixelOffsetX, 2).add(",\n");
+					str.add("  ").add("pixelOffsetY: ").add(pixelOffsetY, 2).add(",\n");
+					str.add("  ").add("rows: ").add(rows).add(",\n");
+					str.add("  ").add("columns: ").add(columns).add(",\n");
+					str.add("  ").add("frameWidth: ").add(frameWidth, 2).add(",\n");
+					str.add("  ").add("frameHeight: ").add(frameHeight, 2).add(",\n");
+					str.add("  ").add("still: ").add(STR_BOOL(still)).add(",\n");
+					str.add("  ").add("turnBack: ").add(STR_BOOL(turnBack)).add(",\n");
+					str.add("  ").add("random: ").add(STR_BOOL(random)).add(",\n");
+					str.add("}");
+					return str;
 				}
 			};
 	public:
-		Animation(void);
-		Animation(i32 frames, i32 columns, i32 rows, i32 frame_width, i32 frame_height);
-		Animation(AnimationData& ad);
-		void create(i32 frames, i32 columns, i32 rows, i32 frame_width, i32 frame_height);
-		void create(AnimationData& ad);
-		void update(void);
+		inline Animation(void) {  }
+		inline Animation(const AnimationData& ad) { create(ad); };
+		inline Animation(const AnimationData& ad, Image& spriteSheet) { create(ad, spriteSheet); };
+		inline Animation& create(const AnimationData& ad) { return create(ad, InvalidImage); }
+		inline void update(void) { m_timer.update(); }
+		Animation& create(const AnimationData& ad, Image& spriteSheet);
 		void resetAnimation(void);
 
-		inline void setFrameNumber(i32 n) { m_frames = n; }
-		inline void setColumnNumber(i32 n) { m_columns = n; }
-		inline void setBackwards(bool b) { m_backwards = b; }
-		inline void setSpeed(i32 d) { m_frame_time = d; }
-		inline void setColumnOffset(i32 o) { m_column_offset = o; }
-		inline void setRowOffset(i32 o) { m_row_offset = o; }
-		inline void setStill(bool s) { m_still = s; }
-		inline void setSpriteSheet(Image& img) { m_spriteSheet = &img; }
+		inline void setFrameCount(i32 n) { m_animData.frameCount = n; }
+		inline void setStillFrame(i32 n) { m_animData.stillFrame = n; }
+		inline void setColumnOffset(i32 o) { m_animData.columnOffset = o; }
+		inline void setRowOffset(i32 o) { m_animData.rowOffset = o; }
+		inline void setPixelOffsetX(f32 o) { m_animData.pixelOffsetX = o; }
+		inline void setPixelOffsetY(f32 o) { m_animData.pixelOffsetY = o; }
+		inline void setNRows(i32 n) { m_animData.rows = n; }
+		inline void setNColumns(i32 n) { m_animData.columns = n; }
+		inline void setFrameWidth(i32 f) { m_animData.frameWidth = f; }
+		inline void setFrameHeight(i32 f) { m_animData.frameHeight = f; }
+		inline void enableStill(bool b = true) { m_animData.still = b; }
+		inline void enableTurnBack(bool b = true) { m_animData.turnBack = b; }
+		inline void enableRandom(bool b = true) { m_animData.random = b; }
 
-		inline i32 getFrameNumber(void) const { return m_frames; }
-		inline i32 getColumnNumber(void) const { return m_columns; }
-		inline bool getBackwards(void) const { return m_backwards; }
-		inline i32 getDelay(void) const { return m_frame_time; }
-		inline i32 getColumnOffset(void) const { return m_column_offset; }
-		inline i32 getRowOffset(void) const { return m_row_offset; }
-		inline bool isStill(void) const { return m_still; }
-		inline Rectangle getFrameRect(void) const { return m_frame_rect; }
+		inline i32 getFrameCount(void) { return m_animData.frameCount; }
+		inline i32 getStillFrame(void) { return m_animData.stillFrame; }
+		inline f64 getFPS(void) { return m_animData.fps; }
+		inline i32 getColumnOffset(void) { return m_animData.columnOffset; }
+		inline i32 getRowOffset(void) { return m_animData.rowOffset; }
+		inline f32 getPixelOffsetX(void) { return m_animData.pixelOffsetX; }
+		inline f32 getPixelOffsetY(void) { return m_animData.pixelOffsetY; }
+		inline i32 getNRows(void) { return m_animData.rows; }
+		inline i32 getNColumns(void) { return m_animData.columns; }
+		inline i32 getFrameWidth(void) { return m_animData.frameWidth; }
+		inline i32 getFrameHeight(void) { return m_animData.frameHeight; }
+		inline bool isStill(void) { return m_animData.still; }
+		inline bool isTurnBackEnabled(void) { return m_animData.turnBack; }
+		inline bool isRandomEnabled(void) { return m_animData.random; }
+
+		inline void setSpriteSheet(Image& img) { m_spriteSheet = &img; }
+		inline Rectangle getFrameRect(void) const { return m_frameRect; }
 		inline const Image& getSpriteSheet(void) const { return (m_spriteSheet != nullptr ? *m_spriteSheet : InvalidImage); }
 		inline Image& getSpriteSheet(void) { return (m_spriteSheet != nullptr ? *m_spriteSheet : InvalidImage); }
 		inline bool hasImage(void) const { return m_spriteSheet != nullptr; }
+		inline const AnimationData& getAnimationData(void) const { return m_animData; }
+		inline AnimationData& getAnimationData(void) { return m_animData; }
+		inline void removeSpriteSheet(void) { m_spriteSheet = &InvalidImage; }
 
 	private:
-		Image* m_spriteSheet { nullptr };
+		void update_animation(void);
+
+	private:
 		inline static Image InvalidImage;
-
-		i32 m_frames;
-		i32 m_rows;
-		i32 m_columns;
-		i32 m_frame_width;
-		i32 m_frame_height;
-
-		i32 m_column_offset;
-		i32 m_row_offset;
-
-		i32 m_frame_time;
-		i32 m_current_time;
-		i32 m_current_frame;
-
-		bool m_backwards;
-		bool m_back;
-		bool m_still;
-		bool m_random;
-
-		Rectangle m_frame_rect;
+		AnimationData m_animData;
+		ostd::StepTimer m_timer;
+		Image* m_spriteSheet { nullptr };
+		i32 m_currentFrame { 0 };
+		bool m_back { false };
+		Rectangle m_frameRect { 0, 0, 0, 0 };
 	};
 }

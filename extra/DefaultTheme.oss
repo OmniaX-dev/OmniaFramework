@@ -120,7 +120,7 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 
 
 
-% ====== Label ======
+% ====== Button ======
 (button) {
 	textColor = $textColor
 	backgroundColor = #999999FF
@@ -135,6 +135,8 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 	padding = rect(15, 8, 15, 8)
 	margin = rect(0, 0, 0, 0)
 	icon = file("img.png")
+	showIcon = true
+	iconANimation = anim(
 }
 (button:hover) {
 	borderColor = $accentColor
@@ -145,4 +147,4 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 	textColor = #DDDDDDFF
 	backgroundGradient = gradientV(rgb(120, 120, 120) - rgb(160, 160, 160))
 }
-% ===================
+% ====================

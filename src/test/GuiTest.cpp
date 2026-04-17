@@ -32,19 +32,16 @@ class Window : public ogfx::gui::Window
 		inline Window(void) {  }
 		inline void onInitialize(void) override
 		{
-			// m_img.loadFromFile("./img.png", m_gfx);
-			// ogfx::Animation::AnimationData ad;
-			// ad.backwards = false;
-			// ad.columns = 9;
-			// ad.rows = 4;
-			// ad.frame_width = 256;
-			// ad.frame_height = 256;
-			// ad.length = 36;
-			// ad.random = false;
-			// ad.still = false;
-			// ad.speed = 0;
-			// m_anim.create(ad);
-			// m_anim.setSpriteSheet(m_img);
+			m_img.loadFromFile("./img.png", m_gfx);
+			ogfx::Animation::AnimationData ad;
+			ad.columns = 9;
+			ad.rows = 4;
+			ad.frameWidth = 256;
+			ad.frameHeight = 256;
+			ad.frameCount = 36;
+			ad.fps = 60;
+			m_anim.create(ad);
+			m_anim.setSpriteSheet(m_img);
 
 
 			m_label1.setText("Show Panel2");
@@ -107,12 +104,12 @@ class Window : public ogfx::gui::Window
 
 		void onRedraw(ogfx::BasicRenderer2D& gfx) override
 		{
-			// gfx.drawAnimation(m_anim, { 200, 200 });
+			gfx.drawAnimation(m_anim, { 200, 200 });
 		}
 
 		void onFixedUpdate(void) override
 		{
-			// m_anim.update();
+			m_anim.update();
 		}
 
 	private:
