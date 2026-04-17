@@ -36,6 +36,9 @@ namespace ogfx
 				disableFocus();
 				enableStopEvents();
 				allowScroll(true);
+				m_scrollbar.setMargin({ 0, getTitlebarHeight(), 0, 0 });
+				m_scrollbar.enableManualDraw(true);
+				addWidget(m_scrollbar);
 				validate();
 				return *this;
 			}
@@ -71,6 +74,7 @@ namespace ogfx
 			void Panel::afterDraw(ogfx::BasicRenderer2D& gfx)
 			{
 				draw_titlebar(gfx);
+				m_scrollbar.__draw(gfx);
 			}
 
 			void Panel::onMouseScrolled(const Event& event)
@@ -143,7 +147,13 @@ namespace ogfx
 
 			bool Panel::needsScroll(void) const
 			{
-				return getContentExtents().h > getContentBounds().h;
+				return isScrollAllowed() && getContentExtents().h > getContentBounds().h;
+			}
+
+			void Panel::onWidgetAdded(Widget& child)
+			{
+				removeWidget(m_scrollbar);
+				addWidget(m_scrollbar, { 0, 0 }, true);
 			}
 
 			void Panel::draw_titlebar(BasicRenderer2D& gfx)

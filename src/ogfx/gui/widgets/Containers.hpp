@@ -21,6 +21,7 @@
 #pragma once
 
 #include <ogfx/gui/widgets/Widget.hpp>
+#include <ogfx/gui/widgets/Scrollbar.hpp>
 
 namespace ogfx
 {
@@ -52,6 +53,7 @@ namespace ogfx
 					void setScrollOffset(const Vec2& offset) override;
 					void addScrollOffset(const Vec2& offset) override;
 					bool needsScroll(void) const override;
+					void onWidgetAdded(Widget& child) override;
 					inline void setBackGroundColor(const Color& color) { m_backgroundColor = color; }
 					inline Color getBackgroundColor(void) { return m_backgroundColor; }
 					inline String getTitle(void) const { return m_title; }
@@ -65,6 +67,7 @@ namespace ogfx
 				private:
 					String m_title { "Panel" };
 					Vec2 m_scrollOffset { 0, 0 };
+					VerticalScrollBar m_scrollbar { getWindow() };
 
 					Color m_titleColor { Colors::Black  };
 					i32 m_titlebarType = TitleBarTypes::NoneValue;

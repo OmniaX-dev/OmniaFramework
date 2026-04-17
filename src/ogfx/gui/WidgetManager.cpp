@@ -22,6 +22,7 @@
 #include "widgets/Widget.hpp"
 #include "../render/BasicRenderer.hpp"
 #include "../utils/Keycodes.hpp"
+#include "../../ostd/io/Memory.hpp"
 
 namespace ogfx
 {
@@ -68,9 +69,17 @@ namespace ogfx
 			if (hasWidget(widget)) return false;
 			widget.m_parent = &m_owner;
 			m_widgetList.push_back(&widget);
+			if (widget.m_topMost)
+				return true;
 			std::ranges::sort(m_widgetList, {}, [](Widget* w) {
 				return w->m_zIndex;
 			});
+			return true;
+		}
+
+		bool WidgetManager::removeWidget(Widget& widget)
+		{
+			STDVEC_REMOVE(m_widgetList, &widget);
 			return true;
 		}
 
@@ -107,6 +116,7 @@ namespace ogfx
 				if (w == nullptr) continue;
 				if (w->isInvalid()) continue;
 				if (!w->isVisible()) continue;
+				if (w->isManualDrawEnabled()) continue;
 				gfx.pushClippingRect({ w->getGlobalPosition(), w->getSize() }, true);
 				w->__draw(gfx);
 				gfx.popClippingRect();

@@ -36,14 +36,23 @@ namespace ogfx
 			m_window = &window;
 		}
 
-		bool Widget::addWidget(Widget& child, const Vec2& position)
+		bool Widget::addWidget(Widget& child, const Vec2& position, bool __skip_callback)
 		{
 			if (!m_allowChildren)
 				return false;
 			if (position.x != 0 || position.y != 0)
 				child.setPosition(position);
 			child.reloadTheme();
-			return m_widgets.addWidget(child);
+			bool result = m_widgets.addWidget(child);
+			if (!result) return false;
+			if (!__skip_callback)
+				onWidgetAdded(child);
+			return result;
+		}
+
+		bool Widget::removeWidget(Widget& child)
+		{
+			return m_widgets.removeWidget(child);
 		}
 
 		Vec2 Widget::getGlobalPosition(void) const

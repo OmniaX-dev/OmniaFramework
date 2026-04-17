@@ -36,6 +36,7 @@ namespace ogfx
 				disableChildren();
 				enableBackground(true);
 				enableBorder(false);
+				enableTopMost(true);
 				allowIgnoreScroll(true);
 				validate();
 				return *this;

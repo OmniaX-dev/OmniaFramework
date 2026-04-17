@@ -19,8 +19,8 @@
 ***Implement Panel title
 ***Implement show/hide functionality for widgets
 ***Create reliable default stylesheet
+***Implement global scale (probably query desktop scale and adjust accordingly)
 Add theme caching
-Implement global scale (probably query desktop scale and adjust accordingly)
 Implement cursors in Stylesheet
 
 

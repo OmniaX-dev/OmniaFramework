@@ -28,7 +28,6 @@ namespace ogfx
 	{
 		namespace widgets
 		{
-
 			class Label : public Widget
 			{
 				public:

@@ -92,6 +92,7 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/RootWidget.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/CheckBox.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Scrollbar.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Button.cpp
 
 	# render
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/BasicRenderer.cpp

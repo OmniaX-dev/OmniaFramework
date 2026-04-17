@@ -41,7 +41,8 @@ namespace ogfx
 			public: using EventCallback = std::function<void(const Event&)>;
 			public:
 				Widget(const Rectangle& bounds, WindowCore& window);
-				bool addWidget(Widget& child, const Vec2& position = { 0, 0 });
+				bool addWidget(Widget& child, const Vec2& position = { 0, 0 }, bool __skip_callback = false);
+				bool removeWidget(Widget& child);
 				virtual Vec2 getGlobalPosition(void) const;
 				virtual Vec2 getGlobalContentPosition(void) const;
 				virtual Rectangle getGlobalBounds(void) const;
@@ -68,6 +69,7 @@ namespace ogfx
 				inline virtual void onDraw(ogfx::BasicRenderer2D& gfx) {  }
 				inline virtual void afterDraw(ogfx::BasicRenderer2D& gfx) {  }
 				inline virtual void onUpdate(void) {  }
+				inline virtual void onWidgetAdded(Widget& child) {  }
 
 				inline virtual void onMousePressed(const Event& event) {  }
 				inline virtual void onMouseReleased(const Event& event) {  }
@@ -155,6 +157,10 @@ namespace ogfx
 				inline Color getBorderColor(void) { return m_borderColor; }
 				inline void enableBorder(bool enable = true) { m_showBorder = enable; }
 				inline bool isBorderEnabled(void) const { return m_showBorder; }
+				inline void enableManualDraw(bool enable = true) { m_manualDraw = enable; }
+				inline bool isManualDrawEnabled(void) const { return m_manualDraw; }
+				inline void enableTopMost(bool enable = true) { m_topMost = enable; }
+				inline bool isTopMostEnabled(void) const { return m_topMost; }
 				inline void setBorderRadius(i32 br) { m_borderRadius = br; }
 				inline i32 getBorderRadius(void) const { return m_borderRadius; }
 				inline void setBorderWidth(i32 bw) { m_borderWidth = bw; }
@@ -227,6 +233,8 @@ namespace ogfx
 				bool m_visible { true };
 				bool m_allowScroll { false };
 				bool m_ignoreScroll { false};
+				bool m_manualDraw { false };
+				bool m_topMost { false };
 				MouseEventData::eButton m_pressedButton { MouseEventData::eButton::None };
 
 				stdvec<String> m_themeIDList;

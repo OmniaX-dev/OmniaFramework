@@ -41,6 +41,7 @@ namespace ogfx
 				bool hasWidget(Widget& widget);
 				bool requestFocus(Widget& widget);
 				bool addWidget(Widget& widget);
+				bool removeWidget(Widget& widget);
 				Widget* focusNext(void);
 
 				void draw(ogfx::BasicRenderer2D& gfx);
