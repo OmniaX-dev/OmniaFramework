@@ -46,7 +46,6 @@ class Window : public ogfx::gui::Window
 			// m_anim.setSpriteSheet(m_img);
 
 
-
 			m_label1.setText("Show Panel2");
 			m_label1.setMousePressedCallback([&](const ogfx::gui::Event& event) -> void {
 				m_check1.setChecked(!m_check1.isChecked());

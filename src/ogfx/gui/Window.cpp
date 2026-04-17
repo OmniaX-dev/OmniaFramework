@@ -89,6 +89,10 @@ namespace ogfx
 		SDL_SetWindowPosition(m_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 		SDL_SetWindowTitle(m_window, m_title.c_str());
 		SDL_StartTextInput(m_window);
+
+		m_systemScale = SDL_GetWindowDisplayScale(m_window);
+		setUserScale(1.0f);
+
 		SDL_ShowWindow(m_window);
 
 		m_cursor_Default      = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
@@ -246,6 +250,29 @@ namespace ogfx
 		}
 	}
 
+	void WindowCore::setUserScale(f32 scale)
+	{
+		m_userScale = std::clamp(scale, 0.1f, 10.0f); //TODO: Handle min and  max scale better
+		f32 s = getScaleFactor();
+		auto state = getWindowState();
+		if (!state.maximized && !state.fullscreen)
+			setSize(getWindowWidth() * s, getWindowHeight() * s);
+		SDL_SetRenderScale(m_renderer, s, s);
+	}
+
+	WindowCore::State WindowCore::getWindowState(void) const
+	{
+		SDL_WindowFlags flags = SDL_GetWindowFlags(m_window);
+		State state;
+		state.fullscreen = flags & SDL_WINDOW_FULLSCREEN;
+		state.borderless = flags & SDL_WINDOW_BORDERLESS;
+		state.resizable = flags & SDL_WINDOW_RESIZABLE;
+		state.minimized = flags & SDL_WINDOW_MINIMIZED;
+		state.maximized = flags & SDL_WINDOW_MAXIMIZED;
+		state.alwaysOnTop = flags & SDL_WINDOW_ALWAYS_ON_TOP;
+		return state;
+	}
+
 	WindowCore::eCursor WindowCore::getCurosr(void) const
 	{
 		auto cur = SDL_GetCursor();
@@ -315,10 +342,32 @@ namespace ogfx
 		__on_signal(signal);
 	}
 
-	MouseEventData WindowCore::get_mouse_state(void)
+	MouseEventData WindowCore::get_mouse_state(SDL_Event& event)
 	{
-		f32 mx = 0, my = 0;
-		u32 btn = SDL_GetMouseState(&mx, &my);
+		f32 mx = 0, my = 0, _mx = 0, _my = 0;
+		u32 btn = SDL_GetMouseState(&_mx, &_my);
+		f32 scale = getScaleFactor();
+		switch (event.type)
+		{
+			case SDL_EVENT_MOUSE_MOTION:
+				mx = event.motion.x / scale;
+				my = event.motion.y / scale;
+				break;
+			case SDL_EVENT_MOUSE_BUTTON_DOWN:
+			case SDL_EVENT_MOUSE_BUTTON_UP:
+				mx = event.button.x / scale;
+				my = event.button.y / scale;
+				btn = event.button.button;
+				break;
+			case SDL_EVENT_MOUSE_WHEEL:
+				mx = event.wheel.mouse_x / scale;
+				my = event.wheel.mouse_y / scale;
+				break;
+			default:
+				mx = _mx / scale;
+				my = _my / scale;
+				break;
+		}
 		MouseEventData::eButton button = MouseEventData::eButton::None;
 		switch (btn)
 		{
@@ -372,6 +421,11 @@ namespace ogfx
 		{
 			close();
 		}
+		else if (event.type == SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED)
+		{
+			m_systemScale = SDL_GetWindowDisplayScale(m_window);
+			updateScalleFactor();
+		}
 		else if (event.type == SDL_EVENT_DROP_FILE)
 		{
 			DropEventData ded(*this, DropEventData::eDropType::File);
@@ -402,12 +456,12 @@ namespace ogfx
 		}
 		else if (event.type == SDL_EVENT_MOUSE_MOTION)
 		{
-			MouseEventData mmd = get_mouse_state();
+			MouseEventData mmd = get_mouse_state(event);
 			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::MouseMoved, ostd::Signal::Priority::RealTime, mmd);
 		}
 		else if (event.type == SDL_EVENT_MOUSE_WHEEL)
 		{
-			MouseEventData mmd = get_mouse_state();
+			MouseEventData mmd = get_mouse_state(event);
 			if (event.wheel.y == -1)
 				mmd.scroll = MouseEventData::eScrollDirection::Down;
 			else if (event.wheel.y == 1)
@@ -418,12 +472,12 @@ namespace ogfx
 		}
 		else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
 		{
-			MouseEventData mmd = get_mouse_state();
+			MouseEventData mmd = get_mouse_state(event);
 			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::MousePressed, ostd::Signal::Priority::RealTime, mmd);
 		}
 		else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
 		{
-			MouseEventData mmd = get_mouse_state();
+			MouseEventData mmd = get_mouse_state(event);
 			switch (event.button.button)
 			{
 				case SDL_BUTTON_MASK(1): mmd.button = MouseEventData::eButton::Left; break;

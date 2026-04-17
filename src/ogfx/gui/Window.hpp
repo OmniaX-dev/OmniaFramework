@@ -65,6 +65,15 @@ namespace ogfx
 			Center,
 			Left
 		};
+		public: struct State
+		{
+			bool fullscreen { false };
+			bool borderless { false };
+			bool resizable { false };
+			bool minimized { false };
+			bool maximized { false };
+			bool alwaysOnTop { false };
+		};
 		public:
 			inline WindowCore(void) {  }
 			virtual ~WindowCore(void);
@@ -75,6 +84,8 @@ namespace ogfx
 			void setSize(i32 width, i32 height);
 			void setTitle(const String& title);
 			void setCursor(eCursor cursor);
+			void setUserScale(f32 scale);
+			State getWindowState(void) const;
 			eCursor getCurosr(void) const;
 			void enableResizable(bool enable = true);
 			void setIcon(const String& iconFilePath);
@@ -103,9 +114,11 @@ namespace ogfx
 			inline bool isBlockingEventsEnabled(void) const { return m_blockingEvents; }
 			inline ostd::ConsoleOutputHandler& out(void) { return m_out; }
 			inline GraphicsWindowOutputHandler& wout(void) { return m_wout; }
+			inline f32 getScaleFactor(void) const { return m_systemScale * m_userScale; }
+			inline void updateScalleFactor(void) { setUserScale(m_userScale); }
 
 		protected:
-			MouseEventData get_mouse_state(void);
+			MouseEventData get_mouse_state(SDL_Event& event);
 			virtual void handle_events(void);
 			virtual void before_render(void);
 			virtual void after_render(void);
@@ -143,6 +156,9 @@ namespace ogfx
 			bool m_blockingEvents { false };
 			bool m_resizeable { true };
 			bool m_refreshScreen { true };
+
+			f32 m_systemScale { 1.0f };
+			f32 m_userScale { 1.0f };
 
 			SDL_Cursor* m_cursor_Default      { nullptr };
 			SDL_Cursor* m_cursor_Text         { nullptr };
