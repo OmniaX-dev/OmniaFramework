@@ -242,7 +242,6 @@ namespace ostd
 		if (key == "")
 			return false;
 		String themeID = "";
-
 		auto l_parseColor = [this](const String& _value) -> String {
 			String value = _value.new_toLower().trim();
 			if (value.startsWith("color(") && value.endsWith(")"))
@@ -257,6 +256,18 @@ namespace ostd
 				return value;
 			}
 			return "";
+		};
+		auto l_isColorGradientValue = [this](const String& _value) -> bool {
+			String value = _value.new_toLower().trim();
+			if (value.startsWith("gradienth(") && value.endsWith(")"))
+				return true;
+			if (value.startsWith("w_gradienth(") && value.endsWith(")"))
+				return true;
+			if (value.startsWith("gradientv(") && value.endsWith(")"))
+				return true;
+			if (value.startsWith("w_gradientv(") && value.endsWith(")"))
+				return true;
+			return false;
 		};
 
 		if (key.startsWith("@"))
@@ -280,6 +291,13 @@ namespace ostd
 		else if (String v = l_parseColor(value); v != "")
 		{
 			set(key, Color(v), themeID);
+		}
+		else if (l_isColorGradientValue(value))
+		{
+			ColorGradient grad = parseColorGradient(value);
+			if (grad.isInvalid())
+				return false;
+			set(key, grad, themeID);
 		}
 		else if (value.startsWith("vec2(") && value.endsWith(")"))
 		{
@@ -401,6 +419,45 @@ namespace ostd
 		return newLines;
 	}
 
+	ColorGradient parseColorGradient(const String& _value)
+	{
+		String value = _value.new_toLower().trim();
+		ColorGradient grad;
+		f32 angle = 0.0f;
+		bool weighted = false;
+		String gradientFunc = value.new_substr(0, value.indexOf("(")).trim();
+		String gradientVal = value.substr(value.indexOf("(") + 1, value.indexOf(")")).trim();
+
+		if (gradientVal == "" || !gradientVal.contains(","))
+			return grad;
+
+		weighted = gradientFunc.startsWith("w_");
+		if (gradientFunc.endsWith("v"))
+			angle = ColorGradient::VerticalDeg;
+		else if (gradientFunc.endsWith("h"))
+			angle = ColorGradient::HorizontalDeg;
+		else
+			return grad;
+
+		auto tokens = gradientVal.tokenize(",");
+
+		bool is_color = true;
+		for (auto& token : tokens)
+		{
+			if (is_color)
+			{
+
+			}
+			else
+			{
+
+			}
+			is_color = !is_color;
+		}
+
+		return grad;
+	}
+
 	void Stylesheet::debugPrint(void)
 	{
 		for (const auto&[key, value] : m_values)
@@ -425,6 +482,8 @@ namespace ostd
 		else if (auto p = std::get_if<Rectangle>(&v))
 			return *p;
 		else if (auto p = std::get_if<Vec2>(&v))
+			return *p;
+		else if (auto p = std::get_if<ColorGradient>(&v))
 			return *p;
 		return "";
 	}

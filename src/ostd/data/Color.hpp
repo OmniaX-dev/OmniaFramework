@@ -112,6 +112,21 @@ namespace ostd
 			inline void setAngleRad(f32 angle_radians) { m_angleDeg = RAD_TO_DEG(angle_radians); }
 			inline f32 getAngleDeg(void) const { return m_angleDeg; }
 			inline f32 getAngleRad(void) const { return DEG_TO_RAD(m_angleDeg); }
+			inline void reverse(void) { std::reverse(m_colors.begin(), m_colors.end()); std::reverse(m_weights.begin(), m_weights.end()); }
+			inline bool isInvalid(void) const override { return (m_colors.size() != m_weights.size() + 1) || (m_colors.size() == 0 || m_weights.size() == 0); }
+			inline String toString(void) const override
+			{
+				if (isInvalid())
+					return "{ Invalid Color Gradient }";
+				String str = "";
+				for (i32 i = 0; i < m_colors.size(); i++)
+				{
+					if (i > 0)
+						str.add(m_weights[i - 1], 2).add(", ");
+					str.add(m_colors[i].hexString(true, "#")).add(" ");
+				}
+				return str.trim();
+			}
 
 		private:
 			stdvec<Color> m_colors;

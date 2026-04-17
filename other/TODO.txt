@@ -22,6 +22,7 @@
 ***Implement global scale (probably query desktop scale and adjust accordingly)
 Add theme caching
 Implement cursors in Stylesheet
+FIX: Window getting exponentially bigger when Desktop scale changes
 
 
 
