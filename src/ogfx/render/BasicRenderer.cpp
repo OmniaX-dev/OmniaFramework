@@ -314,6 +314,68 @@ namespace ogfx
 		drawImage(img, position, size, anim.getFrameRect());
 	}
 
+	void BasicRenderer2D::fillGradientRect(const Rectangle& rect, ColorGradient& gradient)
+	{
+		auto& colors = gradient.getColors();
+		auto& weights = gradient.getWeights();
+		f32 angle_radians = gradient.getAngleRad();
+		if (!m_initialized || colors.size() < 2) return;
+		if (weights.size() != colors.size() - 1) return; // N colors = N-1 weights
+
+		// Normalize weights
+		f32 total = 0;
+		for (auto w : weights) total += w;
+		for (auto& w : weights) w /= total;
+
+		// Compute cumulative positions along gradient (0 to 1)
+		stdvec<f32> stops(colors.size());
+		stops[0] = 0.0f;
+		for (size_t i = 0; i < weights.size(); i++)
+			stops[i + 1] = stops[i] + weights[i];
+
+		// Center of rect for rotation
+		Vec2 center = { rect.x + rect.w * 0.5f, rect.y + rect.h * 0.5f };
+		f32 cs = std::cos(angle_radians);
+		f32 sn = std::sin(angle_radians);
+
+		auto rotate = [&](Vec2 p) -> Vec2 {
+			p -= center;
+			return { center.x + p.x * cs - p.y * sn,
+					 center.y + p.x * sn + p.y * cs };
+		};
+
+		// For each color band, push a quad
+		for (size_t i = 0; i < colors.size() - 1; i++)
+		{
+			f32 y0 = rect.y + rect.h * stops[i];
+			f32 y1 = rect.y + rect.h * stops[i + 1];
+
+			Vec2 tl = rotate({ rect.x,          y0 });
+			Vec2 tr = rotate({ rect.x + rect.w,  y0 });
+			Vec2 br = rotate({ rect.x + rect.w,  y1 });
+			Vec2 bl = rotate({ rect.x,           y1 });
+
+			if (m_vertexCount + 4 >= MaxVertices || m_indexCount + 6 >= MaxIndices)
+				flushBatch();
+			if (m_texture != nullptr)
+				flushBatch();
+			m_texture = nullptr;
+
+			SDL_FColor c0 = COLOR_CAST(colors[i]);
+			SDL_FColor c1 = COLOR_CAST(colors[i + 1]);
+
+			i32 base = m_vertexCount;
+			m_vertices[m_vertexCount++] = { { tl.x, tl.y }, c0, { 0, 0 } };
+			m_vertices[m_vertexCount++] = { { tr.x, tr.y }, c0, { 0, 0 } };
+			m_vertices[m_vertexCount++] = { { br.x, br.y }, c1, { 0, 0 } };
+			m_vertices[m_vertexCount++] = { { bl.x, bl.y }, c1, { 0, 0 } };
+
+			u32 inds[6] = QUAD_INDICES_ARR;
+			for (i32 j = 0; j < 6; j++)
+				m_indices[m_indexCount++] = base + inds[j];
+		}
+	}
+
 	void BasicRenderer2D::drawString(const String& str, const Vec2& position, const Color& color, i32 fontSize, f32 scale)
 	{
 		if (!isValid()) return;
@@ -398,7 +460,7 @@ namespace ogfx
 		if (!rounded || thickness < 4)
 			return;
 
-		i32 segments = std::max(6, i32(thickness * 0.75f));
+		i32 segments = std::max(16, i32(thickness * 1.5f));
 		generate_half_circle(p1, -dir, half, segments, color);
 		generate_half_circle(p2, dir, half, segments, color);
 	}
@@ -475,7 +537,7 @@ namespace ogfx
 		drawLine({ {x1, y2 - rBL}, {x1, y1 + rTL} }, color, thickness, false); // left
 
 		// Corner arcs
-		auto segments = [](f32 r) -> i32 { return std::max(6, i32(r * 0.75f)); };
+		auto segments = [](f32 r) -> i32 { return std::max(16, i32(r * 1.5f)); };
 
 		if (rTL > 0) generate_ellipse_stroke({ x1 + rTL, y1 + rTL }, rTL, rTL, thickness, M_PI, M_PI * 1.5f, color, segments(rTL));
 		if (rTR > 0) generate_ellipse_stroke({ x2 - rTR, y1 + rTR }, rTR, rTR, thickness, M_PI * 1.5f, M_PI * 2.0f, color, segments(rTR));
@@ -487,7 +549,7 @@ namespace ogfx
 	{
 		if (!m_initialized || thickness <= 0)
 			return;
-		i32 segments = std::max(12, i32(radius * 0.75f));
+		i32 segments = std::max(16, i32(radius * 1.5f));
 		generate_ellipse_stroke(center, radius, radius, thickness, 0.0f, 2.0f * M_PI, color, segments);
 	}
 
@@ -513,8 +575,7 @@ namespace ogfx
 		Vec2 center = { rect.x + rect.w*0.5f, rect.y + rect.h*0.5f };
 		f32 rx = rect.w * 0.5f;
 		f32 ry = rect.h * 0.5f;
-
-		i32 segments = std::max(12, i32(std::max(rx, ry) * 0.75f));
+		i32 segments = std::max(16, i32(std::max(rx, ry) * 1.5f));
 		generate_ellipse_stroke(center, rx, ry, thickness, 0.0f, 2.0f * M_PI, color, segments);
 	}
 
@@ -723,7 +784,7 @@ namespace ogfx
 		}
 
 		// Corner fills
-		auto segments = [](f32 r) -> i32 { return std::max(6, i32(r * 0.75f)); };
+		auto segments = [](f32 r) -> i32 { return std::max(16, i32(r * 1.5f)); };
 
 		if (rTL > 0) generate_filled_ellipse_stroke({ x1 + rTL, y1 + rTL }, rTL, rTL, M_PI, color, segments(rTL));
 		if (rTR > 0) generate_filled_ellipse_stroke({ x2 - rTR, y1 + rTR }, rTR, rTR, M_PI * 1.5f, color, segments(rTR));
@@ -736,7 +797,7 @@ namespace ogfx
 		if (!m_initialized)
 			return;
 
-		i32 segments = std::max(12, i32(radius * 0.75f));
+		i32 segments = std::max(16, i32(radius * 1.5f));
 		generate_filled_ellipse(center, radius, radius, color, segments);
 	}
 
@@ -767,7 +828,7 @@ namespace ogfx
 		f32 radiusX = rect.w * 0.5f;
 		f32 radiusY = rect.h * 0.5f;
 
-		i32 segments = std::max(12, i32(std::max(radiusX, radiusY) * 0.75f));
+		i32 segments = std::max(16, i32(std::max(radiusX, radiusY) * 1.5f));
 		generate_filled_ellipse(center, radiusX, radiusY, color, segments);
 	}
 

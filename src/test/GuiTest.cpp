@@ -24,6 +24,7 @@
 #include <ogfx/ogfx.hpp>
 
 ostd::ConsoleOutputHandler out;
+using namespace ogfx::gui::widgets;
 
 class Window : public ogfx::gui::Window
 {
@@ -63,8 +64,13 @@ class Window : public ogfx::gui::Window
 
 			m_check1.setText("Check this out!");
 			m_check1.setChecked(true);
-			m_check1.setStateChangedCallback([&](ogfx::gui::widgets::CheckBox& sender, bool state) -> void {
+			m_check1.setStateChangedCallback([&](CheckBox& sender, bool state) -> void {
 				m_panel1.setVisible(state);
+			});
+
+			m_btn1.setText("BUTTON");
+			m_btn1.setMousePressedCallback([&](const ogfx::gui::Event& event) -> void {
+
 			});
 
 			m_label2.setText("Label2");
@@ -80,6 +86,7 @@ class Window : public ogfx::gui::Window
 			m_panel2.addWidget(m_label3);
 			m_panel2.addWidget(m_panel1, { 400, 50 });
 			m_panel2.addWidget(m_label1, { 0, 500 });
+			m_panel2.addWidget(m_btn1, { 0, 300 });
 
 			addWidget(m_check1, { 30, 30 });
 			addWidget(m_panel2, { 30, 100 });
@@ -101,6 +108,12 @@ class Window : public ogfx::gui::Window
 		void onRedraw(ogfx::BasicRenderer2D& gfx) override
 		{
 			// gfx.drawAnimation(m_anim, { 200, 200 });
+			// static f32 angle = 0.0f;
+			// angle += 0.5f;  // degrees per frame, adjust to taste
+			// if (angle >= 360.0f) angle = 0.0f;
+			// m_grad.setAngleDeg(angle);
+
+			// gfx.fillGradientRect({ 200, 200, 300, 300 }, m_grad);
 		}
 
 		void onFixedUpdate(void) override
@@ -109,16 +122,28 @@ class Window : public ogfx::gui::Window
 		}
 
 	private:
-		ogfx::gui::widgets::Label m_label1 { *this };
-		ogfx::gui::widgets::Label m_label2 { *this };
-		ogfx::gui::widgets::Label m_label3 { *this };
-		ogfx::gui::widgets::Panel m_panel1 { *this };
-		ogfx::gui::widgets::Panel m_panel2 { *this };
-		ogfx::gui::widgets::CheckBox m_check1 { *this };
+		Label m_label1 { *this };
+		Label m_label2 { *this };
+		Label m_label3 { *this };
+		Panel m_panel1 { *this };
+		Panel m_panel2 { *this };
+		CheckBox m_check1 { *this };
+		Button m_btn1 { *this };
 
 		ostd::Stylesheet m_theme;
 		ogfx::Animation m_anim;
 		ogfx::Image m_img;
+		ogfx::ColorGradient m_grad { {
+			{ 255, 0,   0   },  // red
+			{ 255, 165, 0   },  // orange
+			{ 255, 255, 0   },  // yellow
+			{ 0,   255, 0   },  // green
+			{ 0,   0,   255 },  // blue
+			{ 148, 0,   211 },  // violet
+			{ 255, 0,   0   },  // red again to loop cleanly
+		},
+		{ 1, 1, 1, 1, 1, 1 },  // equal weights, gets normalized
+	 };
 };
 
 i32 main(i32 argc, char** argv)

@@ -82,6 +82,7 @@ namespace ogfx
 
 			void drawImage(const ogfx::Image& image, const Vec2& position, const Vec2& size = { 0, 0 }, const Rectangle& srcRect = { 0, 0, 0, 0 });
 			void drawAnimation(const Animation& anim, const Vec2& position, const Vec2& size = { 0, 0 });
+			void fillGradientRect(const Rectangle& rect, ColorGradient& gradient);
 
 			void drawString(const String& str, const Vec2& position, const Color& color, i32 fontSize = 0, f32 scale = 1.0f);
 			void drawCenteredString(const String& str, const Vec2& center, const Color& color, i32 fontSize = 0, f32 scale = 1.0f);

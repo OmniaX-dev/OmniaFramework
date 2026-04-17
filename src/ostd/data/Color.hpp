@@ -23,6 +23,7 @@
 #include <ostd/data/Types.hpp>
 #include <ostd/data/BaseObject.hpp>
 #include <ostd/string/String.hpp>
+#include <ostd/math/Geometry.hpp>
 
 namespace ostd
 {
@@ -98,6 +99,31 @@ namespace ostd
 
 		public:
 	};
+	class ColorGradient : public BaseObject
+	{
+		public:
+			inline ColorGradient(void) {  }
+			inline ColorGradient(const stdvec<Color>& colors, const stdvec<f32>& weights) { m_colors = colors; m_weights = weights; }
+			inline void addColor(const Color& color) { m_colors.push_back(color); }
+			inline void addWeight(f32 w) { m_weights.push_back(w); }
+			inline stdvec<Color>& getColors(void) { return m_colors; }
+			inline stdvec<f32>& getWeights(void) { return  m_weights; }
+			inline void setAngleDeg(f32 angle_degrees) { m_angleDeg = angle_degrees; }
+			inline void setAngleRad(f32 angle_radians) { m_angleDeg = RAD_TO_DEG(angle_radians); }
+			inline f32 getAngleDeg(void) const { return m_angleDeg; }
+			inline f32 getAngleRad(void) const { return DEG_TO_RAD(m_angleDeg); }
+
+		private:
+			stdvec<Color> m_colors;
+			stdvec<f32> m_weights;
+			float m_angleDeg { VerticalDeg };
+
+		public:
+			inline static constexpr f32 HorizontalDeg { 90.0f };
+			inline static constexpr f32 VerticalDeg { 0.0f };
+			inline static constexpr f32 DiagonalDeg { 45.0f };
+			inline static constexpr f32 Diagonal2Deg { 135.0f };
+	};
 	struct Colors
 	{
 		inline static const Color Transparent   {   0,   0,   0,   0 };
@@ -159,4 +185,5 @@ using Colors = ostd::Colors;
 namespace ogfx
 {
 	using Color = ostd::Color;
+	using ColorGradient = ostd::ColorGradient;
 }
