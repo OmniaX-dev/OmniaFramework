@@ -30,9 +30,9 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 	titlebarHeight = 18
 	titlebarFontSize = 18
 	titlebarTextAlign = text_left
-	scrollSpeed = Vec2(0.8, 0.8)
-	padding = Rect(15, 15, 15, 15)
-	margin = Rect(0, 0, 0, 0)
+	scrollSpeed = vec2(0.8, 0.8)
+	padding = rect(15, 15, 15, 15)
+	margin = rect(0, 0, 0, 0)
 }
 % ===================
 
@@ -48,7 +48,7 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 	}
 	(track) {
 		color = rgb(90, 90, 90)
-		borderRadii = Rect(0, 0, 10, 0)
+		borderRadii = rect(0, 0, 10, 0)
 	}
 	width = 18.0
 }
@@ -83,8 +83,8 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 	checkBorderWidth = 2
 	showBackground = false
 	showBorder = false
-	padding = Rect(15, 15, 15, 15)
-	margin = Rect(0, 0, 0, 0)
+	padding = rect(15, 15, 15, 15)
+	margin = rect(0, 0, 0, 0)
 }
 (checkbox:hover) {
 	checkBorderColor = $accentColorLight
@@ -113,8 +113,8 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 	borderWidth = 0
 	showBackground = false
 	showBorder = false
-	padding = Rect(15, 15, 15, 15)
-	margin = Rect(0, 0, 0, 0)
+	padding = rect(15, 15, 15, 15)
+	margin = rect(0, 0, 0, 0)
 }
 % ===================
 
@@ -124,8 +124,7 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 (button) {
 	textColor = $textColor
 	backgroundColor = #999999FF
-	backgroundGradient = gradientH(#000000FF, #555555FF, #999999FF)
-	backgroundGradient = w_vgradientV(#000000FF, 0.2, #555555FF, 0.8, #999999FF)
+	backgroundGradient = gradientV(rgb(160, 160, 160) - rgb(120, 120, 120))
 	borderColor = $accentColorDark
 	fontSize = 20
 	borderRadius = 0
@@ -133,17 +132,17 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 	showBackground = true
 	showBorder = true
 	useBackgroundGradient = true
-	padding = Rect(15, 5, 15, 5)
-	margin = Rect(0, 0, 0, 0)
-	icon = file("testIcon.png")
+	padding = rect(15, 8, 15, 8)
+	margin = rect(0, 0, 0, 0)
+	icon = file("img.png")
 }
 (button:hover) {
 	borderColor = $accentColor
 	backgroundColor = #BBBBBBFF
 }
 (button:pressed) {
-	borderColor = #BBBBBBFF
+	borderColor = $accentColorDark
 	textColor = #DDDDDDFF
-	backgroundColor = #555555FF
+	backgroundGradient = gradientV(rgb(120, 120, 120) - rgb(160, 160, 160))
 }
 % ===================

@@ -269,6 +269,19 @@ namespace ostd
 				return true;
 			return false;
 		};
+		auto l_isFile = [this](String& value) -> bool {
+			value.trim();
+			if (value.startsWith("file(") && value.endsWith(")"))
+			{
+				value.substr(5, value.len() - 1).trim();
+				if (value.startsWith("\"") && value.endsWith("\""))
+				{
+					value.substr(1, value.len() - 1);
+					return true;
+				}
+			}
+			return false;
+		};
 
 		if (key.startsWith("@"))
 		{
@@ -298,6 +311,15 @@ namespace ostd
 			if (grad.isInvalid())
 				return false;
 			set(key, grad, themeID);
+		}
+		else if (l_isFile(value))
+		{
+			bool exists = ostd::FileSystem::fileExists(value) ||
+						  ostd::FileSystem::fileExists("./" + value);
+			if (exists)
+				set(key, value, themeID);
+			else
+				return false;
 		}
 		else if (value.startsWith("vec2(") && value.endsWith(")"))
 		{
@@ -419,16 +441,16 @@ namespace ostd
 		return newLines;
 	}
 
-	ColorGradient parseColorGradient(const String& _value)
+	ColorGradient Stylesheet::parseColorGradient(const String& _value)
 	{
 		String value = _value.new_toLower().trim();
 		ColorGradient grad;
 		f32 angle = 0.0f;
 		bool weighted = false;
 		String gradientFunc = value.new_substr(0, value.indexOf("(")).trim();
-		String gradientVal = value.substr(value.indexOf("(") + 1, value.indexOf(")")).trim();
+		String gradientVal = value.substr(value.indexOf("(") + 1, value.lastIndexOf(")")).trim();
 
-		if (gradientVal == "" || !gradientVal.contains(","))
+		if (gradientVal == "" || !gradientVal.contains("-"))
 			return grad;
 
 		weighted = gradientFunc.startsWith("w_");
@@ -439,20 +461,45 @@ namespace ostd
 		else
 			return grad;
 
-		auto tokens = gradientVal.tokenize(",");
+		auto tokens = gradientVal.tokenize("-");
 
-		bool is_color = true;
-		for (auto& token : tokens)
+		if (weighted && tokens.count() < 3)
+			return grad;
+
+		if (tokens.count() < 2)
+			return grad;
+
+		grad.setAngleDeg(angle);
+		if (!weighted)
 		{
-			if (is_color)
+			i32 index = 0;
+			for (auto& token : tokens)
 			{
-
+				grad.addColor(Color(token));
+				if (index > 0)
+					grad.addWeight(1.0f);
+				index++;
 			}
-			else
+			return grad;
+		}
+		else
+		{
+			bool is_color = true;
+			for (auto& token : tokens)
 			{
-
+				if (is_color)
+				{
+					grad.addColor(Color(token));
+				}
+				else
+				{
+					if (!token.isNumeric(true))
+						return ColorGradient();
+					grad.addWeight(token.toFloat());
+				}
+				is_color = !is_color;
 			}
-			is_color = !is_color;
+			return grad;
 		}
 
 		return grad;

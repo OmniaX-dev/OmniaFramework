@@ -125,7 +125,7 @@ namespace ostd
 						str.add(m_weights[i - 1], 2).add(", ");
 					str.add(m_colors[i].hexString(true, "#")).add(" ");
 				}
-				return str.trim();
+				return str.trim().add("@").add(m_angleDeg, 2);
 			}
 
 		private:

@@ -52,6 +52,7 @@ namespace ogfx
 				setPadding(getThemeValue<Rectangle>(theme, "button.padding", { 5, 5, 5, 5 }));
 				setMargin(getThemeValue<Rectangle>(theme, "button.margin", { 0, 0, 0, 0 }));
 				m_useBackgroundGradient = getThemeValue<bool>(theme, "button.useBackgroundGradient", false);
+				m_backgroundGradient = getThemeValue<ColorGradient>(theme, "button.backgroundGradient", m_backgroundGradient);
 				if (m_useBackgroundGradient && isBackgoundEnabled())
 					enableBackground(false);
 			}
