@@ -83,8 +83,8 @@ namespace ogfx
 					i32 m_titleTextAlign { 0 };
 					f32 m_scrollSpeed { 0.8f };
 
-					f32 m_scrollTarget { 0.0f };
-					f32 m_currentScroll { 0.0f };
+					Vec2 m_scrollVelocity { 0.0f, 0.0f };
+					f32 m_scrollSmoothFactor { 0.7f };
 			};
 		}
 	}

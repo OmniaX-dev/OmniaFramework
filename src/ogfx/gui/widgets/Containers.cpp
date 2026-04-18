@@ -39,15 +39,20 @@ namespace ogfx
 				m_scrollbar.setMargin({ 0, getTitlebarHeight(), 0, 0 });
 				m_scrollbar.enableManualDraw(true);
 				addWidget(m_scrollbar);
-				m_smoothScrollTimer.create(30.0f, [&](f64 dt) -> void {
-					f32 scrollStep = m_scrollTarget / 60.0f;
-					m_currentScroll += scrollStep;
-					addScrollOffset({ 0, scrollStep });
-					if (m_currentScroll > m_scrollTarget)
-						m_currentScroll = m_scrollTarget;
-				}, [&](void) -> bool {
-					return m_currentScroll == m_scrollTarget;
+				m_smoothScrollTimer.create(60.0f, [&](f64 dt) -> void {
+					f32 stepX = m_scrollVelocity.x * (1.0f - m_scrollSmoothFactor);
+					f32 stepY = m_scrollVelocity.y * (1.0f - m_scrollSmoothFactor);
+
+					addScrollOffset({ stepX, stepY });
+					m_scrollVelocity -= { stepX, stepY };
+
+					if (std::abs(m_scrollVelocity.x) < 0.5f) m_scrollVelocity.x = 0;
+					if (std::abs(m_scrollVelocity.y) < 0.5f) m_scrollVelocity.y = 0;
 				}, true);
+
+				m_smoothScrollTimer.setStopCondition([&](void) -> bool {
+					return m_scrollVelocity.x == 0 && m_scrollVelocity.y == 0;
+				});
 				validate();
 				return *this;
 			}
@@ -63,6 +68,7 @@ namespace ogfx
 				setPadding(getThemeValue<Rectangle>(theme, "panel.padding", { 15, 15, 15, 15 }));
 				setMargin(getThemeValue<Rectangle>(theme, "panel.margin", { 0, 0, 0, 0 }));
 				m_scrollSpeed = getThemeValue<f32>(theme, "panel.scrollSpeed", 0.8f);
+				m_scrollSmoothFactor = std::clamp(getThemeValue<f32>(theme, "panel.scrollSmoothFactor", 0.7f), 0.0f, 1.0f);
 				m_basePadding = getPadding();
 				m_titleColor = getThemeValue<Color>(theme, "panel.titleColor", Colors::Black);
 				m_titlebarColor = getThemeValue<Color>(theme, "panel.titlebarColor", Colors::Transparent);
@@ -95,19 +101,15 @@ namespace ogfx
 			{
 				if (!isScrollAllowed())
 					return;
+
+				if (std::abs(event.mouse->scrollAmount.y) > 0)
+					m_scrollVelocity.y += m_scrollSpeed * event.mouse->scrollAmount.y * 15.0f;
+				if (std::abs(event.mouse->scrollAmount.x) > 0)
+					m_scrollVelocity.x += m_scrollSpeed * event.mouse->scrollAmount.x * 15.0f;
+
 				if (m_smoothScrollTimer.isStopped())
 					m_smoothScrollTimer.restart();
-				f32 offset_y = 0;
-				if (event.mouse->scroll == MouseEventData::eScrollDirection::Down)
-				{
 
-					m_scrollTarget += (m_scrollSpeed * event.mouse->scrollAmount.y);
-				}
-				else if (event.mouse->scroll == MouseEventData::eScrollDirection::Up)
-				{
-
-					m_scrollTarget += (m_scrollSpeed * event.mouse->scrollAmount.y);
-				}
 				event.handle();
 			}
 
@@ -146,24 +148,30 @@ namespace ogfx
 			{
 				auto ext = getContentExtents();
 				auto cont = getContentBounds();
-				f32 maxScroll = -(ext.h - cont.h);
+				f32 maxScrollY = -(ext.h - cont.h);
+				f32 maxScrollX = -(ext.w - cont.w);
+
 				m_scrollOffset = offset;
-				if (m_scrollOffset.y < maxScroll)
-					m_scrollOffset.y = maxScroll;
-				if (m_scrollOffset.y > 0)
-					m_scrollOffset.y = 0;
+
+				if (m_scrollOffset.y < maxScrollY) m_scrollOffset.y = maxScrollY;
+				if (m_scrollOffset.y > 0) m_scrollOffset.y = 0;
+				if (m_scrollOffset.x < maxScrollX) m_scrollOffset.x = maxScrollX;
+				if (m_scrollOffset.x > 0) m_scrollOffset.x = 0;
 			}
 
 			void Panel::addScrollOffset(const Vec2& offset)
 			{
 				auto ext = getContentExtents();
 				auto cont = getContentBounds();
-				f32 maxScroll = -(ext.h - cont.h);
+				f32 maxScrollY = -(ext.h - cont.h);
+				f32 maxScrollX = -(ext.w - cont.w);
+
 				m_scrollOffset += offset;
-				if (m_scrollOffset.y < maxScroll)
-					m_scrollOffset.y = maxScroll;
-				if (m_scrollOffset.y > 0)
-					m_scrollOffset.y = 0;
+
+				if (m_scrollOffset.y < maxScrollY) m_scrollOffset.y = maxScrollY;
+				if (m_scrollOffset.y > 0) m_scrollOffset.y = 0;
+				if (m_scrollOffset.x < maxScrollX) m_scrollOffset.x = maxScrollX;
+				if (m_scrollOffset.x > 0) m_scrollOffset.x = 0;
 			}
 
 			bool Panel::needsScroll(void) const

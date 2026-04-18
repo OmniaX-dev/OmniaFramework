@@ -131,8 +131,8 @@ namespace ostd
 			StepTimer& create(f64 updatesPerSecond, Callback callback, bool stopped = false);
 			void update(void);
 			void reset(void);
-			inline void setStopCondition(StopConditionCallback stopCondition) { m_stopCondition = stopCondition; }
-			inline void setStopCallback(StopCallback callback) { m_stopCallback = callback; }
+			inline void setStopCondition(StopConditionCallback stopCondition) { m_stopCondition = std::move(stopCondition); }
+			inline void setStopCallback(StopCallback callback) { m_stopCallback = std::move(callback); }
 			inline void restart(void) { reset(); }
 			inline void stop(void) { m_stopped = true; }
 			inline f64 getInterpolationAlpha(void) const { return m_valid && m_targetDt > 0.0 ? m_accumulator / m_targetDt : 0.0; }

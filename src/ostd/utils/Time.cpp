@@ -597,11 +597,10 @@ namespace ostd
 
 
 
-	StepTimer& StepTimer::create(f64 updatesPerSecond, StepTimer::Callback callback, StopConditionCallback stopCondition, bool stopped)
+	StepTimer& StepTimer::create(f64 updatesPerSecond, StepTimer::Callback callback, bool stopped)
 	{
 		m_targetDt = 1.0 / updatesPerSecond;
 		m_callback = std::move(callback);
-		m_stopCondition = std::move(stopCondition);
 		m_prevTime = Clock::now();
 		m_accumulator = 0.0;
 		m_stopped = stopped;
@@ -615,6 +614,8 @@ namespace ostd
 		if (m_stopCondition && m_stopCondition())
 		{
 			m_stopped = true;
+			if (m_stopCallback)
+				m_stopCallback();
 			return;
 		}
 

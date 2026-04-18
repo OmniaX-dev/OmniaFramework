@@ -30,7 +30,8 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 	titlebarHeight = 18
 	titlebarFontSize = 18
 	titlebarTextAlign = text_left
-	scrollSpeed = 15.0
+	scrollSpeed = 1.2
+	scrollSmoothFactor = 0.7
 	padding = rect(15, 15, 15, 15)
 	margin = rect(0, 0, 0, 0)
 }
