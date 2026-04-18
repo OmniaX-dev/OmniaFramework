@@ -21,6 +21,7 @@
 #include "Stylesheet.hpp"
 #include "FileSystem.hpp"
 #include "Logger.hpp"
+#include <algorithm>
 
 namespace ostd
 {
@@ -361,7 +362,11 @@ namespace ostd
 			if (exitCondition)
 				return false;
 			String lineCopy = line;
-			for (const auto&[var, val] : variables)
+			std::vector<std::pair<String, std::pair<String, bool>>> sortedVars(variables.begin(), variables.end());
+			std::sort(sortedVars.begin(), sortedVars.end(), [](const auto& a, const auto& b) {
+				return a.first.len() > b.first.len();
+			});
+			for (const auto&[var, val] : sortedVars)
 			{
 				if (lineCopy.contains(var))
 				{
