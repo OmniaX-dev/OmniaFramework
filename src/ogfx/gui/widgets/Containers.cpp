@@ -83,9 +83,9 @@ namespace ogfx
 					return;
 				f32 offset_y = 0;
 				if (event.mouse->scroll == MouseEventData::eScrollDirection::Down)
-					offset_y = -(m_scrollSpeed.y * 15.0f);
+					offset_y = (m_scrollSpeed.y * event.mouse->scrollAmount * 15.0f);
 				else if (event.mouse->scroll == MouseEventData::eScrollDirection::Up)
-					offset_y = (m_scrollSpeed.y * 15.0f);
+					offset_y = (m_scrollSpeed.y * event.mouse->scrollAmount * 15.0f);
 				addScrollOffset({ 0, offset_y });
 				event.handle();
 			}

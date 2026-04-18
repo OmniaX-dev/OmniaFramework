@@ -61,6 +61,7 @@ namespace ogfx
 			f32 position_y;
 			eButton button;
 			eScrollDirection scroll { eScrollDirection::None };
+			f32 scrollAmount { 0 };
 			gui::Widget* mousePressedOnWidget { nullptr };
 			WindowCore& parentWindow;
 	};

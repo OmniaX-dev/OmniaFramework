@@ -462,12 +462,16 @@ namespace ogfx
 		else if (event.type == SDL_EVENT_MOUSE_WHEEL)
 		{
 			MouseEventData mmd = get_mouse_state(event);
-			if (event.wheel.y == -1)
+			f32 delta = event.wheel.y;
+			if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
+				delta = -delta;
+			if (delta < 0)
 				mmd.scroll = MouseEventData::eScrollDirection::Down;
-			else if (event.wheel.y == 1)
+			else if (delta > 0)
 				mmd.scroll = MouseEventData::eScrollDirection::Up;
 			else
 				mmd.scroll = MouseEventData::eScrollDirection::None;
+			mmd.scrollAmount = delta;
 			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::MouseScrolled, ostd::Signal::Priority::RealTime, mmd);
 		}
 		else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
