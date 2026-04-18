@@ -1,21 +1,21 @@
 /*
-    OmniaFramework - A collection of useful functionality
-    Copyright (C) 2025  OmniaX-Dev
+	OmniaFramework - A collection of useful functionality
+	Copyright (C) 2025  OmniaX-Dev
 
-    This file is part of OmniaFramework.
+	This file is part of OmniaFramework.
 
-    OmniaFramework is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	OmniaFramework is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    OmniaFramework is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	OmniaFramework is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
@@ -118,27 +118,37 @@ namespace ostd
 	class StepTimer
 	{
 		public:
-		    using Callback = std::function<void(f64 dt)>;
+			using Callback = std::function<void(f64 dt)>;
+			using StopConditionCallback = std::function<bool(void)>;
+			using StopCallback = std::function<void(void)>;
 			using Clock = std::chrono::high_resolution_clock;
-		    using TimePoint = Clock::time_point;
-		    using Duration = Clock::duration;
+			using TimePoint = Clock::time_point;
+			using Duration = Clock::duration;
 
 		public:
-		    StepTimer() = default;
-		    inline StepTimer(f64 updatesPerSecond, Callback callback) { create(updatesPerSecond, callback); }
-		    StepTimer& create(f64 updatesPerSecond, Callback callback);
-		    void update(void);
-		    void reset(void);
+			StepTimer() = default;
+			inline StepTimer(f64 updatesPerSecond, Callback callback, bool stopped = false) { create(updatesPerSecond, callback, stopped); }
+			StepTimer& create(f64 updatesPerSecond, Callback callback, bool stopped = false);
+			void update(void);
+			void reset(void);
+			inline void setStopCondition(StopConditionCallback stopCondition) { m_stopCondition = stopCondition; }
+			inline void setStopCallback(StopCallback callback) { m_stopCallback = callback; }
+			inline void restart(void) { reset(); }
+			inline void stop(void) { m_stopped = true; }
 			inline f64 getInterpolationAlpha(void) const { return m_valid && m_targetDt > 0.0 ? m_accumulator / m_targetDt : 0.0; }
-		    inline void invalidate(void) { m_valid = false; }
-		    inline bool isValid(void) const { return m_valid; }
+			inline void invalidate(void) { m_valid = false; }
+			inline bool isValid(void) const { return m_valid; }
+			inline bool isStopped(void) const { return m_stopped; }
 
 		private:
 			TimePoint m_prevTime;
-		    f64 m_targetDt { 0.0 };
-		    Callback m_callback { nullptr };
-		    f64 m_accumulator { 0.0 };
-		    bool m_valid { false };
+			f64 m_targetDt { 0.0 };
+			Callback m_callback { nullptr };
+			StopConditionCallback m_stopCondition { nullptr };
+			StopCallback m_stopCallback { nullptr };
+			f64 m_accumulator { 0.0 };
+			bool m_valid { false };
+			bool m_stopped { false };
 	};
 
 	struct GameClock

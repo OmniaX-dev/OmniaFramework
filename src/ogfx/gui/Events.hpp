@@ -21,6 +21,7 @@
 #pragma once
 
 #include <ostd/data/BaseObject.hpp>
+#include <ostd/math/Geometry.hpp>
 
 namespace ogfx
 {
@@ -48,7 +49,7 @@ namespace ogfx
 	class MouseEventData : public ostd::BaseObject
 	{
 		public: enum class eButton { None = 0, Left, Middle, Right };
-		public: enum class eScrollDirection { None = 0, Up, Down };
+		public: enum class eScrollDirection { None = 0, Up, Down, Left, Right };
 		public:
 			inline MouseEventData(WindowCore& parent, f32 mousex, f32 mousey, eButton btn) : parentWindow(parent), position_x(mousex), position_y(mousey), button(btn)
 			{
@@ -61,7 +62,7 @@ namespace ogfx
 			f32 position_y;
 			eButton button;
 			eScrollDirection scroll { eScrollDirection::None };
-			f32 scrollAmount { 0 };
+			Vec2 scrollAmount { 0 };
 			gui::Widget* mousePressedOnWidget { nullptr };
 			WindowCore& parentWindow;
 	};

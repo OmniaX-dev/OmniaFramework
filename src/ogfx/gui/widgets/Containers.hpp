@@ -22,6 +22,7 @@
 
 #include <ogfx/gui/widgets/Widget.hpp>
 #include <ogfx/gui/widgets/Scrollbar.hpp>
+#include <ostd/utils/Time.hpp>
 
 namespace ogfx
 {
@@ -46,6 +47,7 @@ namespace ogfx
 					Panel& create(void);
 					void applyTheme(const ostd::Stylesheet& theme) override;
 					void onDraw(ogfx::BasicRenderer2D& gfx) override;
+					void onUpdate(void) override;
 					void afterDraw(ogfx::BasicRenderer2D& gfx) override;
 					void onMouseScrolled(const Event& event) override;
 					void setTitlebarType(const String& type);
@@ -68,6 +70,7 @@ namespace ogfx
 					String m_title { "Panel" };
 					Vec2 m_scrollOffset { 0, 0 };
 					VerticalScrollBar m_scrollbar { getWindow() };
+					ostd::StepTimer m_smoothScrollTimer;
 
 					Color m_titleColor { Colors::Black  };
 					i32 m_titlebarType = TitleBarTypes::NoneValue;
@@ -78,7 +81,10 @@ namespace ogfx
 					Color m_titlebarBorderColor { Colors::Black };
 					Rectangle m_basePadding { 0, 0, 0, 0 };
 					i32 m_titleTextAlign { 0 };
-					Vec2 m_scrollSpeed { 0.8f, 0.8f };
+					f32 m_scrollSpeed { 0.8f };
+
+					f32 m_scrollTarget { 0.0f };
+					f32 m_currentScroll { 0.0f };
 			};
 		}
 	}

@@ -39,6 +39,15 @@ namespace ogfx
 				m_scrollbar.setMargin({ 0, getTitlebarHeight(), 0, 0 });
 				m_scrollbar.enableManualDraw(true);
 				addWidget(m_scrollbar);
+				m_smoothScrollTimer.create(30.0f, [&](f64 dt) -> void {
+					f32 scrollStep = m_scrollTarget / 60.0f;
+					m_currentScroll += scrollStep;
+					addScrollOffset({ 0, scrollStep });
+					if (m_currentScroll > m_scrollTarget)
+						m_currentScroll = m_scrollTarget;
+				}, [&](void) -> bool {
+					return m_currentScroll == m_scrollTarget;
+				}, true);
 				validate();
 				return *this;
 			}
@@ -53,7 +62,7 @@ namespace ogfx
 				setBorderColor(getThemeValue<Color>(theme, "panel.borderColor", Colors::Black));
 				setPadding(getThemeValue<Rectangle>(theme, "panel.padding", { 15, 15, 15, 15 }));
 				setMargin(getThemeValue<Rectangle>(theme, "panel.margin", { 0, 0, 0, 0 }));
-				m_scrollSpeed = getThemeValue<Vec2>(theme, "panel.scrollSpeed", { 0.0f, 0.8f });
+				m_scrollSpeed = getThemeValue<f32>(theme, "panel.scrollSpeed", 0.8f);
 				m_basePadding = getPadding();
 				m_titleColor = getThemeValue<Color>(theme, "panel.titleColor", Colors::Black);
 				m_titlebarColor = getThemeValue<Color>(theme, "panel.titlebarColor", Colors::Transparent);
@@ -71,6 +80,11 @@ namespace ogfx
 				//     gfx.fillRect(getContentExtents() + Rectangle { getGlobalPosition(), 0, 0 }, { 80, 0, 0, 30 });
 			}
 
+			void Panel::onUpdate(void)
+			{
+				m_smoothScrollTimer.update();
+			}
+
 			void Panel::afterDraw(ogfx::BasicRenderer2D& gfx)
 			{
 				draw_titlebar(gfx);
@@ -81,12 +95,19 @@ namespace ogfx
 			{
 				if (!isScrollAllowed())
 					return;
+				if (m_smoothScrollTimer.isStopped())
+					m_smoothScrollTimer.restart();
 				f32 offset_y = 0;
 				if (event.mouse->scroll == MouseEventData::eScrollDirection::Down)
-					offset_y = (m_scrollSpeed.y * event.mouse->scrollAmount * 15.0f);
+				{
+
+					m_scrollTarget += (m_scrollSpeed * event.mouse->scrollAmount.y);
+				}
 				else if (event.mouse->scroll == MouseEventData::eScrollDirection::Up)
-					offset_y = (m_scrollSpeed.y * event.mouse->scrollAmount * 15.0f);
-				addScrollOffset({ 0, offset_y });
+				{
+
+					m_scrollTarget += (m_scrollSpeed * event.mouse->scrollAmount.y);
+				}
 				event.handle();
 			}
 

@@ -597,19 +597,26 @@ namespace ostd
 
 
 
-	StepTimer& StepTimer::create(f64 updatesPerSecond, StepTimer::Callback callback)
+	StepTimer& StepTimer::create(f64 updatesPerSecond, StepTimer::Callback callback, StopConditionCallback stopCondition, bool stopped)
 	{
 		m_targetDt = 1.0 / updatesPerSecond;
 		m_callback = std::move(callback);
+		m_stopCondition = std::move(stopCondition);
 		m_prevTime = Clock::now();
 		m_accumulator = 0.0;
+		m_stopped = stopped;
 		m_valid = true;
 		return *this;
 	}
 
 	void StepTimer::update(void)
 	{
-		if (!m_valid) return;
+		if (!m_valid || m_stopped || !m_callback) return;
+		if (m_stopCondition && m_stopCondition())
+		{
+			m_stopped = true;
+			return;
+		}
 
 		TimePoint currentTime = Clock::now();
 		Duration frameDuration = currentTime - m_prevTime;
@@ -638,6 +645,7 @@ namespace ostd
 		{
 			m_accumulator = 0.0;
 			m_prevTime = Clock::now();
+			m_stopped = false;
 		}
 	}
 
