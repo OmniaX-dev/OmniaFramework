@@ -54,7 +54,8 @@ namespace ogfx
 					String getTitlebarType(void) const;
 					void setScrollOffset(const Vec2& offset) override;
 					void addScrollOffset(const Vec2& offset) override;
-					bool needsScroll(void) const override;
+					bool needsVScroll(void) const override;
+					bool needsHScroll(void) const override;
 					void onWidgetAdded(Widget& child) override;
 					inline void setBackGroundColor(const Color& color) { m_backgroundColor = color; }
 					inline Color getBackgroundColor(void) { return m_backgroundColor; }
@@ -69,7 +70,8 @@ namespace ogfx
 				private:
 					String m_title { "Panel" };
 					Vec2 m_scrollOffset { 0, 0 };
-					VerticalScrollBar m_scrollbar { getWindow() };
+					VerticalScrollBar m_vScrollbar { getWindow() };
+					HorizontalScrollbar m_hScrollbar { getWindow() };
 					ostd::StepTimer m_smoothScrollTimer;
 
 					Color m_titleColor { Colors::Black  };

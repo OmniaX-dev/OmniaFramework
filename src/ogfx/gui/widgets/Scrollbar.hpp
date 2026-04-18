@@ -31,9 +31,8 @@ namespace ogfx
 			class VerticalScrollBar : public Widget
 			{
 				public:
-					inline VerticalScrollBar(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(""); }
-					inline VerticalScrollBar(WindowCore& window, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(text); }
-					VerticalScrollBar& create(const String& text);
+					inline VerticalScrollBar(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
+					VerticalScrollBar& create(void);
 					void applyTheme(const ostd::Stylesheet& theme) override;
 					void afterDraw(ogfx::BasicRenderer2D& gfx) override;
 					void onMouseDragged(const Event& event) override;
@@ -61,6 +60,44 @@ namespace ogfx
 					Rectangle m_correctionOffset { 1, 1, 0, 0 };
 
 					Rectangle m_trackBorderRadii { 0, 0, 10, 0 };
+					f32 m_thumbBorderRadius { 16 };
+					Color m_trackColor { 70, 70, 70 };
+					Color m_thumbColor { 120, 120, 120 };
+					Color m_thumbBorderColor { 150, 150, 150 };
+					bool m_thumbShowBorder { true };
+			};
+			class HorizontalScrollbar : public Widget
+			{
+				public:
+					inline HorizontalScrollbar(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
+					HorizontalScrollbar& create(void);
+					void applyTheme(const ostd::Stylesheet& theme) override;
+					void afterDraw(ogfx::BasicRenderer2D& gfx) override;
+					void onMouseDragged(const Event& event) override;
+					void onMousePressed(const Event& event) override;
+					void onMouseReleased(const Event& event) override;
+					void onUpdate(void) override;
+
+					inline void setx(f32 xx) override {  }
+					inline void sety(f32 yy) override {  }
+					inline void setw(f32 ww) override {  }
+					inline void seth(f32 hh) override {  }
+
+				private:
+					void update_thumb(void);
+					void set_thumb_x(f32 thumbx);
+					bool is_mouse_in_thumb(const Vec2& mouse_pos);
+
+				private:
+					f32 m_thumbWidth { 0 };
+					f32 m_thumbX { 0 };
+					Rectangle m_thumbGlobalBounds { 0, 0, 0, 0 };
+					bool m_mousePressed { false };
+					bool m_mouseDragged { false };
+					f32 m_dragGrabOffset { 0 };
+					Rectangle m_correctionOffset { 0, 0, 0, 0 };
+
+					Rectangle m_trackBorderRadii { 0, 0, 10, 10 };
 					f32 m_thumbBorderRadius { 16 };
 					Color m_trackColor { 70, 70, 70 };
 					Color m_thumbColor { 120, 120, 120 };

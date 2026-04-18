@@ -104,6 +104,7 @@ class Window : public ogfx::gui::Window
 		void onRedraw(ogfx::BasicRenderer2D& gfx) override
 		{
 			gfx.drawAnimation(m_anim, { 200, 200 });
+			// gfx.fillRect(m_panel2.getGlobalContentBounds(), { 0, 255, 0, 120 });
 		}
 
 		void onFixedUpdate(void) override

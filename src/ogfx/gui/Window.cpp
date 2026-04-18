@@ -463,7 +463,7 @@ namespace ogfx
 		{
 			MouseEventData mmd = get_mouse_state(event);
 			f32 deltaY = event.wheel.y;
-			f32 deltaX = event.wheel.x;
+			f32 deltaX = m_invertHorizontalScroll ? -event.wheel.x : event.wheel.x;
 			if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
 				deltaY = -deltaY;
 			if (deltaY < 0)

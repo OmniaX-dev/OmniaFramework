@@ -36,9 +36,12 @@ namespace ogfx
 				disableFocus();
 				enableStopEvents();
 				allowScroll(true);
-				m_scrollbar.setMargin({ 0, getTitlebarHeight(), 0, 0 });
-				m_scrollbar.enableManualDraw(true);
-				addWidget(m_scrollbar);
+				m_vScrollbar.setMargin({ 0, getTitlebarHeight(), 0, 0 });
+				m_vScrollbar.enableManualDraw(true);
+				addWidget(m_vScrollbar);
+				m_hScrollbar.setMargin({ 0, 0, 0, 0 });
+				m_hScrollbar.enableManualDraw(true);
+				addWidget(m_hScrollbar);
 				m_smoothScrollTimer.create(60.0f, [&](f64 dt) -> void {
 					f32 stepX = m_scrollVelocity.x * (1.0f - m_scrollSmoothFactor);
 					f32 stepY = m_scrollVelocity.y * (1.0f - m_scrollSmoothFactor);
@@ -94,7 +97,8 @@ namespace ogfx
 			void Panel::afterDraw(ogfx::BasicRenderer2D& gfx)
 			{
 				draw_titlebar(gfx);
-				m_scrollbar.__draw(gfx);
+				m_vScrollbar.__draw(gfx);
+				m_hScrollbar.__draw(gfx);
 			}
 
 			void Panel::onMouseScrolled(const Event& event)
@@ -174,15 +178,22 @@ namespace ogfx
 				if (m_scrollOffset.x > 0) m_scrollOffset.x = 0;
 			}
 
-			bool Panel::needsScroll(void) const
+			bool Panel::needsVScroll(void) const
 			{
 				return isScrollAllowed() && getContentExtents().h > getContentBounds().h;
 			}
 
+			bool Panel::needsHScroll(void) const
+			{
+				return isScrollAllowed() && getContentExtents().w > getContentBounds().w;
+			}
+
 			void Panel::onWidgetAdded(Widget& child)
 			{
-				removeWidget(m_scrollbar);
-				addWidget(m_scrollbar, { 0, 0 }, true);
+				removeWidget(m_vScrollbar);
+				removeWidget(m_hScrollbar);
+				addWidget(m_vScrollbar, { 0, 0 }, true);
+				addWidget(m_hScrollbar, { 0, 0 }, true);
 			}
 
 			void Panel::draw_titlebar(BasicRenderer2D& gfx)

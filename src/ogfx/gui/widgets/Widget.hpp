@@ -56,7 +56,8 @@ namespace ogfx
 				inline virtual Vec2 getScrollOffset(void) const { return { 0, 0 }; }
 				inline virtual void setScrollOffset(const Vec2& offset) {  }
 				inline virtual void addScrollOffset(const Vec2& offset) {  }
-				inline virtual bool needsScroll(void) const { return false; }
+				inline virtual bool needsVScroll(void) const { return false; }
+				inline virtual bool needsHScroll(void) const { return false; }
 				void addThemeOverride(const String& fullKey, ostd::Stylesheet::TypeVariant value);
 				void reloadTheme(bool propagate = false);
 				void setThemeQualifier(const String& qualifier, bool value = true);
@@ -68,6 +69,7 @@ namespace ogfx
 
 				inline virtual void onDraw(ogfx::BasicRenderer2D& gfx) {  }
 				inline virtual void afterDraw(ogfx::BasicRenderer2D& gfx) {  }
+				inline virtual void beforeDraw(ogfx::BasicRenderer2D& gfx) {  }
 				inline virtual void onUpdate(void) {  }
 				inline virtual void onWidgetAdded(Widget& child) {  }
 

@@ -211,6 +211,7 @@ namespace ogfx
 				gfx.fillRect({ getGlobalPosition(), getSize() }, getDrawBoxColor());
 			else
 			{
+				beforeDraw(gfx);
 				if (m_showBackground && m_showBorder)
 					gfx.outlinedRoundRect({ getGlobalPosition(), getSize() }, m_backgroundColor, m_borderColor, m_borderRadius, m_borderWidth);
 				else if (m_showBackground)

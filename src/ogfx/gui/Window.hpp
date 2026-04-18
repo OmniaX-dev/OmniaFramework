@@ -156,6 +156,7 @@ namespace ogfx
 			bool m_blockingEvents { false };
 			bool m_resizeable { true };
 			bool m_refreshScreen { true };
+			bool m_invertHorizontalScroll { true };
 
 			f32 m_systemScale { 1.0f };
 			f32 m_userScale { 1.0f };
