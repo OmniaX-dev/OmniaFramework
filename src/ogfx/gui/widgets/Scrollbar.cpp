@@ -323,7 +323,7 @@ namespace ogfx
 			{
 				if (isVScrollAllowed())
 				{
-					bool mouseInsideHScrollbar = m_hScrollbar.isMouseInsideThumb({ event.mouse->position_x, event.mouse->position_y });
+					bool mouseInsideHScrollbar = m_hScrollbar.isMouseInsideThumb({ event.mouse->position_x, event.mouse->position_y }) && needsHScroll();
 					if (std::abs(event.mouse->scrollAmount.y) > 0 && !mouseInsideHScrollbar)
 					{
 						m_scrollVelocity.y += m_scrollSpeed * event.mouse->scrollAmount.y * m_scrollSpeedMultiplier;

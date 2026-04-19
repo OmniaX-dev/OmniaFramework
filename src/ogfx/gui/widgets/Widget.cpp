@@ -110,6 +110,7 @@ namespace ogfx
 			{
 				if (!child || child->isInvalid()) continue;
 				if (child->isIgnoreScrollAllowed()) continue;
+				if (!child->isVisible()) continue;
 				Vec2 localPos = getPadding().getPosition() + child->getPosition() + child->getMargin().getPosition() + child->getContentBounds().getPosition();
 				maxX = std::max(maxX, localPos.x + child->getw() + child->getMargin().w);
 				maxY = std::max(maxY, localPos.y + child->geth() + child->getMargin().h);
@@ -230,10 +231,13 @@ namespace ogfx
 			onDraw(gfx);
 
 			// gfx.fillRect(getGlobalPureContentBounds(), { 0, 255, 0, 120 });
-			gfx.pushClippingRect(getGlobalPureContentBounds(), true);
+			const bool needsContentClip = !m_rootChild;
+			if (needsContentClip)
+				gfx.pushClippingRect(getGlobalPureContentBounds(), true);
 			if (hasChildren())
 				m_widgets.draw(gfx);
-			gfx.popClippingRect();
+			if (needsContentClip)
+				gfx.popClippingRect();
 			if (m_showBorder)
 				gfx.drawRoundRect({ getGlobalPosition(), getSize() }, m_borderColor, m_borderRadius, m_borderWidth);
 			afterDraw(gfx);
