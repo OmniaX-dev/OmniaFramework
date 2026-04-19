@@ -47,7 +47,9 @@ namespace ogfx
 				virtual Vec2 getGlobalContentPosition(void) const;
 				virtual Rectangle getGlobalBounds(void) const;
 				virtual Rectangle getContentBounds(void) const;
+				virtual Rectangle getPureContentBounds(void) const;
 				virtual Rectangle getGlobalContentBounds(void) const;
+				virtual Rectangle getGlobalPureContentBounds(void) const;
 				virtual Rectangle getContentExtents(void) const;
 				using Rectangle::contains;
 				bool contains(Vec2 p, bool includeBounds = false) const override;
@@ -58,6 +60,8 @@ namespace ogfx
 				inline virtual void addScrollOffset(const Vec2& offset) {  }
 				inline virtual bool needsVScroll(void) const { return false; }
 				inline virtual bool needsHScroll(void) const { return false; }
+				inline virtual f32 getVScrollbarSize(void) const { return 0; }
+				inline virtual f32 getHScrollbarSize(void) const { return 0; }
 				void addThemeOverride(const String& fullKey, ostd::Stylesheet::TypeVariant value);
 				void reloadTheme(bool propagate = false);
 				void setThemeQualifier(const String& qualifier, bool value = true);
@@ -137,8 +141,10 @@ namespace ogfx
 				inline bool isChildrenEnabled(void) const { return m_allowChildren; }
 				inline void setPadding(const Rectangle& pad) { m_padding = pad; }
 				inline void setMargin(const Rectangle& margin) { m_margin = margin; }
+				inline void setContentOffset(const Vec2& offset) { m_contentOffset = offset; }
 				inline Rectangle getPadding(void) const { return m_padding; }
 				inline Rectangle getMargin(void) const { return m_margin; }
+				inline Vec2 getContentOffset(void) const { return m_contentOffset; }
 				inline bool isMouseInside(void) const { return m_mouseInside; }
 				inline ogfx::MouseEventData::eButton getPressedMouseButton(void) const { return m_pressedButton; }
 				inline const stdvec<String>& getThemeIDList(void) const { return m_themeIDList; }
@@ -170,8 +176,10 @@ namespace ogfx
 				inline bool isVisible(void) const { return m_visible; }
 				inline void show(void) { setVisible(true); }
 				inline void hide(void) { setVisible(false); }
-				inline void allowScroll(bool allow = true) { m_allowScroll = allow; }
-				inline bool isScrollAllowed(void) const { return m_allowScroll; }
+				inline void allowVScroll(bool allow = true) { m_vScrollEnabled = allow; }
+				inline bool isVScrollAllowed(void) const { return m_vScrollEnabled; }
+				inline void allowHScroll(bool allow = true) { m_hScrollEnabled = allow; }
+				inline bool isHScrollAllowed(void) const { return m_hScrollEnabled; }
 				inline void allowIgnoreScroll(bool allow = true) { m_ignoreScroll = allow; }
 				inline bool isIgnoreScrollAllowed(void) const { return m_ignoreScroll; }
 
@@ -233,10 +241,11 @@ namespace ogfx
 				bool m_clipContents { true };
 				bool m_acceptDragAndDrop { false };
 				bool m_visible { true };
-				bool m_allowScroll { false };
 				bool m_ignoreScroll { false};
 				bool m_manualDraw { false };
 				bool m_topMost { false };
+				bool m_vScrollEnabled { false };
+				bool m_hScrollEnabled { false };
 				MouseEventData::eButton m_pressedButton { MouseEventData::eButton::None };
 
 				stdvec<String> m_themeIDList;
@@ -254,6 +263,7 @@ namespace ogfx
 
 				Rectangle m_padding { 0, 0, 0, 0 };
 				Rectangle m_margin { 0, 0, 0, 0 };
+				Vec2 m_contentOffset { 0, 0 };
 
 				static ostd::BaseObject* s_dragAndDropData;
 				static bool s_hasDragAndDropData;

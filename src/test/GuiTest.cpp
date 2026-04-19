@@ -71,13 +71,27 @@ class Window : public ogfx::gui::Window
 
 			m_label2.setText("Label2");
 			m_label3.setText("Label3");
+			m_label4.setText("Label4");
+			m_label5.setText("Label5");
 
-			m_panel1.setSize(300, 140);
-			m_panel1.allowScroll(false);
+			m_panel1.setSize(300, 300);
+			m_panel1.allowVScroll(false);
+			m_panel1.allowHScroll(false);
+			m_panel1.setTitle("Panel 1");
+
+			m_panel3.setSize(150, 150);
+			m_panel3.allowVScroll(false);
+			m_panel3.allowHScroll(false);
+			m_panel3.setTitle("Panel 3");
 
 			m_panel2.setSize(600, 400);
+			m_panel2.setTitle("Panel 2");
+
+			m_panel3.addWidget(m_label4);
 
 			m_panel1.addWidget(m_label2);
+			m_panel1.addWidget(m_panel3, { 100, 50 });
+			m_panel1.addWidget(m_label5, { 0, 60 });
 
 			m_panel2.addWidget(m_label3);
 			m_panel2.addWidget(m_panel1, { 400, 50 });
@@ -104,7 +118,7 @@ class Window : public ogfx::gui::Window
 		void onRedraw(ogfx::BasicRenderer2D& gfx) override
 		{
 			gfx.drawAnimation(m_anim, { 200, 200 });
-			// gfx.fillRect(m_panel2.getGlobalContentBounds(), { 0, 255, 0, 120 });
+			// gfx.fillRect(m_panel2.getGlobalPureContentBounds(), { 0, 255, 0, 120 });
 		}
 
 		void onFixedUpdate(void) override
@@ -116,8 +130,11 @@ class Window : public ogfx::gui::Window
 		Label m_label1 { *this };
 		Label m_label2 { *this };
 		Label m_label3 { *this };
+		Label m_label4 { *this };
+		Label m_label5 { *this };
 		Panel m_panel1 { *this };
 		Panel m_panel2 { *this };
+		Panel m_panel3 { *this };
 		CheckBox m_check1 { *this };
 		Button m_btn1 { *this };
 

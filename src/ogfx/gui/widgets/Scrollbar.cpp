@@ -50,7 +50,6 @@ namespace ogfx
 				m_thumbBorderColor = getThemeValue<Color>(theme, "scrollbar.thumb.borderColor", { 150, 150, 150 });
 				m_thumbShowBorder = getThemeValue<bool>(theme, "scrollbar.thumb.showBorder", true);
 				m_trackColor = getThemeValue<Color>(theme, "scrollbar.track.color", { 70, 70, 70 });
-				m_trackBorderRadii = getThemeValue<Rectangle>(theme, "scrollbar.track.borderRadii", { 0, 0, 10, 0 });
 			}
 
 			void VerticalScrollBar::afterDraw(ogfx::BasicRenderer2D& gfx)
@@ -66,7 +65,7 @@ namespace ogfx
 				if (!m_mousePressed)
 					return;
 
-				if (is_mouse_in_thumb({ event.mouse->position_x, event.mouse->position_y }))
+				if (isMouseInsideThumb({ event.mouse->position_x, event.mouse->position_y }))
 					m_mouseDragged = true;
 
 				if (m_mouseDragged)
@@ -103,11 +102,16 @@ namespace ogfx
 				update_thumb();
 			}
 
+			bool VerticalScrollBar::isMouseInsideThumb(const Vec2& mouse_pos)
+			{
+				return m_thumbGlobalBounds.contains(mouse_pos, true);
+			}
+
 			void VerticalScrollBar::update_thumb(void)
 			{
 				x = getParent()->getSize().x - w;
 				y = 0;
-				h = getParent()->getGlobalContentBounds().h;
+				h = getParent()->getGlobalPureContentBounds().h;
 
 				auto ext = getParent()->getContentExtents();
 				auto cont = getParent()->getContentBounds();
@@ -127,6 +131,8 @@ namespace ogfx
 
 			void VerticalScrollBar::set_thumb_y(f32 thumby)
 			{
+				if (!getParent()->needsVScroll())
+					return;
 				auto bounds = getGlobalBounds() - m_correctionOffset;
 				auto ext = getParent()->getContentExtents();
 				auto cont = getParent()->getContentBounds();
@@ -137,11 +143,6 @@ namespace ogfx
 				auto parentScrollOffset = getParent()->getScrollOffset();
 				parentScrollOffset.y = maxScroll * scrollProgress;
 				getParent()->setScrollOffset(parentScrollOffset);
-			}
-
-			bool VerticalScrollBar::is_mouse_in_thumb(const Vec2& mouse_pos)
-			{
-				return m_thumbGlobalBounds.contains(mouse_pos, true);
 			}
 
 
@@ -172,8 +173,7 @@ namespace ogfx
 				m_thumbBorderColor = getThemeValue<Color>(theme, "scrollbar.thumb.borderColor", { 150, 150, 150 });
 				m_thumbShowBorder = getThemeValue<bool>(theme, "scrollbar.thumb.showBorder", true);
 				m_trackColor = getThemeValue<Color>(theme, "scrollbar.track.color", { 70, 70, 70 });
-				m_trackBorderRadii = getThemeValue<Rectangle>(theme, "scrollbar.track.borderRadii", { 0, 0, 10, 10 });
-			}
+ 			}
 
 			void HorizontalScrollbar::afterDraw(ogfx::BasicRenderer2D& gfx)
 			{
@@ -188,7 +188,7 @@ namespace ogfx
 				if (!m_mousePressed)
 					return;
 
-				if (is_mouse_in_thumb({ event.mouse->position_x, event.mouse->position_y }))
+				if (isMouseInsideThumb({ event.mouse->position_x, event.mouse->position_y }))
 					m_mouseDragged = true;
 
 				if (m_mouseDragged)
@@ -225,11 +225,16 @@ namespace ogfx
 				update_thumb();
 			}
 
+			bool HorizontalScrollbar::isMouseInsideThumb(const Vec2& mouse_pos)
+			{
+				return m_thumbGlobalBounds.contains(mouse_pos, true);
+			}
+
 			void HorizontalScrollbar::update_thumb(void)
 			{
 				x = 0;
 				y = getParent()->getSize().y - h;
-				w = getParent()->getGlobalBounds().w;
+				w = getParent()->getGlobalBounds().w - getParent()->getVScrollbarSize();
 
 				auto ext = getParent()->getContentExtents();
 				auto cont = getParent()->getContentBounds();
@@ -245,11 +250,13 @@ namespace ogfx
 
 				auto bounds = getGlobalBounds() - m_correctionOffset;
 				m_thumbGlobalBounds = { bounds.x + 2 + m_thumbX, bounds.y + gety(), m_thumbWidth, geth() - 4 };
-				std::cout << Rectangle::toString() << "\n";
+				m_thumbGlobalBounds = { bounds.x + getx() + m_thumbX, bounds.y + 2, m_thumbWidth, geth() - 4 };
 			}
 
 			void HorizontalScrollbar::set_thumb_x(f32 thumbx)
 			{
+				if (!getParent()->needsHScroll())
+					return;
 				auto bounds = getGlobalBounds() - m_correctionOffset;
 				auto ext = getParent()->getContentExtents();
 				auto cont = getParent()->getContentBounds();
@@ -260,11 +267,6 @@ namespace ogfx
 				auto parentScrollOffset = getParent()->getScrollOffset();
 				parentScrollOffset.x = maxScroll * scrollProgress;
 				getParent()->setScrollOffset(parentScrollOffset);
-			}
-
-			bool HorizontalScrollbar::is_mouse_in_thumb(const Vec2& mouse_pos)
-			{
-				return m_thumbGlobalBounds.contains(mouse_pos, true);
 			}
 		}
 	}

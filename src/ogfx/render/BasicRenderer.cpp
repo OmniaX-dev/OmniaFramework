@@ -102,7 +102,10 @@ namespace ogfx
 			finalRect = m_clipStack.back().getIntersection(rect, false);
 
 		if (!m_clipStack.empty() && m_clipStack.back() == finalRect)
+		{
+			m_clipStack.push_back(finalRect);
 			return;
+		}
 		flushBatch();
 
 		m_clipStack.push_back(finalRect);
@@ -121,22 +124,26 @@ namespace ogfx
 		if (!m_initialized) return;
 		if (m_clipStack.empty()) return;
 
+		Rectangle popped = m_clipStack.back();
 		m_clipStack.pop_back();
 
-		flushBatch();
 		if (m_clipStack.empty())
 		{
+			flushBatch();
 			SDL_SetRenderClipRect(m_window->getSDLRenderer(), nullptr);
 			return;
 		}
 
-		const auto& rect = m_clipStack.back();
+		const auto& prev = m_clipStack.back();
+		if (prev == popped)
+			return;
 
+		flushBatch();
 		SDL_Rect r;
-		r.x = (i32)std::round(rect.x);
-		r.y = (i32)std::round(rect.y);
-		r.w = (i32)std::round(rect.w);
-		r.h = (i32)std::round(rect.h);
+		r.x = (i32)std::round(prev.x);
+		r.y = (i32)std::round(prev.y);
+		r.w = (i32)std::round(prev.w);
+		r.h = (i32)std::round(prev.h);
 
 		SDL_SetRenderClipRect(m_window->getSDLRenderer(), &r);
 	}

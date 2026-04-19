@@ -43,13 +43,12 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 (scrollbar) {
 	(thumb) {
 		color = rgb(140, 140, 140)
-		borderRadius = 16
+		borderRadius = 0.0
 		borderColor = rgb(150, 150, 150)
 		showBorder = true
 	}
 	(track) {
 		color = rgb(90, 90, 90)
-		borderRadii = rect(0, 0, 10, 0)
 	}
 	width = 18.0
 }
@@ -145,7 +144,7 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 }
 (button:pressed) {
 	borderColor = $accentColorDark
-	textColor = #DDDDDDFF
+	textColor = #BBBBBBFF
 	backgroundGradient = gradientV(rgb(120, 120, 120) - rgb(160, 160, 160))
 }
 % ====================

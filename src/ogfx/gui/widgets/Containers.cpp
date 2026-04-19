@@ -35,7 +35,8 @@ namespace ogfx
 				disableDrawBox();
 				disableFocus();
 				enableStopEvents();
-				allowScroll(true);
+				allowVScroll(true);
+				allowHScroll(true);
 				m_vScrollbar.setMargin({ 0, getTitlebarHeight(), 0, 0 });
 				m_vScrollbar.enableManualDraw(true);
 				addWidget(m_vScrollbar);
@@ -72,7 +73,6 @@ namespace ogfx
 				setMargin(getThemeValue<Rectangle>(theme, "panel.margin", { 0, 0, 0, 0 }));
 				m_scrollSpeed = getThemeValue<f32>(theme, "panel.scrollSpeed", 0.8f);
 				m_scrollSmoothFactor = std::clamp(getThemeValue<f32>(theme, "panel.scrollSmoothFactor", 0.7f), 0.0f, 1.0f);
-				m_basePadding = getPadding();
 				m_titleColor = getThemeValue<Color>(theme, "panel.titleColor", Colors::Black);
 				m_titlebarColor = getThemeValue<Color>(theme, "panel.titlebarColor", Colors::Transparent);
 				m_titlebarBorderColor = getThemeValue<Color>(theme, "panel.titlebarBorderColor", Colors::Black);
@@ -103,18 +103,34 @@ namespace ogfx
 
 			void Panel::onMouseScrolled(const Event& event)
 			{
-				if (!isScrollAllowed())
-					return;
-
-				if (std::abs(event.mouse->scrollAmount.y) > 0)
-					m_scrollVelocity.y += m_scrollSpeed * event.mouse->scrollAmount.y * 15.0f;
-				if (std::abs(event.mouse->scrollAmount.x) > 0)
-					m_scrollVelocity.x += m_scrollSpeed * event.mouse->scrollAmount.x * 15.0f;
-
-				if (m_smoothScrollTimer.isStopped())
-					m_smoothScrollTimer.restart();
-
-				event.handle();
+				if (isVScrollAllowed())
+				{
+					bool mouseInsideHScrollbar = m_hScrollbar.isMouseInsideThumb({ event.mouse->position_x, event.mouse->position_y });
+					if (std::abs(event.mouse->scrollAmount.y) > 0 && !mouseInsideHScrollbar)
+					{
+						m_scrollVelocity.y += m_scrollSpeed * event.mouse->scrollAmount.y * m_scrollSpeedMultiplier;
+						if (m_smoothScrollTimer.isStopped())
+							m_smoothScrollTimer.restart();
+						event.handle();
+					}
+					else if (std::abs(event.mouse->scrollAmount.y) > 0)
+					{
+						m_scrollVelocity.x += m_scrollSpeed * event.mouse->scrollAmount.y * m_scrollSpeedMultiplier;
+						if (m_smoothScrollTimer.isStopped())
+							m_smoothScrollTimer.restart();
+						event.handle();
+					}
+				}
+				if (isHScrollAllowed())
+				{
+					if (std::abs(event.mouse->scrollAmount.x) > 0)
+					{
+						m_scrollVelocity.x += m_scrollSpeed * event.mouse->scrollAmount.x * m_scrollSpeedMultiplier;
+						if (m_smoothScrollTimer.isStopped())
+							m_smoothScrollTimer.restart();
+						event.handle();
+					}
+				}
 			}
 
 			void Panel::setTitlebarType(const String& type)
@@ -122,17 +138,17 @@ namespace ogfx
 				String t = type.new_toLower().trim();
 				if (t == TitleBarTypes::None)
 				{
-					setPadding(m_basePadding);
+					setContentOffset({ 0, 0 });
 					m_titlebarType = TitleBarTypes::NoneValue;
 				}
 				else if (t == TitleBarTypes::Minimal)
 				{
-					setPadding(m_basePadding + Rectangle { 0, m_titlebarHeight, 0, 0 });
+					setContentOffset({ 0, m_titlebarHeight });
 					m_titlebarType = TitleBarTypes::MinimalValue;
 				}
 				else if (t == TitleBarTypes::Full)
 				{
-					setPadding(m_basePadding + Rectangle { 0, m_titlebarHeight, 0, 0 });
+					setContentOffset({ 0, m_titlebarHeight });
 					m_titlebarType = TitleBarTypes::FullValue;
 				}
 			}
@@ -180,12 +196,12 @@ namespace ogfx
 
 			bool Panel::needsVScroll(void) const
 			{
-				return isScrollAllowed() && getContentExtents().h > getContentBounds().h;
+				return isVScrollAllowed() && getContentExtents().h > getContentBounds().h;
 			}
 
 			bool Panel::needsHScroll(void) const
 			{
-				return isScrollAllowed() && getContentExtents().w > getContentBounds().w;
+				return isHScrollAllowed() && getContentExtents().w > getContentBounds().w;
 			}
 
 			void Panel::onWidgetAdded(Widget& child)
@@ -194,6 +210,24 @@ namespace ogfx
 				removeWidget(m_hScrollbar);
 				addWidget(m_vScrollbar, { 0, 0 }, true);
 				addWidget(m_hScrollbar, { 0, 0 }, true);
+			}
+
+			f32 Panel::getVScrollbarSize(void) const
+			{
+				if (!isVScrollAllowed())
+					return 0;
+				if (!needsVScroll())
+					return 0;
+				return m_vScrollbar.getw();
+			}
+
+			f32 Panel::getHScrollbarSize(void) const
+			{
+				if (!isHScrollAllowed())
+					return 0;
+				if (!needsHScroll())
+					return 0;
+				return m_hScrollbar.geth();
 			}
 
 			void Panel::draw_titlebar(BasicRenderer2D& gfx)

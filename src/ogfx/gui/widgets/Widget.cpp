@@ -64,6 +64,7 @@ namespace ogfx
 				if (!isIgnoreScrollAllowed())
 				{
 					glob += m_parent->getPadding().getPosition();
+					glob += m_parent->getContentOffset();
 					glob += m_parent->getScrollOffset();
 				}
 			}
@@ -84,13 +85,22 @@ namespace ogfx
 		Rectangle Widget::getContentBounds(void) const
 		{
 			auto pad = getPadding();
-			return { pad.getPosition(), (getSize() - (pad.getSize() * 2)) };
+			return { Vec2 { m_contentOffset.x, m_contentOffset.y } + pad.getPosition(), (getSize() - m_contentOffset - (pad.getSize() * 2)) };
+		}
+
+		Rectangle Widget::getPureContentBounds(void) const
+		{
+			return { { m_contentOffset.x, m_contentOffset.y }, (getSize() - m_contentOffset) };
 		}
 
 		Rectangle Widget::getGlobalContentBounds(void) const
 		{
-			auto pad = getPadding();
 			return { getGlobalContentPosition(), getContentBounds().getSize() };
+		}
+
+		Rectangle Widget::getGlobalPureContentBounds(void) const
+		{
+			return { getGlobalPosition() + getContentOffset(), getPureContentBounds().getSize() };
 		}
 
 		Rectangle Widget::getContentExtents(void) const
@@ -218,8 +228,12 @@ namespace ogfx
 					gfx.fillRoundRect({ getGlobalPosition(), getSize() }, m_backgroundColor, m_borderRadius);
 			}
 			onDraw(gfx);
+
+			// gfx.fillRect(getGlobalPureContentBounds(), { 0, 255, 0, 120 });
+			gfx.pushClippingRect(getGlobalPureContentBounds(), true);
 			if (hasChildren())
 				m_widgets.draw(gfx);
+			gfx.popClippingRect();
 			if (m_showBorder)
 				gfx.drawRoundRect({ getGlobalPosition(), getSize() }, m_borderColor, m_borderRadius, m_borderWidth);
 			afterDraw(gfx);

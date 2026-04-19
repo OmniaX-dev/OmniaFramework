@@ -57,6 +57,8 @@ namespace ogfx
 					bool needsVScroll(void) const override;
 					bool needsHScroll(void) const override;
 					void onWidgetAdded(Widget& child) override;
+					f32 getVScrollbarSize(void) const override;
+					f32 getHScrollbarSize(void) const override;
 					inline void setBackGroundColor(const Color& color) { m_backgroundColor = color; }
 					inline Color getBackgroundColor(void) { return m_backgroundColor; }
 					inline String getTitle(void) const { return m_title; }
@@ -81,12 +83,12 @@ namespace ogfx
 					i32 m_titlebarFontSize { 26 };
 					Color m_titlebarColor { Colors::Transparent };
 					Color m_titlebarBorderColor { Colors::Black };
-					Rectangle m_basePadding { 0, 0, 0, 0 };
 					i32 m_titleTextAlign { 0 };
 					f32 m_scrollSpeed { 0.8f };
 
 					Vec2 m_scrollVelocity { 0.0f, 0.0f };
 					f32 m_scrollSmoothFactor { 0.7f };
+					f32 m_scrollSpeedMultiplier { 15.0f };
 			};
 		}
 	}

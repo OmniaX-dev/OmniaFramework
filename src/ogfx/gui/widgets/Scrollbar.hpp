@@ -39,6 +39,7 @@ namespace ogfx
 					void onMousePressed(const Event& event) override;
 					void onMouseReleased(const Event& event) override;
 					void onUpdate(void) override;
+					bool isMouseInsideThumb(const Vec2& mouse_pos);
 
 					inline void setx(f32 xx) override {  }
 					inline void sety(f32 yy) override {  }
@@ -48,7 +49,6 @@ namespace ogfx
 				private:
 					void update_thumb(void);
 					void set_thumb_y(f32 thumby);
-					bool is_mouse_in_thumb(const Vec2& mouse_pos);
 
 				private:
 					f32 m_thumbHeight { 0 };
@@ -77,6 +77,7 @@ namespace ogfx
 					void onMousePressed(const Event& event) override;
 					void onMouseReleased(const Event& event) override;
 					void onUpdate(void) override;
+					bool isMouseInsideThumb(const Vec2& mouse_pos);
 
 					inline void setx(f32 xx) override {  }
 					inline void sety(f32 yy) override {  }
@@ -86,7 +87,6 @@ namespace ogfx
 				private:
 					void update_thumb(void);
 					void set_thumb_x(f32 thumbx);
-					bool is_mouse_in_thumb(const Vec2& mouse_pos);
 
 				private:
 					f32 m_thumbWidth { 0 };
@@ -97,7 +97,7 @@ namespace ogfx
 					f32 m_dragGrabOffset { 0 };
 					Rectangle m_correctionOffset { 0, 0, 0, 0 };
 
-					Rectangle m_trackBorderRadii { 0, 0, 10, 10 };
+					Rectangle m_trackBorderRadii { 0, 0, 0, 10 };
 					f32 m_thumbBorderRadius { 16 };
 					Color m_trackColor { 70, 70, 70 };
 					Color m_thumbColor { 120, 120, 120 };
