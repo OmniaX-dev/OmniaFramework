@@ -133,6 +133,111 @@ namespace ogfx
 					default: break;
 				}
 			}
+
+
+
+
+			TabPanel& TabPanel::create(void)
+			{
+				setPadding({ 0, 0, 0, 0 });
+				setTypeName("ogfx::gui::widgets::TabPanel");
+				disableDrawBox();
+				disableFocus();
+				enableStopEvents();
+				validate();
+				return *this;
+			}
+
+			void TabPanel::applyTheme(const ostd::Stylesheet& theme)
+			{
+
+			}
+
+			void TabPanel::onMouseReleased(const Event& event)
+			{
+
+			}
+
+			void TabPanel::onDraw(ogfx::BasicRenderer2D& gfx)
+			{
+
+			}
+
+			Panel& TabPanel::addTab(const String& title)
+			{
+				m_tabs.push_back(std::make_unique<Panel>(getWindow()));
+				auto& tab = *m_tabs.back();
+				// Initialization code here
+				return tab;
+			}
+
+			bool TabPanel::removeTab(Panel& tab)
+			{
+				auto it = std::find_if(m_tabs.begin(), m_tabs.end(), [&](const std::unique_ptr<Panel>& p) { return p.get() == &tab; });
+				if (it == m_tabs.end())
+					return false;
+				if (m_currentTab == it->get())
+					prepare_for_current_tab_removal();
+				m_tabs.erase(it);
+				return true;
+			}
+
+			bool TabPanel::removeTab(i32 index)
+			{
+				if (index < 0 || index >= (i32)m_tabs.size())
+					return false;
+				auto it = std::find_if(m_tabs.begin(), m_tabs.end(), [&](const std::unique_ptr<Panel>& p) { return p.get() == m_currentTab; });
+				if (std::distance(m_tabs.begin(), it) == index)
+					prepare_for_current_tab_removal();
+				m_tabs.erase(m_tabs.begin() + index);
+				return true;
+			}
+
+			bool TabPanel::removeTab(const String& title)
+			{
+				auto it = std::find_if(m_tabs.begin(), m_tabs.end(), [&](const std::unique_ptr<Panel>& p) { return p->getTitle() == title; });
+				if (it == m_tabs.end())
+					return false;
+				m_tabs.erase(it);
+				return true;
+			}
+
+			bool TabPanel::setCurrentTab(Panel& tab)
+			{
+				auto it = std::find_if(m_tabs.begin(), m_tabs.end(), [&](const std::unique_ptr<Panel>& p) { return p.get() == &tab; });
+				if (it == m_tabs.end())
+					return false;
+				m_currentTab = it->get();
+				return true;
+			}
+
+			bool TabPanel::setCurrentTab(i32 index)
+			{
+				if (index < 0 || index >= (i32)m_tabs.size())
+					return false;
+				m_currentTab = m_tabs[index].get();
+				return true;
+			}
+
+			void TabPanel::prepare_for_current_tab_removal(void)
+			{
+				if (m_currentTab == nullptr)
+					return;
+				if (m_tabs.size() < 2)
+				{
+					m_currentTab = nullptr;
+					return;
+				}
+				auto it = std::find_if(m_tabs.begin(), m_tabs.end(), [&](const std::unique_ptr<Panel>& p) { return p.get() == m_currentTab; });
+
+				if (it == m_tabs.end())
+					return;  // shouldn't happen but defensive
+
+				if (it != m_tabs.begin())
+					m_currentTab = (it - 1)->get();  // tab to the left
+				else
+					m_currentTab = (it + 1)->get();  // first tab being removed, go right
+			}
 		}
 	}
 }

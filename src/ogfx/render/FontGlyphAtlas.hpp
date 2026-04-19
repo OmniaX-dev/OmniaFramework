@@ -1,21 +1,21 @@
 /*
-    OmniaFramework - A collection of useful functionality
-    Copyright (C) 2025  OmniaX-Dev
+	OmniaFramework - A collection of useful functionality
+	Copyright (C) 2025  OmniaX-Dev
 
-    This file is part of OmniaFramework.
+	This file is part of OmniaFramework.
 
-    OmniaFramework is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	OmniaFramework is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    OmniaFramework is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	OmniaFramework is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
@@ -39,25 +39,25 @@ namespace ogfx
 		};
 		struct GlyphKey
 		{
-		    u32 codepoint;
-		    u64 fontID;
-		    u32 pixelSize;
+			u32 codepoint;
+			u64 fontID;
+			u32 pixelSize;
 
-		    bool operator==(const GlyphKey& other) const noexcept
+			bool operator==(const GlyphKey& other) const noexcept
 			{
-		        return codepoint == other.codepoint &&
-		               fontID == other.fontID &&
-		               pixelSize == other.pixelSize;
-		    }
+				return codepoint == other.codepoint &&
+					   fontID == other.fontID &&
+					   pixelSize == other.pixelSize;
+			}
 		};
 		struct GlyphKeyHasher
 		{
 			size_t operator()(const GlyphKey& k) const noexcept
 			{
-			    size_t h = std::hash<u32>()(k.codepoint);
-			    h ^= std::hash<u64>()(k.fontID) + 0x9e3779b9 + (h << 6) + (h >> 2);
-			    h ^= std::hash<u32>()(k.pixelSize) + 0x9e3779b9 + (h << 6) + (h >> 2);
-			    return h;
+				size_t h = std::hash<u32>()(k.codepoint);
+				h ^= std::hash<u64>()(k.fontID) + 0x9e3779b9 + (h << 6) + (h >> 2);
+				h ^= std::hash<u32>()(k.pixelSize) + 0x9e3779b9 + (h << 6) + (h >> 2);
+				return h;
 			}
 		};
 		public:
@@ -65,6 +65,8 @@ namespace ogfx
 			inline FontGlyphAtlas(BasicRenderer2D& renderer) { init(renderer); }
 			FontGlyphAtlas init(BasicRenderer2D& renderer);
 			const stdvec<const GlyphInfo*> processString(const String& str, TTF_Font* font, u32 fontSize);
+			inline Vec2 getNullTextureSlotUVs(void) const { return m_nullTexUVs; }
+			inline SDL_Texture* getAtlas(u32 index) const { return (index >= m_currentAtlasCount ? nullptr : m_atlases[index]); }
 
 		private:
 			bool rasterize_glyph(const String& glyphStr, TTF_Font* font, u32 fontSize, const GlyphInfo** outGlyph);
@@ -74,13 +76,14 @@ namespace ogfx
 			inline static constexpr u32 AtlasTextureDimension { 8192 };
 			inline static constexpr u32 MaxAtlasCount { 16 };
 
-		public:
+		private:
 			std::unordered_map<GlyphKey, GlyphInfo, GlyphKeyHasher> m_uvs;
 			SDL_Texture* m_atlases[FontGlyphAtlas::MaxAtlasCount];
 			i32 m_currentAtlasCount { 0 };
 			BasicRenderer2D* m_renderer { nullptr };
 			i32 m_penX { 0 };
-		    i32 m_penY { 0 };
-		    i32 m_rowHeight { 0 };
+			i32 m_penY { 0 };
+			i32 m_rowHeight { 0 };
+			Vec2 m_nullTexUVs { 2.0f / cast<f32>(AtlasTextureDimension), 2.0f / cast<f32>(AtlasTextureDimension) };
 	};
 }

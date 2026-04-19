@@ -74,7 +74,7 @@ class Window : public ogfx::gui::Window
 			m_label4.setText("Label4");
 			m_label5.setText("Label5");
 
-			m_panel1.setSize(300, 300);
+			m_panel1.setSize(700, 300);
 			m_panel1.allowVScroll(false);
 			m_panel1.allowHScroll(false);
 			m_panel1.setTitle("Panel 1");
@@ -99,7 +99,7 @@ class Window : public ogfx::gui::Window
 			m_panel2.addWidget(m_btn1, { 0, 300 });
 
 			addWidget(m_check1, { 30, 30 });
-			addWidget(m_panel2, { 30, 100 });
+			addWidget(m_panel2, { 500, 100 });
 
 			m_theme.loadFromFile("./DefaultTheme.oss", true, getDefaultStylesheetVariableList());
 			setTheme(m_theme);
@@ -118,6 +118,7 @@ class Window : public ogfx::gui::Window
 		void onRedraw(ogfx::BasicRenderer2D& gfx) override
 		{
 			gfx.drawAnimation(m_anim, { 200, 200 });
+			// std::cout << (i32)gfx.getDrawCallCount() << "\n";
 			// gfx.fillRect(m_panel2.getGlobalPureContentBounds(), { 0, 255, 0, 120 });
 		}
 

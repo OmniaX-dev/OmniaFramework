@@ -70,7 +70,7 @@ namespace ogfx
 			i32 setFontSize(i32 fontSize);
 			Vec2 getStringDimensions(const String& message, i32 fontSize = 0, TTF_Font* font = nullptr);
 
-			inline u32 getDrawCallCount(void) { return m_drawCallCount; }
+			inline u32 getDrawCallCount(void) { return m_lastFrameDrawCallCount; }
 			inline bool hasOpenFont(void) { return m_fontOpen; }
 			inline TTF_Font* getSDLFont(void) { return m_font;  }
 			inline bool isValid(void) const { return m_initialized && m_fontOpen && (m_font != nullptr || m_fontFromMemory); }
@@ -126,13 +126,11 @@ namespace ogfx
 
 		private:
 			void init_arrays(void);
-			void generate_half_circle(const Vec2& center, const Vec2& dir, f32 radius, i32 segments, const Color& color);
-			void generate_quarter_circle(const Vec2& center, f32 radius, f32 thickness, f32 startAngle, const Color& color, i32 segments);
-			void generate_circle_stroke(const Vec2& center, f32 radius, f32 thickness, const Color& color, i32 segments);
-			void generate_ellipse_stroke(const Vec2& center, f32 radiusX, f32 radiusY, f32 thickness, f32 startAngle, f32 endAngle, const Color& color, i32 segments);
-			void generate_filled_ellipse_stroke(const Vec2& center, f32 radiusX, f32 radiusY, f32 startAngle, const Color& color, i32 segments);
-			void generate_filled_ellipse(const Vec2& center, f32 radiusX, f32 radiusY, const Color& color, i32 segments);
-			void push_polygon(const Vec2* verts, const Vec2* texCoords, u32 vertCount, const u32* inds, u32 indexCount, const Color& color, SDL_Texture* texture);
+			void generate_half_circle(const Vec2& center, const Vec2& dir, f32 radius, i32 segments, const Color& color, bool use_null_tex = false);
+			void generate_ellipse_stroke(const Vec2& center, f32 radiusX, f32 radiusY, f32 thickness, f32 startAngle, f32 endAngle, const Color& color, i32 segments, bool use_null_tex = false);
+			void generate_filled_ellipse_stroke(const Vec2& center, f32 radiusX, f32 radiusY, f32 startAngle, const Color& color, i32 segments, bool use_null_tex = false);
+			void generate_filled_ellipse(const Vec2& center, f32 radiusX, f32 radiusY, const Color& color, i32 segments, bool use_null_tex = false);
+			void push_polygon(const Vec2* verts, const Vec2* texCoords, u32 vertCount, const u32* inds, u32 indexCount, const Color& color, SDL_Texture* texture, bool use_null_tex = false);
 			void print_ttf_error(const String& funcName);
 			inline i32 set_error_state(i32 err) { m_errorState = err; return m_errorState; }
 
@@ -152,6 +150,7 @@ namespace ogfx
 			SDL_Texture* m_texture { nullptr };
 
 			u32 m_drawCallCount { 0 };
+			u32 m_lastFrameDrawCallCount { 0 };
 			bool m_fontOpen { false };
 
 			TTF_Font* m_font { nullptr };
@@ -159,6 +158,7 @@ namespace ogfx
 			i32 m_fontSize { DefaultFontSize };
 			bool m_fontFromMemory { false };
 			FontGlyphAtlas m_fontGlyphAtlas;
+			SDL_Texture* m_lastUsedGlyphAtlasTex { nullptr };
 			SignalHandler m_sigHandler { *this };
 
 			inline static constexpr i32 DefaultFontSize { 16 };

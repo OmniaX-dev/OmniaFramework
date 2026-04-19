@@ -24,6 +24,7 @@ Add theme caching
 Implement cursors in Stylesheet
 FIX: Window getting exponentially bigger when Desktop scale changes
 FIX: Refreshing scroll when content extent changes
+Add Dark Mode Default theme
 
 
 

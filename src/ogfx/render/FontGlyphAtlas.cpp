@@ -41,27 +41,27 @@ namespace ogfx
 	const stdvec<const FontGlyphAtlas::GlyphInfo*> FontGlyphAtlas::processString(const String& str, TTF_Font* font, u32 fontSize)
 	{
 		if (m_currentAtlasCount <= 0)
-	        return {};
+			return {};
 
-	    // Pass 1: ensure all glyphs are rasterized (map may rehash here)
-	    for (auto& c : str)
-	    {
-	        const GlyphInfo* dummy;
-	        if (!rasterize_glyph(String("").addChar(c), font, fontSize, &dummy))
-	            return {};
-	    }
+		// Pass 1: ensure all glyphs are rasterized (map may rehash here)
+		for (auto& c : str)
+		{
+			const GlyphInfo* dummy;
+			if (!rasterize_glyph(String("").addChar(c), font, fontSize, &dummy))
+				return {};
+		}
 
-	    // Pass 2: collect stable pointers (no more insertions, no rehash risk)
-	    stdvec<const GlyphInfo*> glyphs;
-	    glyphs.reserve(str.len());
-	    for (auto& c : str)
-	    {
-	        auto cps = String("").addChar(c).getUTF8Codepoints();
-	        if (cps.size() != 1) return {};
-	        GlyphKey key { cps[0], u64(font), fontSize };
-	        glyphs.push_back(&m_uvs[key]);
-	    }
-	    return glyphs;
+		// Pass 2: collect stable pointers (no more insertions, no rehash risk)
+		stdvec<const GlyphInfo*> glyphs;
+		glyphs.reserve(str.len());
+		for (auto& c : str)
+		{
+			auto cps = String("").addChar(c).getUTF8Codepoints();
+			if (cps.size() != 1) return {};
+			GlyphKey key { cps[0], u64(font), fontSize };
+			glyphs.push_back(&m_uvs[key]);
+		}
+		return glyphs;
 	}
 
 	bool FontGlyphAtlas::rasterize_glyph(const String& glyphStr, TTF_Font* font, u32 fontSize, const GlyphInfo** outGlyph)
@@ -80,7 +80,7 @@ namespace ogfx
 		if (it != m_uvs.end())
 		{
 			*outGlyph = &(it->second);
-		    return true;
+			return true;
 		}
 
 		SDL_Surface* surf = TTF_RenderText_Blended(font, glyphStr.c_str(), glyphStr.len(), SDL_Color{255, 255, 255, 255});
@@ -169,9 +169,17 @@ namespace ogfx
 		{ // Clear the texture to transparent
 			void* pixels = nullptr;
 			i32 pitch = 0;
-			if (SDL_LockTexture(tex, nullptr, &pixels, &pitch) == 0)
+			if (SDL_LockTexture(tex, nullptr, &pixels, &pitch))
 			{
 				memset(pixels, 0x00, pitch * AtlasTextureDimension);
+				auto u8_pixels = cast<u8*>(pixels);
+				for (i32 y = 0; y < 4; y++)
+				{
+					for (i32 x = 0; x < 4 * 4; x++)
+					{
+						u8_pixels[x + (y * pitch)] = 0xFF;
+					}
+				}
 				SDL_UnlockTexture(tex);
 			}
 		}
@@ -179,7 +187,7 @@ namespace ogfx
 		m_atlases[m_currentAtlasCount] = tex;
 		m_currentAtlasCount++;
 
-		m_penX = 0;
+		m_penX = 4;
 		m_penY = 0;
 		m_rowHeight = 0;
 

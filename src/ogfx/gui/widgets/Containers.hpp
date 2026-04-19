@@ -70,6 +70,30 @@ namespace ogfx
 					Color m_titlebarBorderColor { Colors::Black };
 					i32 m_titleTextAlign { 0 };
 			};
+			class TabPanel : public Widget
+			{
+				public:
+					inline TabPanel(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
+					TabPanel& create(void);
+					void applyTheme(const ostd::Stylesheet& theme) override;
+					void onMouseReleased(const Event& event) override;
+					void onDraw(ogfx::BasicRenderer2D& gfx) override;
+					Panel& addTab(const String& title);
+					bool removeTab(Panel& tab);
+					bool removeTab(i32 index);
+					bool removeTab(const String& title);
+					bool setCurrentTab(Panel& tab);
+					bool setCurrentTab(i32 index);
+
+				private:
+					void prepare_for_current_tab_removal(void);
+
+				private:
+					stdvec<std::unique_ptr<Panel>> m_tabs;
+					Panel* m_currentTab { nullptr };
+
+					f32 m_tabBarHeight { 30 };
+			};
 		}
 	}
 }

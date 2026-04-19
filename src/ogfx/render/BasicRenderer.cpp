@@ -66,6 +66,9 @@ namespace ogfx
 		loadDefaultFont(20);
 		m_initialized = false;
 		m_fontGlyphAtlas.init(*this);
+		auto atlas = m_fontGlyphAtlas.getAtlas(0);
+		if (atlas) //TODO: Error
+			m_lastUsedGlyphAtlasTex = atlas;
 		m_initialized = true;
 		return set_error_state(tErrors::NoError);
 	}
@@ -89,6 +92,7 @@ namespace ogfx
 	void BasicRenderer2D::endFrame(void)
 	{
 		flushBatch();
+		m_lastFrameDrawCallCount = m_drawCallCount;
 		m_drawCallCount = 0;
 	}
 
@@ -309,7 +313,7 @@ namespace ogfx
 
 		// 5. Push quad
 		u32 inds[6] = QUAD_INDICES_ARR;
-		push_polygon(verts, uvs, 4, inds, 6, Colors::White, tex);
+		push_polygon(verts, uvs, 4, inds, 6, Colors::White, tex, false);
 	}
 
 	void BasicRenderer2D::drawAnimation(const Animation& anim, const Vec2& position, const Vec2& size)
@@ -416,8 +420,8 @@ namespace ogfx
 				{ x,                        y + g->size.y * scale }
 			};
 			u32 inds[6] = QUAD_INDICES_ARR;
-			push_polygon(verts, g->uvs, 4, inds, 6, color, g->atlas);
-
+			push_polygon(verts, g->uvs, 4, inds, 6, color, g->atlas, false);
+			m_lastUsedGlyphAtlasTex = g->atlas;
 			x += (g->advance * scale);
 		}
 		setFontSize(oldFontSize);
@@ -462,14 +466,14 @@ namespace ogfx
 		}};
 		std::array<u32, 6> inds = QUAD_INDICES_ARR;
 
-		push_polygon(verts.data(), nullptr, 4, inds.data(), 6, color, nullptr);
+		push_polygon(verts.data(), nullptr, 4, inds.data(), 6, color, nullptr, true);
 
 		if (!rounded || thickness < 4)
 			return;
 
 		i32 segments = std::max(16, i32(thickness * 1.5f));
-		generate_half_circle(p1, -dir, half, segments, color);
-		generate_half_circle(p2, dir, half, segments, color);
+		generate_half_circle(p1, -dir, half, segments, color, true);
+		generate_half_circle(p2, dir, half, segments, color, true);
 	}
 
 	void BasicRenderer2D::drawRect(const Rectangle& rect, const Color& color, i32 thickness)
@@ -546,10 +550,10 @@ namespace ogfx
 		// Corner arcs
 		auto segments = [](f32 r) -> i32 { return std::max(16, i32(r * 1.5f)); };
 
-		if (rTL > 0) generate_ellipse_stroke({ x1 + rTL, y1 + rTL }, rTL, rTL, thickness, M_PI, M_PI * 1.5f, color, segments(rTL));
-		if (rTR > 0) generate_ellipse_stroke({ x2 - rTR, y1 + rTR }, rTR, rTR, thickness, M_PI * 1.5f, M_PI * 2.0f, color, segments(rTR));
-		if (rBR > 0) generate_ellipse_stroke({ x2 - rBR, y2 - rBR }, rBR, rBR, thickness, 0.0f, M_PI * 0.5f, color, segments(rBR));
-		if (rBL > 0) generate_ellipse_stroke({ x1 + rBL, y2 - rBL }, rBL, rBL, thickness, M_PI * 0.5f, M_PI, color, segments(rBL));
+		if (rTL > 0) generate_ellipse_stroke({ x1 + rTL, y1 + rTL }, rTL, rTL, thickness, M_PI, M_PI * 1.5f, color, segments(rTL), true);
+		if (rTR > 0) generate_ellipse_stroke({ x2 - rTR, y1 + rTR }, rTR, rTR, thickness, M_PI * 1.5f, M_PI * 2.0f, color, segments(rTR), true);
+		if (rBR > 0) generate_ellipse_stroke({ x2 - rBR, y2 - rBR }, rBR, rBR, thickness, 0.0f, M_PI * 0.5f, color, segments(rBR), true);
+		if (rBL > 0) generate_ellipse_stroke({ x1 + rBL, y2 - rBL }, rBL, rBL, thickness, M_PI * 0.5f, M_PI, color, segments(rBL), true);
 	}
 
 	void BasicRenderer2D::drawCircle(const Vec2& center, f32 radius, const Color& color, i32 thickness)
@@ -557,7 +561,7 @@ namespace ogfx
 		if (!m_initialized || thickness <= 0)
 			return;
 		i32 segments = std::max(16, i32(radius * 1.5f));
-		generate_ellipse_stroke(center, radius, radius, thickness, 0.0f, 2.0f * M_PI, color, segments);
+		generate_ellipse_stroke(center, radius, radius, thickness, 0.0f, 2.0f * M_PI, color, segments, true);
 	}
 
 	void BasicRenderer2D::drawCircle(const Rectangle& rect, const Color& color, i32 thickness)
@@ -583,7 +587,7 @@ namespace ogfx
 		f32 rx = rect.w * 0.5f;
 		f32 ry = rect.h * 0.5f;
 		i32 segments = std::max(16, i32(std::max(rx, ry) * 1.5f));
-		generate_ellipse_stroke(center, rx, ry, thickness, 0.0f, 2.0f * M_PI, color, segments);
+		generate_ellipse_stroke(center, rx, ry, thickness, 0.0f, 2.0f * M_PI, color, segments, true);
 	}
 
 	void BasicRenderer2D::drawTriangle(const Triangle& tri, const Color& color, i32 thickness)
@@ -622,7 +626,7 @@ namespace ogfx
 			{ x1, y2 }
 		};
 		u32 inds[6] = QUAD_INDICES_ARR;
-		push_polygon(verts, nullptr, 4, inds, 6, color, nullptr);
+		push_polygon(verts, nullptr, 4, inds, 6, color, nullptr, true);
 	}
 
 	void BasicRenderer2D::fillRect(const Vec2& center, const Vec2& size, const Color& color)
@@ -676,7 +680,7 @@ namespace ogfx
 				{ x1 + leftInset, y2 - bottomInset }
 			};
 			u32 inds[6] = QUAD_INDICES_ARR;
-			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr);
+			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr, true);
 		}
 
 		// Top strip
@@ -688,7 +692,7 @@ namespace ogfx
 				{ x1 + rTL, y1 + topInset }
 			};
 			u32 inds[6] = QUAD_INDICES_ARR;
-			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr);
+			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr, true);
 		}
 
 		// Bottom strip
@@ -700,7 +704,7 @@ namespace ogfx
 				{ x1 + rBL, y2 }
 			};
 			u32 inds[6] = QUAD_INDICES_ARR;
-			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr);
+			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr, true);
 		}
 
 		// Left strip
@@ -712,7 +716,7 @@ namespace ogfx
 				{ x1, y2 - rBL }
 			};
 			u32 inds[6] = QUAD_INDICES_ARR;
-			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr);
+			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr, true);
 		}
 
 		// Right strip
@@ -724,7 +728,7 @@ namespace ogfx
 				{ x2 - rightInset, y2 - rBR }
 			};
 			u32 inds[6] = QUAD_INDICES_ARR;
-			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr);
+			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr, true);
 		}
 
 		// Fill gaps between corners and strips when radii differ on the same side
@@ -738,7 +742,7 @@ namespace ogfx
 				{ x1, y1 + topInset }
 			};
 			u32 inds[6] = QUAD_INDICES_ARR;
-			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr);
+			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr, true);
 		}
 
 		// Top-right gap
@@ -751,7 +755,7 @@ namespace ogfx
 				{ x2 - rightInset, y1 + topInset }
 			};
 			u32 inds[6] = QUAD_INDICES_ARR;
-			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr);
+			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr, true);
 		}
 
 		// Bottom-left gap
@@ -764,7 +768,7 @@ namespace ogfx
 				{ x1, y2 - rBL }
 			};
 			u32 inds[6] = QUAD_INDICES_ARR;
-			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr);
+			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr, true);
 		}
 
 		// Bottom-right gap
@@ -777,7 +781,7 @@ namespace ogfx
 				{ x2 - rightInset, y2 - rBR }
 			};
 			u32 inds[6] = QUAD_INDICES_ARR;
-			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr);
+			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr, true);
 		}
 
 		// Left-side gap (if rTL != rBL, leftInset is the max, smaller one needs a gap)
@@ -793,10 +797,10 @@ namespace ogfx
 		// Corner fills
 		auto segments = [](f32 r) -> i32 { return std::max(16, i32(r * 1.5f)); };
 
-		if (rTL > 0) generate_filled_ellipse_stroke({ x1 + rTL, y1 + rTL }, rTL, rTL, M_PI, color, segments(rTL));
-		if (rTR > 0) generate_filled_ellipse_stroke({ x2 - rTR, y1 + rTR }, rTR, rTR, M_PI * 1.5f, color, segments(rTR));
-		if (rBR > 0) generate_filled_ellipse_stroke({ x2 - rBR, y2 - rBR }, rBR, rBR, 0.0f, color, segments(rBR));
-		if (rBL > 0) generate_filled_ellipse_stroke({ x1 + rBL, y2 - rBL }, rBL, rBL, M_PI * 0.5f, color, segments(rBL));
+		if (rTL > 0) generate_filled_ellipse_stroke({ x1 + rTL, y1 + rTL }, rTL, rTL, M_PI, color, segments(rTL), true);
+		if (rTR > 0) generate_filled_ellipse_stroke({ x2 - rTR, y1 + rTR }, rTR, rTR, M_PI * 1.5f, color, segments(rTR), true);
+		if (rBR > 0) generate_filled_ellipse_stroke({ x2 - rBR, y2 - rBR }, rBR, rBR, 0.0f, color, segments(rBR), true);
+		if (rBL > 0) generate_filled_ellipse_stroke({ x1 + rBL, y2 - rBL }, rBL, rBL, M_PI * 0.5f, color, segments(rBL), true);
 	}
 
 	void BasicRenderer2D::fillCircle(const Vec2& center, f32 radius, const Color& color)
@@ -805,7 +809,7 @@ namespace ogfx
 			return;
 
 		i32 segments = std::max(16, i32(radius * 1.5f));
-		generate_filled_ellipse(center, radius, radius, color, segments);
+		generate_filled_ellipse(center, radius, radius, color, segments, true);
 	}
 
 	void BasicRenderer2D::fillCircle(const Rectangle& rect, const Color& color)
@@ -836,7 +840,7 @@ namespace ogfx
 		f32 radiusY = rect.h * 0.5f;
 
 		i32 segments = std::max(16, i32(std::max(radiusX, radiusY) * 1.5f));
-		generate_filled_ellipse(center, radiusX, radiusY, color, segments);
+		generate_filled_ellipse(center, radiusX, radiusY, color, segments, true);
 	}
 
 	void BasicRenderer2D::fillTriangle(const Triangle& tri, const Color& color)
@@ -968,7 +972,7 @@ namespace ogfx
 			i = 0;
 	}
 
-	void BasicRenderer2D::generate_half_circle(const Vec2& center, const Vec2& dir, f32 radius, i32 segments, const Color& color)
+	void BasicRenderer2D::generate_half_circle(const Vec2& center, const Vec2& dir, f32 radius, i32 segments, const Color& color, bool use_null_tex)
 	{
 		// Ensure we have room
 		if (m_vertexCount + segments + 2 >= MaxVertices ||  m_indexCount + segments * 3 >= MaxIndices)
@@ -993,6 +997,10 @@ namespace ogfx
 		f32 startAngle = baseAngle - M_PI * 0.5f;
 		f32 endAngle   = baseAngle + M_PI * 0.5f;
 
+		Vec2 uvs = { 0.0f, 0.0f };
+		if (use_null_tex)
+			uvs = m_fontGlyphAtlas.getNullTextureSlotUVs();
+
 		// Generate arc vertices
 		for (i32 i = 0; i <= segments; i++)
 		{
@@ -1005,7 +1013,7 @@ namespace ogfx
 			m_vertices[m_vertexCount++] = {
 				{ x, y },
 				col,
-				{ 0.0f, 0.0f }
+				{ uvs.x, uvs.y }
 			};
 		}
 
@@ -1018,132 +1026,7 @@ namespace ogfx
 		}
 	}
 
-	void BasicRenderer2D::generate_quarter_circle(const Vec2& center, f32 radius, f32 thickness, f32 startAngle, const Color& color, i32 segments)
-	{
-		f32 half = thickness * 0.5f;
-
-		f32 outerR = radius + half;
-		f32 innerR = radius - half;
-
-		if (innerR < 0.0f)
-			innerR = 0.0f;
-
-		// Ensure capacity
-		if (m_vertexCount + (segments + 1) * 2 >= MaxVertices || m_indexCount + segments * 6 >= MaxIndices)
-			flushBatch();
-
-		SDL_FColor col = COLOR_CAST(color);
-
-		i32 base = m_vertexCount;
-
-		f32 endAngle = startAngle + M_PI * 0.5f;
-
-		// Generate vertices: outer arc + inner arc
-		for (i32 i = 0; i <= segments; i++)
-		{
-			f32 t = f32(i) / f32(segments);
-			f32 angle = startAngle + t * (endAngle - startAngle);
-
-			f32 cs = std::cos(angle);
-			f32 sn = std::sin(angle);
-
-			// Outer arc
-			m_vertices[m_vertexCount++] = {
-				{ center.x + cs * outerR, center.y + sn * outerR },
-				col,
-				{ 0, 0 }
-			};
-
-			// Inner arc
-			m_vertices[m_vertexCount++] = {
-				{ center.x + cs * innerR, center.y + sn * innerR },
-				col,
-				{ 0, 0 }
-			};
-		}
-
-		// Generate indices (triangle strip converted to triangles)
-		for (i32 i = 0; i < segments; i++)
-		{
-			i32 o0 = base + i * 2;
-			i32 i0 = o0 + 1;
-			i32 o1 = o0 + 2;
-			i32 i1 = o0 + 3;
-
-			// Triangle 1
-			m_indices[m_indexCount++] = o0;
-			m_indices[m_indexCount++] = o1;
-			m_indices[m_indexCount++] = i0;
-
-			// Triangle 2
-			m_indices[m_indexCount++] = o1;
-			m_indices[m_indexCount++] = i1;
-			m_indices[m_indexCount++] = i0;
-		}
-	}
-
-	void BasicRenderer2D::generate_circle_stroke(const Vec2& center, f32 radius, f32 thickness, const Color& color, i32 segments)
-	{
-		f32 half = thickness * 0.5f;
-
-		f32 outerR = radius + half;
-		f32 innerR = radius - half;
-		if (innerR < 0.0f)
-			innerR = 0.0f;
-
-		// Ensure capacity
-		if (m_vertexCount + (segments + 1) * 2 >= MaxVertices || m_indexCount + segments * 6 >= MaxIndices)
-			flushBatch();
-
-		SDL_FColor col = COLOR_CAST(color);
-
-		i32 base = m_vertexCount;
-
-		// Generate vertices: outer arc + inner arc
-		for (i32 i = 0; i <= segments; i++)
-		{
-			f32 t = f32(i) / f32(segments);
-			f32 angle = t * (2.0f * M_PI);
-
-			f32 cs = std::cos(angle);
-			f32 sn = std::sin(angle);
-
-			// Outer arc
-			m_vertices[m_vertexCount++] = {
-				{ center.x + cs * outerR, center.y + sn * outerR },
-				col,
-				{ 0, 0 }
-			};
-
-			// Inner arc
-			m_vertices[m_vertexCount++] = {
-				{ center.x + cs * innerR, center.y + sn * innerR },
-				col,
-				{ 0, 0 }
-			};
-		}
-
-		// Generate indices (triangle strip → triangles)
-		for (i32 i = 0; i < segments; i++)
-		{
-			i32 o0 = base + i * 2;
-			i32 i0 = o0 + 1;
-			i32 o1 = o0 + 2;
-			i32 i1 = o0 + 3;
-
-			// Triangle 1
-			m_indices[m_indexCount++] = o0;
-			m_indices[m_indexCount++] = o1;
-			m_indices[m_indexCount++] = i0;
-
-			// Triangle 2
-			m_indices[m_indexCount++] = o1;
-			m_indices[m_indexCount++] = i1;
-			m_indices[m_indexCount++] = i0;
-		}
-	}
-
-	void BasicRenderer2D::generate_ellipse_stroke(const Vec2& center, f32 radiusX, f32 radiusY, f32 thickness, f32 startAngle, f32 endAngle, const Color& color, i32 segments)
+	void BasicRenderer2D::generate_ellipse_stroke(const Vec2& center, f32 radiusX, f32 radiusY, f32 thickness, f32 startAngle, f32 endAngle, const Color& color, i32 segments, bool use_null_tex)
 	{
 		f32 half = thickness * 0.5f;
 
@@ -1165,6 +1048,10 @@ namespace ogfx
 
 		f32 angleRange = endAngle - startAngle;
 
+		Vec2 uvs = { 0.0f, 0.0f };
+		if (use_null_tex)
+			uvs = m_fontGlyphAtlas.getNullTextureSlotUVs();
+
 		// Generate vertices: outer arc + inner arc
 		for (i32 i = 0; i <= segments; i++)
 		{
@@ -1178,14 +1065,14 @@ namespace ogfx
 			m_vertices[m_vertexCount++] = {
 				{ center.x + cs * outerRX, center.y + sn * outerRY },
 				col,
-				{ 0, 0 }
+				{ uvs.x, uvs.y }
 			};
 
 			// Inner arc
 			m_vertices[m_vertexCount++] = {
 				{ center.x + cs * innerRX, center.y + sn * innerRY },
 				col,
-				{ 0, 0 }
+				{ uvs.x, uvs.y }
 			};
 		}
 
@@ -1209,7 +1096,7 @@ namespace ogfx
 		}
 	}
 
-	void BasicRenderer2D::generate_filled_ellipse_stroke(const Vec2& center, f32 radiusX, f32 radiusY, f32 startAngle, const Color& color, i32 segments)
+	void BasicRenderer2D::generate_filled_ellipse_stroke(const Vec2& center, f32 radiusX, f32 radiusY, f32 startAngle, const Color& color, i32 segments, bool use_null_tex)
 	{
 		// Ensure capacity
 		if (m_vertexCount + segments + 2 >= MaxVertices || m_indexCount + segments * 3 >= MaxIndices)
@@ -1228,6 +1115,10 @@ namespace ogfx
 
 		f32 endAngle = startAngle + M_PI * 0.5f;
 
+		Vec2 uvs = { 0.0f, 0.0f };
+		if (use_null_tex)
+			uvs = m_fontGlyphAtlas.getNullTextureSlotUVs();
+
 		for (i32 i = 0; i <= segments; i++)
 		{
 			f32 t = f32(i) / f32(segments);
@@ -1239,7 +1130,7 @@ namespace ogfx
 			m_vertices[m_vertexCount++] = {
 				{ x, y },
 				col,
-				{ 0, 0 }
+				{ uvs.x, uvs.y }
 			};
 		}
 
@@ -1252,7 +1143,7 @@ namespace ogfx
 		}
 	}
 
-	void BasicRenderer2D::generate_filled_ellipse(const Vec2& center, f32 radiusX, f32 radiusY, const Color& color, i32 segments)
+	void BasicRenderer2D::generate_filled_ellipse(const Vec2& center, f32 radiusX, f32 radiusY, const Color& color, i32 segments, bool use_null_tex)
 	{
 		// Ensure capacity
 		if (m_vertexCount + segments + 2 >= MaxVertices || m_indexCount + segments * 3 >= MaxIndices)
@@ -1269,6 +1160,10 @@ namespace ogfx
 			{ 0, 0 }
 		};
 
+		Vec2 uvs = { 0.0f, 0.0f };
+		if (use_null_tex)
+			uvs = m_fontGlyphAtlas.getNullTextureSlotUVs();
+
 		// Outer ring vertices
 		for (i32 i = 0; i <= segments; i++)
 		{
@@ -1281,7 +1176,7 @@ namespace ogfx
 			m_vertices[m_vertexCount++] = {
 				{ x, y },
 				col,
-				{ 0, 0 }
+				{ uvs.x, uvs.y }
 			};
 		}
 
@@ -1294,7 +1189,7 @@ namespace ogfx
 		}
 	}
 
-	void BasicRenderer2D::push_polygon(const Vec2* verts, const Vec2* texCoords, u32 vertCount, const u32* inds, u32 indexCount, const Color& color, SDL_Texture* texture)
+	void BasicRenderer2D::push_polygon(const Vec2* verts, const Vec2* texCoords, u32 vertCount, const u32* inds, u32 indexCount, const Color& color, SDL_Texture* texture, bool use_null_tex)
 	{
 		if (!m_initialized || vertCount <= 0 || indexCount <= 0)
 			return;
@@ -1304,20 +1199,24 @@ namespace ogfx
 			OX_ERROR("Maximum number of vertices exceeded in single draw call.");
 			return;
 		}
-		if (texture != m_texture)
+		use_null_tex = use_null_tex || !texCoords;
+		auto tmpTex = (use_null_tex ? m_lastUsedGlyphAtlasTex : texture);
+		if (tmpTex != m_texture)
 			flushBatch();
-		m_texture = texture;
+		m_texture = tmpTex;
 		if (m_vertexCount + vertCount >= MaxVertices || m_indexCount + indexCount >= MaxIndices)
 			flushBatch();
 
 		SDL_FColor col = COLOR_CAST(color);
 
 		i32 base = m_vertexCount;
-		bool hasTexCoords = texCoords != nullptr;
+		Vec2 whiteUV = m_fontGlyphAtlas.getNullTextureSlotUVs();
 		for (i32 i = 0; i < vertCount; i++)
 		{
 			Vec2 tc { 0.0f, 0.0f };
-			if (hasTexCoords)
+			if (use_null_tex)
+				tc = whiteUV;
+			else
 				tc = texCoords[i];
 			m_vertices[m_vertexCount++] = {
 				{ verts[i].x, verts[i].y },
