@@ -43,7 +43,7 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 (scrollbar) {
 	(thumb) {
 		color = rgb(140, 140, 140)
-		borderRadius = 0.0
+		borderRadius = 16.0
 		borderColor = rgb(150, 150, 150)
 		showBorder = true
 	}

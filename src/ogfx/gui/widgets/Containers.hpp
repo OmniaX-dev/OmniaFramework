@@ -30,7 +30,7 @@ namespace ogfx
 	{
 		namespace widgets
 		{
-			class Panel : public Widget
+			class Panel : public ScrollableWidget
 			{
 				public: struct TitleBarTypes
 				{
@@ -43,27 +43,16 @@ namespace ogfx
 					inline static constexpr i32 MinimalValue = 2;
 				};
 				public:
-					inline Panel(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
+					inline Panel(WindowCore& window) : ScrollableWidget(window) { create(); }
 					Panel& create(void);
 					void applyTheme(const ostd::Stylesheet& theme) override;
-					void onDraw(ogfx::BasicRenderer2D& gfx) override;
-					void onUpdate(void) override;
 					void afterDraw(ogfx::BasicRenderer2D& gfx) override;
-					void onMouseScrolled(const Event& event) override;
 					void setTitlebarType(const String& type);
 					String getTitlebarType(void) const;
-					void setScrollOffset(const Vec2& offset) override;
-					void addScrollOffset(const Vec2& offset) override;
-					bool needsVScroll(void) const override;
-					bool needsHScroll(void) const override;
-					void onWidgetAdded(Widget& child) override;
-					f32 getVScrollbarSize(void) const override;
-					f32 getHScrollbarSize(void) const override;
 					inline void setBackGroundColor(const Color& color) { m_backgroundColor = color; }
 					inline Color getBackgroundColor(void) { return m_backgroundColor; }
 					inline String getTitle(void) const { return m_title; }
 					inline void setTitle(const String& title) { m_title = title; }
-					inline Vec2 getScrollOffset(void) const override { return m_scrollOffset; }
 					inline f32 getTitlebarHeight(void) const { return m_titlebarHeight; }
 
 				private:
@@ -71,10 +60,6 @@ namespace ogfx
 
 				private:
 					String m_title { "Panel" };
-					Vec2 m_scrollOffset { 0, 0 };
-					VerticalScrollBar m_vScrollbar { getWindow() };
-					HorizontalScrollbar m_hScrollbar { getWindow() };
-					ostd::StepTimer m_smoothScrollTimer;
 
 					Color m_titleColor { Colors::Black  };
 					i32 m_titlebarType = TitleBarTypes::NoneValue;
@@ -84,11 +69,6 @@ namespace ogfx
 					Color m_titlebarColor { Colors::Transparent };
 					Color m_titlebarBorderColor { Colors::Black };
 					i32 m_titleTextAlign { 0 };
-					f32 m_scrollSpeed { 0.8f };
-
-					Vec2 m_scrollVelocity { 0.0f, 0.0f };
-					f32 m_scrollSmoothFactor { 0.7f };
-					f32 m_scrollSpeedMultiplier { 15.0f };
 			};
 		}
 	}

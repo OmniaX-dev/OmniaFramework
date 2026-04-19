@@ -21,6 +21,7 @@
 #pragma once
 
 #include <ogfx/gui/widgets/Widget.hpp>
+#include <ostd/utils/Time.hpp>
 
 namespace ogfx
 {
@@ -103,6 +104,39 @@ namespace ogfx
 					Color m_thumbColor { 120, 120, 120 };
 					Color m_thumbBorderColor { 150, 150, 150 };
 					bool m_thumbShowBorder { true };
+			};
+			class ScrollableWidget : public Widget
+			{
+				public:
+					inline ScrollableWidget(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
+					ScrollableWidget& create(void);
+					virtual void onUpdate(void) override;
+					void drawScrollbars(ogfx::BasicRenderer2D& gfx);
+					void updateScrollbarsSize(void);
+					virtual void onMouseScrolled(const Event& event) override;
+					virtual void setScrollOffset(const Vec2& offset) override;
+					virtual void addScrollOffset(const Vec2& offset) override;
+					virtual bool needsVScroll(void) const override;
+					virtual bool needsHScroll(void) const override;
+					virtual void onWidgetAdded(Widget& child) override;
+					virtual f32 getVScrollbarSize(void) const override;
+					virtual f32 getHScrollbarSize(void) const override;
+					inline Vec2 getScrollOffset(void) const override { return m_scrollOffset; }
+					inline void setScrollSpeed(f32 speed) { m_scrollSpeed = speed; }
+					inline f32 getScrollSpeed(void) const { return m_scrollSpeed; }
+					inline void setScrollSmoothFactor(f32 speed) { m_scrollSmoothFactor = std::clamp(speed, 0.0f, 1.0f); }
+					inline f32 getScrollSmoothFactor(void) const { return m_scrollSmoothFactor; }
+
+				private:
+					String m_title { "Panel" };
+					Vec2 m_scrollOffset { 0, 0 };
+					VerticalScrollBar m_vScrollbar { getWindow() };
+					HorizontalScrollbar m_hScrollbar { getWindow() };
+					ostd::StepTimer m_smoothScrollTimer;
+					f32 m_scrollSpeed { 0.8f };
+					Vec2 m_scrollVelocity { 0.0f, 0.0f };
+					f32 m_scrollSmoothFactor { 0.7f };
+					f32 m_scrollSpeedMultiplier { 15.0f };
 			};
 		}
 	}

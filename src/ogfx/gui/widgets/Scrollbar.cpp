@@ -173,7 +173,7 @@ namespace ogfx
 				m_thumbBorderColor = getThemeValue<Color>(theme, "scrollbar.thumb.borderColor", { 150, 150, 150 });
 				m_thumbShowBorder = getThemeValue<bool>(theme, "scrollbar.thumb.showBorder", true);
 				m_trackColor = getThemeValue<Color>(theme, "scrollbar.track.color", { 70, 70, 70 });
- 			}
+			 }
 
 			void HorizontalScrollbar::afterDraw(ogfx::BasicRenderer2D& gfx)
 			{
@@ -267,6 +267,154 @@ namespace ogfx
 				auto parentScrollOffset = getParent()->getScrollOffset();
 				parentScrollOffset.x = maxScroll * scrollProgress;
 				getParent()->setScrollOffset(parentScrollOffset);
+			}
+
+
+
+
+
+
+			ScrollableWidget& ScrollableWidget::create(void)
+			{
+				setTypeName("ogfx::gui::widgets::ScrollableWidget");
+				allowVScroll(true);
+				allowHScroll(true);
+				m_vScrollbar.enableManualDraw(true);
+				addWidget(m_vScrollbar);
+				m_hScrollbar.setMargin({ 0, 0, 0, 0 });
+				m_hScrollbar.enableManualDraw(true);
+				addWidget(m_hScrollbar);
+				m_smoothScrollTimer.create(60.0f, [&](f64 dt) -> void {
+					f32 stepX = m_scrollVelocity.x * (1.0f - m_scrollSmoothFactor);
+					f32 stepY = m_scrollVelocity.y * (1.0f - m_scrollSmoothFactor);
+
+					addScrollOffset({ stepX, stepY });
+					m_scrollVelocity -= { stepX, stepY };
+
+					if (std::abs(m_scrollVelocity.x) < 0.5f) m_scrollVelocity.x = 0;
+					if (std::abs(m_scrollVelocity.y) < 0.5f) m_scrollVelocity.y = 0;
+				}, true);
+
+				m_smoothScrollTimer.setStopCondition([&](void) -> bool {
+					return m_scrollVelocity.x == 0 && m_scrollVelocity.y == 0;
+				});
+				updateScrollbarsSize();
+				validate();
+				return *this;
+			}
+
+			void ScrollableWidget::onUpdate(void)
+			{
+				m_smoothScrollTimer.update();
+			}
+
+			void ScrollableWidget::drawScrollbars(ogfx::BasicRenderer2D& gfx)
+			{
+				m_vScrollbar.__draw(gfx);
+				m_hScrollbar.__draw(gfx);
+			}
+
+			void ScrollableWidget::updateScrollbarsSize(void)
+			{
+				m_vScrollbar.setMargin({ 0, getPureContentBounds().y, 0, 0 });
+			}
+
+			void ScrollableWidget::onMouseScrolled(const Event& event)
+			{
+				if (isVScrollAllowed())
+				{
+					bool mouseInsideHScrollbar = m_hScrollbar.isMouseInsideThumb({ event.mouse->position_x, event.mouse->position_y });
+					if (std::abs(event.mouse->scrollAmount.y) > 0 && !mouseInsideHScrollbar)
+					{
+						m_scrollVelocity.y += m_scrollSpeed * event.mouse->scrollAmount.y * m_scrollSpeedMultiplier;
+						if (m_smoothScrollTimer.isStopped())
+							m_smoothScrollTimer.restart();
+						event.handle();
+					}
+					else if (std::abs(event.mouse->scrollAmount.y) > 0)
+					{
+						m_scrollVelocity.x += m_scrollSpeed * event.mouse->scrollAmount.y * m_scrollSpeedMultiplier;
+						if (m_smoothScrollTimer.isStopped())
+							m_smoothScrollTimer.restart();
+						event.handle();
+					}
+				}
+				if (isHScrollAllowed())
+				{
+					if (std::abs(event.mouse->scrollAmount.x) > 0)
+					{
+						m_scrollVelocity.x += m_scrollSpeed * event.mouse->scrollAmount.x * m_scrollSpeedMultiplier;
+						if (m_smoothScrollTimer.isStopped())
+							m_smoothScrollTimer.restart();
+						event.handle();
+					}
+				}
+			}
+
+			void ScrollableWidget::setScrollOffset(const Vec2& offset)
+			{
+				auto ext = getContentExtents();
+				auto cont = getContentBounds();
+				f32 maxScrollY = -(ext.h - cont.h);
+				f32 maxScrollX = -(ext.w - cont.w);
+
+				m_scrollOffset = offset;
+
+				if (m_scrollOffset.y < maxScrollY) m_scrollOffset.y = maxScrollY;
+				if (m_scrollOffset.y > 0) m_scrollOffset.y = 0;
+				if (m_scrollOffset.x < maxScrollX) m_scrollOffset.x = maxScrollX;
+				if (m_scrollOffset.x > 0) m_scrollOffset.x = 0;
+			}
+
+			void ScrollableWidget::addScrollOffset(const Vec2& offset)
+			{
+				auto ext = getContentExtents();
+				auto cont = getContentBounds();
+				f32 maxScrollY = -(ext.h - cont.h);
+				f32 maxScrollX = -(ext.w - cont.w);
+
+				m_scrollOffset += offset;
+
+				if (m_scrollOffset.y < maxScrollY) m_scrollOffset.y = maxScrollY;
+				if (m_scrollOffset.y > 0) m_scrollOffset.y = 0;
+				if (m_scrollOffset.x < maxScrollX) m_scrollOffset.x = maxScrollX;
+				if (m_scrollOffset.x > 0) m_scrollOffset.x = 0;
+			}
+
+			bool ScrollableWidget::needsVScroll(void) const
+			{
+				return isVScrollAllowed() && getContentExtents().h > getContentBounds().h;
+			}
+
+			bool ScrollableWidget::needsHScroll(void) const
+			{
+				return isHScrollAllowed() && getContentExtents().w > getContentBounds().w;
+			}
+
+			void ScrollableWidget::onWidgetAdded(Widget& child)
+			{
+				removeWidget(m_vScrollbar);
+				removeWidget(m_hScrollbar);
+				addWidget(m_vScrollbar, { 0, 0 }, true);
+				addWidget(m_hScrollbar, { 0, 0 }, true);
+			}
+
+			f32 ScrollableWidget::getVScrollbarSize(void) const
+			{
+				if (!isVScrollAllowed())
+					return 0;
+				if (!needsVScroll())
+					return 0;
+				return m_vScrollbar.getw();
+			}
+
+			f32 ScrollableWidget::getHScrollbarSize(void) const
+			{
+				if (!isHScrollAllowed())
+					return 0;
+				if (!needsHScroll())
+					return 0;
+				return m_hScrollbar.geth();
 			}
 		}
 	}
