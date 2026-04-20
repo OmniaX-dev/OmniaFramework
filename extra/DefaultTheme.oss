@@ -39,6 +39,33 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 
 
 
+% ====== Panel ======
+(tabPanel) {
+	backgroundColor = #AAAAAAFF
+	borderColor = #909090FF
+	borderRadius = 0
+	borderWidth = 2
+	showBorder = true
+	showBackground = true
+	padding = rect(0, 0, 0, 0)
+	margin = rect(0, 0, 0, 0)
+	textColor = $textColor
+
+	(tabBar) {
+		height = 35.0
+		fontSize = 18
+		backgroundColor = #999999FF
+		borderColor = #909090FF
+		borderWidth = 2
+	}
+}
+(@panel_tab panel) {
+	backgroundColor = color_crimson
+}
+% ===================
+
+
+
 % ====== Scrollbar ======
 (scrollbar) {
 	(thumb) {
@@ -156,20 +183,9 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 }
 % ====================
 
+
+
+% ====== Image ======
 (image) {
-	path = file("img.png")
-	animated = true
-	animation = anim(frameCount: 36, \
- 					 fps: 60, \
-					 columns: 9, \
-					 rows: 4, \
-					 frameWidth: 256, \
-					 frameHeight: 256)
-	useBackgroundGradient = true
-	backgroundGradient = gradientV(color_crimson - $accentColorDark)
-	showBorder = true
-	borderWidth = 1
-	borderColor = $accentColorDark
-	borderRadius = 0
-	padding = rect(15, 15, 15, 15)
 }
+% ===================

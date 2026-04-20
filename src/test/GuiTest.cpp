@@ -32,6 +32,18 @@ class Window : public ogfx::gui::Window
 		inline Window(void) {  }
 		inline void onInitialize(void) override
 		{
+			ogfx::AnimationData ad;
+			ad.frameCount = 36;
+			ad.fps = 60;
+			ad.columns = 9;
+			ad.rows = 4;
+			ad.frameWidth = 256;
+			ad.frameHeight = 256;
+			m_img.setAnimationData(ad);
+			m_img.setImage("./img.png");
+			m_img.enableAnimated();
+			m_img.setSize(256, 256);
+
 			m_label1.setText("Show Panel2");
 			m_label1.setCallback(ogfx::gui::Widget::eCallback::MousePressed, [&](const ogfx::gui::Event& event) -> void {
 				m_check1.setChecked(!m_check1.isChecked());
@@ -78,6 +90,11 @@ class Window : public ogfx::gui::Window
 			m_panel2.setSize(600, 400);
 			m_panel2.setTitle("Panel 2");
 
+			m_tabs.setSize(400, 400);
+			m_tabs.addTab("Tab1");
+			m_tabs.addTab("Tab2 Test");
+			m_tabs.addTab("Long Tab Test");
+
 			m_panel3.addWidget(m_label4);
 
 			m_panel1.addWidget(m_label2);
@@ -88,10 +105,11 @@ class Window : public ogfx::gui::Window
 			m_panel2.addWidget(m_panel1, { 400, 50 });
 			m_panel2.addWidget(m_label1, { 0, 500 });
 			m_panel2.addWidget(m_btn1, { 0, 300 });
-			m_panel2.addWidget(m_img, { 20, 150 });
+			m_panel2.addWidget(m_img, { 20, 50 });
 
 			addWidget(m_check1, { 30, 30 });
 			addWidget(m_panel2, { 500, 100 });
+			addWidget(m_tabs, { 20,  120 });
 
 			m_theme.loadFromFile("./DefaultTheme.oss", true, getDefaultStylesheetVariableList());
 			setTheme(m_theme);
@@ -109,6 +127,7 @@ class Window : public ogfx::gui::Window
 
 		void onRedraw(ogfx::BasicRenderer2D& gfx) override
 		{
+			gfx.fillRect(m_tabs.getGlobalPureContentBounds(), { 0, 255, 0, 100 });
 		}
 
 		void onFixedUpdate(void) override
@@ -127,6 +146,7 @@ class Window : public ogfx::gui::Window
 		CheckBox m_check1 { *this };
 		Button m_btn1 { *this };
 		ImageLabel m_img { *this };
+		TabPanel m_tabs { *this };
 
 		ostd::Stylesheet m_theme;
 };
@@ -138,7 +158,7 @@ i32 main(i32 argc, char** argv)
 	window.initialize(1200, 800, "OmniaFramework - Test Window");
 	window.setClearColor({ 0, 0, 0 });
 	window.setPosition({ 50, 50 });
-	window.setWindowState(ogfx::WindowCore::eWindowState::Maximized);
+	// window.setWindowState(ogfx::WindowCore::eWindowState::Maximized);
 	window.mainLoop();
 	return 0;
 }

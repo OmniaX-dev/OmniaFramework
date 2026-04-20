@@ -477,7 +477,7 @@ namespace ogfx
 		generate_half_circle(p2, dir, half, segments, color, true);
 	}
 
-	void BasicRenderer2D::drawRect(const Rectangle& rect, const Color& color, i32 thickness)
+	void BasicRenderer2D::drawRect(const Rectangle& rect, const Color& color, i32 thickness, bool topEdge, bool rightEdge, bool bottomEdge, bool leftEdge)
 	{
 		if (!m_initialized || thickness <= 0)
 			return;
@@ -491,21 +491,25 @@ namespace ogfx
 		f32 y2 = rect.y + rect.h - half;
 
 		// Top
-		drawLine({ {x1, y1}, {x2, y1} }, color, thickness, false);
+		if (topEdge)
+			drawLine({ {x1, y1}, {x2, y1} }, color, thickness, false);
 
 		// Right
-		drawLine({ {x2, y1 - half}, {x2, y2 + half} }, color, thickness, false);
+		if (rightEdge)
+			drawLine({ {x2, y1 - half}, {x2, y2 + half} }, color, thickness, false);
 
 		// Bottom
-		drawLine({ {x2, y2}, {x1, y2} }, color, thickness, false);
+		if (bottomEdge)
+			drawLine({ {x2, y2}, {x1, y2} }, color, thickness, false);
 
 		// Left
-		drawLine({ {x1, y2 + half}, {x1, y1 - half} }, color, thickness, false);
+		if (leftEdge)
+			drawLine({ {x1, y2 + half}, {x1, y1 - half} }, color, thickness, false);
 	}
 
-	void BasicRenderer2D::drawRect(const Vec2& center, const Vec2& size, const Color& color, i32 thickness)
+	void BasicRenderer2D::drawRect(const Vec2& center, const Vec2& size, const Color& color, i32 thickness, bool topEdge, bool rightEdge, bool bottomEdge, bool leftEdge)
 	{
-		drawRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, color, thickness);
+		drawRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, color, thickness, topEdge, rightEdge, bottomEdge, leftEdge);
 	}
 
 	void BasicRenderer2D::drawRoundRect(const Rectangle& rect, const Color& color, f32 radius, i32 thickness)
@@ -864,17 +868,17 @@ namespace ogfx
 
 
 
-	void BasicRenderer2D::outlinedRect(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, i32 outlineThickness)
+	void BasicRenderer2D::outlinedRect(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, i32 outlineThickness, bool topEdge, bool rightEdge, bool bottomEdge, bool leftEdge)
 	{
 		if (!m_initialized) return;
 		Rectangle offset = { 1, 1, -2, -2 };
 		fillRect(rect + offset, fillColor);
-		drawRect(rect, outlineColor, outlineThickness);
+		drawRect(rect, outlineColor, outlineThickness, topEdge, rightEdge, bottomEdge, leftEdge);
 	}
 
-	void BasicRenderer2D::outlinedRect(const Vec2& center, const Vec2& size, const Color& fillColor, const Color& outlineColor, i32 outlineThickness)
+	void BasicRenderer2D::outlinedRect(const Vec2& center, const Vec2& size, const Color& fillColor, const Color& outlineColor, i32 outlineThickness, bool topEdge, bool rightEdge, bool bottomEdge, bool leftEdge)
 	{
-		outlinedRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, fillColor, outlineColor, outlineThickness);
+		outlinedRect({ center.x - size.x * 0.5f, center.y - size.y * 0.5f, size.x, size.y }, fillColor, outlineColor, outlineThickness, topEdge, rightEdge, bottomEdge, leftEdge);
 	}
 
 	void BasicRenderer2D::outlinedRoundRect(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, f32 radius, i32 outlineThickness)

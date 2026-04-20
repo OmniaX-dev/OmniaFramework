@@ -88,8 +88,8 @@ namespace ogfx
 			void drawCenteredString(const String& str, const Rectangle& bounds, const Color& color, i32 fontSize = 0, f32 scale = 1.0f);
 
 			void drawLine(const FLine& line, const Color& color, i32 thickness = 1, bool rounded = true);
-			void drawRect(const Rectangle& rect, const Color& color, i32 thickness = 1);
-			void drawRect(const Vec2& center, const Vec2& size, const Color& color, i32 thickness = 1);
+			void drawRect(const Rectangle& rect, const Color& color, i32 thickness = 1, bool topEdge = true, bool rightEdge = true, bool bottomEdge = true, bool leftEdge = true);
+			void drawRect(const Vec2& center, const Vec2& size, const Color& color, i32 thickness = 1, bool topEdge = true, bool rightEdge = true, bool bottomEdge = true, bool leftEdge = true);
 			void drawRoundRect(const Vec2& center, const Vec2& size, const Color& color, f32 radius, i32 thickness = 1);
 			void drawRoundRect(const Rectangle& rect, const Color& color, f32 radius, i32 thickness = 1);
 			void drawRoundRect(const Rectangle& rect, const Color& color, const Rectangle& radii, i32 thickness = 1);
@@ -112,8 +112,8 @@ namespace ogfx
 			void fillTriangle(const Triangle& tri, const Color& color);
 			void fillTriangle(const Vec2& A, const Vec2& B, const Vec2& C, const Color& color);
 
-			void outlinedRect(const Vec2& center, const Vec2& size, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1);
-			void outlinedRect(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1);
+			void outlinedRect(const Vec2& center, const Vec2& size, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1, bool topEdge = true, bool rightEdge = true, bool bottomEdge = true, bool leftEdge = true);
+			void outlinedRect(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1, bool topEdge = true, bool rightEdge = true, bool bottomEdge = true, bool leftEdge = true);
 			void outlinedRoundRect(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, f32 radius, i32 outlineThickness = 1);
 			void outlinedRoundRect(const Vec2& center, const Vec2& size, const Color& fillColor, const Color& outlineColor, f32 radius, i32 outlineThickness = 1);
 			void outlinedRoundRect(const Rectangle& rect, const Color& fillColor, const Color& outlineColor, const Rectangle& radii, i32 outlineThickness = 1);

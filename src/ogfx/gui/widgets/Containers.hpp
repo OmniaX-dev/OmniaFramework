@@ -82,15 +82,21 @@ namespace ogfx
 					bool removeTab(const String& title);
 					bool setCurrentTab(Panel& tab);
 					bool setCurrentTab(i32 index);
+					void setTabBarHeight(f32 height);
 
 				private:
 					void prepare_for_current_tab_removal(void);
+					void draw_tabs(ogfx::BasicRenderer2D& gfx);
 
 				private:
 					stdvec<std::unique_ptr<Panel>> m_tabs;
 					Panel* m_currentTab { nullptr };
+					Rectangle m_tabBarBorderRadii { 0, 0, 0, 0 };
 
-					f32 m_tabBarHeight { 30 };
+					f32 m_tabBarHeight { 35 };
+					Color m_tabBarBackgroundColor { 120, 120, 120 };
+					Color m_tabBarBorderColor { 170, 170, 170 };
+					f32 m_tabSidePadding { 20 };
 			};
 		}
 	}

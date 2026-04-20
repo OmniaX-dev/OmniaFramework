@@ -136,13 +136,23 @@ namespace ogfx
 				disableFocus();
 				enableStopEvents();
 				setStylesheetCategoryName("tabPanel");
+				enableBackground();
+				enableBorder();
+				setTabBarHeight(m_tabBarHeight);
 				validate();
 				return *this;
 			}
 
 			void TabPanel::applyTheme(const ostd::Stylesheet& theme)
 			{
+				setTabBarHeight(getThemeValue<f32>(theme, "tabBar.height", m_tabBarHeight));
 
+				for (auto& tab : m_tabs)
+				{
+					if (tab == nullptr)
+						continue;
+					tab->setBackgroundColor(getBackgroundColor());
+				}
 			}
 
 			void TabPanel::onMouseReleased(const Event& event)
@@ -152,13 +162,19 @@ namespace ogfx
 
 			void TabPanel::onDraw(ogfx::BasicRenderer2D& gfx)
 			{
-
+				gfx.outlinedRoundRect({ getGlobalPosition(), { getw(), m_tabBarHeight } }, m_tabBarBackgroundColor, m_tabBarBorderColor, m_tabBarBorderRadii, getBorderWidth());
+				draw_tabs(gfx);
 			}
 
 			Panel& TabPanel::addTab(const String& title)
 			{
 				m_tabs.push_back(std::make_unique<Panel>(getWindow()));
 				auto& tab = *m_tabs.back();
+				tab.setTitle(title);
+				tab.setTitlebarType(Panel::TitleBarTypes::None);
+				if (m_currentTab == nullptr && m_tabs.size() == 2)
+					setCurrentTab(tab);
+				tab.addThemeID("panel_tab");
 				// Initialization code here
 				return tab;
 			}
@@ -211,6 +227,15 @@ namespace ogfx
 				return true;
 			}
 
+			void TabPanel::setTabBarHeight(f32 height)
+			{
+				if (height == m_tabBarHeight)
+					return;
+				m_tabBarHeight = height;
+				m_tabBarBorderRadii = { cast<f32>(getBorderRadius()), cast<f32>(getBorderRadius()), 0, 0 };
+				setContentOffset({ 0, m_tabBarHeight });
+			}
+
 			void TabPanel::prepare_for_current_tab_removal(void)
 			{
 				if (m_currentTab == nullptr)
@@ -229,6 +254,38 @@ namespace ogfx
 					m_currentTab = (it - 1)->get();  // tab to the left
 				else
 					m_currentTab = (it + 1)->get();  // first tab being removed, go right
+			}
+
+			void TabPanel::draw_tabs(ogfx::BasicRenderer2D& gfx)
+			{
+				f32 nextTabX = 2;
+				for (const auto& _tab : m_tabs)
+				{
+					if (_tab == nullptr) continue;
+					const auto& tab = *_tab;
+					auto titleBounds = gfx.getStringDimensions(tab.getTitle(), getFontSize());
+					auto glob = getGlobalPosition();
+					Rectangle tabBounds { glob + Vec2 { nextTabX, 2}, { titleBounds.x + (m_tabSidePadding * 2), m_tabBarHeight - 3 } };
+					if (m_currentTab == _tab.get())
+					{
+						gfx.outlinedRect(tabBounds, tab.getBackgroundColor(), Colors::Black, 1, true, true, false, true);
+					}
+					else
+					{
+						gfx.drawRect(tabBounds, Colors::Black, 1, true, true, false, true);
+					}
+					gfx.drawCenteredString(tab.getTitle(), tabBounds, getTextColor(), getFontSize());
+					nextTabX += titleBounds.x + (m_tabSidePadding * 2);
+
+					// f32 titleY = (m_tabBarHeight / 2.0f) - (titleBounds.y / 2.0f);
+					// if (m_currentTab == _tab.get())
+					// {
+					//     gfx.fillRect({ getGlobalPosition() + Vec2 { nextTabX, 0 }, { (titleBounds.x * 2), m_tabBarHeight } }, tab.getBackgroundColor());
+					// }
+					// gfx.drawString(tab.getTitle(), getGlobalPosition() + Vec2 { nextTabX + m_tabSidePadding, titleY }, getTextColor(), getFontSize());
+					// nextTabX += titleBounds.x + (m_tabSidePadding * 2);
+					// gfx.drawLine({ getGlobalPosition() + Vec2 { nextTabX, 0 }, getGlobalPosition() + Vec2 { nextTabX, m_tabBarHeight - 3 } }, Colors::Black, 2);
+				}
 			}
 		}
 	}

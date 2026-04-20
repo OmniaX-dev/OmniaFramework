@@ -208,15 +208,40 @@ namespace ostd
 	{
 		if (m_dirty)
 		{
-            m_cachedFloat = {
-                r.value * (1.0f / 255.0f),
-                g.value * (1.0f / 255.0f),
-                b.value * (1.0f / 255.0f),
-                a.value * (1.0f / 255.0f)
-            };
-            m_dirty = false;
-        }
-        return m_cachedFloat;
+			m_cachedFloat = {
+				r.value * (1.0f / 255.0f),
+				g.value * (1.0f / 255.0f),
+				b.value * (1.0f / 255.0f),
+				a.value * (1.0f / 255.0f)
+			};
+			m_dirty = false;
+		}
+		return m_cachedFloat;
+	}
+
+	Color Color::darkened(f32 amount) const
+	{
+		f32 h, s, v;
+		RGBtoHSV(r.value / 255.0f, g.value / 255.0f, b.value / 255.0f, h, s, v);
+		v = std::clamp(v - amount, 0.0f, 1.0f);
+		f32 nr, ng, nb;
+		HSVtoRGB(h, s, v, nr, ng, nb);
+		return {
+			cast<u8>(nr * 255),
+			cast<u8>(ng * 255),
+			cast<u8>(nb * 255),
+			cast<u8>(a.value)
+		};
+	}
+
+	Color Color::scaled(f32 factor) const
+	{
+		return {
+			cast<u8>(std::clamp(r.value * factor, 0.0f, 255.0f)),
+			cast<u8>(std::clamp(g.value * factor, 0.0f, 255.0f)),
+			cast<u8>(std::clamp(b.value * factor, 0.0f, 255.0f)),
+			cast<u8>(a.value)
+		};
 	}
 
 	String Color::toString(void) const
@@ -237,45 +262,45 @@ namespace ostd
 
 	void Color::RGBtoHSV(f32 r, f32 g, f32 b, f32& h, f32& s, f32& v)
 	{
-	    f32 max = std::max({r, g, b});
-	    f32 min = std::min({r, g, b});
-	    f32 d = max - min;
+		f32 max = std::max({r, g, b});
+		f32 min = std::min({r, g, b});
+		f32 d = max - min;
 
-	    v = max;
+		v = max;
 
-	    if (max == 0)
-	    {
-	        s = 0;
-	        h = 0;
-	        return;
-	    }
+		if (max == 0)
+		{
+			s = 0;
+			h = 0;
+			return;
+		}
 
-	    s = d / max;
+		s = d / max;
 
-	    if (max == r)      h = std::fmod((g - b) / d + 6.0f, 6.0f);
-	    else if (max == g) h = (b - r) / d + 2.0f;
-	    else               h = (r - g) / d + 4.0f;
+		if (max == r)      h = std::fmod((g - b) / d + 6.0f, 6.0f);
+		else if (max == g) h = (b - r) / d + 2.0f;
+		else               h = (r - g) / d + 4.0f;
 
-	    h /= 6.0f;
+		h /= 6.0f;
 	}
 
 	void Color::HSVtoRGB(f32 h, f32 s, f32 v, f32& r, f32& g, f32& b)
 	{
-	    i32 i = cast<i32>(h * 6);
-	    f32 f = h * 6 - i;
-	    f32 p = v * (1 - s);
-	    f32 q = v * (1 - f * s);
-	    f32 t = v * (1 - (1 - f) * s);
+		i32 i = cast<i32>(h * 6);
+		f32 f = h * 6 - i;
+		f32 p = v * (1 - s);
+		f32 q = v * (1 - f * s);
+		f32 t = v * (1 - (1 - f) * s);
 
-	    switch (i % 6)
-	    {
-	        case 0: r = v, g = t, b = p; break;
-	        case 1: r = q, g = v, b = p; break;
-	        case 2: r = p, g = v, b = t; break;
-	        case 3: r = p, g = q, b = v; break;
-	        case 4: r = t, g = p, b = v; break;
-	        case 5: r = v, g = p, b = q; break;
-	    }
+		switch (i % 6)
+		{
+			case 0: r = v, g = t, b = p; break;
+			case 1: r = q, g = v, b = p; break;
+			case 2: r = p, g = v, b = t; break;
+			case 3: r = p, g = q, b = v; break;
+			case 4: r = t, g = p, b = v; break;
+			case 5: r = v, g = p, b = q; break;
+		}
 	}
 
 }

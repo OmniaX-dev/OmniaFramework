@@ -79,6 +79,13 @@ namespace ostd
 			u32 asInteger(eColorFormat format = eColorFormat::RGBA) const;
 			FloatCol getNormalizedColor(void) const;
 
+			inline Color& darken(f32 amount) { Color c = darkened(amount); set(c.r, c.g, c.b, c.a); return *this; }
+			inline Color& lighten(f32 amount) { Color c = lightened(amount); set(c.r, c.g, c.b, c.a); return *this; }
+			inline Color& scale(f32 amount) { Color c = scaled(amount); set(c.r, c.g, c.b, c.a); return *this; }
+			inline Color lightened(f32 amount) const { return darkened(amount); }
+			Color darkened(f32 amount) const;
+			Color scaled(f32 factor) const;
+
 			String toString(void) const override;
 			void print(bool newLine = true, OutputHandlerBase* __destination = nullptr) const override;
 			inline void invalidate(void) override {  }
