@@ -1,21 +1,21 @@
 /*
-    OmniaFramework - A collection of useful functionality
-    Copyright (C) 2025  OmniaX-Dev
+	OmniaFramework - A collection of useful functionality
+	Copyright (C) 2025  OmniaX-Dev
 
-    This file is part of OmniaFramework.
+	This file is part of OmniaFramework.
 
-    OmniaFramework is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	OmniaFramework is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    OmniaFramework is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	OmniaFramework is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
@@ -57,3 +57,17 @@
 #else
 	#define _DEBUG(n) std::cout << (i32)n << "\n";
 #endif
+
+#define OSTD_BOOL_PARAM_GETSET_E(name, member) \
+	inline bool is##name##Enabled(void) const { return member; } \
+	inline void enable##name(bool enable = true) { member = enable; } \
+	inline void disable##name(void) { enable##name(false); }
+
+#define OSTD_BOOL_PARAM_GETSET_I(name, member) \
+	inline bool is##name(void) const { return member; } \
+	inline void enable##name(bool enable = true) { member = enable; } \
+	inline void disable##name(void) { enable##name(false); }
+
+#define OSTD_PARAM_GETSET(type, name, member) \
+	inline type get##name(void) const { return member; } \
+	inline void set##name(const type& value) { member = value; } \

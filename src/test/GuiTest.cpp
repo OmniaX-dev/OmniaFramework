@@ -33,7 +33,7 @@ class Window : public ogfx::gui::Window
 		inline void onInitialize(void) override
 		{
 			m_img.loadFromFile("./img.png", m_gfx);
-			ogfx::Animation::AnimationData ad;
+			ogfx::AnimationData ad;
 			ad.columns = 9;
 			ad.rows = 4;
 			ad.frameWidth = 256;
@@ -45,10 +45,11 @@ class Window : public ogfx::gui::Window
 
 
 			m_label1.setText("Show Panel2");
-			m_label1.setMousePressedCallback([&](const ogfx::gui::Event& event) -> void {
+			m_label1.setCallback(ogfx::gui::Widget::eCallback::MousePressed, [&](const ogfx::gui::Event& event) -> void {
 				m_check1.setChecked(!m_check1.isChecked());
 				m_label1.addy(10);
 			});
+			m_label1.disableTheming();
 			m_label1.addThemeOverride("@.label.showBackground", true);
 			m_label1.addThemeOverride("@.label.backgroundColor", Colors::Beige);
 			m_label1.addThemeOverride("@.label.showBorder", true);
@@ -56,6 +57,8 @@ class Window : public ogfx::gui::Window
 			m_label1.addThemeOverride("@.label.borderColor", Colors::DarkMagenta);
 			m_label1.addThemeOverride("@:pressed.label.backgroundColor", Colors::Crimson);
 			m_label1.addThemeOverride("@:hover.label.backgroundColor", Colors::DarkRed);
+			m_label1.setBackgroundColor(Colors::Red);
+			m_label1.enableBackground();
 			m_label1.reloadTheme();
 
 			m_check1.setText("Check this out!");
@@ -65,7 +68,7 @@ class Window : public ogfx::gui::Window
 			});
 
 			m_btn1.setText("BUTTON");
-			m_btn1.setMousePressedCallback([&](const ogfx::gui::Event& event) -> void {
+			m_btn1.setCallback(ogfx::gui::Widget::eCallback::MousePressed, [&](const ogfx::gui::Event& event) -> void {
 
 			});
 
@@ -75,13 +78,13 @@ class Window : public ogfx::gui::Window
 			m_label5.setText("Label5");
 
 			m_panel1.setSize(700, 300);
-			m_panel1.allowVScroll(false);
-			m_panel1.allowHScroll(false);
+			m_panel1.disableVScroll();
+			m_panel1.disableHScroll();
 			m_panel1.setTitle("Panel 1");
 
 			m_panel3.setSize(150, 150);
-			m_panel3.allowVScroll(false);
-			m_panel3.allowHScroll(false);
+			m_panel3.disableVScroll();
+			m_panel3.disableHScroll();
 			m_panel3.setTitle("Panel 3");
 
 			m_panel2.setSize(600, 400);
@@ -148,8 +151,10 @@ i32 main(i32 argc, char** argv)
 {
 	ostd::initialize();
 	Window window;
-	window.initialize(800, 600, "OmniaFramework - Test Window");
+	window.initialize(1200, 800, "OmniaFramework - Test Window");
 	window.setClearColor({ 0, 0, 0 });
+	window.setPosition({ 50, 50 });
+	window.setWindowState(ogfx::WindowCore::eWindowState::Maximized);
 	window.mainLoop();
 	return 0;
 }

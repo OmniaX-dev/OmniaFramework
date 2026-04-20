@@ -32,33 +32,25 @@ namespace ogfx
 			{
 				setPadding({ 5, 5, 5, 5 });
 				setTypeName("ogfx::gui::widgets::Panel");
-				disableDrawBox();
 				disableFocus();
 				enableStopEvents();
+				setStylesheetCategoryName("panel");
 				validate();
 				return *this;
 			}
 
 			void Panel::applyTheme(const ostd::Stylesheet& theme)
 			{
-				setBackGroundColor(getThemeValue<Color>(theme, "panel.backgroundColor", Colors::Gray));
-				setBorderRadius(getThemeValue<i32>(theme, "panel.borderRadius", 8));
-				setBorderWidth(getThemeValue<i32>(theme, "panel.borderWidth", 2));
-				enableBorder(getThemeValue<bool>(theme, "panel.showBorder", true));
-				enableBackground(getThemeValue<bool>(theme, "panel.showBackground", true));
-				setBorderColor(getThemeValue<Color>(theme, "panel.borderColor", Colors::Black));
-				setPadding(getThemeValue<Rectangle>(theme, "panel.padding", { 15, 15, 15, 15 }));
-				setMargin(getThemeValue<Rectangle>(theme, "panel.margin", { 0, 0, 0, 0 }));
-				setScrollSpeed(getThemeValue<f32>(theme, "panel.scrollSpeed", 0.8f));
-				setScrollSmoothFactor(getThemeValue<f32>(theme, "panel.scrollSmoothFactor", 0.7f));
-				m_titleColor = getThemeValue<Color>(theme, "panel.titleColor", Colors::Black);
-				m_titlebarColor = getThemeValue<Color>(theme, "panel.titlebarColor", Colors::Transparent);
-				m_titlebarBorderColor = getThemeValue<Color>(theme, "panel.titlebarBorderColor", Colors::Black);
-				m_titlebarHeight = getThemeValue<f32>(theme, "panel.titlebarHeight", 30);
-				m_titlebarBorderWidth = getThemeValue<i32>(theme, "panel.titlebarBorderWidth", 1);
-				m_titlebarFontSize = getThemeValue<i32>(theme, "panel.titlebarFontSize", 26);
-				m_titleTextAlign = getThemeValue<i32>(theme, "panel.titlebarTextAlign", cast<i32>(WindowCore::eTextAlign::Left));
-				setTitlebarType(getThemeValue<String>(theme, "panel.titlebarType", TitleBarTypes::None));
+				setScrollSpeed(getThemeValue<f32>(theme, "scrollSpeed", 0.8f));
+				setScrollSmoothFactor(getThemeValue<f32>(theme, "scrollSmoothFactor", 0.7f));
+				m_titleColor = getThemeValue<Color>(theme, "titleColor", Colors::Black);
+				m_titlebarColor = getThemeValue<Color>(theme, "titlebarColor", Colors::Transparent);
+				m_titlebarBorderColor = getThemeValue<Color>(theme, "titlebarBorderColor", Colors::Black);
+				m_titlebarHeight = getThemeValue<f32>(theme, "titlebarHeight", 30);
+				m_titlebarBorderWidth = getThemeValue<i32>(theme, "titlebarBorderWidth", 1);
+				m_titlebarFontSize = getThemeValue<i32>(theme, "titlebarFontSize", 26);
+				m_titleTextAlign = getThemeValue<i32>(theme, "titlebarTextAlign", cast<i32>(WindowCore::eTextAlign::Left));
+				setTitlebarType(getThemeValue<String>(theme, "titlebarType", TitleBarTypes::None));
 			}
 
 			void Panel::afterDraw(ogfx::BasicRenderer2D& gfx)
@@ -141,9 +133,9 @@ namespace ogfx
 			{
 				setPadding({ 0, 0, 0, 0 });
 				setTypeName("ogfx::gui::widgets::TabPanel");
-				disableDrawBox();
 				disableFocus();
 				enableStopEvents();
+				setStylesheetCategoryName("tabPanel");
 				validate();
 				return *this;
 			}

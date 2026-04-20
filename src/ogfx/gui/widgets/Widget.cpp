@@ -61,7 +61,7 @@ namespace ogfx
 			if (!m_rootChild && m_parent != nullptr)
 			{
 				glob += m_parent->getGlobalPosition();
-				if (!isIgnoreScrollAllowed())
+				if (!isIgnoreScrollEnabled())
 				{
 					glob += m_parent->getPadding().getPosition();
 					glob += m_parent->getContentOffset();
@@ -109,7 +109,7 @@ namespace ogfx
 			for (auto* child : m_widgets.getWidgets())
 			{
 				if (!child || child->isInvalid()) continue;
-				if (child->isIgnoreScrollAllowed()) continue;
+				if (child->isIgnoreScrollEnabled()) continue;
 				if (!child->isVisible()) continue;
 				Vec2 localPos = getPadding().getPosition() + child->getPosition() + child->getMargin().getPosition() + child->getContentBounds().getPosition();
 				maxX = std::max(maxX, localPos.x + child->getw() + child->getMargin().w);
@@ -137,6 +137,8 @@ namespace ogfx
 		void Widget::reloadTheme(bool propagate)
 		{
 			if (getWindow().theme() == nullptr)
+				return;
+			if (!isThemingEnabled())
 				return;
 
 			auto& theme = *getWindow().theme();
@@ -214,20 +216,38 @@ namespace ogfx
 			m_visible = v;
 		}
 
+		void Widget::setCallback(eCallback type, EventCallback callback)
+		{
+			switch (type)
+			{
+				case eCallback::MousePressed:    callback_onMousePressed    = std::move(callback); break;
+				case eCallback::MouseReleased:   callback_onMouseReleased   = std::move(callback); break;
+				case eCallback::MouseMoved:      callback_onMouseMoved      = std::move(callback); break;
+				case eCallback::MouseScrolled:   callback_onMouseScrolled   = std::move(callback); break;
+				case eCallback::DragAndDrop:     callback_onDragAndDrop     = std::move(callback); break;
+				case eCallback::MouseEntered:    callback_onMouseEntered    = std::move(callback); break;
+				case eCallback::MouseExited:     callback_onMouseExited     = std::move(callback); break;
+				case eCallback::MouseDragged:    callback_onMouseDragged    = std::move(callback); break;
+				case eCallback::KeyPressed:      callback_onKeyPressed      = std::move(callback); break;
+				case eCallback::KeyReleased:     callback_onKeyReleased     = std::move(callback); break;
+				case eCallback::TextEntered:     callback_onTextEntered     = std::move(callback); break;
+				case eCallback::WindowClosed:    callback_onWindowClosed    = std::move(callback); break;
+				case eCallback::WindowResized:   callback_onWindowResized   = std::move(callback); break;
+				case eCallback::WindowFocused:   callback_onWindowFocused   = std::move(callback); break;
+				case eCallback::WindowFocusLost: callback_onWindowFocusLost = std::move(callback); break;
+				default: break;
+			}
+		}
+
 		void Widget::__draw(ogfx::BasicRenderer2D& gfx)
 		{
 			if (!isVisible())
 				return;
-			if (isDrawBoxEnabled())
-				gfx.fillRect({ getGlobalPosition(), getSize() }, getDrawBoxColor());
-			else
-			{
-				beforeDraw(gfx);
-				if (m_showBackground && m_showBorder)
-					gfx.outlinedRoundRect({ getGlobalPosition(), getSize() }, m_backgroundColor, m_borderColor, m_borderRadius, m_borderWidth);
-				else if (m_showBackground)
-					gfx.fillRoundRect({ getGlobalPosition(), getSize() }, m_backgroundColor, m_borderRadius);
-			}
+			beforeDraw(gfx);
+			if (m_useBackgroundGradient && m_showBorder)
+				gfx.fillGradientRect({ getGlobalPosition(), getSize() }, m_backgroundGradient);
+			else if (m_showBackground)
+				gfx.fillRoundRect({ getGlobalPosition(), getSize() }, m_backgroundColor, m_borderRadius);
 			onDraw(gfx);
 
 			// gfx.fillRect(getGlobalPureContentBounds(), { 0, 255, 0, 120 });
@@ -431,7 +451,26 @@ namespace ogfx
 		{
 			if (propagate && hasChildren())
 				m_widgets.onThemeApplied(theme);
+			apply_common_theme_values(theme);
 			applyTheme(theme);
+		}
+
+		void Widget::apply_common_theme_values(const ostd::Stylesheet& theme)
+		{
+			setTextColor(getThemeValue<Color>(theme, "textColor", m_textColor));
+			setBackgroundColor(getThemeValue<Color>(theme, "backgroundColor", m_backgroundColor));
+			setFontSize(getThemeValue<i32>(theme, "fontSize", m_fontSize));
+			setBorderRadius(getThemeValue<i32>(theme, "borderRadius", m_borderRadius));
+			setBorderWidth(getThemeValue<i32>(theme, "borderWidth", m_borderWidth));
+			enableBorder(getThemeValue<bool>(theme, "showBorder", m_showBorder));
+			setBorderColor(getThemeValue<Color>(theme, "borderColor", m_borderColor));
+			enableBackground(getThemeValue<bool>(theme, "showBackground", m_showBackground));
+			setPadding(getThemeValue<Rectangle>(theme, "padding", m_padding));
+			setMargin(getThemeValue<Rectangle>(theme, "margin", m_margin));
+			enableBackgroundGradient(getThemeValue<bool>(theme, "useBackgroundGradient", m_useBackgroundGradient));
+			setBackgroundGradient(getThemeValue<ColorGradient>(theme, "backgroundGradient", m_backgroundGradient));
+			if (isBackgroundGradientEnabled() && isBackgroundEnabled())
+				enableBackground(false);
 		}
 	}
 }

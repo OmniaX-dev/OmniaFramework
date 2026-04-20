@@ -63,6 +63,8 @@ namespace ostd
 		stdvec<String> group;
 		u32 groupSelectorCount = 0;
 		bool debug_print = false;
+		bool brokenLine = false;
+		String brokenLineBuffer =  "";
 		for (auto& line : lines)
 		{
 			lineNumber++;
@@ -73,6 +75,18 @@ namespace ostd
 				line.substr(0, line.indexOf("%")).trim();
 			if (line == "")
 				continue;
+			if (brokenLine)
+			{
+				line = brokenLineBuffer + line;
+				brokenLine = false;
+				brokenLineBuffer = "";
+			}
+			if  (line.endsWith("\\"))
+			{
+				brokenLine = true;
+				brokenLineBuffer = line.new_trim().substr(0, line.len() - 1).trim();
+				continue;
+			}
 			if (line.startsWith("const ") || line.startsWith("$"))
 			{
 				bool is_const = false;
@@ -283,6 +297,15 @@ namespace ostd
 			}
 			return false;
 		};
+		auto l_isAnim = [this](String& value) -> bool {
+			value.trim();
+			if (value.startsWith("anim(") && value.endsWith(")"))
+			{
+				value.substr(5, value.len() - 1).trim();
+				return true;
+			}
+			return false;
+		};
 
 		if (key.startsWith("@"))
 		{
@@ -312,6 +335,14 @@ namespace ostd
 			if (grad.isInvalid())
 				return false;
 			set(key, grad, themeID);
+		}
+		else if (l_isAnim(value))
+		{
+			bool outError = false;
+			AnimationData ad = parseAnim(value, outError);
+			if (outError)
+				return false;
+			set(key, ad, themeID);
 		}
 		else if (l_isFile(value))
 		{
@@ -508,6 +539,113 @@ namespace ostd
 		}
 
 		return grad;
+	}
+
+	AnimationData Stylesheet::parseAnim(const String& _value, bool& outError)
+	{
+		String value = _value.new_toLower().trim();
+		AnimationData ad;
+		auto tokens = value.tokenize(",");
+		auto l_error = [&](bool err) -> AnimationData {
+			outError = err;
+			return ad;
+		};
+		for (auto& tok : tokens)
+		{
+			if (tok.count(":") != 1 || tok.startsWith(":") || tok.endsWith(":"))
+				return l_error(true);
+			String prop = tok.new_substr(0, tok.indexOf(":")).trim();
+			String val = tok.new_substr(tok.indexOf(":") + 1).trim();
+			if (prop == "framecount")
+			{
+				if (!val.isInt())
+					return l_error(true);
+				ad.frameCount = val.toInt();
+			}
+			else if (prop == "stillframe")
+			{
+				if (!val.isInt())
+					return l_error(true);
+				ad.stillFrame = val.toInt();
+			}
+			else if (prop == "fps")
+			{
+				if (!val.isNumeric(true))
+					return l_error(true);
+				ad.fps = val.toFloat();
+			}
+			else if (prop == "rowoffset")
+			{
+				if (!val.isInt())
+					return l_error(true);
+				ad.rowOffset = val.toInt();
+			}
+			else if (prop == "columnoffset")
+			{
+				if (!val.isInt())
+					return l_error(true);
+				ad.columnOffset = val.toInt();
+			}
+			else if (prop == "pixeloffsetx")
+			{
+				if (!val.isNumeric(true))
+					return l_error(true);
+				ad.pixelOffsetX = val.toFloat();
+			}
+			else if (prop == "pixeloffsety")
+			{
+				if (!val.isNumeric(true))
+					return l_error(true);
+				ad.pixelOffsetY = val.toFloat();
+			}
+			else if (prop == "rows")
+			{
+				if (!val.isInt())
+					return l_error(true);
+				ad.rows = val.toInt();
+			}
+			else if (prop == "columns")
+			{
+				if (!val.isInt())
+					return l_error(true);
+				ad.columns = val.toInt();
+			}
+			else if (prop == "framewidth")
+			{
+				if (!val.isNumeric(true))
+					return l_error(true);
+				ad.frameWidth = val.toFloat();
+			}
+			else if (prop == "frameheight")
+			{
+				if (!val.isNumeric(true))
+					return l_error(true);
+				ad.frameHeight = val.toFloat();
+			}
+			else if (prop == "still")
+			{
+				if (!val.isBool())
+					return l_error(true);
+				ad.still = val.toBool();
+			}
+			else if (prop == "turnback")
+			{
+				if (!val.isBool())
+					return l_error(true);
+				ad.turnBack = val.toBool();
+			}
+			else if (prop == "random")
+			{
+				if (!val.isBool())
+					return l_error(true);
+				ad.random = val.toBool();
+			}
+			else
+			{
+				return l_error(true);
+			}
+		}
+		return l_error(false);
 	}
 
 	void Stylesheet::debugPrint(void)

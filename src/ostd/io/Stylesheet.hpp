@@ -23,6 +23,7 @@
 #include <ostd/string/TextStyleParser.hpp>
 #include <ostd/data/Color.hpp>
 #include <ostd/math/Geometry.hpp>
+#include <ostd/data/AnimationData.hpp>
 #include <variant>
 
 
@@ -32,7 +33,7 @@ namespace ostd
 	{
 		public: using QualifierList = stdvec<std::pair<const String, bool>>;
 		public: using VariableList = stdumap<String, std::pair<String, bool>>;
-		public: using TypeVariant = std::variant<i32, f32, bool, String, Color, Rectangle, Vec2, ColorGradient>;
+		public: using TypeVariant = std::variant<i32, f32, bool, String, Color, Rectangle, Vec2, ColorGradient, AnimationData>;
 		public:
 			Stylesheet(void);
 			Stylesheet& clear(void);
@@ -63,6 +64,7 @@ namespace ostd
 			String parseGroupSelector(const String& rawSelector) const;
 			stdvec<String> parseGroup(const String& selector, const stdvec<String>& group);
 			ColorGradient parseColorGradient(const String& _value);
+			AnimationData parseAnim(const String& _value, bool& outError);
 
 		private:
 			stdumap<String, TypeVariant> m_values;

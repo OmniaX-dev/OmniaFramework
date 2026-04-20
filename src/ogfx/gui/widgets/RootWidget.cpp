@@ -30,9 +30,9 @@ namespace ogfx
 		{
 			RootWidget::RootWidget(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window)
 			{
-				disableDrawBox();
-				m_rootChild = true;
+				setRootChild();
 				setSize(cast<f32>(window.getWindowWidth()), cast<f32>(window.getWindowHeight()));
+				setStylesheetCategoryName("window");
 				setTypeName("ogfx::gui::widgets::RootWidget");
 			}
 
@@ -43,7 +43,7 @@ namespace ogfx
 
 			void RootWidget::applyTheme(const ostd::Stylesheet& theme)
 			{
-				m_color = getThemeValue<Color>(theme, "window.backgroundColor", getWindow().getClearColor());
+				m_color = getThemeValue<Color>(theme, "backgroundColor", getWindow().getClearColor());
 			}
 
 			void RootWidget::onDraw(ogfx::BasicRenderer2D& gfx)

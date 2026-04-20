@@ -134,9 +134,16 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 	useBackgroundGradient = true
 	padding = rect(15, 8, 15, 8)
 	margin = rect(0, 0, 0, 0)
-	icon = file("img.png")
-	showIcon = true
-	iconANimation = anim(
+	(icon) {
+		show =  true
+		image = file("img.png")
+		animation = anim(frameCount: 36, \
+	 					 fps: 60, \
+						 columns: 9, \
+						 rows: 4, \
+						 frameWidth: 256, \
+						 frameHeight: 256)
+	}
 }
 (button:hover) {
 	borderColor = $accentColor
@@ -148,3 +155,25 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 	backgroundGradient = gradientV(rgb(120, 120, 120) - rgb(160, 160, 160))
 }
 % ====================
+
+
+(image) {
+	path = file("img.png")
+	animated = true
+	animation = anim(frameCount: 36, \
+ 					 fps: 60, \
+					 columns: 9, \
+					 rows: 4, \
+					 frameWidth: 256, \
+					 frameHeight: 256)
+	backgroundColor = #999999FF
+	backgroundGradient = gradientV(rgb(160, 160, 160) - rgb(120, 120, 120))
+	borderColor = $accentColorDark
+	borderRadius = 0
+	borderWidth = 1
+	showBackground = true
+	showBorder = true
+	useBackgroundGradient = true
+	padding = rect(15, 8, 15, 8)
+	margin = rect(0, 0, 0, 0)
+}

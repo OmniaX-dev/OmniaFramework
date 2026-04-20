@@ -32,24 +32,24 @@ namespace ogfx
 				setPadding({ 0, 0, 0, 0 });
 				setMargin({ 0, 0, 0, 0 });
 				setTypeName("ogfx::gui::widgets::Label");
-				disableDrawBox();
 				disableChildren();
 				enableBackground(true);
 				enableBorder(false);
 				enableTopMost(true);
-				allowIgnoreScroll(true);
+				enableIgnoreScroll(true);
+				setStylesheetCategoryName("scrollbar");
 				validate();
 				return *this;
 			}
 
 			void VerticalScrollBar::applyTheme(const ostd::Stylesheet& theme)
 			{
-				w = getThemeValue<f32>(theme, "scrollbar.width", 15);
-				m_thumbColor = getThemeValue<Color>(theme, "scrollbar.thumb.color", { 120, 120, 120 });
-				m_thumbBorderRadius = getThemeValue<f32>(theme, "scrollbar.thumb.borderRadius", 16);
-				m_thumbBorderColor = getThemeValue<Color>(theme, "scrollbar.thumb.borderColor", { 150, 150, 150 });
-				m_thumbShowBorder = getThemeValue<bool>(theme, "scrollbar.thumb.showBorder", true);
-				m_trackColor = getThemeValue<Color>(theme, "scrollbar.track.color", { 70, 70, 70 });
+				w = getThemeValue<f32>(theme, "width", 15);
+				m_thumbColor = getThemeValue<Color>(theme, "thumb.color", { 120, 120, 120 });
+				m_thumbBorderRadius = getThemeValue<f32>(theme, "thumb.borderRadius", 16);
+				m_thumbBorderColor = getThemeValue<Color>(theme, "thumb.borderColor", { 150, 150, 150 });
+				m_thumbShowBorder = getThemeValue<bool>(theme, "thumb.showBorder", true);
+				m_trackColor = getThemeValue<Color>(theme, "track.color", { 70, 70, 70 });
 			}
 
 			void VerticalScrollBar::afterDraw(ogfx::BasicRenderer2D& gfx)
@@ -155,24 +155,24 @@ namespace ogfx
 				setPadding({ 0, 0, 0, 0 });
 				setMargin({ 0, 0, 0, 0 });
 				setTypeName("ogfx::gui::widgets::Label");
-				disableDrawBox();
 				disableChildren();
 				enableBackground(true);
 				enableBorder(false);
 				enableTopMost(true);
-				allowIgnoreScroll(true);
+				enableIgnoreScroll(true);
+				setStylesheetCategoryName("scrollbar");
 				validate();
 				return *this;
 			}
 
 			void HorizontalScrollbar::applyTheme(const ostd::Stylesheet& theme)
 			{
-				h = getThemeValue<f32>(theme, "scrollbar.width", 15);
-				m_thumbColor = getThemeValue<Color>(theme, "scrollbar.thumb.color", { 120, 120, 120 });
-				m_thumbBorderRadius = getThemeValue<f32>(theme, "scrollbar.thumb.borderRadius", 16);
-				m_thumbBorderColor = getThemeValue<Color>(theme, "scrollbar.thumb.borderColor", { 150, 150, 150 });
-				m_thumbShowBorder = getThemeValue<bool>(theme, "scrollbar.thumb.showBorder", true);
-				m_trackColor = getThemeValue<Color>(theme, "scrollbar.track.color", { 70, 70, 70 });
+				h = getThemeValue<f32>(theme, "width", 15);
+				m_thumbColor = getThemeValue<Color>(theme, "thumb.color", { 120, 120, 120 });
+				m_thumbBorderRadius = getThemeValue<f32>(theme, "thumb.borderRadius", 16);
+				m_thumbBorderColor = getThemeValue<Color>(theme, "thumb.borderColor", { 150, 150, 150 });
+				m_thumbShowBorder = getThemeValue<bool>(theme, "thumb.showBorder", true);
+				m_trackColor = getThemeValue<Color>(theme, "track.color", { 70, 70, 70 });
 			 }
 
 			void HorizontalScrollbar::afterDraw(ogfx::BasicRenderer2D& gfx)
@@ -277,8 +277,8 @@ namespace ogfx
 			ScrollableWidget& ScrollableWidget::create(void)
 			{
 				setTypeName("ogfx::gui::widgets::ScrollableWidget");
-				allowVScroll(true);
-				allowHScroll(true);
+				enableVScroll(true);
+				enableHScroll(true);
 				m_vScrollbar.enableManualDraw(true);
 				addWidget(m_vScrollbar);
 				m_hScrollbar.setMargin({ 0, 0, 0, 0 });
@@ -321,7 +321,7 @@ namespace ogfx
 
 			void ScrollableWidget::onMouseScrolled(const Event& event)
 			{
-				if (isVScrollAllowed())
+				if (isVScrollEnabled())
 				{
 					bool mouseInsideHScrollbar = m_hScrollbar.isMouseInsideThumb({ event.mouse->position_x, event.mouse->position_y }) && needsHScroll();
 					if (std::abs(event.mouse->scrollAmount.y) > 0 && !mouseInsideHScrollbar)
@@ -339,7 +339,7 @@ namespace ogfx
 						event.handle();
 					}
 				}
-				if (isHScrollAllowed())
+				if (isHScrollEnabled())
 				{
 					if (std::abs(event.mouse->scrollAmount.x) > 0)
 					{
@@ -383,12 +383,12 @@ namespace ogfx
 
 			bool ScrollableWidget::needsVScroll(void) const
 			{
-				return isVScrollAllowed() && getContentExtents().h > getContentBounds().h;
+				return isVScrollEnabled() && getContentExtents().h > getContentBounds().h;
 			}
 
 			bool ScrollableWidget::needsHScroll(void) const
 			{
-				return isHScrollAllowed() && getContentExtents().w > getContentBounds().w;
+				return isHScrollEnabled() && getContentExtents().w > getContentBounds().w;
 			}
 
 			void ScrollableWidget::onWidgetAdded(Widget& child)
@@ -401,7 +401,7 @@ namespace ogfx
 
 			f32 ScrollableWidget::getVScrollbarSize(void) const
 			{
-				if (!isVScrollAllowed())
+				if (!isVScrollEnabled())
 					return 0;
 				if (!needsVScroll())
 					return 0;
@@ -410,7 +410,7 @@ namespace ogfx
 
 			f32 ScrollableWidget::getHScrollbarSize(void) const
 			{
-				if (!isHScrollAllowed())
+				if (!isHScrollEnabled())
 					return 0;
 				if (!needsHScroll())
 					return 0;

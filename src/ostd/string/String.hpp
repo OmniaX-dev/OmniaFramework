@@ -156,6 +156,8 @@ namespace ostd
 			i64 toInt(void) const;
 			f32 toFloat(void) const;
 			f64 toDouble(void) const;
+			bool toBool(void) const;
+			bool isBool(void) const;
 			bool isNumeric(bool decimal = false) const;
 			bool isInt(void) const;
 			bool isHex(void) const;

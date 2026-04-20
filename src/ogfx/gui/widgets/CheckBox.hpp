@@ -46,10 +46,6 @@ namespace ogfx
 					inline void setCheckBorderColor(const Color& color) { m_checkBorderColor = color; }
 					inline Color getCheckBoxColor(void) const { return m_checkBoxColor; }
 					inline void setCheckBoxColor(const Color& color) { m_checkBoxColor = color; }
-					inline Color getTextColor(void) const { return m_textColor; }
-					inline void setTextColor(const Color& color) { m_textColor = color; }
-					inline i32 getFontSize(void) const { return m_fontSize; }
-					inline void setFontSize(i32 fontSize) { m_fontSize = fontSize; }
 					inline bool isChecked(void) const { return m_checked; }
 					inline void setStateChangedCallback(std::function<void(CheckBox&, bool)> callback) { callback_onStateChanged = callback; }
 
@@ -60,8 +56,6 @@ namespace ogfx
 					bool m_checked { false };
 					String m_text { "" };
 					bool m_textChanged { false };
-					i32 m_fontSize { 20 };
-					Color m_textColor { 255, 255, 255 };
 					f32 m_spacing { 10 };
 					Vec2 m_checkSize  { 0, 0 };
 					i32 m_checkBorderRadius { 5 };

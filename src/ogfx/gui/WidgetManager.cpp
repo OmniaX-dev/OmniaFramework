@@ -139,6 +139,7 @@ namespace ogfx
 			{
 				if (w == nullptr) continue;
 				if (w->isInvalid()) continue;
+				if (!w->isThemingEnabled()) continue;
 				w->__applyTheme(theme, true);
 				w->reloadTheme();
 			}

@@ -65,6 +65,11 @@ namespace ogfx
 			Center,
 			Left
 		};
+		public: enum class eWindowState : u8 {
+			Default = 0,
+			Maximized,
+			Minimized
+		};
 		public: struct State
 		{
 			bool fullscreen { false };
@@ -85,6 +90,8 @@ namespace ogfx
 			void setTitle(const String& title);
 			void setCursor(eCursor cursor);
 			void setUserScale(f32 scale);
+			void setPosition(const IPoint& pos);
+			void setWindowState(eWindowState state);
 			State getWindowState(void) const;
 			eCursor getCurosr(void) const;
 			void enableResizable(bool enable = true);
@@ -185,6 +192,8 @@ namespace ogfx
 		public:
 			inline static constexpr i32 MaxBlockingEventsFPS { 240 };
 			inline static constexpr i32 DefaultBlockingEventsFPS { 30 };
+
+			inline static const IPoint WindowsPositionCenter { -1, -1 };
 
 		private:
 			inline static ostd::Stylesheet DefaultTheme;

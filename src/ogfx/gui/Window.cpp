@@ -15,7 +15,7 @@
 	GNU General Public License for more details.
 
 	You should have received a copy of the GNU General Public License
-	along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+	along with OmniaFramewo6  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "Window.hpp"
@@ -86,7 +86,7 @@ namespace ogfx
 		m_window = SDL_CreateWindow("", m_windowWidth, m_windowHeight, SDL_WINDOW_RESIZABLE);
 		m_renderer = SDL_CreateRenderer(m_window, nullptr);
 		SDL_SetWindowMinimumSize(m_window, m_windowWidth, m_windowHeight);
-		SDL_SetWindowPosition(m_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+		setPosition(WindowsPositionCenter);
 		SDL_SetWindowTitle(m_window, m_title.c_str());
 		SDL_StartTextInput(m_window);
 
@@ -258,6 +258,33 @@ namespace ogfx
 		if (!state.maximized && !state.fullscreen)
 			setSize(getWindowWidth() * s, getWindowHeight() * s);
 		SDL_SetRenderScale(m_renderer, s, s);
+	}
+
+	void WindowCore::setPosition(const IPoint& pos)
+	{
+		IPoint p = pos;
+		if (p.x < 0)
+			p.x = SDL_WINDOWPOS_CENTERED;
+		if (p.y < 0)
+			p.y = SDL_WINDOWPOS_CENTERED;
+		SDL_SetWindowPosition(m_window, p.x, p.y);
+	}
+
+	void WindowCore::setWindowState(eWindowState state)
+	{
+		switch (state)
+		{
+			case eWindowState::Default:
+				SDL_RestoreWindow(m_window);
+			break;
+			case eWindowState::Maximized:
+				SDL_MaximizeWindow(m_window);
+			break;
+			case eWindowState::Minimized:
+				SDL_MinimizeWindow(m_window);
+			break;
+			default: break;
+		}
 	}
 
 	WindowCore::State WindowCore::getWindowState(void) const

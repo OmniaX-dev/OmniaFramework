@@ -32,29 +32,19 @@ namespace ogfx
 				setText(text);
 				setPadding({ 5, 5, 5, 5 });
 				setTypeName("ogfx::gui::widgets::Label");
-				disableDrawBox();
 				disableChildren();
 				enableBackground(false);
+				setStylesheetCategoryName("checkbox");
 				validate();
 				return *this;
 			}
 
 			void CheckBox::applyTheme(const ostd::Stylesheet& theme)
 			{
-				setCheckBorderColor(getThemeValue<Color>(theme, "checkbox.checkBorderColor", Colors::White));
-				setCheckBoxColor(getThemeValue<Color>(theme, "checkbox.checkBoxColor", Colors::White));
-				setTextColor(getThemeValue<Color>(theme, "checkbox.textColor", Colors::Black));
-				setBackGroundColor(getThemeValue<Color>(theme, "checkbox.backgroundColor", Colors::Transparent));
-				setFontSize(getThemeValue<i32>(theme, "checkbox.fontSize", 28));
-				setBorderRadius(getThemeValue<i32>(theme, "checkbox.borderRadius", 10));
-				setBorderWidth(getThemeValue<i32>(theme, "checkbox.borderWidth", 2));
-				enableBorder(getThemeValue<bool>(theme, "checkbox.showBorder", false));
-				setBorderColor(getThemeValue<Color>(theme, "checkbox.borderColor", Colors::White));
-				enableBackground(getThemeValue<bool>(theme, "checkbox.showBackground", false));
-				setPadding(getThemeValue<Rectangle>(theme, "checkbox.padding", { 5, 5, 5, 5 }));
-				setMargin(getThemeValue<Rectangle>(theme, "checkbox.margin", { 0, 0, 0, 0 }));
-				m_checkBorderRadius = getThemeValue<i32>(theme, "checkbox.checkBorderRadius", 5);
-				m_checkBorderWidth = getThemeValue<i32>(theme, "checkbox.checkBorderWidth", 1);
+				setCheckBorderColor(getThemeValue<Color>(theme, "checkBorderColor", Colors::White));
+				setCheckBoxColor(getThemeValue<Color>(theme, "checkBoxColor", Colors::White));
+				m_checkBorderRadius = getThemeValue<i32>(theme, "checkBorderRadius", 5);
+				m_checkBorderWidth = getThemeValue<i32>(theme, "checkBorderWidth", 1);
 			}
 
 			void CheckBox::onDraw(ogfx::BasicRenderer2D& gfx)

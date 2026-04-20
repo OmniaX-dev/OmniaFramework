@@ -460,6 +460,18 @@ namespace ostd
 		return std::stod(m_data);
 	}
 
+	bool String::toBool(void) const
+	{
+		String str = new_toLower().trim();
+		return str == "true";
+	}
+
+	bool String::isBool(void) const
+	{
+		String str = new_toLower().trim();
+		return str == "true" || str == "false";
+	}
+
 	bool String::isNumeric(bool decimal) const
 	{
 		if (decimal)

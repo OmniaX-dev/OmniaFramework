@@ -34,14 +34,9 @@ namespace ogfx
 					inline Button(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(""); }
 					inline Button(WindowCore& window, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(text); }
 					Button& create(const String& text);
-					void applyTheme(const ostd::Stylesheet& theme) override;
 					void onDraw(ogfx::BasicRenderer2D& gfx) override;
 					void setText(const String& text);
 					inline String getText(void) const { return m_text; }
-					inline Color getTextColor(void) const { return m_textColor; }
-					inline void setTextColor(const Color& color) { m_textColor = color; }
-					inline i32 getFontSize(void) const { return m_fontSize; }
-					inline void setFontSize(i32 fontSize) { m_fontSize = fontSize; }
 
 				private:
 					void __update_size(ogfx::BasicRenderer2D& gfx);
@@ -49,13 +44,6 @@ namespace ogfx
 				private:
 					String m_text { "" };
 					bool m_textChanged { false };
-					i32 m_fontSize { 20 };
-					Color m_textColor { 255, 255, 255 };
-					bool m_useBackgroundGradient { false };
-					ColorGradient m_backgroundGradient {
-						{ Color { 160, 160, 160 }, Color { 120, 120, 120 } },
-						{ 1.0f }
-					};
 			};
 		}
 	}

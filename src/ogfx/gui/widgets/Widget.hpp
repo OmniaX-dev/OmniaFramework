@@ -25,6 +25,7 @@
 #include <ostd/data/BaseObject.hpp>
 #include <ostd/math/Geometry.hpp>
 #include <ostd/io/Stylesheet.hpp>
+#include <ostd/utils/Defines.hpp>
 #include <functional>
 
 namespace ogfx
@@ -38,30 +39,31 @@ namespace ogfx
 				String fullKey;
 				ostd::Stylesheet::TypeVariant value;
 			};
+			public: enum class eCallback
+			{
+				MousePressed = 0,
+				MouseReleased,
+				MouseMoved,
+				MouseScrolled,
+				DragAndDrop,
+				MouseEntered,
+				MouseExited,
+				MouseDragged,
+				KeyPressed,
+				KeyReleased,
+				TextEntered,
+				WindowClosed,
+				WindowResized,
+				WindowFocused,
+				WindowFocusLost
+			};
 			public: using EventCallback = std::function<void(const Event&)>;
 			public:
+				// ================================== MAIN =================================
 				Widget(const Rectangle& bounds, WindowCore& window);
 				bool addWidget(Widget& child, const Vec2& position = { 0, 0 }, bool __skip_callback = false);
 				bool removeWidget(Widget& child);
-				virtual Vec2 getGlobalPosition(void) const;
-				virtual Vec2 getGlobalContentPosition(void) const;
-				virtual Rectangle getGlobalBounds(void) const;
-				virtual Rectangle getContentBounds(void) const;
-				virtual Rectangle getPureContentBounds(void) const;
-				virtual Rectangle getGlobalContentBounds(void) const;
-				virtual Rectangle getGlobalPureContentBounds(void) const;
-				virtual Rectangle getContentExtents(void) const;
-				using Rectangle::contains;
-				bool contains(Vec2 p, bool includeBounds = false) const override;
 				void enable(bool enable = true);
-				virtual void applyTheme(const ostd::Stylesheet& theme) = 0;
-				inline virtual Vec2 getScrollOffset(void) const { return { 0, 0 }; }
-				inline virtual void setScrollOffset(const Vec2& offset) {  }
-				inline virtual void addScrollOffset(const Vec2& offset) {  }
-				inline virtual bool needsVScroll(void) const { return false; }
-				inline virtual bool needsHScroll(void) const { return false; }
-				inline virtual f32 getVScrollbarSize(void) const { return 0; }
-				inline virtual f32 getHScrollbarSize(void) const { return 0; }
 				void addThemeOverride(const String& fullKey, ostd::Stylesheet::TypeVariant value);
 				void reloadTheme(bool propagate = false);
 				void setThemeQualifier(const String& qualifier, bool value = true);
@@ -69,32 +71,18 @@ namespace ogfx
 				bool addThemeID(const String& id);
 				bool removeThemeID(const String& id);
 				void setVisible(bool v);
-				inline const ostd::Stylesheet::QualifierList& getThemeQualifierList(void) const { return m_qualifierList; }
+				void setCallback(eCallback type, EventCallback callback);
+				using Rectangle::contains; bool contains(Vec2 p, bool includeBounds = false) const override;
+				template<typename T>
+				inline T getThemeValue(const ostd::Stylesheet &theme, const String& key, const T& fallback)
+				{
+					return theme.get<T>(property(key), fallback, getThemeIDList(), getThemeQualifierList());
+				}
+				// ==========================================================================
 
-				inline virtual void onDraw(ogfx::BasicRenderer2D& gfx) {  }
-				inline virtual void afterDraw(ogfx::BasicRenderer2D& gfx) {  }
-				inline virtual void beforeDraw(ogfx::BasicRenderer2D& gfx) {  }
-				inline virtual void onUpdate(void) {  }
-				inline virtual void onWidgetAdded(Widget& child) {  }
 
-				inline virtual void onMousePressed(const Event& event) {  }
-				inline virtual void onMouseReleased(const Event& event) {  }
-				inline virtual void onMouseMoved(const Event& event) {  }
-				inline virtual void onMouseScrolled(const Event& event) {  }
-				inline virtual void onDragAndDrop(const Event& event) {  }
-				inline virtual void onMouseEntered(const Event& event) {  }
-				inline virtual void onMouseExited(const Event& event) {  }
-				inline virtual void onMouseDragged(const Event& event) {  }
-				inline virtual void onKeyPressed(const Event& event) {  }
-				inline virtual void onKeyReleased(const Event& event) {  }
-				inline virtual void onTextEntered(const Event& event) {  }
-				inline virtual void onFocusGained(const Event& event) {  }
-				inline virtual void onFocusLost(const Event& event) {  }
-				inline virtual void onWindowClosed(const Event& event) {  }
-				inline virtual void onWindowResized(const Event& event) {  }
-				inline virtual void onWindowFocused(const Event& event) {  }
-				inline virtual void onWindowFocusLost(const Event& event) {  }
 
+				// ================================== CORE =================================
 				void __draw(ogfx::BasicRenderer2D& gfx);
 				void __update(void);
 				void __onMousePressed(const Event& event);
@@ -113,103 +101,155 @@ namespace ogfx
 				void __onWindowFocused(const Event& event);
 				void __onWindowFocusLost(const Event& event);
 				void __applyTheme(const ostd::Stylesheet& theme, bool propagate);
+				// ==========================================================================
 
-				inline virtual void setMousePressedCallback(EventCallback callback) { callback_onMousePressed = callback; }
-				inline virtual void setMouseReleasedCallback(EventCallback callback) { callback_onMouseReleased = callback; }
-				inline virtual void setMouseMovedCallback(EventCallback callback) { callback_onMouseMoved = callback; }
-				inline virtual void setMouseScrolledCallback(EventCallback callback) { callback_onMouseScrolled = callback; }
-				inline virtual void setDragAndDropCallback(EventCallback callback) { callback_onDragAndDrop = callback; }
-				inline virtual void setMouseEnteredCallback(EventCallback callback) { callback_onMouseEntered = callback; }
-				inline virtual void setMouseExitedCallback(EventCallback callback) { callback_onMouseExited = callback; }
-				inline virtual void setMouseDraggedCallback(EventCallback callback) { callback_onMouseDragged = callback; }
-				inline virtual void setKeyPressedCallback(EventCallback callback) { callback_onKeyPressed = callback; }
-				inline virtual void setKeyReleasedCallback(EventCallback callback) { callback_onKeyReleased = callback; }
-				inline virtual void setTextEnteredCallback(EventCallback callback) { callback_onTextEntered = callback; }
-				inline virtual void setWindowClosedCallback(EventCallback callback) { callback_onWindowClosed = callback; }
-				inline virtual void setWindowResizedCallback(EventCallback callback) { callback_onWindowResized = callback; }
-				inline virtual void setWindowFocusedCallback(EventCallback callback) { callback_onWindowFocused = callback; }
-				inline virtual void setWindowFocusLostCallback(EventCallback callback) { callback_onWindowFocusLost = callback; }
 
-				inline bool hasChildren(void) const { return m_allowChildren && m_widgets.widgetCount() > 0; }
-				inline virtual bool isInvalid(void) const override { return ostd::BaseObject::isInvalid() || (m_parent == nullptr && !m_rootChild); }
-				inline void setTabIndex(i32 tabIndex) { m_tabIndex = tabIndex; }
-				inline i32 getTabIndex(void) const { return m_tabIndex; }
-				inline bool isFocused(void) const { return m_focused; }
-				inline WindowCore& getWindow(void) { return *m_window; }
-				inline Widget* getParent(void) { return m_parent; }
-				inline i32 getZIndex(void) const { return m_zIndex; }
-				inline bool isChildrenEnabled(void) const { return m_allowChildren; }
-				inline void setPadding(const Rectangle& pad) { m_padding = pad; }
-				inline void setMargin(const Rectangle& margin) { m_margin = margin; }
-				inline void setContentOffset(const Vec2& offset) { m_contentOffset = offset; }
-				inline Rectangle getPadding(void) const { return m_padding; }
-				inline Rectangle getMargin(void) const { return m_margin; }
-				inline Vec2 getContentOffset(void) const { return m_contentOffset; }
-				inline bool isMouseInside(void) const { return m_mouseInside; }
-				inline ogfx::MouseEventData::eButton getPressedMouseButton(void) const { return m_pressedButton; }
-				inline const stdvec<String>& getThemeIDList(void) const { return m_themeIDList; }
-				inline bool isEnabled(void) const { return m_enabled; }
-				inline bool isFocusEnabled(void) const { return m_allowFocus; }
-				inline void enableFocus(bool enable = true) { m_allowFocus = enable; }
-				inline void disableFocus(void) { enableFocus(false); }
-				inline void disable(void) { enable(false); }
-				inline void enableStopEvents(bool enable = true) { m_stopEvents = enable; }
-				inline bool isDragAndDropEnabled(void) const { return m_acceptDragAndDrop; }
-				inline void enableDragAndDrop(bool enable = true) { m_acceptDragAndDrop = enable; }
-				inline void disableDragAndDrop(void) { enableDragAndDrop(false); }
-				inline void setBackGroundColor(const Color& color) { m_backgroundColor = color; }
-				inline Color getBackgroundColor(void) { return m_backgroundColor; }
-				inline void enableBackground(bool enable = true) { m_showBackground = enable; }
-				inline bool isBackgoundEnabled(void) const { return m_showBackground; }
-				inline void setBorderColor(const Color& color) { m_borderColor = color; }
-				inline Color getBorderColor(void) { return m_borderColor; }
-				inline void enableBorder(bool enable = true) { m_showBorder = enable; }
-				inline bool isBorderEnabled(void) const { return m_showBorder; }
-				inline void enableManualDraw(bool enable = true) { m_manualDraw = enable; }
-				inline bool isManualDrawEnabled(void) const { return m_manualDraw; }
-				inline void enableTopMost(bool enable = true) { m_topMost = enable; }
-				inline bool isTopMostEnabled(void) const { return m_topMost; }
-				inline void setBorderRadius(i32 br) { m_borderRadius = br; }
-				inline i32 getBorderRadius(void) const { return m_borderRadius; }
-				inline void setBorderWidth(i32 bw) { m_borderWidth = bw; }
-				inline i32 getBorderWidth(void) const { return m_borderWidth; }
-				inline bool isVisible(void) const { return m_visible; }
-				inline void show(void) { setVisible(true); }
-				inline void hide(void) { setVisible(false); }
-				inline void allowVScroll(bool allow = true) { m_vScrollEnabled = allow; }
-				inline bool isVScrollAllowed(void) const { return m_vScrollEnabled; }
-				inline void allowHScroll(bool allow = true) { m_hScrollEnabled = allow; }
-				inline bool isHScrollAllowed(void) const { return m_hScrollEnabled; }
-				inline void allowIgnoreScroll(bool allow = true) { m_ignoreScroll = allow; }
-				inline bool isIgnoreScrollAllowed(void) const { return m_ignoreScroll; }
 
-				template<typename T>
-				inline T getThemeValue(const ostd::Stylesheet &theme, const String& key, const T& fallback)
-				{
-					return theme.get<T>(key,  fallback, getThemeIDList(), getThemeQualifierList());
-				}
+				// =============================== DIMENSIONS ===============================
+				virtual Vec2 getGlobalPosition(void) const;
+				virtual Vec2 getGlobalContentPosition(void) const;
+				virtual Rectangle getGlobalBounds(void) const;
+				virtual Rectangle getContentBounds(void) const;
+				virtual Rectangle getPureContentBounds(void) const;
+				virtual Rectangle getGlobalContentBounds(void) const;
+				virtual Rectangle getGlobalPureContentBounds(void) const;
+				virtual Rectangle getContentExtents(void) const;
+				// ==========================================================================
 
+
+
+				// ================================= GETSET =================================
 				inline static void setDragAndDropData(ostd::BaseObject& data) { s_dragAndDropData = &data; s_hasDragAndDropData = true; }
 				inline static void clearDragAndDropData(void) { s_dragAndDropData = nullptr; }
 				inline static ostd::BaseObject* getDragAndDropData(void) { return s_dragAndDropData; }
+				inline WindowCore& getWindow(void) { return *m_window; }
+				inline Widget* getParent(void) { return m_parent; }
+				inline i32 getZIndex(void) const { return m_zIndex; }
+				inline ogfx::MouseEventData::eButton getPressedMouseButton(void) const { return m_pressedButton; }
+				inline const stdvec<String>& getThemeIDList(void) const { return m_themeIDList; }
+				inline const ostd::Stylesheet::QualifierList& getThemeQualifierList(void) const { return m_qualifierList; }
+				inline String getStylesheetCategoryName(void) const { return m_stylesheetCategoryName; }
+				OSTD_PARAM_GETSET(Color, TextColor, m_textColor);
+				OSTD_PARAM_GETSET(Color, BackgroundColor, m_backgroundColor);
+				OSTD_PARAM_GETSET(Color, BorderColor, m_borderColor);
+				OSTD_PARAM_GETSET(i32, BorderRadius, m_borderRadius);
+				OSTD_PARAM_GETSET(i32, BorderWidth, m_borderWidth);
+				OSTD_PARAM_GETSET(i32, FontSize, m_fontSize);
+				OSTD_PARAM_GETSET(ostd::ColorGradient, BackgroundGradient, m_backgroundGradient);
+				OSTD_PARAM_GETSET(Rectangle, Padding, m_padding);
+				OSTD_PARAM_GETSET(Rectangle, Margin, m_margin);
+				OSTD_PARAM_GETSET(i32, TabIndex, m_tabIndex);
+				OSTD_PARAM_GETSET(Vec2, ContentOffset, m_contentOffset);
+
+				// BOOL PARAMETERS
+				inline bool isVisible(void) const { return m_visible; }
+				inline void show(void) { setVisible(true); }
+				inline void hide(void) { setVisible(false); }
+				inline bool isChildrenEnabled(void) const { return m_allowChildren; }
+				inline bool isEnabled(void) const { return m_enabled; }
+				inline void disable(void) { enable(false); }
+				inline bool isFocused(void) const { return m_focused; }
+				inline bool isMouseInside(void) const { return m_mouseInside; }
+				inline bool hasChildren(void) const { return m_allowChildren && m_widgets.widgetCount() > 0; }
+				inline bool isRootChild(void) const { return m_rootChild; }
+				inline void setRootChild(void) { m_rootChild = true; }
+				inline virtual bool isInvalid(void) const override { return ostd::BaseObject::isInvalid() || (m_parent == nullptr && !m_rootChild); }
+				OSTD_BOOL_PARAM_GETSET_E(Focus, m_allowFocus);
+				OSTD_BOOL_PARAM_GETSET_E(StopEvents, m_stopEvents);
+				OSTD_BOOL_PARAM_GETSET_E(DragAndDrop, m_acceptDragAndDrop);
+				OSTD_BOOL_PARAM_GETSET_E(Background, m_showBackground);
+				OSTD_BOOL_PARAM_GETSET_E(Border, m_showBorder);
+				OSTD_BOOL_PARAM_GETSET_E(ManualDraw, m_manualDraw);
+				OSTD_BOOL_PARAM_GETSET_E(TopMost, m_topMost);
+				OSTD_BOOL_PARAM_GETSET_E(IgnoreScroll, m_ignoreScroll);
+				OSTD_BOOL_PARAM_GETSET_E(VScroll, m_vScrollEnabled);
+				OSTD_BOOL_PARAM_GETSET_E(HScroll, m_vScrollEnabled);
+				OSTD_BOOL_PARAM_GETSET_E(BackgroundGradient, m_useBackgroundGradient);
+				OSTD_BOOL_PARAM_GETSET_E(Theming, m_enableTheming);
+				// ==========================================================================
 
 			protected:
+				void apply_common_theme_values(const ostd::Stylesheet& theme);
 				inline void disableChildren(void) { m_allowChildren = false; }
-				inline void disableDrawBox(void) { m_drawBox = false; }
-				inline void enableDrawBox(void) { m_drawBox = true; }
-				inline bool isDrawBoxEnabled(void) const { return m_drawBox; }
-				inline void setDrawBoxColor(const Color& color) { m_drawBoxColor = color; }
-				inline Color getDrawBoxColor(void) { return m_drawBoxColor; }
+				inline void setStylesheetCategoryName(const String& name) { m_stylesheetCategoryName = name; }
+				inline String property(const ostd::String& prop) const { return m_stylesheetCategoryName +  "." + prop; }
 
-			protected:
+			private:
+				// ======= CORE =======
+				WindowCore* m_window { nullptr };
+				Widget* m_parent { nullptr };
+				WidgetManager m_widgets;
+
 				bool m_rootChild { false };
+				bool m_focused { false };
+				i32 m_tabIndex { -1 };
+				i32 m_zIndex { -1 };
+				MouseEventData::eButton m_pressedButton { MouseEventData::eButton::None };
+				// ====================
+
+
+
+				// ======= BOOL =======
+				bool m_allowChildren { true };
+				bool m_mouseInside { false };
+				bool m_allowFocus { true };
+				bool m_enabled { true };
+				bool m_stopEvents { true };
+				bool m_clipContents { true };
+				bool m_acceptDragAndDrop { false };
+				bool m_visible { true };
+				bool m_ignoreScroll { false};
+				bool m_manualDraw { false };
+				bool m_topMost { false };
+				bool m_vScrollEnabled { false };
+				bool m_hScrollEnabled { false };
+				bool m_enableTheming { true };
+				// ====================
+
+
+
+				// ====== THEMING =====
+				String m_stylesheetCategoryName { "" };
+				stdvec<String> m_themeIDList;
+				ostd::Stylesheet::QualifierList m_qualifierList {
+					{ "disabled", false },
+					{ "pressed", false },
+					{ "hover", false },
+					{ "focused", false },
+					{ "active", false }
+				};
+				stdvec<ThemeOverride> m_themeOverrides;
+				Rectangle m_padding { 0, 0, 0, 0 };
+				Rectangle m_margin { 0, 0, 0, 0 };
+				Vec2 m_contentOffset { 0, 0 };
 				i32 m_borderRadius { 10 };
 				i32 m_borderWidth { 2 };
 				Color m_borderColor { 255, 255, 255 };
 				bool m_showBorder { false };
 				Color m_backgroundColor { Colors::Transparent };
 				bool m_showBackground { false };
+				i32 m_fontSize { 20 };
+				Color m_textColor { 255, 255, 255 };
+				bool m_useBackgroundGradient { false };
+				ColorGradient m_backgroundGradient {
+					{ Color { 160, 160, 160 }, Color { 120, 120, 120 } },
+					{ 1.0f }
+				};
+				// ====================
 
+
+
+				// ====== STATIC ======
+				static ostd::BaseObject* s_dragAndDropData;
+				static bool s_hasDragAndDropData;
+				friend class WidgetManager;
+				// ====================
+
+
+
+
+			//  =============================== CALLBACKS/DUMMIES ===============================
+			protected:
 				EventCallback callback_onMousePressed { nullptr };
 				EventCallback callback_onMouseReleased { nullptr };
 				EventCallback callback_onDragAndDrop { nullptr };
@@ -226,49 +266,40 @@ namespace ogfx
 				EventCallback callback_onWindowFocused { nullptr };
 				EventCallback callback_onWindowFocusLost { nullptr };
 
-			private:
-				WindowCore* m_window { nullptr };
-				Widget* m_parent { nullptr };
-				bool m_focused { false };
-				i32 m_tabIndex { -1 };
-				i32 m_zIndex { -1 };
-				WidgetManager m_widgets;
-				bool m_allowChildren { true };
-				bool m_mouseInside { false };
-				bool m_allowFocus { true };
-				bool m_enabled { true };
-				bool m_stopEvents { true };
-				bool m_clipContents { true };
-				bool m_acceptDragAndDrop { false };
-				bool m_visible { true };
-				bool m_ignoreScroll { false};
-				bool m_manualDraw { false };
-				bool m_topMost { false };
-				bool m_vScrollEnabled { false };
-				bool m_hScrollEnabled { false };
-				MouseEventData::eButton m_pressedButton { MouseEventData::eButton::None };
+			public:
+				// ====================== DUMMIES ======================
+				inline virtual void applyTheme(const ostd::Stylesheet& theme) {  }
+				inline virtual Vec2 getScrollOffset(void) const { return { 0, 0 }; }
+				inline virtual void setScrollOffset(const Vec2& offset) {  }
+				inline virtual void addScrollOffset(const Vec2& offset) {  }
+				inline virtual bool needsVScroll(void) const { return false; }
+				inline virtual bool needsHScroll(void) const { return false; }
+				inline virtual f32 getVScrollbarSize(void) const { return 0; }
+				inline virtual f32 getHScrollbarSize(void) const { return 0; }
+				// =====================================================
 
-				stdvec<String> m_themeIDList;
-				ostd::Stylesheet::QualifierList m_qualifierList {
-					{ "disabled", false },
-					{ "pressed", false },
-					{ "hover", false },
-					{ "focused", false },
-					{ "active", false }
-				};
-				stdvec<ThemeOverride> m_themeOverrides;
-
-				bool m_drawBox { true };
-				Color m_drawBoxColor { 255, 0, 0 };
-
-				Rectangle m_padding { 0, 0, 0, 0 };
-				Rectangle m_margin { 0, 0, 0, 0 };
-				Vec2 m_contentOffset { 0, 0 };
-
-				static ostd::BaseObject* s_dragAndDropData;
-				static bool s_hasDragAndDropData;
-
-				friend class WidgetManager;
+				inline virtual void onDraw(ogfx::BasicRenderer2D& gfx) {  }
+				inline virtual void afterDraw(ogfx::BasicRenderer2D& gfx) {  }
+				inline virtual void beforeDraw(ogfx::BasicRenderer2D& gfx) {  }
+				inline virtual void onUpdate(void) {  }
+				inline virtual void onWidgetAdded(Widget& child) {  }
+				inline virtual void onMousePressed(const Event& event) {  }
+				inline virtual void onMouseReleased(const Event& event) {  }
+				inline virtual void onMouseMoved(const Event& event) {  }
+				inline virtual void onMouseScrolled(const Event& event) {  }
+				inline virtual void onDragAndDrop(const Event& event) {  }
+				inline virtual void onMouseEntered(const Event& event) {  }
+				inline virtual void onMouseExited(const Event& event) {  }
+				inline virtual void onMouseDragged(const Event& event) {  }
+				inline virtual void onKeyPressed(const Event& event) {  }
+				inline virtual void onKeyReleased(const Event& event) {  }
+				inline virtual void onTextEntered(const Event& event) {  }
+				inline virtual void onFocusGained(const Event& event) {  }
+				inline virtual void onFocusLost(const Event& event) {  }
+				inline virtual void onWindowClosed(const Event& event) {  }
+				inline virtual void onWindowResized(const Event& event) {  }
+				inline virtual void onWindowFocused(const Event& event) {  }
+				inline virtual void onWindowFocusLost(const Event& event) {  }
 		};
 	}
 }

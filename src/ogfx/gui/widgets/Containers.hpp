@@ -49,8 +49,6 @@ namespace ogfx
 					void afterDraw(ogfx::BasicRenderer2D& gfx) override;
 					void setTitlebarType(const String& type);
 					String getTitlebarType(void) const;
-					inline void setBackGroundColor(const Color& color) { m_backgroundColor = color; }
-					inline Color getBackgroundColor(void) { return m_backgroundColor; }
 					inline String getTitle(void) const { return m_title; }
 					inline void setTitle(const String& title) { m_title = title; }
 					inline f32 getTitlebarHeight(void) const { return m_titlebarHeight; }
