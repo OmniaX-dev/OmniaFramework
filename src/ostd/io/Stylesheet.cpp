@@ -253,7 +253,7 @@ namespace ostd
 			return false;
 		String key = line.new_substr(0, line.indexOf("=")).trim();
 		String valuePreserveCase = line.new_substr(line.indexOf("=") + 1).trim();
-		String value = line.new_substr(line.indexOf("=") + 1).trim().toLower();
+		String value = valuePreserveCase.new_toLower();
 		if (key == "")
 			return false;
 		String themeID = "";
@@ -286,7 +286,7 @@ namespace ostd
 		};
 		auto l_isFile = [this](String& value) -> bool {
 			value.trim();
-			if (value.startsWith("file(") && value.endsWith(")"))
+			if (value.new_toLower().startsWith("file(") && value.endsWith(")"))
 			{
 				value.substr(5, value.len() - 1).trim();
 				if (value.startsWith("\"") && value.endsWith("\""))
@@ -299,7 +299,7 @@ namespace ostd
 		};
 		auto l_isAnim = [this](String& value) -> bool {
 			value.trim();
-			if (value.startsWith("anim(") && value.endsWith(")"))
+			if (value.new_toLower().startsWith("anim(") && value.endsWith(")"))
 			{
 				value.substr(5, value.len() - 1).trim();
 				return true;
@@ -331,25 +331,25 @@ namespace ostd
 		}
 		else if (l_isColorGradientValue(value))
 		{
-			ColorGradient grad = parseColorGradient(value);
+			ColorGradient grad = parseColorGradient(valuePreserveCase, variables);
 			if (grad.isInvalid())
 				return false;
 			set(key, grad, themeID);
 		}
-		else if (l_isAnim(value))
+		else if (l_isAnim(valuePreserveCase))
 		{
 			bool outError = false;
-			AnimationData ad = parseAnim(value, outError);
+			AnimationData ad = parseAnim(valuePreserveCase, outError, variables);
 			if (outError)
 				return false;
 			set(key, ad, themeID);
 		}
-		else if (l_isFile(value))
+		else if (l_isFile(valuePreserveCase))
 		{
-			bool exists = ostd::FileSystem::fileExists(value) ||
-						  ostd::FileSystem::fileExists("./" + value);
+			bool exists = ostd::FileSystem::fileExists(valuePreserveCase) ||
+						  ostd::FileSystem::fileExists("./" + valuePreserveCase);
 			if (exists)
-				set(key, value, themeID);
+				set(key, valuePreserveCase, themeID);
 			else
 				return false;
 		}
@@ -392,20 +392,7 @@ namespace ostd
 		{
 			if (exitCondition)
 				return false;
-			String lineCopy = line;
-			std::vector<std::pair<String, std::pair<String, bool>>> sortedVars(variables.begin(), variables.end());
-			std::sort(sortedVars.begin(), sortedVars.end(), [](const auto& a, const auto& b) {
-				return a.first.len() > b.first.len();
-			});
-			for (const auto&[var, val] : sortedVars)
-			{
-				if (lineCopy.contains(var))
-				{
-					lineCopy.replaceAll(var, val.first);
-					break;
-				}
-			}
-			return parseThemeFileLine(lineCopy, variables, true);
+			return parseThemeFileLine(replaceVariables(line, variables), variables, true);
 		}
 		return true;
 	}
@@ -477,13 +464,13 @@ namespace ostd
 		return newLines;
 	}
 
-	ColorGradient Stylesheet::parseColorGradient(const String& _value)
+	ColorGradient Stylesheet::parseColorGradient(const String& _value, const VariableList& variables)
 	{
-		String value = _value.new_toLower().trim();
+		String value = _value.new_trim();
 		ColorGradient grad;
 		f32 angle = 0.0f;
 		bool weighted = false;
-		String gradientFunc = value.new_substr(0, value.indexOf("(")).trim();
+		String gradientFunc = value.new_substr(0, value.indexOf("(")).trim().toLower();
 		String gradientVal = value.substr(value.indexOf("(") + 1, value.lastIndexOf(")")).trim();
 
 		if (gradientVal == "" || !gradientVal.contains("-"))
@@ -511,6 +498,9 @@ namespace ostd
 			i32 index = 0;
 			for (auto& token : tokens)
 			{
+				token = replaceVariables(token, variables);
+				if (token.new_toLower().startsWith("color(") && token.new_toLower().endsWith(")"))
+					token.substr(6, token.len() - 1).trim();
 				grad.addColor(Color(token));
 				if (index > 0)
 					grad.addWeight(1.0f);
@@ -525,10 +515,14 @@ namespace ostd
 			{
 				if (is_color)
 				{
+					token = replaceVariables(token, variables);
+					if (token.new_toLower().startsWith("color(") && token.new_toLower().endsWith(")"))
+						token.substr(6, token.len() - 1).trim();
 					grad.addColor(Color(token));
 				}
 				else
 				{
+					token = replaceVariables(token, variables);
 					if (!token.isNumeric(true))
 						return ColorGradient();
 					grad.addWeight(token.toFloat());
@@ -541,9 +535,9 @@ namespace ostd
 		return grad;
 	}
 
-	AnimationData Stylesheet::parseAnim(const String& _value, bool& outError)
+	AnimationData Stylesheet::parseAnim(const String& _value, bool& outError, const VariableList& variables)
 	{
-		String value = _value.new_toLower().trim();
+		String value = _value.new_trim();
 		AnimationData ad;
 		auto tokens = value.tokenize(",");
 		auto l_error = [&](bool err) -> AnimationData {
@@ -554,8 +548,9 @@ namespace ostd
 		{
 			if (tok.count(":") != 1 || tok.startsWith(":") || tok.endsWith(":"))
 				return l_error(true);
-			String prop = tok.new_substr(0, tok.indexOf(":")).trim();
+			String prop = tok.new_substr(0, tok.indexOf(":")).trim().toLower();
 			String val = tok.new_substr(tok.indexOf(":") + 1).trim();
+			val = replaceVariables(val, variables);
 			if (prop == "framecount")
 			{
 				if (!val.isInt())
@@ -646,6 +641,25 @@ namespace ostd
 			}
 		}
 		return l_error(false);
+	}
+
+	String Stylesheet::replaceVariables(const String& line, const VariableList& variables, bool stop_at_first_match)
+	{
+		String lineCopy = line;
+		std::vector<std::pair<String, std::pair<String, bool>>> sortedVars(variables.begin(), variables.end());
+		std::sort(sortedVars.begin(), sortedVars.end(), [](const auto& a, const auto& b) {
+			return a.first.len() > b.first.len();
+		});
+		for (const auto&[var, val] : sortedVars)
+		{
+			if (lineCopy.contains(var))
+			{
+				lineCopy.replaceAll(var, val.first);
+				if (stop_at_first_match)
+					break;
+			}
+		}
+		return lineCopy;
 	}
 
 	void Stylesheet::debugPrint(void)

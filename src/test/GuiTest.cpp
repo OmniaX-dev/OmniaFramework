@@ -32,18 +32,6 @@ class Window : public ogfx::gui::Window
 		inline Window(void) {  }
 		inline void onInitialize(void) override
 		{
-			m_img.loadFromFile("./img.png", m_gfx);
-			ogfx::AnimationData ad;
-			ad.columns = 9;
-			ad.rows = 4;
-			ad.frameWidth = 256;
-			ad.frameHeight = 256;
-			ad.frameCount = 36;
-			ad.fps = 60;
-			m_anim.create(ad);
-			m_anim.setSpriteSheet(m_img);
-
-
 			m_label1.setText("Show Panel2");
 			m_label1.setCallback(ogfx::gui::Widget::eCallback::MousePressed, [&](const ogfx::gui::Event& event) -> void {
 				m_check1.setChecked(!m_check1.isChecked());
@@ -100,6 +88,7 @@ class Window : public ogfx::gui::Window
 			m_panel2.addWidget(m_panel1, { 400, 50 });
 			m_panel2.addWidget(m_label1, { 0, 500 });
 			m_panel2.addWidget(m_btn1, { 0, 300 });
+			m_panel2.addWidget(m_img, { 20, 150 });
 
 			addWidget(m_check1, { 30, 30 });
 			addWidget(m_panel2, { 500, 100 });
@@ -120,14 +109,10 @@ class Window : public ogfx::gui::Window
 
 		void onRedraw(ogfx::BasicRenderer2D& gfx) override
 		{
-			gfx.drawAnimation(m_anim, { 200, 200 });
-			// std::cout << (i32)gfx.getDrawCallCount() << "\n";
-			// gfx.fillRect(m_panel2.getGlobalPureContentBounds(), { 0, 255, 0, 120 });
 		}
 
 		void onFixedUpdate(void) override
 		{
-			m_anim.update();
 		}
 
 	private:
@@ -141,10 +126,9 @@ class Window : public ogfx::gui::Window
 		Panel m_panel3 { *this };
 		CheckBox m_check1 { *this };
 		Button m_btn1 { *this };
+		ImageLabel m_img { *this };
 
 		ostd::Stylesheet m_theme;
-		ogfx::Animation m_anim;
-		ogfx::Image m_img;
 };
 
 i32 main(i32 argc, char** argv)

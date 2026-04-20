@@ -244,7 +244,7 @@ namespace ogfx
 			if (!isVisible())
 				return;
 			beforeDraw(gfx);
-			if (m_useBackgroundGradient && m_showBorder)
+			if (m_useBackgroundGradient)
 				gfx.fillGradientRect({ getGlobalPosition(), getSize() }, m_backgroundGradient);
 			else if (m_showBackground)
 				gfx.fillRoundRect({ getGlobalPosition(), getSize() }, m_backgroundColor, m_borderRadius);

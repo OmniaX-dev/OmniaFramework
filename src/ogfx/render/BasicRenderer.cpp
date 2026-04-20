@@ -218,7 +218,8 @@ namespace ogfx
 			return set_error_state(tErrors::NoFont);
 		if (m_font == nullptr)
 			return set_error_state(tErrors::NullFont);
-		if (fontSize == m_fontSize || fontSize <= 0) return set_error_state(tErrors::NoError);
+		if (fontSize == m_fontSize || fontSize <= 0)
+			return set_error_state(tErrors::NoError);
 		TTF_SetFontSize(m_font, fontSize);
 		m_fontSize = fontSize;
 		return set_error_state(tErrors::NoError);

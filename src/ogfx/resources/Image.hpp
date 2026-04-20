@@ -1,21 +1,21 @@
 /*
-    OmniaFramework - A collection of useful functionality
-    Copyright (C) 2025  OmniaX-Dev
+	OmniaFramework - A collection of useful functionality
+	Copyright (C) 2025  OmniaX-Dev
 
-    This file is part of OmniaFramework.
+	This file is part of OmniaFramework.
 
-    OmniaFramework is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	OmniaFramework is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    OmniaFramework is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	OmniaFramework is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
@@ -26,23 +26,25 @@
 
 namespace ogfx
 {
-    class BasicRenderer2D;
-    class Image : public ostd::BaseObject
-    {
-        public:
-            inline Image(void) { invalidate(); }
-            inline Image(const String& filePath, BasicRenderer2D& gfx) { loadFromFile(filePath, gfx); }
-            inline ~Image(void) { destroy(); }
-            void destroy(void);
-            Image& loadFromFile(const String& filePath, BasicRenderer2D& gfx);
-            inline Vec2 getSize(void) const { return { m_width, m_height }; }
-            inline bool isLoaded(void) const { return m_loaded; }
-            inline SDL_Texture* getSDLTexture(void) const { return m_sdl_texture; }
+	class BasicRenderer2D;
+	class Image : public ostd::BaseObject
+	{
+		public:
+			inline Image(void) { invalidate(); }
+			inline Image(const String& filePath, BasicRenderer2D& gfx) { loadFromFile(filePath, gfx); }
+			inline ~Image(void) { destroy(); }
+			void destroy(void);
+			Image& loadFromFile(const String& filePath, BasicRenderer2D& gfx);
+			inline Vec2 getSize(void) const { return { m_width, m_height }; }
+			inline bool isLoaded(void) const { return m_loaded; }
+			inline SDL_Texture* getSDLTexture(void) const { return m_sdl_texture; }
+			inline String getFilePath(void) const { return m_filePath; }
 
-        private:
-            SDL_Texture* m_sdl_texture { nullptr };
-            f32 m_width { 0 };
-            f32 m_height { 0 };
-            bool m_loaded { false };
-    };
+		private:
+			SDL_Texture* m_sdl_texture { nullptr };
+			String m_filePath { "" };
+			f32 m_width { 0 };
+			f32 m_height { 0 };
+			bool m_loaded { false };
+	};
 }

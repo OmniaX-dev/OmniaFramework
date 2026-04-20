@@ -369,13 +369,14 @@ namespace ostd
 			inline virtual Vec2 topRight(void) const { return Vec2(getx() + getw(), gety()); }
 			inline virtual Vec2 bottomLeft(void) const { return Vec2(getx(), gety() + geth()); }
 			inline virtual Vec2 bottomRight(void) const { return Vec2(getx() + getw(), gety() + geth()); }
+			inline virtual Rectangle edgeRect(void) const { return { getx(), gety(), getx() + getw(), gety() + getw() }; }
 
 			inline virtual f32 left(void) const { return getx(); }
 			inline virtual f32 right(void) const { return getw(); }
 			inline virtual f32 top(void) const { return gety(); }
 			inline virtual f32 bottom(void) const { return geth(); }
 
-			inline String toString(void) const override { return String("{ ").add(x).add(", ").add(y).add(", ").add(w).add(", ").add(h).add(" }"); }
+			inline virtual String toString(void) const override { return String("{ ").add(x).add(", ").add(y).add(", ").add(w).add(", ").add(h).add(" }"); }
 
 			inline virtual bool intersects(Rectangle rect, bool includeBounds = true) const
 			{

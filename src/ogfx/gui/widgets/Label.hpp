@@ -21,6 +21,8 @@
 #pragma once
 
 #include <ogfx/gui/widgets/Widget.hpp>
+#include <ogfx/resources/Image.hpp>
+#include <ogfx/utils/Animation.hpp>
 
 namespace ogfx
 {
@@ -44,6 +46,26 @@ namespace ogfx
 				private:
 					String m_text { "" };
 					bool m_textChanged { false };
+			};
+			class ImageLabel : public Widget
+			{
+				public:
+					inline ImageLabel(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(""); }
+					inline ImageLabel(WindowCore& window, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(text); }
+					ImageLabel& create(const String& filePath);
+					void applyTheme(const ostd::Stylesheet& theme) override;
+					void onDraw(ogfx::BasicRenderer2D& gfx) override;
+					void onUpdate(void) override;
+					void setImage(const String& filePath);
+					inline Image& getImage(void) { return m_image; }
+					OSTD_BOOL_PARAM_GETSET_E(Animated, m_animated);
+					OSTD_PARAM_GETSET(AnimationData, AnimationData, m_animData);
+
+				private:
+					Image m_image;
+					Animation m_anim;
+					AnimationData m_animData;
+					bool m_animated { false };
 			};
 		}
 	}

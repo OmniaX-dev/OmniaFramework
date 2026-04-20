@@ -63,8 +63,9 @@ namespace ostd
 			bool parseThemeFileLine(const String& line, const VariableList& variables, bool exitCondition = false);
 			String parseGroupSelector(const String& rawSelector) const;
 			stdvec<String> parseGroup(const String& selector, const stdvec<String>& group);
-			ColorGradient parseColorGradient(const String& _value);
-			AnimationData parseAnim(const String& _value, bool& outError);
+			ColorGradient parseColorGradient(const String& _value, const VariableList& variables);
+			AnimationData parseAnim(const String& _value, bool& outError, const VariableList& variables);
+			String replaceVariables(const String& line, const VariableList& variables, bool stop_at_first_match = true);
 
 		private:
 			stdumap<String, TypeVariant> m_values;

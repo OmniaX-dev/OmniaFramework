@@ -25,6 +25,8 @@ Implement cursors in Stylesheet
 FIX: Window getting exponentially bigger when Desktop scale changes
 FIX: Refreshing scroll when content extent changes
 Add Dark Mode Default theme
+FIX: Float values in stylesheet needing to have decimal point to be read as float
+Make parsing of vec2 and rect in stylesheet, consistent with other value functions like gradients and animations
 
 
 
@@ -34,14 +36,14 @@ Implement following widgets:
 	***Panel / Container
 		***Title Label
 	***ScrollView
-	Button
+	***Image / Icon
+	***Button
 		Image/Icon
 	Radio Button
 		Grouping
 	Text Input
 	Horizontal Slider
 	Vertical Slider
-	Image / Icon
 	ListBox
 	ComboBox
 	TreeView

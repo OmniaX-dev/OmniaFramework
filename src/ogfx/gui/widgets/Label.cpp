@@ -20,6 +20,8 @@
 
 #include "Label.hpp"
 #include "../../render/BasicRenderer.hpp"
+#include "../../../ostd/io/FileSystem.hpp"
+#include "../Window.hpp"
 
 namespace ogfx
 {
@@ -62,6 +64,62 @@ namespace ogfx
 				setSize({ cast<f32>(size.x), cast<f32>(size.y) });
 				m_textChanged = false;
 			}
+
+
+
+
+			ImageLabel& ImageLabel::create(const String& filePath)
+			{
+				setImage(filePath);
+				setPadding({ 0, 0, 0, 0 });
+				setTypeName("ogfx::gui::widgets::ImageLabel");
+				disableChildren();
+				disableBackground();
+				disableBorder();
+				setStylesheetCategoryName("image");
+				setSize(64, 64);
+				validate();
+				return *this;
+			}
+
+			void ImageLabel::applyTheme(const ostd::Stylesheet& theme)
+			{
+				enableAnimated(getThemeValue<bool>(theme, "animated", m_animated));
+				setAnimationData(getThemeValue<AnimationData>(theme, "animation", m_animData));
+				String filePath = getThemeValue<String>(theme, "path", m_image.getFilePath());
+				if (filePath != m_image.getFilePath())
+					setImage(filePath);
+				setSize(getThemeValue<Vec2>(theme, "size", getSize()));
+				if (isAnimatedEnabled())
+				{
+					m_anim.create(m_animData);
+					m_anim.setSpriteSheet(m_image);
+				}
+			}
+
+			void ImageLabel::onDraw(ogfx::BasicRenderer2D& gfx)
+			{
+				if (isAnimatedEnabled())
+					gfx.drawAnimation(m_anim, getGlobalPosition() + getPadding().topLeft(), getSize() - getPadding().bottomRight());
+				else
+					gfx.drawImage(m_image, getGlobalPosition() + getPadding().topLeft(), getSize() - getPadding().bottomRight());
+			}
+
+			void ImageLabel::onUpdate(void)
+			{
+				if (isAnimatedEnabled())
+					m_anim.update();
+			}
+
+			void ImageLabel::setImage(const String& filePath)
+			{
+				if (filePath == "") return;
+				if (!ostd::FileSystem::fileExists(filePath))
+					return;
+				m_image.destroy();
+				m_image.loadFromFile(filePath, getWindow().getGFX());
+			}
+
 		}
 	}
 }

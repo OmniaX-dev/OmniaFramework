@@ -105,6 +105,7 @@ namespace ogfx
 			inline ostd::Stylesheet::VariableList& getDefaultStylesheetVariableList(void) { return m_defaultStylesheetVariables; }
 			inline virtual void setTheme(const ostd::Stylesheet& theme) {  }
 
+			inline BasicRenderer2D& getGFX(void) { return m_gfx; }
 			inline bool isInitialized(void) const { return m_initialized; }
 			inline bool isRunning(void) const { return m_running; }
 			inline bool isVisible(void) const { return m_visible; }
@@ -145,6 +146,7 @@ namespace ogfx
 		protected:
 			SDL_Window* m_window { nullptr };
 			SDL_Renderer* m_renderer { nullptr };
+			BasicRenderer2D m_gfx;
 			ostd::ConsoleOutputHandler m_out;
 			GraphicsWindowOutputHandler m_wout;
 			const ostd::Stylesheet* m_guiTheme { nullptr };
@@ -263,7 +265,6 @@ namespace ogfx
 				void __on_fixed_update(void) override;
 
 			protected:
-				BasicRenderer2D m_gfx;
 				widgets::RootWidget m_rootWidget { *this };
 				ostd::StepTimer m_fixedUpdateTimer;
 				ostd::StepTimer::TimePoint m_lastFrameTime;
