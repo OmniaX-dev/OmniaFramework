@@ -207,6 +207,7 @@ namespace ogfx
 				if (m_currentTab == nullptr && m_tabs.size() == 1)
 					setCurrentTab(tab);
 				tab.addThemeID("panel_tab");
+				tab.reloadTheme(true);
 				return tab;
 			}
 

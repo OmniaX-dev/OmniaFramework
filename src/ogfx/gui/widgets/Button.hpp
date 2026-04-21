@@ -21,6 +21,8 @@
 #pragma once
 
 #include <ogfx/gui/widgets/Widget.hpp>
+#include <ogfx/resources/Image.hpp>
+#include <ogfx/utils/Animation.hpp>
 
 namespace ogfx
 {
@@ -35,15 +37,32 @@ namespace ogfx
 					inline Button(WindowCore& window, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(text); }
 					Button& create(const String& text);
 					void onDraw(ogfx::BasicRenderer2D& gfx) override;
+					void onUpdate(void) override;
 					void setText(const String& text);
+					void setIcon(const String& filePath);
+					void applyTheme(const ostd::Stylesheet& theme) override;
+					OSTD_BOOL_PARAM_GETSET_E(Animated, m_animated);
 					inline String getText(void) const { return m_text; }
+					inline Image& getIcon(void) { return m_icon; }
+					OSTD_BOOL_PARAM_GETSET_E(Icon, m_showIcon);
+					OSTD_PARAM_GETSET(ostd::AnimationData, AnimationData, m_animData);
+					OSTD_PARAM_GETSET(Vec2, IconSize, m_iconSize);
 
 				private:
-					void __update_size(ogfx::BasicRenderer2D& gfx);
+					void __update_size(void);
 
 				private:
 					String m_text { "" };
-					bool m_textChanged { false };
+					bool m_textChanged { true };
+					Image m_icon;
+					Vec2 m_realIconSize { 0, 0 };
+
+					bool m_showIcon { false };
+					ostd::AnimationData m_animData;
+					Animation m_anim;
+					bool m_animated { false };
+					f32 m_iconSpacing { 10 };
+					Vec2 m_iconSize { 0, 0 };
 			};
 		}
 	}

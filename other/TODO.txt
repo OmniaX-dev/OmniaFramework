@@ -40,7 +40,7 @@ Implement following widgets:
 	***Image / Icon
 	***Tab Panel
 	***Button
-		Image/Icon
+		***Image/Icon
 	Radio Button
 		Grouping
 	Text Input

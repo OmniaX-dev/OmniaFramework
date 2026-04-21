@@ -47,85 +47,88 @@ namespace ostd
 	struct Vec2 : public __i_stringeable
 	{
 		//======================== Data ========================
-		f32 x;
-		f32 y;
+		f32 x { 0.0f };
+		f32 y { 0.0f };
 		//======================================================
 
 
 		//==================== Construction ====================
-		inline Vec2(f32 xx = 0, f32 yy = 0)             : x(xx), y(yy) {  }
-		inline Vec2(const Vec2& v2)                         { set(v2); }
-		inline Vec2& set(const Vec2& v2)                     { x = v2.x; y = v2.y; return *this; }
-		inline Vec2& set(f32 xx, f32 yy)                 { x = xx; y = yy; return *this; }
+		inline Vec2(f32 xx = 0, f32 yy = 0) : x(xx), y(yy) {  }
+		inline Vec2(const Vec2& v2) { set(v2); }
+		inline Vec2& set(const Vec2& v2) { x = v2.x; y = v2.y; return *this; }
+		inline Vec2& set(f32 xx, f32 yy) { x = xx; y = yy; return *this; }
 		//======================================================
 
 
 		//================== Static Functions ==================
-		inline static Vec2 fromAngle(f32 angle)            { return Vec2(std::cos(angle), std::sin(angle)); }
+		inline static Vec2 fromAngle(f32 angle) { return Vec2(std::cos(angle), std::sin(angle)); }
 		inline static f32 angleBetween(const Vec2& v1, const Vec2& v2) { return std::acos(v1.dot(v2) / (v1.mag() * v2.mag())); }
 		//======================================================
 
 
 		//===================== Conversion =====================
-		inline Vec2 toIsometric(void)             const        { return Vec2(x - y, (x + y) / 2.0f); }
-		inline Vec2 toCartesian(void)             const         { return Vec2((2 * y + x) / 2.0f, (2 * y - x) / 2.0f); }
-		inline String toString(void)            const override { return String("{ ").add(x).add(", ").add(y).add(" }"); }
+		inline Vec2 toIsometric(void) const { return Vec2(x - y, (x + y) / 2.0f); }
+		inline Vec2 toCartesian(void) const { return Vec2((2 * y + x) / 2.0f, (2 * y - x) / 2.0f); }
+		inline String toString(void) const override { return String("{ ").add(x).add(", ").add(y).add(" }"); }
 		//======================================================
 
 
 		//===================== Operations =====================
-		inline f32 mag(void)                     const         { return std::sqrt((x * x) + (y * y));                     }
+		inline f32 mag(void) const { return std::sqrt((x * x) + (y * y)); }
+		inline Vec2 add(Vec2 v2) const { return { x + v2.x, y + v2.y }; }
+		inline Vec2 add(f32 x2, f32 y2) const { return { x + x2, y + y2 }; }
+		inline Vec2 sub(Vec2 v2) const { return { x - v2.x, y - v2.y }; }
+		inline Vec2 sub(f32 x2, f32 y2) const { return { x - x2, y - y2 }; }
+		inline Vec2 mul(f32 scalar) const { return { x * scalar, y * scalar }; }
+		inline Vec2 div(f32 scalar) const { return { x / scalar, y / scalar }; }
+		inline Vec2 propx(f32 new_x) const { return { new_x, new_x * (y / x) }; }
+		inline Vec2 propy(f32 new_y) const { return { new_y * (x / y), new_y }; }
 
-		inline Vec2 add(Vec2 v2)                 const         { return {        x + v2.x,             y + v2.y         };     }
-		inline Vec2 add(f32 x2, f32 y2)     const         { return {        x + x2,             y + y2             };     }
-		inline Vec2 sub(Vec2 v2)                 const         { return {        x - v2.x,             y - v2.y         };     }
-		inline Vec2 sub(f32 x2, f32 y2)     const         { return {        x - x2,             y - y2             };     }
-		inline Vec2 mul(f32 scalar)             const         { return {        x * scalar,         y * scalar         };     }
-		inline Vec2 div(f32 scalar)             const         { return {        x / scalar,         y / scalar         };     }
-
-		inline Vec2 normalize(void)                const        { f32 m = _zp(mag()); return { x / m,     y / m     };    }
-		inline f32 dist(Vec2 v2)                const        { return std::sqrt((f32)((v2.x - x) * (v2.x - x)) + ((v2.y - y) * (v2.y - y))); }
-		inline f32 heading(void)                const        { return std::atan2(y, x); }
-		inline Vec2 rotate(f32 angle)            const        { return Vec2(*this).rotate(angle); }
-		inline f32 dot(const Vec2& v2)        const        { return (x * v2.x) + (y * v2.y); }
-		inline f32 cross(const Vec2& v2)        const        { return (x * v2.y) - (v2.x * y); }
+		inline Vec2 normalize(void) const { f32 m = _zp(mag()); return { x / m,     y / m     };    }
+		inline f32 dist(Vec2 v2) const { return std::sqrt((f32)((v2.x - x) * (v2.x - x)) + ((v2.y - y) * (v2.y - y))); }
+		inline f32 heading(void) const { return std::atan2(y, x); }
+		inline Vec2 rotate(f32 angle) const { return Vec2(*this).rotate(angle); }
+		inline f32 dot(const Vec2& v2) const { return (x * v2.x) + (y * v2.y); }
+		inline f32 cross(const Vec2& v2) const { return (x * v2.y) - (v2.x * y); }
 		//======================================================
 
 
 		//===================== Modifiers ======================
-		inline Vec2& addm(const Vec2& v2)                      {         x += v2.x;             y += v2.y;          return *this;    }
-		inline Vec2& addm(const f32& x2, const f32& y2) {         x += x2;             y += y2;         return *this;     }
-		inline Vec2& subm(const Vec2& v2)                     {         x -= v2.x;             y -= v2.y;          return *this;    }
-		inline Vec2& subm(const f32& x2, const f32& y2) {         x -= x2;             y -= y2;         return *this;     }
-		inline Vec2& mulm(const f32& scalar)                 {         x *= scalar;         y *= scalar;     return *this;     }
-		inline Vec2& divm(const f32& scalar)                 {         x /= scalar;         y /= scalar;     return *this;     }
+		inline Vec2& addm(const Vec2& v2) { x += v2.x; y += v2.y; return *this; }
+		inline Vec2& addm(const f32& x2, const f32& y2) { x += x2; y += y2; return *this; }
+		inline Vec2& subm(const Vec2& v2) { x -= v2.x; y -= v2.y; return *this; }
+		inline Vec2& subm(const f32& x2, const f32& y2) { x -= x2; y -= y2; return *this; }
+		inline Vec2& mulm(const f32& scalar) { x *= scalar; y *= scalar; return *this; }
+		inline Vec2& divm(const f32& scalar) { x /= scalar; y /= scalar; return *this; }
+		inline Vec2& propxm(const f32& new_x) { x = new_x; y = new_x * (y / x); return *this; }
+		inline Vec2& propym(const f32& new_y) { x = new_y * (x / y); y = new_y; return *this; }
 
-		inline Vec2& normalizem(void)                        { f32 m = _zp(mag()); x /= m; y /= m;     return *this;    }
-		inline Vec2& setMag(const f32& mag)                { return normalizem().mulm(mag); }
-		inline Vec2& setHeading(const f32& angle)         { f32 m = mag(); set(m * std::cos(angle), m * std::sin(angle)); return *this; }
-		inline Vec2& rotate(const f32& angle)                { return setHeading(heading() + angle); }
-		inline Vec2& limit(const f32& max)                { f32 msq = mag(); msq *= msq; if (msq > (max * max)) divm(std::sqrt(msq)).mulm(max); return *this; }
+		inline Vec2& normalizem(void) { f32 m = _zp(mag()); x /= m; y /= m;     return *this;    }
+		inline Vec2& setMag(const f32& mag) { return normalizem().mulm(mag); }
+		inline Vec2& setHeading(const f32& angle) { f32 m = mag(); set(m * std::cos(angle), m * std::sin(angle)); return *this; }
+		inline Vec2& rotate(const f32& angle) { return setHeading(heading() + angle); }
+		inline Vec2& limit(const f32& max) { f32 msq = mag(); msq *= msq; if (msq > (max * max)) divm(std::sqrt(msq)).mulm(max); return *this; }
 		//======================================================
 
 
 		//===================== Operators ======================
-		inline bool  operator==(const Vec2& op2 )     const    { return (x == op2.x && y == op2.y); }
-		inline bool  operator!=(const Vec2& op2 )     const    { return (x != op2.x || y != op2.y); }
-		inline Vec2  operator-()                     const    { return { -x, -y }; }
-		inline Vec2  operator+ (const Vec2& op2 )     const    { return add(op2); }
-		inline Vec2  operator- (const Vec2& op2 )     const    { return sub(op2); }
-		inline Vec2  operator+ (const f32& op2)     const    { return add(op2, op2); }
-		inline Vec2  operator- (const f32& op2)     const    { return sub(op2, op2); }
-		inline Vec2  operator* (const f32& op2)     const    { return mul(op2); }
-		inline Vec2  operator/ (const f32& op2)     const    { return div(op2); }
-		inline Vec2& operator= (const Vec2& val )             { return set(val); }
-		inline Vec2& operator= (const f32& val)             { return set(val, val); }
-		inline Vec2& operator+=(const Vec2& op2 )             { return addm(op2); }
-		inline Vec2& operator-=(const Vec2& op2 )             { return subm(op2); }
-		inline Vec2& operator+=(const f32& op2)             { return addm(op2, op2); }
-		inline Vec2& operator-=(const f32& op2)             { return subm(op2, op2); }
-		inline Vec2& operator*=(const f32& op2)             { return mulm(op2); }
-		inline Vec2& operator/=(const f32& op2)             { return divm(op2); }
+		inline bool  operator==(const Vec2& op2) const { return (x == op2.x && y == op2.y); }
+		inline bool  operator!=(const Vec2& op2) const { return (x != op2.x || y != op2.y); }
+		inline Vec2  operator-() const { return { -x, -y }; }
+		inline Vec2  operator+ (const Vec2& op2) const { return add(op2); }
+		inline Vec2  operator- (const Vec2& op2) const { return sub(op2); }
+		inline Vec2  operator+ (const f32& op2) const { return add(op2, op2); }
+		inline Vec2  operator- (const f32& op2) const { return sub(op2, op2); }
+		inline Vec2  operator* (const f32& op2) const { return mul(op2); }
+		inline Vec2  operator/ (const f32& op2) const { return div(op2); }
+		inline Vec2& operator= (const Vec2& val) { return set(val); }
+		inline Vec2& operator= (const f32& val) { return set(val, val); }
+		inline Vec2& operator+=(const Vec2& op2) { return addm(op2); }
+		inline Vec2& operator-=(const Vec2& op2) { return subm(op2); }
+		inline Vec2& operator+=(const f32& op2) { return addm(op2, op2); }
+		inline Vec2& operator-=(const f32& op2) { return subm(op2, op2); }
+		inline Vec2& operator*=(const f32& op2) { return mulm(op2); }
+		inline Vec2& operator/=(const f32& op2) { return divm(op2); }
 		//======================================================
 
 	private:
@@ -141,30 +144,30 @@ namespace ostd
 			T y;
 
 		public:
-			inline Point(void) : x(0), y(0) {  }
-			inline Point(T xx, T yy) : x(xx), y(yy) {}
-			inline Point(const Vec2& vec)                                { x = vec.x; y = vec.y; }
-			inline Point<T>& set(const Point<T>& v2)                     { x = v2.x; y = v2.y; return *this; }
-			inline Point<T>& set(f32 xx, f32 yy)                     { x = xx; y = yy; return *this; }
+			inline Point(void)                                                : x(0), y(0) {  }
+			inline Point(T xx, T yy)                                       : x(xx), y(yy) {}
+			inline Point(const Vec2& vec)                                  { x = vec.x; y = vec.y; }
+			inline Point<T>& set(const Point<T>& v2)                       { x = v2.x; y = v2.y; return *this; }
+			inline Point<T>& set(f32 xx, f32 yy)                            { x = xx; y = yy; return *this; }
 
 			//===================== Operators ======================
 			inline bool  operator==(const Point<T>& op2 )         const    { return (x == op2.x && y == op2.y); }
 			inline bool  operator!=(const Point<T>& op2 )         const    { return (x != op2.x || y != op2.y); }
-			inline operator Vec2()                                 const    { return { cast<f32>(x), cast<f32>(y) }; }
+			inline operator Vec2()                                const    { return { cast<f32>(x), cast<f32>(y) }; }
 			inline Point<T>  operator+ (const Point<T>& op2 )     const    { return { x + op2.x, y + op2.y }; }
 			inline Point<T>  operator- (const Point<T>& op2 )     const    { return { x - op2.x, y - op2.y }; }
 			inline Point<T>  operator+ (const T& op2)             const    { return { x + op2, y + op2 }; }
 			inline Point<T>  operator- (const T& op2)             const    { return { x + op2, y + op2 }; }
 			inline Point<T>  operator* (const T& op2)             const    { return { x * op2, y * op2 }; }
 			inline Point<T>  operator/ (const T& op2)             const    { return { x / op2, y / op2 }; }
-			inline Point<T>& operator= (const Point<T>& val )             { return set(val); }
-			inline Point<T>& operator= (const T& val)                     { return set(val, val); }
-			inline Point<T>& operator+=(const Point<T>& op2 )             { x += op2.x; y += op2.y; return *this; }
-			inline Point<T>& operator-=(const Point<T>& op2 )             { x -= op2.x; y -= op2.y; return *this; }
-			inline Point<T>& operator+=(const T& op2)                     { x += op2; y += op2; return *this;; }
-			inline Point<T>& operator-=(const T& op2)                     { x -= op2; y -= op2; return *this; }
-			inline Point<T>& operator*=(const T& op2)                     { return x *= op2; y *= op2; return *this; }
-			inline Point<T>& operator/=(const T& op2)                     { return x /= op2; y /= op2; return *this; }
+			inline Point<T>& operator= (const Point<T>& val )              { return set(val); }
+			inline Point<T>& operator= (const T& val)                      { return set(val, val); }
+			inline Point<T>& operator+=(const Point<T>& op2 )              { x += op2.x; y += op2.y; return *this; }
+			inline Point<T>& operator-=(const Point<T>& op2 )              { x -= op2.x; y -= op2.y; return *this; }
+			inline Point<T>& operator+=(const T& op2)                      { x += op2; y += op2; return *this;; }
+			inline Point<T>& operator-=(const T& op2)                      { x -= op2; y -= op2; return *this; }
+			inline Point<T>& operator*=(const T& op2)                      { return x *= op2; y *= op2; return *this; }
+			inline Point<T>& operator/=(const T& op2)                      { return x /= op2; y /= op2; return *this; }
 			//======================================================
 
 			template <class T2> inline Point(Point<T2> copy)

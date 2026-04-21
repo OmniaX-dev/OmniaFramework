@@ -160,15 +160,17 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 	useBackgroundGradient = true
 	padding = rect(15, 8, 15, 8)
 	margin = rect(0, 0, 0, 0)
+	showIcon = true
 	(icon) {
-		show =  true
-		image = file("img.png")
+		path = file("img.png")
 		animation = anim(frameCount: 36, \
 	 					 fps: 60, \
 						 columns: 9, \
 						 rows: 4, \
 						 frameWidth: 256, \
 						 frameHeight: 256)
+		size = vec2(32, 32)
+		animated = true
 	}
 }
 (button:hover) {
