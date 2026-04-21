@@ -74,7 +74,8 @@ namespace ogfx
 					inline TabPanel(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
 					TabPanel& create(void);
 					void applyTheme(const ostd::Stylesheet& theme) override;
-					void onMouseReleased(const Event& event) override;
+					void onMousePressed(const Event& event) override;
+					void onMouseScrolled(const Event& event) override;
 					void onDraw(ogfx::BasicRenderer2D& gfx) override;
 					Panel& addTab(const String& title);
 					bool removeTab(Panel& tab);
@@ -83,6 +84,13 @@ namespace ogfx
 					bool setCurrentTab(Panel& tab);
 					bool setCurrentTab(i32 index);
 					void setTabBarHeight(f32 height);
+					bool isMouseInsideTabBar(const Vec2& mousePos);
+
+					inline f32 getTabBarHeight(void) const { return m_tabBarHeight; }
+					OSTD_PARAM_GETSET(Color, TabBarBackgroundColor, m_tabBarBackgroundColor);
+					OSTD_PARAM_GETSET(Color, TabBarBorderColor, m_tabBarBorderColor);
+					OSTD_PARAM_GETSET(f32, TabBarSidePadding, m_tabSidePadding);
+					OSTD_PARAM_GETSET(i32, TabBarBorderWidth, m_tabBarBorderWidth);
 
 				private:
 					void prepare_for_current_tab_removal(void);
@@ -90,13 +98,18 @@ namespace ogfx
 
 				private:
 					stdvec<std::unique_ptr<Panel>> m_tabs;
+					stdvec<Rectangle> m_tabBoundsList;
 					Panel* m_currentTab { nullptr };
+					i32 m_currentTabIndex { -1 };
+					f32 m_tabScrollOffset { 0.0f };
+					f32 m_totalTabWidth { 0.0f };
 					Rectangle m_tabBarBorderRadii { 0, 0, 0, 0 };
 
 					f32 m_tabBarHeight { 35 };
 					Color m_tabBarBackgroundColor { 120, 120, 120 };
 					Color m_tabBarBorderColor { 170, 170, 170 };
 					f32 m_tabSidePadding { 20 };
+					i32 m_tabBarBorderWidth { 2 };
 			};
 		}
 	}

@@ -21,7 +21,7 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 	titlebarColor = #999999FF
 	titlebarBorderColor = #909090FF
 	borderColor = #909090FF
-	borderRadius = 10
+	borderRadius = 0
 	borderWidth = 2
 	titlebarBorderWidth = 2
 	showBorder = true
@@ -39,30 +39,29 @@ window.backgroundColor = rgba(160, 160, 160, 255)
 
 
 
-% ====== Panel ======
+% ====== TabPanel ======
 (tabPanel) {
 	backgroundColor = #AAAAAAFF
-	borderColor = #909090FF
+	borderColor = #666666FF
 	borderRadius = 0
 	borderWidth = 2
 	showBorder = true
 	showBackground = true
-	padding = rect(0, 0, 0, 0)
 	margin = rect(0, 0, 0, 0)
 	textColor = $textColor
+	fontSize = 18
 
 	(tabBar) {
 		height = 35.0
-		fontSize = 18
-		backgroundColor = #999999FF
+		backgroundColor = #888888FF
 		borderColor = #909090FF
-		borderWidth = 2
+		borderWidth = 1
+		sidePadding = 20.0
 	}
 }
 (@panel_tab panel) {
-	backgroundColor = color_crimson
 }
-% ===================
+% ======================
 
 
 

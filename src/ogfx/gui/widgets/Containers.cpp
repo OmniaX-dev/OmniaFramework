@@ -146,23 +146,51 @@ namespace ogfx
 			void TabPanel::applyTheme(const ostd::Stylesheet& theme)
 			{
 				setTabBarHeight(getThemeValue<f32>(theme, "tabBar.height", m_tabBarHeight));
+				setTabBarBackgroundColor(getThemeValue<Color>(theme, "tabBar.backgroundColor", m_tabBarBackgroundColor));
+				setTabBarBorderColor(getThemeValue<Color>(theme, "tabBar.borderColor", m_tabBarBorderColor));
+				setTabBarBorderColor(getThemeValue<i32>(theme, "tabBar.borderWidth", m_tabBarBorderWidth));
+				setTabBarSidePadding(getThemeValue<f32>(theme, "tabBar.sidePadding", m_tabSidePadding));
+			}
 
-				for (auto& tab : m_tabs)
+			void TabPanel::onMousePressed(const Event& event)
+			{
+				if (!isMouseInsideTabBar({ event.mouse->position_x, event.mouse->position_y }))
+					return;
+				const f32 extra_offset = 5;
+				i32 index = 0;
+				for (auto& b : m_tabBoundsList)
 				{
-					if (tab == nullptr)
-						continue;
-					tab->setBackgroundColor(getBackgroundColor());
+					if (b.contains(event.mouse->position_x, event.mouse->position_y))
+					{
+						setCurrentTab(*m_tabs[index]);
+						Rectangle tabBounds = m_tabBoundsList[index];
+						f32 tabLocalLeft = tabBounds.x - getGlobalPosition().x;
+						f32 tabLocalRight = tabLocalLeft + tabBounds.w;
+
+						if (tabLocalLeft < 0)
+							m_tabScrollOffset += tabLocalLeft - extra_offset;
+						else if (tabLocalRight > getw())
+							m_tabScrollOffset += (tabLocalRight - getw()) + extra_offset;
+						break;
+					}
+					index++;
 				}
 			}
 
-			void TabPanel::onMouseReleased(const Event& event)
+			void TabPanel::onMouseScrolled(const Event& event)
 			{
-
+				if (!isMouseInsideTabBar({ event.mouse->position_x, event.mouse->position_y }))
+					return;
+				if (m_tabs.size() == 0)
+					return;
+				const f32 extra_offset = 5;
+				m_tabScrollOffset += (event.mouse->scrollAmount.y * -40.0f);
+				m_tabScrollOffset = std::clamp(m_tabScrollOffset, -extra_offset, m_totalTabWidth - getw() + extra_offset);
 			}
 
 			void TabPanel::onDraw(ogfx::BasicRenderer2D& gfx)
 			{
-				gfx.outlinedRoundRect({ getGlobalPosition(), { getw(), m_tabBarHeight } }, m_tabBarBackgroundColor, m_tabBarBorderColor, m_tabBarBorderRadii, getBorderWidth());
+				gfx.outlinedRect({ getGlobalPosition(), { getw(), getTabBarHeight() } }, getTabBarBackgroundColor(), getTabBarBorderColor(), getTabBarBorderWidth(), false, false, true, false);
 				draw_tabs(gfx);
 			}
 
@@ -172,10 +200,13 @@ namespace ogfx
 				auto& tab = *m_tabs.back();
 				tab.setTitle(title);
 				tab.setTitlebarType(Panel::TitleBarTypes::None);
-				if (m_currentTab == nullptr && m_tabs.size() == 2)
+				tab.addThemeOverride("@panel_tab.panel.titlebarType", "none");
+				tab.addThemeOverride("@panel_tab.panel.showBorder", false);
+				tab.addThemeOverride("@panel_tab.panel.borderRadius", 0);
+				tab.setBackgroundColor(getBackgroundColor());
+				if (m_currentTab == nullptr && m_tabs.size() == 1)
 					setCurrentTab(tab);
 				tab.addThemeID("panel_tab");
-				// Initialization code here
 				return tab;
 			}
 
@@ -215,25 +246,40 @@ namespace ogfx
 				auto it = std::find_if(m_tabs.begin(), m_tabs.end(), [&](const std::unique_ptr<Panel>& p) { return p.get() == &tab; });
 				if (it == m_tabs.end())
 					return false;
-				m_currentTab = it->get();
-				return true;
+				i32 index = it - m_tabs.begin();
+				return setCurrentTab(index);
 			}
 
 			bool TabPanel::setCurrentTab(i32 index)
 			{
 				if (index < 0 || index >= (i32)m_tabs.size())
 					return false;
-				m_currentTab = m_tabs[index].get();
-				return true;
+
+				auto curr = m_tabs[index].get();
+				if (curr == m_currentTab && m_currentTab != nullptr)
+					return false;
+				removeWidget(*m_currentTab);
+				m_currentTabIndex = index;
+				m_currentTab = curr;
+				m_currentTab->setMargin({ 0, 0, 0, 0 });
+				m_currentTab->setSize(getPureContentBounds().getSize());
+				m_currentTab->setPosition({ 0, 0 });
+				m_currentTab->reloadTheme(true);
+				m_currentTab->resetScroll();
+				return addWidget(*m_currentTab);
 			}
 
 			void TabPanel::setTabBarHeight(f32 height)
 			{
-				if (height == m_tabBarHeight)
-					return;
 				m_tabBarHeight = height;
 				m_tabBarBorderRadii = { cast<f32>(getBorderRadius()), cast<f32>(getBorderRadius()), 0, 0 };
 				setContentOffset({ 0, m_tabBarHeight });
+			}
+
+			bool TabPanel::isMouseInsideTabBar(const Vec2& mousePos)
+			{
+				Rectangle bounds { getGlobalPosition(), { getw(), getTabBarHeight() } };
+				return bounds.contains(mousePos, true);
 			}
 
 			void TabPanel::prepare_for_current_tab_removal(void)
@@ -258,34 +304,31 @@ namespace ogfx
 
 			void TabPanel::draw_tabs(ogfx::BasicRenderer2D& gfx)
 			{
-				f32 nextTabX = 2;
+				f32 nextTabX = 1 - m_tabScrollOffset;
+				m_tabBoundsList.clear();
+				i32 index = -1;
 				for (const auto& _tab : m_tabs)
 				{
+					index++;
 					if (_tab == nullptr) continue;
 					const auto& tab = *_tab;
 					auto titleBounds = gfx.getStringDimensions(tab.getTitle(), getFontSize());
 					auto glob = getGlobalPosition();
-					Rectangle tabBounds { glob + Vec2 { nextTabX, 2}, { titleBounds.x + (m_tabSidePadding * 2), m_tabBarHeight - 3 } };
+					Rectangle tabBounds { glob + Vec2 { nextTabX, 2}, { titleBounds.x + (m_tabSidePadding * 2), m_tabBarHeight } };
 					if (m_currentTab == _tab.get())
 					{
-						gfx.outlinedRect(tabBounds, tab.getBackgroundColor(), Colors::Black, 1, true, true, false, true);
+						gfx.outlinedRect(tabBounds, tab.getBackgroundColor(), getTabBarBorderColor(), getTabBarBorderWidth(), true, true, true, true);
 					}
 					else
 					{
-						gfx.drawRect(tabBounds, Colors::Black, 1, true, true, false, true);
+						bool draw_right_edge = !(m_currentTabIndex == (index + 1));
+						gfx.drawRect(tabBounds - Rectangle { 0, 0, 0, 2 }, getTabBarBorderColor(), getTabBarBorderWidth(), false, draw_right_edge, true, false);
 					}
 					gfx.drawCenteredString(tab.getTitle(), tabBounds, getTextColor(), getFontSize());
 					nextTabX += titleBounds.x + (m_tabSidePadding * 2);
-
-					// f32 titleY = (m_tabBarHeight / 2.0f) - (titleBounds.y / 2.0f);
-					// if (m_currentTab == _tab.get())
-					// {
-					//     gfx.fillRect({ getGlobalPosition() + Vec2 { nextTabX, 0 }, { (titleBounds.x * 2), m_tabBarHeight } }, tab.getBackgroundColor());
-					// }
-					// gfx.drawString(tab.getTitle(), getGlobalPosition() + Vec2 { nextTabX + m_tabSidePadding, titleY }, getTextColor(), getFontSize());
-					// nextTabX += titleBounds.x + (m_tabSidePadding * 2);
-					// gfx.drawLine({ getGlobalPosition() + Vec2 { nextTabX, 0 }, getGlobalPosition() + Vec2 { nextTabX, m_tabBarHeight - 3 } }, Colors::Black, 2);
+					m_tabBoundsList.push_back(tabBounds);
 				}
+				m_totalTabWidth = nextTabX + m_tabScrollOffset - 1;
 			}
 		}
 	}

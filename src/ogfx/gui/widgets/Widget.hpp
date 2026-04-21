@@ -129,6 +129,7 @@ namespace ogfx
 				inline const stdvec<String>& getThemeIDList(void) const { return m_themeIDList; }
 				inline const ostd::Stylesheet::QualifierList& getThemeQualifierList(void) const { return m_qualifierList; }
 				inline String getStylesheetCategoryName(void) const { return m_stylesheetCategoryName; }
+				inline WidgetManager& getChildren(void) { return m_widgets; }
 				OSTD_PARAM_GETSET(Color, TextColor, m_textColor);
 				OSTD_PARAM_GETSET(Color, BackgroundColor, m_backgroundColor);
 				OSTD_PARAM_GETSET(Color, BorderColor, m_borderColor);
@@ -274,6 +275,7 @@ namespace ogfx
 				inline virtual void addScrollOffset(const Vec2& offset) {  }
 				inline virtual bool needsVScroll(void) const { return false; }
 				inline virtual bool needsHScroll(void) const { return false; }
+				inline virtual void resetScroll(bool horizontal = true, bool vertical = true, bool propagate = true) {  }
 				inline virtual f32 getVScrollbarSize(void) const { return 0; }
 				inline virtual f32 getHScrollbarSize(void) const { return 0; }
 				// =====================================================

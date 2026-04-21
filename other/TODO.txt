@@ -55,3 +55,4 @@ Implement following widgets:
 		Vertical
 		Horizontal
 		Grid
+	Tooltips

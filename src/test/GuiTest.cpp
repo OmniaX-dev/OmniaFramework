@@ -90,10 +90,18 @@ class Window : public ogfx::gui::Window
 			m_panel2.setSize(600, 400);
 			m_panel2.setTitle("Panel 2");
 
-			m_tabs.setSize(400, 400);
-			m_tabs.addTab("Tab1");
-			m_tabs.addTab("Tab2 Test");
-			m_tabs.addTab("Long Tab Test");
+			m_tabs.setSize(900, 700);
+			auto& t1 = m_tabs.addTab("Tab1");
+			auto& t2 = m_tabs.addTab("Tab2 Test");
+			auto& t3 = m_tabs.addTab("Long Tab Test");
+			for (i32 i = 3; i < 15; i++)
+				m_tabs.addTab(String("Tab").add(i));
+
+			t2.addThemeOverride("@panel_tab.panel.backgroundColor", Colors::SkyBlue);
+			t3.addThemeOverride("@panel_tab.panel.backgroundColor", Colors::Orange);
+
+			t1.addWidget(m_check1, { 30, 30 });
+			t2.addWidget(m_panel2, { 500, 100 });
 
 			m_panel3.addWidget(m_label4);
 
@@ -107,9 +115,9 @@ class Window : public ogfx::gui::Window
 			m_panel2.addWidget(m_btn1, { 0, 300 });
 			m_panel2.addWidget(m_img, { 20, 50 });
 
-			addWidget(m_check1, { 30, 30 });
-			addWidget(m_panel2, { 500, 100 });
-			addWidget(m_tabs, { 20,  120 });
+
+
+			addWidget(m_tabs, { 0,  0 });
 
 			m_theme.loadFromFile("./DefaultTheme.oss", true, getDefaultStylesheetVariableList());
 			setTheme(m_theme);
@@ -127,7 +135,7 @@ class Window : public ogfx::gui::Window
 
 		void onRedraw(ogfx::BasicRenderer2D& gfx) override
 		{
-			gfx.fillRect(m_tabs.getGlobalPureContentBounds(), { 0, 255, 0, 100 });
+			// gfx.fillRect(m_tabs.getGlobalPureContentBounds(), { 0, 255, 0, 100 });
 		}
 
 		void onFixedUpdate(void) override

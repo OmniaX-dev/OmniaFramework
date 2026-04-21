@@ -306,6 +306,26 @@ namespace ogfx
 			void ScrollableWidget::onUpdate(void)
 			{
 				m_smoothScrollTimer.update();
+				if (!needsVScroll() && m_vScrollbarAdded)
+				{
+					removeWidget(m_vScrollbar);
+					m_vScrollbarAdded = false;
+				}
+				else if (!m_vScrollbarAdded)
+				{
+					addWidget(m_vScrollbar);
+					m_vScrollbarAdded = true;
+				}
+				if (!needsHScroll() && m_hScrollbarAdded)
+				{
+					removeWidget(m_hScrollbar);
+					m_hScrollbarAdded = false;
+				}
+				else if (!m_hScrollbarAdded)
+				{
+					addWidget(m_hScrollbar);
+					m_hScrollbarAdded = true;
+				}
 			}
 
 			void ScrollableWidget::drawScrollbars(ogfx::BasicRenderer2D& gfx)
@@ -317,6 +337,22 @@ namespace ogfx
 			void ScrollableWidget::updateScrollbarsSize(void)
 			{
 				m_vScrollbar.setMargin({ 0, getPureContentBounds().y, 0, 0 });
+			}
+
+			void ScrollableWidget::resetScroll(bool horizontal, bool vertical, bool propagate)
+			{
+				if (vertical)
+					m_scrollOffset.y = 0;
+				if (horizontal)
+					m_scrollOffset.x = 0;
+				if (propagate)
+				{
+					for (auto& w : getChildren().getWidgets())
+					{
+						if (w == nullptr) continue;
+						w->resetScroll(horizontal, vertical, propagate);
+					}
+				}
 			}
 
 			void ScrollableWidget::onMouseScrolled(const Event& event)

@@ -60,7 +60,7 @@ namespace ogfx
 					f32 m_dragGrabOffset { 0 };
 					Rectangle m_correctionOffset { 1, 1, 0, 0 };
 
-					Rectangle m_trackBorderRadii { 0, 0, 10, 0 };
+					Rectangle m_trackBorderRadii { 0, 0, 0, 0 };
 					f32 m_thumbBorderRadius { 16 };
 					Color m_trackColor { 70, 70, 70 };
 					Color m_thumbColor { 120, 120, 120 };
@@ -98,7 +98,7 @@ namespace ogfx
 					f32 m_dragGrabOffset { 0 };
 					Rectangle m_correctionOffset { 0, 0, 0, 0 };
 
-					Rectangle m_trackBorderRadii { 0, 0, 0, 10 };
+					Rectangle m_trackBorderRadii { 0, 0, 0, 0 };
 					f32 m_thumbBorderRadius { 16 };
 					Color m_trackColor { 70, 70, 70 };
 					Color m_thumbColor { 120, 120, 120 };
@@ -113,6 +113,7 @@ namespace ogfx
 					virtual void onUpdate(void) override;
 					void drawScrollbars(ogfx::BasicRenderer2D& gfx);
 					void updateScrollbarsSize(void);
+					void resetScroll(bool horizontal = true, bool vertical = true, bool propagate = true) override;
 					virtual void onMouseScrolled(const Event& event) override;
 					virtual void setScrollOffset(const Vec2& offset) override;
 					virtual void addScrollOffset(const Vec2& offset) override;
@@ -137,6 +138,8 @@ namespace ogfx
 					Vec2 m_scrollVelocity { 0.0f, 0.0f };
 					f32 m_scrollSmoothFactor { 0.7f };
 					f32 m_scrollSpeedMultiplier { 15.0f };
+					bool m_hScrollbarAdded { false };
+					bool m_vScrollbarAdded { false };
 			};
 		}
 	}
