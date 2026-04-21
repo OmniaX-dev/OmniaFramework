@@ -43,11 +43,10 @@ namespace ogfx
 
 			void Button::onDraw(ogfx::BasicRenderer2D& gfx)
 			{
-				// if (m_textChanged)
+				if (m_textChanged)
 					__update_size();
 				if (isIconEnabled())
 				{
-					m_realIconSize = getIconSize().propy(getGlobalContentBounds().getSize().y);
 
 					if (isAnimatedEnabled())
 						gfx.drawAnimation(m_anim, getGlobalContentPosition(), m_realIconSize);
@@ -88,7 +87,7 @@ namespace ogfx
 				String filePath = getThemeValue<String>(theme, "icon.path", m_icon.getFilePath());
 				if (filePath != m_icon.getFilePath())
 					setIcon(filePath);
-				setIconSize(getThemeValue<Vec2>(theme, "icon.size", getSize()));
+				setIconSize(getThemeValue<Vec2>(theme, "icon.size", getIconSize()));
 				if (isAnimatedEnabled())
 				{
 					m_anim.create(m_animData);
@@ -99,6 +98,7 @@ namespace ogfx
 
 			void Button::__update_size(void)
 			{
+				m_realIconSize = getIconSize().propy(getGlobalContentBounds().getSize().y);
 				auto size = getWindow().getGFX().getStringDimensions(getText(), getFontSize());
 				size.x += getPadding().left();
 				size.x += getPadding().right();

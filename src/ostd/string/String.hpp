@@ -84,6 +84,7 @@ namespace ostd
 			inline String& clr(void) { m_data = ""; return *this; }
 			inline String& set(const cpp_string& str) { m_data = str; return *this; }
 			inline stdvec<u32> getUTF8Codepoints(void) const { return decodeUTF8(m_data); }
+			inline bool empty(void) const { return m_data.empty(); }
 
 			inline auto begin(void) { return m_data.begin(); }
 			inline auto end(void) { return m_data.end(); }

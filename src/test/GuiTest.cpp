@@ -23,6 +23,11 @@
 #include <ogfx/utils/Keycodes.hpp>
 #include <ogfx/ogfx.hpp>
 
+ogfx::WindowCore::FileDialogFilterList filters  = {
+	{ "Image files", { "png", "jpg", "jpeg", "bmp" } },
+	{ "All files", { "*" } }
+};
+
 ostd::ConsoleOutputHandler out;
 using namespace ogfx::gui::widgets;
 
@@ -69,8 +74,13 @@ class Window : public ogfx::gui::Window
 
 			m_btn1.setText("BUTTON");
 			m_btn1.setCallback(ogfx::gui::Widget::eCallback::MousePressed, [&](const ogfx::gui::Event& event) -> void {
-
+				std::cout << showOpenFileDialog(filters) << "\n";
 			});
+			m_btn1.addThemeOverride("@.button.showIcon", true);
+			m_btn1.setAnimationData(ad);
+			m_btn1.setIcon("./img.png");
+			m_btn1.setIconSize({ 64, 64 });
+			m_btn1.enableAnimated();
 
 			m_label2.setText("Label2");
 			m_label3.setText("Label3");

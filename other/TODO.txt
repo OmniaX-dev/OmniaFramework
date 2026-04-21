@@ -41,21 +41,21 @@ Implement following widgets:
 	***Tab Panel
 	***Button
 		***Image/Icon
+	***Save/Open File Dialogs (and folder dialogs)
 	Radio Button
 		Grouping
-	Text Input
+	Progressbar
 	Horizontal Slider
 	Vertical Slider
 	ListBox
 	ComboBox
-	TreeView
-	Progressbar
+	Tooltips
 	Context Menu
 		Menu Bar
-	Save/Open File Dialogs (and folder dialogs)
-	Hex Editor
 	Layouts
 		Vertical
 		Horizontal
 		Grid
-	Tooltips
+	Text Input
+	TreeView
+	Hex Editor

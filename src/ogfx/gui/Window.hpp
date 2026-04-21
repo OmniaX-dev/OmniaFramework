@@ -34,6 +34,11 @@ namespace ogfx
 {
 	class WindowCore : public ostd::BaseObject
 	{
+		public: struct FileDialogFilter
+		{
+			String description { "" };
+			stdvec<String> extensionList;
+		};
 		public: enum class eCursor : u8
 		{
 			Default = 0,
@@ -79,6 +84,7 @@ namespace ogfx
 			bool maximized { false };
 			bool alwaysOnTop { false };
 		};
+		public: using FileDialogFilterList = stdvec<ogfx::WindowCore::FileDialogFilter>;
 		public:
 			inline WindowCore(void) {  }
 			virtual ~WindowCore(void);
@@ -99,7 +105,12 @@ namespace ogfx
 			void setBlockingEventsRefreshFPS(u32 fps);
 			void requestRedraw(void);
 			void handleSignal(ostd::Signal& signal) override;
+			stdvec<String> showOpenFileDialog(const FileDialogFilterList& filterList, bool multiselect, const String& defaultPath = "") const;
+			stdvec<String> showOpenFolderDialog(bool multiselect, const String& defaultPath = "") const;
+			String showSaveFileDialog(const FileDialogFilterList& filterList, const String& defaultPath = "") const;
 
+			inline String showOpenFileDialog(const FileDialogFilterList& filterList) const { auto list = showOpenFileDialog(filterList, false); return (list.size() == 0 ? "" : list[0]); }
+			inline String showOpenFolderDialog(void) const { auto list = showOpenFolderDialog(false); return (list.size() == 0 ? "" : list[0]); }
 			inline const ostd::Stylesheet* theme(void) const { return m_guiTheme; }
 			inline void loadDefaultTHeme(void) { setTheme(DefaultTheme); }
 			inline ostd::Stylesheet::VariableList& getDefaultStylesheetVariableList(void) { return m_defaultStylesheetVariables; }
@@ -142,6 +153,7 @@ namespace ogfx
 		private:
 			void __handle_event(SDL_Event& event);
 			void __load_default_stylesheet_variables(void);
+			void __store_file_dialog_filters(const FileDialogFilterList& filters) const;
 
 		protected:
 			SDL_Window* m_window { nullptr };
@@ -190,6 +202,9 @@ namespace ogfx
 			SDL_Cursor* m_cursor_S_Resize     { nullptr };
 			SDL_Cursor* m_cursor_SW_Resize    { nullptr };
 			SDL_Cursor* m_cursor_W_Resize     { nullptr };
+
+			mutable stdvec<String> m_patternStorage;
+			mutable stdvec<SDL_DialogFileFilter> m_sdlFilters;
 
 		public:
 			inline static constexpr i32 MaxBlockingEventsFPS { 240 };

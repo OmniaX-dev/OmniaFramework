@@ -369,6 +369,105 @@ namespace ogfx
 		__on_signal(signal);
 	}
 
+	stdvec<String> WindowCore::showOpenFileDialog(const stdvec<FileDialogFilter>& filterList, bool multiselect, const String& defaultPath) const
+	{
+		struct DialogResult {
+			stdvec<String> paths;
+			bool completed { false };
+		};
+		DialogResult result;
+
+		__store_file_dialog_filters(filterList);
+
+		SDL_ShowOpenFileDialog(
+			[](void* userdata, const char* const* filelist, int filter) {
+				auto* res = static_cast<DialogResult*>(userdata);
+				if (filelist) {
+					for (const char* const* f = filelist; *f; f++)
+						res->paths.push_back(String(*f));
+				}
+				res->completed = true;
+			},
+			&result,
+			m_window,
+			m_sdlFilters.empty() ? nullptr : m_sdlFilters.data(),
+			m_sdlFilters.size(),
+			defaultPath.empty() ? nullptr : defaultPath.c_str(),
+			multiselect
+		);
+
+		while (!result.completed) {
+			SDL_PumpEvents();
+			SDL_Delay(10);
+		}
+
+		return result.paths;
+	}
+
+	stdvec<String> WindowCore::showOpenFolderDialog(bool multiselect, const String& defaultPath) const
+	{
+		struct DialogResult {
+			stdvec<String> paths;
+			bool completed { false };
+		};
+		DialogResult result;
+
+		SDL_ShowOpenFolderDialog(
+			[](void* userdata, const char* const* filelist, int filter) {
+				auto* res = static_cast<DialogResult*>(userdata);
+				if (filelist) {
+					for (const char* const* f = filelist; *f; f++)
+						res->paths.push_back(String(*f));
+				}
+				res->completed = true;
+			},
+			&result,
+			m_window,
+			defaultPath.empty() ? nullptr : defaultPath.c_str(),
+			multiselect
+		);
+
+		while (!result.completed) {
+			SDL_PumpEvents();
+			SDL_Delay(10);
+		}
+
+		return result.paths;
+	}
+
+	String WindowCore::showSaveFileDialog(const stdvec<FileDialogFilter>& filterList, const String& defaultPath) const
+	{
+		struct DialogResult {
+			String path;
+			bool completed { false };
+		};
+		DialogResult result;
+
+		__store_file_dialog_filters(filterList);
+
+		SDL_ShowSaveFileDialog(
+			[](void* userdata, const char* const* filelist, int filter) {
+				auto* res = static_cast<DialogResult*>(userdata);
+				if (filelist && *filelist) {
+					res->path = String(*filelist);
+				}
+				res->completed = true;
+			},
+			&result,
+			m_window,
+			m_sdlFilters.empty() ? nullptr : m_sdlFilters.data(),
+			m_sdlFilters.size(),
+			defaultPath.empty() ? nullptr : defaultPath.c_str()
+		);
+
+		while (!result.completed) {
+			SDL_PumpEvents();
+			SDL_Delay(10);
+		}
+
+		return result.path;
+	}
+
 	MouseEventData WindowCore::get_mouse_state(SDL_Event& event)
 	{
 		f32 mx = 0, my = 0, _mx = 0, _my = 0;
@@ -635,6 +734,32 @@ namespace ogfx
 		//Text Align
 		m_defaultStylesheetVariables["text_center"]   = { String("").add(cast<i32>(eTextAlign::Center)), true };
 		m_defaultStylesheetVariables["text_left"]   = { String("").add(cast<i32>(eTextAlign::Left)), true };
+	}
+
+	void WindowCore::__store_file_dialog_filters(const stdvec<FileDialogFilter>& filters) const
+	{
+		m_patternStorage.clear();
+		m_sdlFilters.clear();
+		m_patternStorage.reserve(filters.size());
+		m_sdlFilters.reserve(filters.size());
+
+		for (const auto& f : filters)
+		{
+			// Join extensions with semicolons: {"png", "jpg"} -> "png;jpg"
+			String pattern;
+			for (size_t i = 0; i < f.extensionList.size(); i++)
+			{
+				if (i > 0) pattern.add(";");
+				pattern.add(f.extensionList[i]);
+			}
+			m_patternStorage.push_back(pattern);
+
+			// SDL filter points at strings that must stay alive
+			m_sdlFilters.push_back({
+				f.description.c_str(),
+				m_patternStorage.back().c_str()
+			});
+		}
 	}
 
 

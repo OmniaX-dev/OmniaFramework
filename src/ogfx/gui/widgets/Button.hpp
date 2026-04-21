@@ -41,9 +41,9 @@ namespace ogfx
 					void setText(const String& text);
 					void setIcon(const String& filePath);
 					void applyTheme(const ostd::Stylesheet& theme) override;
-					OSTD_BOOL_PARAM_GETSET_E(Animated, m_animated);
 					inline String getText(void) const { return m_text; }
 					inline Image& getIcon(void) { return m_icon; }
+					OSTD_BOOL_PARAM_GETSET_E(Animated, m_animated);
 					OSTD_BOOL_PARAM_GETSET_E(Icon, m_showIcon);
 					OSTD_PARAM_GETSET(ostd::AnimationData, AnimationData, m_animData);
 					OSTD_PARAM_GETSET(Vec2, IconSize, m_iconSize);
