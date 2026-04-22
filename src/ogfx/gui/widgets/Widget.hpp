@@ -26,6 +26,7 @@
 #include <ostd/math/Geometry.hpp>
 #include <ostd/io/Stylesheet.hpp>
 #include <ostd/utils/Defines.hpp>
+#include <ostd/utils/Time.hpp>
 #include <functional>
 
 namespace ogfx
@@ -141,6 +142,7 @@ namespace ogfx
 				OSTD_PARAM_GETSET(Rectangle, Margin, m_margin);
 				OSTD_PARAM_GETSET(i32, TabIndex, m_tabIndex);
 				OSTD_PARAM_GETSET(Vec2, ContentOffset, m_contentOffset);
+				OSTD_PARAM_GETSET(String, TooltipText, m_tooltipText);
 
 				// BOOL PARAMETERS
 				inline bool isVisible(void) const { return m_visible; }
@@ -167,6 +169,7 @@ namespace ogfx
 				OSTD_BOOL_PARAM_GETSET_E(HScroll, m_vScrollEnabled);
 				OSTD_BOOL_PARAM_GETSET_E(BackgroundGradient, m_useBackgroundGradient);
 				OSTD_BOOL_PARAM_GETSET_E(Theming, m_enableTheming);
+				OSTD_BOOL_PARAM_GETSET_E(Tooltip, m_enableTooltip);
 				// ==========================================================================
 
 			protected:
@@ -185,6 +188,7 @@ namespace ogfx
 				bool m_focused { false };
 				i32 m_tabIndex { -1 };
 				i32 m_zIndex { -1 };
+				String m_tooltipText { "" };
 				MouseEventData::eButton m_pressedButton { MouseEventData::eButton::None };
 				// ====================
 
@@ -205,6 +209,7 @@ namespace ogfx
 				bool m_vScrollEnabled { false };
 				bool m_hScrollEnabled { false };
 				bool m_enableTheming { true };
+				bool m_enableTooltip { false };
 				// ====================
 
 

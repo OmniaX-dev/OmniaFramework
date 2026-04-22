@@ -135,6 +135,13 @@ namespace ogfx
 			inline GraphicsWindowOutputHandler& wout(void) { return m_wout; }
 			inline f32 getScaleFactor(void) const { return m_systemScale * m_userScale; }
 			inline void updateScalleFactor(void) { setUserScale(m_userScale); }
+			inline Vec2 getMousePosition(void) const { return m_mousePosition; }
+			inline void startTooltipTimer(const String& text) { m_tooltipText = text; m_tooltipTimer.startCount(ostd::eTimeUnits::Seconds); }
+			inline void stopTooltipTimer(void) { m_tooltipText = ""; m_tooltipTimer.endCount(); }
+			inline void restartTooltipTimer(void) { m_tooltipTimer.restart(ostd::eTimeUnits::Seconds); }
+			inline u64 readTooltipTimer(void) { return m_tooltipTimer.read(); }
+			inline bool isTooltipShown(void) { return m_tooltipText.new_trim() != "" && m_tooltipTimer.read() >= 2; }
+			inline String getTooltipText(void) const { return m_tooltipText; }
 
 		protected:
 			MouseEventData get_mouse_state(SDL_Event& event);
@@ -170,6 +177,9 @@ namespace ogfx
 			i32 m_windowHeight { 0 };
 			String m_title { "" };
 			i32 m_blockingEventsDelay { 33 };
+			Vec2 m_mousePosition { 0, 0 };
+			ostd::Timer m_tooltipTimer;
+			String m_tooltipText { "" };
 
 			bool m_running { false };
 			bool m_initialized { false };

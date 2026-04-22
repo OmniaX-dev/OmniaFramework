@@ -320,6 +320,8 @@ namespace ogfx
 					callback_onMouseMoved(event);
 				onMouseMoved(event);
 			}
+			if (isTooltipEnabled() && isMouseInside())
+				getWindow().restartTooltipTimer();
 		}
 
 		void Widget::__onMouseScrolled(const Event& event)
@@ -340,6 +342,8 @@ namespace ogfx
 			if (callback_onMouseEntered)
 				callback_onMouseEntered(event);
 			onMouseEntered(event);
+			if (isTooltipEnabled())
+				getWindow().startTooltipTimer(getTooltipText());
 		}
 
 		void Widget::__onMouseExited(const Event& event)
@@ -348,6 +352,8 @@ namespace ogfx
 			if (callback_onMouseExited)
 				callback_onMouseExited(event);
 			onMouseExited(event);
+			if (isTooltipEnabled())
+				getWindow().stopTooltipTimer();
 		}
 
 		void Widget::__onMouseDragged(const Event& event)

@@ -52,7 +52,6 @@ class Window : public ogfx::gui::Window
 			m_label1.setText("Show Panel2");
 			m_label1.setCallback(ogfx::gui::Widget::eCallback::MousePressed, [&](const ogfx::gui::Event& event) -> void {
 				m_check1.setChecked(!m_check1.isChecked());
-				m_label1.addy(10);
 			});
 			m_label1.disableTheming();
 			m_label1.addThemeOverride("@.label.showBackground", true);
@@ -81,6 +80,8 @@ class Window : public ogfx::gui::Window
 			m_btn1.setIcon("./img.png");
 			m_btn1.setIconSize({ 64, 64 });
 			m_btn1.enableAnimated();
+			m_btn1.enableTooltip();
+			m_btn1.setTooltipText("Test tooltip");
 
 			m_label2.setText("Label2");
 			m_label3.setText("Label3");
@@ -99,13 +100,13 @@ class Window : public ogfx::gui::Window
 
 			m_panel2.setSize(600, 400);
 			m_panel2.setTitle("Panel 2");
+			m_panel2.enableTooltip();
+			m_panel2.setTooltipText("PANEL tooltip");
 
 			m_tabs.setSize(900, 700);
 			auto& t1 = m_tabs.addTab("Tab1");
 			auto& t2 = m_tabs.addTab("Tab2 Test");
 			auto& t3 = m_tabs.addTab("Long Tab Test");
-			for (i32 i = 3; i < 15; i++)
-				m_tabs.addTab(String("Tab").add(i));
 
 			t2.addThemeOverride("@panel_tab.panel.backgroundColor", Colors::SkyBlue);
 			t3.addThemeOverride("@panel_tab.panel.backgroundColor", Colors::Orange);

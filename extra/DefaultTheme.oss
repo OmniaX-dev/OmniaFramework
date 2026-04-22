@@ -10,7 +10,16 @@ const $accentColorDark = #6B0A1DFF
 
 
 % ====== Root Widget ======
-window.backgroundColor = rgba(160, 160, 160, 255)
+(window) {
+	backgroundColor = rgba(160, 160, 160, 255)
+	(tooltip) {
+		backgroundColor = #FFF7D6FF
+		borderColor = rgb(30, 30, 30)
+		textColor = rgb(30, 30, 30)
+		borderWidth = 1
+		fontSize = 20
+	}
+}
 % =========================
 
 

@@ -583,6 +583,7 @@ namespace ogfx
 		else if (event.type == SDL_EVENT_MOUSE_MOTION)
 		{
 			MouseEventData mmd = get_mouse_state(event);
+			m_mousePosition = { mmd.position_x, mmd.position_y };
 			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::MouseMoved, ostd::Signal::Priority::RealTime, mmd);
 		}
 		else if (event.type == SDL_EVENT_MOUSE_WHEEL)
@@ -876,6 +877,15 @@ namespace ogfx
 				m_rootWidget.__update();
 				m_rootWidget.__draw(m_gfx);
 				onRedraw(m_gfx);
+
+				if (isTooltipShown())
+				{
+					auto textSize = m_gfx.getStringDimensions(getTooltipText(), m_rootWidget.getTooltipFontSize());
+					Rectangle textBounds = { getMousePosition(), textSize };
+					textBounds += Rectangle { 0, 0, 30, 10 };
+					m_gfx.outlinedRect(textBounds, m_rootWidget.getTooltipBackgroundColor(), m_rootWidget.getTooltipBorderColor(), m_rootWidget.getTooltipBorderWidth());
+					m_gfx.drawCenteredString(getTooltipText(), textBounds, m_rootWidget.getTooltipTextColor(), m_rootWidget.getTooltipFontSize());
+				}
 				m_gfx.endFrame();
 				after_render();
 			}

@@ -43,12 +43,16 @@ namespace ogfx
 
 			void RootWidget::applyTheme(const ostd::Stylesheet& theme)
 			{
-				m_color = getThemeValue<Color>(theme, "backgroundColor", getWindow().getClearColor());
+				setTooltipBackgroundColor(getThemeValue<Color>(theme, "tooltip.backgroundColor", getTooltipBackgroundColor()));
+				setTooltipBorderColor(getThemeValue<Color>(theme, "tooltip.borderColor", getTooltipBorderColor()));
+				setTooltipTextColor(getThemeValue<Color>(theme, "tooltip.textColor", getTooltipTextColor()));
+				setTooltipBorderWidth(getThemeValue<i32>(theme, "tooltip.borderWidth", getTooltipBorderWidth()));
+				setTooltipFontSize(getThemeValue<i32>(theme, "tooltip.fontSize", getTooltipFontSize()));
 			}
 
 			void RootWidget::onDraw(ogfx::BasicRenderer2D& gfx)
 			{
-				gfx.fillRect({ 0, 0, cast<f32>(getWindow().getWindowWidth()), cast<f32>(getWindow().getWindowHeight()) }, m_color);
+				gfx.fillRect({ 0, 0, cast<f32>(getWindow().getWindowWidth()), cast<f32>(getWindow().getWindowHeight()) }, getBackgroundColor());
 			}
 		}
 	}

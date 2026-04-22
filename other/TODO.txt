@@ -42,6 +42,7 @@ Implement following widgets:
 	***Button
 		***Image/Icon
 	***Save/Open File Dialogs (and folder dialogs)
+	***Tooltips
 	Radio Button
 		Grouping
 	Progressbar
@@ -49,7 +50,6 @@ Implement following widgets:
 	Vertical Slider
 	ListBox
 	ComboBox
-	Tooltips
 	Context Menu
 		Menu Bar
 	Layouts
