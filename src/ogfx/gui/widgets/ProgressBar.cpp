@@ -69,9 +69,8 @@ namespace ogfx
 
 			void ProgressBar::setProgressNormalized(f32 normalized_value)
 			{
-				f32 current = m_progress.load(std::memory_order_relaxed);
-				f32 next = current;
-				next = current + std::clamp(normalized_value, 0.0f, 1.0f) * (m_max - m_min);
+				normalized_value = std::clamp(normalized_value, 0.0f, 1.0f);
+				f32 next = m_min + normalized_value * (m_max - m_min);
 				m_progress.store(next, std::memory_order_relaxed);
 			}
 

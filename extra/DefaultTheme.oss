@@ -235,3 +235,23 @@ const $accentColorDark = #6B0A1DFF
 	progressGradient = gradientV(#C21135FF - #820B23FF)
 }
 % ===================
+
+
+
+% ====== Slider ======
+(slider) {
+	(handle) {
+		color = $accentColor
+		size = vec2(10, 18)
+	}
+	(track) {
+		color = #500000FF
+		progressColor = #AA0000FF
+		width = 6.0
+	}
+	showStepTicks = true
+	stepTickHeight = 6.0
+	stepTickColor = $accentColor
+	padding = rect(5, 5, 5, 5)
+}
+% ===================

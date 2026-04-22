@@ -68,6 +68,16 @@
 	inline void enable##name(bool enable = true) { member = enable; } \
 	inline void disable##name(void) { enable##name(false); }
 
+#define OSTD_BOOL_PARAM_GETSET_E_NEG(name, member) \
+		inline bool is##name##Enabled(void) const { return !member; } \
+		inline void enable##name(bool enable = true) { member = !enable; } \
+		inline void disable##name(void) { enable##name(false); }
+
+#define OSTD_BOOL_PARAM_GETSET_I_NEG(name, member) \
+		inline bool is##name(void) const { return !member; } \
+		inline void enable##name(bool enable = true) { member = !enable; } \
+		inline void disable##name(void) { enable##name(false); }
+
 #define OSTD_PARAM_GETSET(type, name, member) \
 	inline type get##name(void) const { return member; } \
 	inline void set##name(const type& value) { member = value; } \

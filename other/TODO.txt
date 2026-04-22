@@ -47,8 +47,8 @@ Implement following widgets:
 	***Radio Button
 		***Grouping
 	***Progressbar
-	Horizontal Slider
-	Vertical Slider
+	***Horizontal Slider
+	***Vertical Slider
 	ListBox
 	ComboBox
 	Context Menu

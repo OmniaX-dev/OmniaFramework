@@ -95,6 +95,7 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Button.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/RadioButton.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/ProgressBar.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Slider.cpp
 
 	# render
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/BasicRenderer.cpp

@@ -105,6 +105,14 @@ class Window : public ogfx::gui::Window
 			m_panel2.setTooltipText("PANEL tooltip");
 
 			m_prog.setSize(300, 30);
+			m_slide.setSize(300, 30);
+			m_slide.setMinValue(-1.0f);
+			// m_slide.enableVertical();
+			// m_slide.setStep(0);
+			m_slide.setValueChangedCallback([&](f32 oldVal, f32 newVal) -> void {
+				m_slideLbl.setText(String("").add(newVal, 2));
+			});
+			m_slideLbl.setText(String("").add(m_slide.getValue(), 2));
 
 			m_tabs.setSize(900, 700);
 			auto& t1 = m_tabs.addTab("Tab1");
@@ -123,6 +131,8 @@ class Window : public ogfx::gui::Window
 				std::cout << sender.getText() << "\n\n";
 			});
 			t1.addWidget(m_prog, { 30, 200 });
+			t1.addWidget(m_slide, { 30, 250 });
+			t1.addWidget(m_slideLbl, { 340, 240 });
 			t2.addWidget(m_panel2, { 500, 100 });
 
 			m_panel3.addWidget(m_label4);
@@ -147,7 +157,7 @@ class Window : public ogfx::gui::Window
 				while (prog < 100)
 				{
 					prog += 0.6f;
-					ostd::Time::sleep(ostd::Random::getui32(10, 200));
+					ostd::Time::sleep(ostd::Random::getui32(10, 500));
 					this->m_prog.setProgress(prog);
 				}
 				return true;
@@ -188,6 +198,8 @@ class Window : public ogfx::gui::Window
 		TabPanel m_tabs { *this };
 		RadioButtonGroup m_radioGroup;
 		ProgressBar m_prog { *this, 0, 100 };
+		Slider m_slide { *this };
+		Label m_slideLbl { *this };
 
 		ostd::StepTimer m_timer;
 		ostd::AsyncJob<bool> m_progressJob;

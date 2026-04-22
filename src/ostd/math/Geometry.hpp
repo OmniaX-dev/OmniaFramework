@@ -83,6 +83,7 @@ namespace ostd
 		inline Vec2 div(f32 scalar) const { return { x / scalar, y / scalar }; }
 		inline Vec2 propx(f32 new_x) const { return { new_x, new_x * (y / x) }; }
 		inline Vec2 propy(f32 new_y) const { return { new_y * (x / y), new_y }; }
+		inline Vec2 swap(void) { return { y, x }; }
 
 		inline Vec2 normalize(void) const { f32 m = _zp(mag()); return { x / m,     y / m     };    }
 		inline f32 dist(Vec2 v2) const { return std::sqrt((f32)((v2.x - x) * (v2.x - x)) + ((v2.y - y) * (v2.y - y))); }
@@ -102,6 +103,7 @@ namespace ostd
 		inline Vec2& divm(const f32& scalar) { x /= scalar; y /= scalar; return *this; }
 		inline Vec2& propxm(const f32& new_x) { x = new_x; y = new_x * (y / x); return *this; }
 		inline Vec2& propym(const f32& new_y) { x = new_y * (x / y); y = new_y; return *this; }
+		inline Vec2& swapm(void) { f32 tmp = x; x = y; y = tmp; return *this; }
 
 		inline Vec2& normalizem(void) { f32 m = _zp(mag()); x /= m; y /= m;     return *this;    }
 		inline Vec2& setMag(const f32& mag) { return normalizem().mulm(mag); }
