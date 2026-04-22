@@ -20,9 +20,15 @@
 
 #pragma once
 
-#include <ogfx/gui/widgets/Containers.hpp>
-#include <ogfx/gui/widgets/Label.hpp>
-#include <ogfx/gui/widgets/CheckBox.hpp>
-#include <ogfx/gui/widgets/Scrollbar.hpp>
-#include <ogfx/gui/widgets/Button.hpp>
-#include <ogfx/gui/widgets/RadioButton.hpp>
+#include <ostd/data/Types.hpp>
+
+namespace ogfx
+{
+	// Ubuntu Mono Regular
+	extern const u32 ubuntu_mono_regular_ttf_size;
+	extern const ostd::UByte ubuntu_mono_regular_ttf_data[];
+
+	// Ubuntu Regular
+	extern const u32 ubuntu_regular_ttf_size;
+	extern const ostd::UByte ubuntu_regular_ttf_data[];
+}

@@ -63,6 +63,7 @@ namespace ogfx
 			void endFrame(void);
 			void pushClippingRect(const Rectangle& rect, bool additive = false);
 			void popClippingRect(void);
+			i32 loadDefaultMonoFont(i32 fontSize = 0);
 			i32 loadDefaultFont(i32 fontSize = 0);
 			void closeFont(void);
 			i32 openFont(const String& fontPath, i32 fontSize = 0);

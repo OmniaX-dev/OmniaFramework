@@ -28,6 +28,7 @@ Add Dark Mode Default theme
 FIX: Float values in stylesheet needing to have decimal point to be read as float
 Make parsing of vec2 and rect in stylesheet, consistent with other value functions like gradients and animations
 Add buttons to scroll tabs in TabPanel
+Add Font class, to handle different font attributes
 
 
 
@@ -43,8 +44,8 @@ Implement following widgets:
 		***Image/Icon
 	***Save/Open File Dialogs (and folder dialogs)
 	***Tooltips
-	Radio Button
-		Grouping
+	***Radio Button
+		***Grouping
 	Progressbar
 	Horizontal Slider
 	Vertical Slider

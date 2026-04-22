@@ -93,6 +93,7 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/CheckBox.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Scrollbar.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Button.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/RadioButton.cpp
 
 	# render
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/BasicRenderer.cpp
@@ -101,7 +102,7 @@ list(APPEND OGFX_SOURCE_FILES
 
 	# resources
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/resources/Image.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/resources/UbuntuMonoRegularTTF.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/resources/UbuntuTTF.cpp
 
 	# utils
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/utils/Animation.cpp

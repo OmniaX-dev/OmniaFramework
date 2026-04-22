@@ -112,6 +112,9 @@ class Window : public ogfx::gui::Window
 			t3.addThemeOverride("@panel_tab.panel.backgroundColor", Colors::Orange);
 
 			t1.addWidget(m_check1, { 30, 30 });
+			m_radioGroup.addButton(t1, "Radio this out!", { 30, 80 });
+			m_radioGroup.addButton(t1, "Radio Opt. 2", { 30, 110 });
+			m_radioGroup.addButton(t1, "Radio 3", { 30, 140 });
 			t2.addWidget(m_panel2, { 500, 100 });
 
 			m_panel3.addWidget(m_label4);
@@ -125,8 +128,6 @@ class Window : public ogfx::gui::Window
 			m_panel2.addWidget(m_label1, { 0, 500 });
 			m_panel2.addWidget(m_btn1, { 0, 300 });
 			m_panel2.addWidget(m_img, { 20, 50 });
-
-
 
 			addWidget(m_tabs, { 0,  0 });
 
@@ -166,6 +167,7 @@ class Window : public ogfx::gui::Window
 		Button m_btn1 { *this };
 		ImageLabel m_img { *this };
 		TabPanel m_tabs { *this };
+		RadioButtonGroup m_radioGroup;
 
 		ostd::Stylesheet m_theme;
 };

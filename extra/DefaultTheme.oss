@@ -138,6 +138,35 @@ const $accentColorDark = #6B0A1DFF
 
 
 
+% ====== RadioButton ======
+(radioButton) {
+	innerCircleColor = $accentColorDark
+	outerCircleColor = $accentColor
+	outerCircleBorderWidth = 2
+	textColor = $textColor
+	fontSize = 20
+	showBackground = false
+	showBorder = false
+	padding = rect(15, 15, 15, 15)
+	margin = rect(0, 0, 0, 0)
+}
+(radioButton:hover) {
+	outerCircleColor = $accentColorLight
+}
+(radioButton:pressed) {
+	outerCircleColor = $accentColor
+	textColor = $accentColorDark
+	innerCircleColor = $accentColor
+}
+(radioButton:active) {
+	innerCircleColor = $accentColor
+	outerCircleColor = $accentColor
+	textColor = $accentColorDark
+}
+% =========================
+
+
+
 % ====== Label ======
 (label) {
 	textColor = $textColor

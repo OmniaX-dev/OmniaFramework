@@ -31,7 +31,7 @@ namespace ogfx
 			{
 				setText(text);
 				setPadding({ 5, 5, 5, 5 });
-				setTypeName("ogfx::gui::widgets::Label");
+				setTypeName("ogfx::gui::widgets::CheckBox");
 				disableChildren();
 				enableBackground(false);
 				setStylesheetCategoryName("checkbox");

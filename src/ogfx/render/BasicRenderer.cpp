@@ -20,7 +20,7 @@
 
 #include "BasicRenderer.hpp"
 #include "../gui/Window.hpp"
-#include "../resources/UbuntuMonoRegularTTF.hpp"
+#include "../resources/UbuntuTTF.hpp"
 #include "../gui/Window.hpp"
 
 #define COLOR_CAST(ostd_color) std::bit_cast<SDL_FColor>(ostd_color.getNormalizedColor())
@@ -152,9 +152,14 @@ namespace ogfx
 		SDL_SetRenderClipRect(m_window->getSDLRenderer(), &r);
 	}
 
-	i32 BasicRenderer2D::loadDefaultFont(i32 fontSize)
+	i32 BasicRenderer2D::loadDefaultMonoFont(i32 fontSize)
 	{
 		return openFont(ubuntu_mono_regular_ttf_data, ubuntu_mono_regular_ttf_size, fontSize);
+	}
+
+	i32 BasicRenderer2D::loadDefaultFont(i32 fontSize)
+	{
+		return openFont(ubuntu_regular_ttf_data, ubuntu_regular_ttf_size, fontSize);
 	}
 
 	void BasicRenderer2D::closeFont(void)
