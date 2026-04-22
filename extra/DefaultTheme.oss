@@ -219,3 +219,19 @@ const $accentColorDark = #6B0A1DFF
 (image) {
 }
 % ===================
+
+
+
+% ====== Image ======
+(progressbar) {
+	backgroundColor = #400000FF
+	progressColor = #AA0000FF
+	borderColor = $accentColor
+	showDecimal = false
+	showText = true
+	useBackgroundGradient = true
+	backgroundGradient = gradientV(#400A1DFF - $accentColorDark)
+	useProgressGradient = true
+	progressGradient = gradientV(#C21135FF - #820B23FF)
+}
+% ===================

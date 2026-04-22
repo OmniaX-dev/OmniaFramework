@@ -228,7 +228,7 @@ namespace ogfx
 				Rectangle m_padding { 0, 0, 0, 0 };
 				Rectangle m_margin { 0, 0, 0, 0 };
 				Vec2 m_contentOffset { 0, 0 };
-				i32 m_borderRadius { 10 };
+				i32 m_borderRadius { 0 };
 				i32 m_borderWidth { 2 };
 				Color m_borderColor { 255, 255, 255 };
 				bool m_showBorder { false };

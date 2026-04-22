@@ -94,6 +94,7 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Scrollbar.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Button.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/RadioButton.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/ProgressBar.cpp
 
 	# render
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/BasicRenderer.cpp
@@ -152,7 +153,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	target_compile_definitions(${OMNIA_STD_LIB} PUBLIC OX_DEBUG_BUILD)
 	target_compile_definitions(${OMNIA_GFX_LIB} PUBLIC OX_DEBUG_BUILD)
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
-	add_compile_options(-MMD -MP -Wall)
+	add_compile_options(-MMD -MP -Wall -latomic)
 	target_compile_definitions(${OMNIA_STD_LIB} PUBLIC OX_RELEASE_BUILD)
 	target_compile_definitions(${OMNIA_GFX_LIB} PUBLIC OX_RELEASE_BUILD)
 endif()

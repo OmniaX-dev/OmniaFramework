@@ -47,7 +47,7 @@ namespace ogfx
 					inline Color getCheckBoxColor(void) const { return m_checkBoxColor; }
 					inline void setCheckBoxColor(const Color& color) { m_checkBoxColor = color; }
 					inline bool isChecked(void) const { return m_checked; }
-					inline void setStateChangedCallback(std::function<void(CheckBox&, bool)> callback) { callback_onStateChanged = callback; }
+					inline void setStateChangedCallback(std::function<void(CheckBox&, bool)> callback) { callback_onStateChanged = std::move(callback); }
 
 				private:
 					void __update_size(ogfx::BasicRenderer2D& gfx);

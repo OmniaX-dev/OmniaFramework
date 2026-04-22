@@ -66,6 +66,7 @@ namespace ogfx
 				public:
 					RadioButtonGroup(void);
 					RadioButton& addButton(Widget& parent, const String& text, const Vec2& position = { 0, 0 });
+					inline void setSelectionChangedCallback(std::function<void(RadioButton& previous, RadioButton& sender)> callback) { callback_onSelectionChanged = std::move(callback); }
 
 				private:
 					void set_selected(RadioButton& sender);
@@ -75,6 +76,7 @@ namespace ogfx
 				private:
 					stdvec<std::unique_ptr<RadioButton>> m_buttons;
 					RadioButton* m_selected { nullptr };
+					std::function<void(RadioButton& previous, RadioButton& sender)> callback_onSelectionChanged { nullptr };
 
 					friend class RadioButton;
 			};

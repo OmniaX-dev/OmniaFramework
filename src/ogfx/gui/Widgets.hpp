@@ -26,3 +26,4 @@
 #include <ogfx/gui/widgets/Scrollbar.hpp>
 #include <ogfx/gui/widgets/Button.hpp>
 #include <ogfx/gui/widgets/RadioButton.hpp>
+#include <ogfx/gui/widgets/ProgressBar.hpp>

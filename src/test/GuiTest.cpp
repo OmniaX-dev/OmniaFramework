@@ -22,6 +22,7 @@
 #include <SDL3/SDL_rect.h>
 #include <ogfx/utils/Keycodes.hpp>
 #include <ogfx/ogfx.hpp>
+#include <ostd/utils/Async.hpp>
 
 ogfx::WindowCore::FileDialogFilterList filters  = {
 	{ "Image files", { "png", "jpg", "jpeg", "bmp" } },
@@ -103,6 +104,8 @@ class Window : public ogfx::gui::Window
 			m_panel2.enableTooltip();
 			m_panel2.setTooltipText("PANEL tooltip");
 
+			m_prog.setSize(300, 30);
+
 			m_tabs.setSize(900, 700);
 			auto& t1 = m_tabs.addTab("Tab1");
 			auto& t2 = m_tabs.addTab("Tab2 Test");
@@ -115,6 +118,11 @@ class Window : public ogfx::gui::Window
 			m_radioGroup.addButton(t1, "Radio this out!", { 30, 80 });
 			m_radioGroup.addButton(t1, "Radio Opt. 2", { 30, 110 });
 			m_radioGroup.addButton(t1, "Radio 3", { 30, 140 });
+			m_radioGroup.setSelectionChangedCallback([&](RadioButton& previous, RadioButton& sender) -> void {
+				std::cout << previous.getText() << "\n";
+				std::cout << sender.getText() << "\n\n";
+			});
+			t1.addWidget(m_prog, { 30, 200 });
 			t2.addWidget(m_panel2, { 500, 100 });
 
 			m_panel3.addWidget(m_label4);
@@ -133,6 +141,17 @@ class Window : public ogfx::gui::Window
 
 			m_theme.loadFromFile("./DefaultTheme.oss", true, getDefaultStylesheetVariableList());
 			setTheme(m_theme);
+
+			m_progressJob.start([this] {
+				f32 prog = 0.0f;
+				while (prog < 100)
+				{
+					prog += 0.6f;
+					ostd::Time::sleep(ostd::Random::getui32(10, 200));
+					this->m_prog.setProgress(prog);
+				}
+				return true;
+			});
 		}
 
 		inline void onSignal(ostd::Signal& signal) override
@@ -168,6 +187,10 @@ class Window : public ogfx::gui::Window
 		ImageLabel m_img { *this };
 		TabPanel m_tabs { *this };
 		RadioButtonGroup m_radioGroup;
+		ProgressBar m_prog { *this, 0, 100 };
+
+		ostd::StepTimer m_timer;
+		ostd::AsyncJob<bool> m_progressJob;
 
 		ostd::Stylesheet m_theme;
 };

@@ -117,9 +117,14 @@ namespace ogfx
 			{
 				if (is_button_present(sender))
 				{
+					if (m_selected != nullptr && m_selected == &sender)
+						return;
 					unselect_all();
+					auto previous = m_selected;
 					m_selected = &sender;
 					m_selected->__set_selected(true);
+					if (previous != nullptr && callback_onSelectionChanged != nullptr)
+						callback_onSelectionChanged(*previous, sender);
 					return;
 				}
 			}
