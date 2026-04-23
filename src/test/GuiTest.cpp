@@ -114,6 +114,8 @@ class Window : public ogfx::gui::Window
 			});
 			m_slideLbl.setText(String("").add(m_slide.getValue(), 2));
 
+			m_list.setSize(200, 300);
+
 			m_tabs.setSize(900, 700);
 			auto& t1 = m_tabs.addTab("Tab1");
 			auto& t2 = m_tabs.addTab("Tab2 Test");
@@ -133,6 +135,7 @@ class Window : public ogfx::gui::Window
 			t1.addWidget(m_prog, { 30, 200 });
 			t1.addWidget(m_slide, { 30, 250 });
 			t1.addWidget(m_slideLbl, { 340, 240 });
+			t1.addWidget(m_list, { 30, 300 });
 			t2.addWidget(m_panel2, { 500, 100 });
 
 			m_panel3.addWidget(m_label4);
@@ -200,6 +203,7 @@ class Window : public ogfx::gui::Window
 		ProgressBar m_prog { *this, 0, 100 };
 		Slider m_slide { *this };
 		Label m_slideLbl { *this };
+		ListView m_list { *this };
 
 		ostd::StepTimer m_timer;
 		ostd::AsyncJob<bool> m_progressJob;
@@ -209,6 +213,7 @@ class Window : public ogfx::gui::Window
 
 i32 main(i32 argc, char** argv)
 {
+	ostd::Random::autoSeed();
 	ostd::initialize();
 	Window window;
 	window.initialize(1200, 800, "OmniaFramework - Test Window");

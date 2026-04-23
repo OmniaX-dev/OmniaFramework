@@ -283,6 +283,7 @@ namespace ogfx
 				inline virtual void resetScroll(bool horizontal = true, bool vertical = true, bool propagate = true) {  }
 				inline virtual f32 getVScrollbarSize(void) const { return 0; }
 				inline virtual f32 getHScrollbarSize(void) const { return 0; }
+				inline virtual void refresh(void) {  }
 				// =====================================================
 
 				inline virtual void onDraw(ogfx::BasicRenderer2D& gfx) {  }

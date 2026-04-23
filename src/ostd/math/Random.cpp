@@ -114,4 +114,12 @@ namespace ostd
 		return m_noiseGen.GetNoise(x, y);
 	}
 
+	String RandomGenerator::getString(u32 length, const String& charset)
+	{
+		String rnd = "";
+		u32 len = charset.len();
+		for (i32 i = 0; i < length; i++)
+			rnd += charset[getui32(0, len - 1)];
+		return rnd;
+	}
 }

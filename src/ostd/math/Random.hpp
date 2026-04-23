@@ -1,21 +1,21 @@
 /*
-    OmniaFramework - A collection of useful functionality
-    Copyright (C) 2025  OmniaX-Dev
+	OmniaFramework - A collection of useful functionality
+	Copyright (C) 2025  OmniaX-Dev
 
-    This file is part of OmniaFramework.
+	This file is part of OmniaFramework.
 
-    OmniaFramework is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	OmniaFramework is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    OmniaFramework is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	OmniaFramework is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
@@ -51,6 +51,8 @@ namespace ostd
 			Vec2 getVec2(f32 min = 0.0f, f32 max = 1.0f, bool match_xy = false);
 			Vec2 getVec2(Vec2 minmax_x = { 0.0f, 1.0f }, Vec2 minmax_y = { 0.0f, 1.0f });
 			f32 getOpenSimplex2D(f32 x, f32 y);
+
+			String getString(u32 length, const String& charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-!@#$%^&*()+=[]{}|/?.>,<;:'\"\\");
 
 			inline FastNoiseLite& getNoiseGenerator(void) { return m_noiseGen; }
 
@@ -98,6 +100,8 @@ namespace ostd
 			inline static Vec2 getVec2(f32 min = 0.0f, f32 max = 1.0f, bool match_xy = false) { return Random::s_gen.getVec2(min, max, match_xy); }
 			inline static Vec2 getVec2(Vec2 minmax_x = { 0.0f, 1.0f }, Vec2 minmax_y = { 0.0f, 1.0f }) { return Random::s_gen.getVec2(minmax_x, minmax_y); }
 			inline static f32 getOpenSimplex2D(f32 x, f32 y) { return Random::s_gen.getOpenSimplex2D(x, y); }
+
+			inline static String getString(u32 length, const String& charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-!@#$%^&*()+=[]{}|/?.>,<;:'\"\\") { return Random::s_gen.getString(length, charset); }
 
 			template <typename T>
 			inline static T& getFromStdVec(stdvec<T>& list) { return Random::s_gen.getFromStdVec<T>(list); }

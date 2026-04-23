@@ -28,3 +28,4 @@
 #include <ogfx/gui/widgets/RadioButton.hpp>
 #include <ogfx/gui/widgets/ProgressBar.hpp>
 #include <ogfx/gui/widgets/Slider.hpp>
+#include <ogfx/gui/widgets/ListView.hpp>

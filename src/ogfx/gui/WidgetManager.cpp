@@ -74,6 +74,7 @@ namespace ogfx
 			std::ranges::sort(m_widgetList, {}, [](Widget* w) {
 				return w->m_zIndex;
 			});
+			widget.refresh();
 			return true;
 		}
 
