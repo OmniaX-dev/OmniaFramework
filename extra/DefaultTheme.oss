@@ -255,3 +255,22 @@ const $accentColorDark = #6B0A1DFF
 	padding = rect(5, 5, 5, 5)
 }
 % ===================
+
+
+
+% ====== Slider ======
+(list) {
+	(item) {
+		defaultTextColor = #202020FF
+		defaultFontSize = 16
+		defaultPadding = rect(5, 5, 20, 0)
+		defaultSelectionColor = $accentColor
+		defaultSelectionTextColor = color_white
+	}
+	backgroundColor = rgb(160, 160, 160)
+	borderColor = rgb(50, 50, 50)
+	separatorLineColor = rgb(40, 40, 40)
+	showSeparatorLine = true
+
+}
+% ===================

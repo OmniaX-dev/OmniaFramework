@@ -355,6 +355,16 @@ namespace ogfx
 				}
 			}
 
+			bool ScrollableWidget::isMouseInsideVScrollbar(void) const
+			{
+				return m_vScrollbar.isMouseInside();
+			}
+
+			bool ScrollableWidget::isMouseInsideHScrollbar(void) const
+			{
+				return m_hScrollbar.isMouseInside();
+			}
+
 			void ScrollableWidget::onMouseScrolled(const Event& event)
 			{
 				if (isVScrollEnabled())

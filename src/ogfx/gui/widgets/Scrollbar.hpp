@@ -114,6 +114,9 @@ namespace ogfx
 					void drawScrollbars(ogfx::BasicRenderer2D& gfx);
 					void updateScrollbarsSize(void);
 					void resetScroll(bool horizontal = true, bool vertical = true, bool propagate = true) override;
+					bool isMouseInsideVScrollbar(void) const;
+					bool isMouseInsideHScrollbar(void) const;
+					inline bool isMouseInsideAnyScrollbar(void) const { return isMouseInsideVScrollbar() || isMouseInsideHScrollbar(); }
 					virtual void onMouseScrolled(const Event& event) override;
 					virtual void setScrollOffset(const Vec2& offset) override;
 					virtual void addScrollOffset(const Vec2& offset) override;

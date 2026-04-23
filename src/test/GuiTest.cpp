@@ -114,7 +114,20 @@ class Window : public ogfx::gui::Window
 			});
 			m_slideLbl.setText(String("").add(m_slide.getValue(), 2));
 
+			m_drawCallsLbl.addThemeOverride("@.label.fontSize", 30);
+			m_drawCallsLbl.addThemeOverride("@.label.textColor", Colors::Crimson);
+
 			m_list.setSize(200, 300);
+
+			for (i32 i = 0; i < 100; i++)
+			{
+				m_list.addLine(ostd::Random::getString(ostd::Random::getui8(0, 40)));
+			}
+			m_list.getItem(10).setFontSize(40);
+			m_list.getItem(160).setTextColor(Colors::Crimson);
+			m_list.setSelectionChangedCallback([&](stdvec<ogfx::gui::widgets::ListView::Item*>& selection) -> void {\
+				std::cout << *(selection[0]) << "\n";
+			});
 
 			m_tabs.setSize(900, 700);
 			auto& t1 = m_tabs.addTab("Tab1");
@@ -151,6 +164,7 @@ class Window : public ogfx::gui::Window
 			m_panel2.addWidget(m_img, { 20, 50 });
 
 			addWidget(m_tabs, { 0,  0 });
+			addWidget(m_drawCallsLbl, { 39, m_tabs.getSize().y + 30 });
 
 			m_theme.loadFromFile("./DefaultTheme.oss", true, getDefaultStylesheetVariableList());
 			setTheme(m_theme);
@@ -180,6 +194,7 @@ class Window : public ogfx::gui::Window
 		void onRedraw(ogfx::BasicRenderer2D& gfx) override
 		{
 			// gfx.fillRect(m_tabs.getGlobalPureContentBounds(), { 0, 255, 0, 100 });
+			m_drawCallsLbl.setText(String("").add(gfx.getDrawCallCount()));
 		}
 
 		void onFixedUpdate(void) override
@@ -204,6 +219,7 @@ class Window : public ogfx::gui::Window
 		Slider m_slide { *this };
 		Label m_slideLbl { *this };
 		ListView m_list { *this };
+		Label m_drawCallsLbl { *this };
 
 		ostd::StepTimer m_timer;
 		ostd::AsyncJob<bool> m_progressJob;
