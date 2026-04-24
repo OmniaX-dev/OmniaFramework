@@ -36,6 +36,7 @@ namespace ogfx
 					void applyTheme(const ostd::Stylesheet& theme) override;
 					void onMouseReleased(const Event& event) override;
 					void onMouseDragged(const Event& event) override;
+					void onMouseScrolled(const Event& event) override;
 					void onDraw(ogfx::BasicRenderer2D& gfx) override;
 					inline f32 getValue(void) const { return m_value; }
 					inline void setValueChangedCallback(std::function<void(f32 oldValue, f32 newValue)> callback) { callback_onValueChanged = std::move(callback); }
@@ -48,6 +49,7 @@ namespace ogfx
 					inline void disableHorizontal(void) { enableHorizontal(false); }
 
 					OSTD_BOOL_PARAM_GETSET_E(MiddleClickShortcut, m_middleClickShortcut);
+					OSTD_BOOL_PARAM_GETSET_E(ScrollWheelShortcut, m_enableScrollWheel);
 					OSTD_PARAM_GETSET(f32, MinValue, m_min);
 					OSTD_PARAM_GETSET(f32, MaxValue, m_max);
 					OSTD_PARAM_GETSET(f32, Step, m_step);
@@ -75,6 +77,7 @@ namespace ogfx
 					f32 m_step { 0.1f };
 					bool m_vertical { false };
 					bool m_middleClickShortcut { true };
+					bool m_enableScrollWheel { true };
 
 					f32 m_trackWidth { 6 };
 					Color m_trackColor { "#500000FF" };

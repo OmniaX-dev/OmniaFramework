@@ -35,6 +35,7 @@ namespace ogfx
 					return;
 				m_text = text;
 				update_dimensions();
+				if (m_parent) m_parent->m_extentsDirty = true;
 			}
 
 			void ListView::Item::setFontSize(i32 fontSize)
@@ -43,6 +44,7 @@ namespace ogfx
 					return;
 				m_fontSize = fontSize;
 				update_dimensions();
+				if (m_parent) m_parent->m_extentsDirty = true;
 			}
 
 			void ListView::Item::update_dimensions(void)
@@ -108,35 +110,31 @@ namespace ogfx
 
 			void ListView::onDraw(ogfx::BasicRenderer2D& gfx)
 			{
-				// f32 y = 0;
 				const auto& bounds = getGlobalBounds();
 				const auto& content = getContentExtents();
+				const f32 scrollY = -getScrollOffset().y;
+				const f32 visibleH = getContentBounds().h;
+				const f32 visibleStart = scrollY;
+				const f32 visibleEnd  = scrollY + visibleH;
 				Color textColor;
-				// Compute the visible Y window in content space
-				const f32 scrollY      = -getScrollOffset().y;           // positive offset into content
-				const f32 visibleH     =  getContentBounds().h;
-				const f32 visibleStart =  scrollY;
-				const f32 visibleEnd   =  scrollY + visibleH;
 
-				// Find the starting item and its Y via a linear scan...
 				f32 y = 0;
 				i32 startIdx = 0;
 				for (auto& item : m_list)
 				{
 					if (!item.isValid()) { startIdx++; continue; }
 					f32 itemH = item.getDimensions().y;
-					if (y + itemH > visibleStart) break;   // this item is the first one in view
+					if (y + itemH > visibleStart) break;
 					y += itemH;
 					startIdx++;
 				}
 
-				// ...then process only items from startIdx until we exceed visibleEnd
 				for (i32 i = startIdx; i < (i32)m_list.size(); i++)
 				{
 					auto& item = m_list[i];
 					if (!item.isValid()) continue;
 					f32 itemH = item.getDimensions().y;
-					if (y > visibleEnd) break;             // past the visible window, stop
+					if (y > visibleEnd) break;
 					if (item.isSelected())
 					{
 						textColor = item.getSelectedTextColor();
@@ -146,24 +144,8 @@ namespace ogfx
 						textColor = item.getTextColor();
 					gfx.drawLine({ Vec2 { bounds.x, bounds.y + y + itemH + 4 } + getScrollOffset(), Vec2 { bounds.x + content.w, bounds.y + y + itemH + 4 } + getScrollOffset() }, Colors::Black, 1);
 					gfx.drawString(item, bounds.getPosition() + Vec2 { 0, y } + getScrollOffset() + item.getPadding().getPosition(), textColor, item.getFontSize());
-					// draw or hit-test item at content Y = y
 					y += itemH;
 				}
-				// for (auto& item : m_list)
-				// {
-				//     if (!item.isValid()) continue;
-				//     const auto& size = item.getDimensions();
-				//     if (item.isSelected())
-				//     {
-				//         textColor = item.getSelectedTextColor();
-				//         gfx.fillRect({ Vec2 { bounds.x, bounds.y + y + 4 } + getScrollOffset(), { content.w, size.y } }, item.getSelectedColor());
-				//     }
-				//     else
-				//         textColor = item.getTextColor();
-				//     gfx.drawLine({ Vec2 { bounds.x, bounds.y + y + size.y + 4 } + getScrollOffset(), Vec2 { bounds.x + content.w, bounds.y + y + size.y + 4 } + getScrollOffset() }, Colors::Black, 1);
-				//     gfx.drawString(item, bounds.getPosition() + Vec2 { 0, y } + getScrollOffset() + item.getPadding().getPosition(), textColor, item.getFontSize());
-				//     y += size.y;
-				// }
 			}
 
 			void ListView::afterDraw(ogfx::BasicRenderer2D& gfx)
@@ -188,10 +170,11 @@ namespace ogfx
 				{
 					if (!item.isValid()) continue;
 					const f32 itemH = item.getDimensions().y;
-					if (!item.isSelected() && localY >= y && localY < y + itemH)
+					if (localY >= y && localY < y + itemH)
 					{
+						bool wasSelected = item.isSelected();
 						item.set_selected(m_selectedList);
-						if (callback_onSelectionChanged)
+						if (!wasSelected && callback_onSelectionChanged)
 							callback_onSelectionChanged(m_selectedList);
 						event.handle();
 						break;
@@ -202,6 +185,9 @@ namespace ogfx
 
 			Rectangle ListView::getContentExtents(void) const
 			{
+
+				if (!m_extentsDirty)
+					return m_cachedExtents;
 				f32 maxX = 0, maxY = 0;
 				for (auto& item : m_list)
 				{
@@ -210,10 +196,12 @@ namespace ogfx
 					maxX = std::max(maxX, size.x);
 					maxY += size.y;
 				}
-				return { 0, 0, maxX, maxY };
+				m_cachedExtents = { 0, 0, maxX, maxY };
+				m_extentsDirty = false;
+				return m_cachedExtents;
 			}
 
-			ListView::Item& ListView::getItem(const String& text)
+			ListView::Item& ListView::getLine(const String& text)
 			{
 				for (auto& item : m_list)
 					if (item.getText() == text)
@@ -221,7 +209,7 @@ namespace ogfx
 				return InvalidItem;
 			}
 
-			ListView::Item& ListView::getItem(u32 index)
+			ListView::Item& ListView::getLine(u32 index)
 			{
 				if (index < m_list.size())
 					return m_list[index];
@@ -238,9 +226,30 @@ namespace ogfx
 				item.setSelectedTextColor(m_defaultSelectionTextColor);
 				item.setText(text);
 				m_list.push_back(item);
-				if (m_list.size() == 1)
-					m_list.back().set_selected(m_selectedList);
+				if (m_list.size() > 0)
+					m_list[0].set_selected(m_selectedList);
+				m_extentsDirty = true;
 				return m_list.back();
+			}
+
+			bool ListView::removeLine(const String& text)
+			{
+				return false; //TODO: Implement
+			}
+
+			bool ListView::removeLine(u32 index)
+			{
+				return false; //TODO: Implement
+			}
+
+			bool ListView::hasLine(const String& text)
+			{
+				return false; //TODO: Implement
+			}
+
+			bool ListView::hasLine(u32 index)
+			{
+				return false; //TODO: Implement
 			}
 		}
 	}

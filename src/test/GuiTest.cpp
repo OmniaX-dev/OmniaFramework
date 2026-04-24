@@ -119,12 +119,12 @@ class Window : public ogfx::gui::Window
 
 			m_list.setSize(200, 300);
 
-			for (i32 i = 0; i < 100; i++)
+			for (i32 i = 0; i < 10000; i++)
 			{
-				m_list.addLine(ostd::Random::getString(ostd::Random::getui8(0, 40)));
+				m_list.addLine(ostd::Random::getString(ostd::Random::getui8(1, 40)));
 			}
-			m_list.getItem(10).setFontSize(40);
-			m_list.getItem(160).setTextColor(Colors::Crimson);
+			m_list.getLine(10).setFontSize(40);
+			m_list.getLine(160).setTextColor(Colors::Crimson);
 			m_list.setSelectionChangedCallback([&](stdvec<ogfx::gui::widgets::ListView::Item*>& selection) -> void {\
 				std::cout << *(selection[0]) << "\n";
 			});

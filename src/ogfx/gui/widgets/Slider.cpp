@@ -74,6 +74,28 @@ namespace ogfx
 				set_value(mouse_position_to_value({ event.mouse->position_x, event.mouse->position_y }));
 			}
 
+			void Slider::onMouseScrolled(const Event& event)
+			{
+				if (!isMouseInside())
+					return;
+				if (!isScrollWheelShortcutEnabled())
+					return;
+				if (getStep() > 0)
+				{
+					if (event.mouse->scroll == MouseEventData::eScrollDirection::Down ||
+						event.mouse->scroll == MouseEventData::eScrollDirection::Right)
+						set_value(getValue() + (getStep() * -1));
+					else
+						set_value(getValue() + getStep());
+				}
+				else if (event.mouse->scroll == MouseEventData::eScrollDirection::Down ||
+						 event.mouse->scroll == MouseEventData::eScrollDirection::Up)
+					set_value(getValue() + (0.1f * event.mouse->scrollAmount.y));
+				else
+					set_value(getValue() + (0.1f * event.mouse->scrollAmount.x));
+				event.handle();
+			}
+
 			void Slider::onDraw(ogfx::BasicRenderer2D& gfx)
 			{
 				const auto& bounds = getGlobalContentBounds();
@@ -143,7 +165,7 @@ namespace ogfx
 
 			f32 Slider::snap_to_step(f32 val)
 			{
-				if (m_step <= 0.0f) return val; // full precision
+				if (m_step <= 0.0f) return std::clamp(val, m_min, m_max); // full precision
 				f32 snapped = std::round((val - m_min) / m_step) * m_step + m_min;
 				return std::clamp(snapped, m_min, m_max);
 			}

@@ -22,6 +22,7 @@
 
 #include <ogfx/gui/widgets/Widget.hpp>
 #include <ogfx/gui/widgets/Scrollbar.hpp>
+#include <deque>
 
 namespace ogfx
 {
@@ -78,9 +79,13 @@ namespace ogfx
 					void afterDraw(ogfx::BasicRenderer2D& gfx) override;
 					void onMouseReleased(const Event& event) override;
 					Rectangle getContentExtents(void) const override;
-					Item& getItem(const String& text);
-					Item& getItem(u32 index);
+					Item& getLine(const String& text);
+					Item& getLine(u32 index);
 					Item& addLine(const String& text);
+					bool removeLine(const String& text);
+					bool removeLine(u32 index);
+					bool hasLine(const String& text);
+					bool hasLine(u32 index);
 					inline void addLine(const Item& line) { m_list.push_back(line); if (m_list.size() == 1) m_list.back().set_selected(m_selectedList); }
 					inline stdvec<Item*>& getSelection(void) { return m_selectedList; }
 					inline void setSelectionChangedCallback(std::function<void(stdvec<Item*>& selection)> callback) { callback_onSelectionChanged = std::move(callback); }
@@ -95,9 +100,12 @@ namespace ogfx
 
 				private:
 					Item InvalidItem { *this };
-					stdvec<Item> m_list;
+					std::deque<Item> m_list;
 					stdvec<Item*> m_selectedList;
 					std::function<void(stdvec<Item*>& selection)> callback_onSelectionChanged { nullptr };
+					mutable Rectangle m_cachedExtents { 0, 0, 0, 0 };
+					mutable bool m_extentsDirty { true };
+
 					Color m_lineColor { 40, 40, 40 };
 					bool m_showLine { true };
 					i32 m_defaultLinefontSize { 16 };
