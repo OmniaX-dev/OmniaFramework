@@ -235,6 +235,7 @@ namespace ogfx
 				case eCallback::WindowResized:   callback_onWindowResized   = std::move(callback); break;
 				case eCallback::WindowFocused:   callback_onWindowFocused   = std::move(callback); break;
 				case eCallback::WindowFocusLost: callback_onWindowFocusLost = std::move(callback); break;
+				case eCallback::ActionPerformed: callback_onActionPerformed = std::move(callback); break;
 				default: break;
 			}
 		}
@@ -272,7 +273,7 @@ namespace ogfx
 
 		void Widget::__onMousePressed(const Event& event)
 		{
-			if (event.isHandled()) return;
+			if (event.isHandled() || !isMousePressedEventEnabled()) return;
 			setThemeQualifier("pressed");
 			if (hasChildren())
 				m_widgets.onMousePressed(event);
@@ -287,7 +288,7 @@ namespace ogfx
 
 		void Widget::__onMouseReleased(const Event& event)
 		{
-			if (event.isHandled()) return;
+			if (event.isHandled() || !isMouseReleasedEventEnabled()) return;
 			setThemeQualifier("pressed", false);
 			m_pressedButton = ogfx::MouseEventData::eButton::None;
 			if (hasChildren())
@@ -314,7 +315,7 @@ namespace ogfx
 
 		void Widget::__onMouseMoved(const Event& event)
 		{
-			if (event.isHandled()) return;
+			if (event.isHandled() || !isMouseMovedEventEnabled()) return;
 			if (hasChildren())
 				m_widgets.onMouseMoved(event);
 			if (!event.isHandled())
@@ -329,7 +330,7 @@ namespace ogfx
 
 		void Widget::__onMouseScrolled(const Event& event)
 		{
-			if (event.isHandled()) return;
+			if (event.isHandled() || !isMouseScrolledEventEnabled()) return;
 			if (hasChildren())
 				m_widgets.onMouseScrolled(event);
 			if (!event.isHandled())
@@ -342,7 +343,7 @@ namespace ogfx
 
 		void Widget::__onMouseEntered(const Event& event)
 		{
-			if (event.isHandled()) return;
+			if (event.isHandled() || !isMouseEnteredEventEnabled()) return;
 			setThemeQualifier("hover");
 			if (callback_onMouseEntered)
 				callback_onMouseEntered(event);
@@ -353,7 +354,7 @@ namespace ogfx
 
 		void Widget::__onMouseExited(const Event& event)
 		{
-			if (event.isHandled()) return;
+			if (event.isHandled() || !isMouseExitedEventEnabled()) return;
 			setThemeQualifier("hover", false);
 			if (callback_onMouseExited)
 				callback_onMouseExited(event);
@@ -364,7 +365,7 @@ namespace ogfx
 
 		void Widget::__onMouseDragged(const Event& event)
 		{
-			if (event.isHandled()) return;
+			if (event.isHandled() || !isMouseDraggedEventEnabled()) return;
 			if (hasChildren())
 				m_widgets.onMouseDragged(event);
 			if (!event.isHandled())
@@ -379,7 +380,7 @@ namespace ogfx
 
 		void Widget::__onKeyPressed(const Event& event)
 		{
-			if (event.isHandled()) return;
+			if (event.isHandled() || !isKeyPressedEventEnabled()) return;
 			if (hasChildren())
 				m_widgets.onKeyPressed(event);
 			if (!event.isHandled())
@@ -392,7 +393,7 @@ namespace ogfx
 
 		void Widget::__onKeyReleased(const Event& event)
 		{
-			if (event.isHandled()) return;
+			if (event.isHandled() || !isKeyReleasedEventEnabled()) return;
 			m_pressedButton = ogfx::MouseEventData::eButton::None;
 			if (hasChildren())
 				m_widgets.onKeyReleased(event);
@@ -406,7 +407,7 @@ namespace ogfx
 
 		void Widget::__onTextEntered(const Event& event)
 		{
-			if (event.isHandled()) return;
+			if (event.isHandled() || !isTextEnteredEventEnabled()) return;
 			if (hasChildren())
 				m_widgets.onTextEntered(event);
 			if (!event.isHandled())

@@ -38,6 +38,7 @@ namespace ogfx
 					Button& create(const String& text);
 					void onDraw(ogfx::BasicRenderer2D& gfx) override;
 					void onUpdate(void) override;
+					void onMouseReleased(const Event& event) override;
 					void setText(const String& text);
 					void setIcon(const String& filePath);
 					void applyTheme(const ostd::Stylesheet& theme) override;

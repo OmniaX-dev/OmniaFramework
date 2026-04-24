@@ -73,7 +73,7 @@ class Window : public ogfx::gui::Window
 			});
 
 			m_btn1.setText("BUTTON");
-			m_btn1.setCallback(ogfx::gui::Widget::eCallback::MousePressed, [&](const ogfx::gui::Event& event) -> void {
+			m_btn1.setCallback(ogfx::gui::Widget::eCallback::ActionPerformed, [&](const ogfx::gui::Event& event) -> void {
 				std::cout << showOpenFileDialog(filters) << "\n";
 			});
 			m_btn1.addThemeOverride("@.button.showIcon", true);
@@ -119,7 +119,7 @@ class Window : public ogfx::gui::Window
 
 			m_list.setSize(200, 300);
 
-			for (i32 i = 0; i < 10000; i++)
+			for (i32 i = 0; i < 500; i++)
 			{
 				m_list.addLine(ostd::Random::getString(ostd::Random::getui8(1, 40)));
 			}

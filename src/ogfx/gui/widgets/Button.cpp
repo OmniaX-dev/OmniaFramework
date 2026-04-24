@@ -62,6 +62,14 @@ namespace ogfx
 					m_anim.update();
 			}
 
+			void Button::onMouseReleased(const Event& event)
+			{
+				if (!isMouseInside())
+					return;
+				if (event.mouse->button == MouseEventData::eButton::Left && callback_onActionPerformed)
+					callback_onActionPerformed(event);
+			}
+
 			void Button::setText(const String& text)
 			{
 				m_text = text;

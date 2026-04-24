@@ -56,7 +56,8 @@ namespace ogfx
 				WindowClosed,
 				WindowResized,
 				WindowFocused,
-				WindowFocusLost
+				WindowFocusLost,
+				ActionPerformed
 			};
 			public: using EventCallback = std::function<void(const Event&)>;
 			public:
@@ -172,6 +173,21 @@ namespace ogfx
 				OSTD_BOOL_PARAM_GETSET_E(Tooltip, m_enableTooltip);
 				// ==========================================================================
 
+
+
+				// ================================= EVENT ENABLERS =================================
+				OSTD_BOOL_PARAM_GETSET_E_NEG(MousePressedEvent, m_disableMousePressed);
+				OSTD_BOOL_PARAM_GETSET_E_NEG(MouseReleasedEvent, m_disableMouseReleased);
+				OSTD_BOOL_PARAM_GETSET_E_NEG(MouseMovedEvent, m_disableMouseMoved);
+				OSTD_BOOL_PARAM_GETSET_E_NEG(MouseScrolledEvent, m_disableMouseScrolled);
+				OSTD_BOOL_PARAM_GETSET_E_NEG(MouseEnteredEvent, m_disableMouseEntered);
+				OSTD_BOOL_PARAM_GETSET_E_NEG(MouseExitedEvent, m_disableMouseExited);
+				OSTD_BOOL_PARAM_GETSET_E_NEG(MouseDraggedEvent, m_disableMouseDragged);
+				OSTD_BOOL_PARAM_GETSET_E_NEG(KeyPressedEvent, m_disableKeyPressed);
+				OSTD_BOOL_PARAM_GETSET_E_NEG(KeyReleasedEvent, m_disableKeyReleased);
+				OSTD_BOOL_PARAM_GETSET_E_NEG(TextEnteredEvent, m_disableTextEntered);
+				// ==================================================================================
+
 			protected:
 				void apply_common_theme_values(const ostd::Stylesheet& theme);
 				inline void disableChildren(void) { m_allowChildren = false; }
@@ -211,6 +227,21 @@ namespace ogfx
 				bool m_enableTheming { true };
 				bool m_enableTooltip { false };
 				// ====================
+
+
+
+				// ======= Event Enablers =======
+				bool m_disableMousePressed { false };
+				bool m_disableMouseReleased { false };
+				bool m_disableMouseMoved { false };
+				bool m_disableMouseScrolled { false };
+				bool m_disableMouseEntered { false };
+				bool m_disableMouseExited { false };
+				bool m_disableMouseDragged { false };
+				bool m_disableKeyPressed { false };
+				bool m_disableKeyReleased { false };
+				bool m_disableTextEntered { false };
+				// ==============================
 
 
 
@@ -271,6 +302,7 @@ namespace ogfx
 				EventCallback callback_onWindowResized { nullptr };
 				EventCallback callback_onWindowFocused { nullptr };
 				EventCallback callback_onWindowFocusLost { nullptr };
+				EventCallback callback_onActionPerformed { nullptr };
 
 			public:
 				// ====================== DUMMIES ======================
