@@ -289,5 +289,7 @@ const $accentColorDark = #6B0A1DFF
 	textColor = $textColor
 	submenuIndicatorColor = $accentColorDark
 	borderColor = #400000FF
+	useSelectionGradient = true
+	selectionGradient = gradientV(#C21135FF - #820B23FF)
 }
 % ==========================

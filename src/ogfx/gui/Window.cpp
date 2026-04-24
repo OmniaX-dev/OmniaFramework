@@ -993,6 +993,7 @@ namespace ogfx
 
 		void Window::__on_update(f64 delta)
 		{
+			m_cmenu.update();
 			onUpdate(delta);
 		}
 

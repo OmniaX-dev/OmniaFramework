@@ -30,30 +30,42 @@ namespace ogfx
 		{
 			public: struct Entry
 			{
-				inline Entry(const String& t, const stdvec<Entry>& sub = {}) { text = t; submenus = sub; }
+				inline Entry(const String& t, i32 id = -1, const stdvec<Entry>& sub = {}) { text = t; this->id = id; submenus = sub; }
+				inline Entry(const String& t, const stdvec<Entry>& sub) { text = t; id = -1; submenus = sub; }
 				String text { "" };
+				i32 id { -1 };
 				stdvec<Entry> submenus;
 
 				private:
 					Vec2 size;
 					void update_size(BasicRenderer2D& gfx, i32 fontSize);
-
 					friend class ContextMenu;
 			};
 			public: struct Instance
 			{
+				using Callback = std::function<void(const Entry&)>;
 				stdvec<Entry> entries;
+				Callback onActivate { nullptr };
+			};
+			private: struct Panel
+			{
+				stdvec<Entry>* entries { nullptr };
+				Vec2 position { 0, 0 };
+				Vec2 size { 0, 0 };
+				f32 entryHeight { 0 };
+				i32 hoveredIndex { -1 };
+				i32 openedSubmenuIndex { -1 };
 			};
 			public:
 				inline ContextMenu(WindowCore& window) : m_window(window) { create(); }
 				ContextMenu& create(void);
 				void applyTheme(const ostd::Stylesheet& theme);
 				void draw(BasicRenderer2D& gfx);
+				void update(void);
 				void onMouseReleased(const Event& event);
 				void onMouseMoved(const Event& event);
 				void onMousePressed(const Event& event);
 				void onMouseScrolled(const Event& event);
-				void show(void);
 				void show(const Vec2& pos);
 				void hide(void);
 				void setInstance(const Instance& instance);
@@ -71,9 +83,17 @@ namespace ogfx
 				OSTD_PARAM_GETSET(Color, TextColor, m_textColor);
 				OSTD_PARAM_GETSET(Color, SubmenuIndicatorColor, m_submenuIndicatorColor);
 				OSTD_PARAM_GETSET(Color, BorderColor, m_borderColor);
+				OSTD_PARAM_GETSET(ColorGradient, SelectionGradient, m_selectionGradient);
+				OSTD_BOOL_PARAM_GETSET_E(SelectionGradient, m_useSelectionGradient);
 
 			private:
-				void update_size(void);
+				void push_panel(stdvec<Entry>& entries, const Vec2& anchorTopLeft, bool flipLeft = false);
+				void pop_to_depth(size_t depth);
+				void compute_panel_size(Panel& panel);
+				i32  entry_index_at(const Panel& panel, const Vec2& mousePos) const;
+				Rectangle entry_rect(const Panel& panel, i32 index) const;
+				void draw_panel(BasicRenderer2D& gfx, const Panel& panel);
+				void relayout_panels(void);
 
 			private:
 				WindowCore& m_window;
@@ -81,6 +101,15 @@ namespace ogfx
 				Instance m_data;
 				f32 m_entryHeight { 0 };
 				Vec2 m_mousePos { 0, 0 };
+
+				stdvec<Panel> m_panels;
+
+				i32 m_pendingOpenPanelDepth { -1 };
+				i32 m_pendingOpenEntryIndex { -1 };
+				ostd::Timer m_hoverOpenTimer;
+				ostd::Timer m_hoverCloseTimer;
+				bool m_hoverOpenTimerActive { false };
+				bool m_hoverCloseTimerActive { false };
 
 				Rectangle m_padding { 16, 0, 16, 0 };
 				f32 m_spacing { 8 };
@@ -92,8 +121,11 @@ namespace ogfx
 				Color m_textColor { "#F16A85FF" };
 				Color m_submenuIndicatorColor { "#111111FF" };
 				Color m_borderColor { "#400000FF" };
+				bool m_useSelectionGradient { true };
+				ColorGradient m_selectionGradient { { "#C21135FF", "#820B23FF" }, { 1.0f } };
 
-
+				static constexpr u64 SubmenuOpenDelayMs  { 300 };
+				static constexpr u64 SubmenuCloseDelayMs { 50 };
 				friend class Instance;
 		};
 	}

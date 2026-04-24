@@ -183,6 +183,11 @@ class Window : public ogfx::gui::Window
 				return true;
 			});
 
+
+			m_menu.onActivate = [this](const ogfx::gui::ContextMenu::Entry& e) {
+				std::cout << e.text << "  -  " << (i32)e.id << "\n";
+			};
+
 			setContextMenu(m_menu);
 		}
 
@@ -234,15 +239,23 @@ class Window : public ogfx::gui::Window
 		ListView m_list { *this };
 		Label m_drawCallsLbl { *this };
 
-		ogfx::gui::ContextMenu::Instance m_menu {
-			{
-				{ "Update" },
-				{ "File" },
-				{ "Open RAW", { { "Image" }, { "Text File" }, { "Audio" } } },
-				{ "Mouse Settings", { { "Test" } } },
-				{ "Terror" },
-				{ "Properties" }
-			}
+		enum MenuId { New = 1, Open, Save, SaveAs, Exit, CopyRaw, CopyFormatted };
+
+		ogfx::gui::ContextMenu::Instance m_menu { {
+			{ "File", -1, {
+				{ "New",     MenuId::New },
+				{ "Open...", MenuId::Open },
+				{ "Save",    MenuId::Save },
+				{ "Save As", MenuId::SaveAs },
+			}},
+			{ "Edit", -1, {
+				{ "Copy", -1, {
+					{ "As Text", MenuId::CopyRaw },
+					{ "As HTML", MenuId::CopyFormatted },
+				}},
+			}},
+			{ "Exit", MenuId::Exit } },
+			nullptr
 		};
 
 		ostd::StepTimer m_timer;
