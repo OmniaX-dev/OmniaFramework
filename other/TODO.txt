@@ -60,6 +60,7 @@ Implement following widgets:
 	ComboBox
 	Menu Bar
 	Toolbar
+	StatusBar
 	Layouts
 		Vertical
 		Horizontal
