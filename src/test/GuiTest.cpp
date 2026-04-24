@@ -123,6 +123,9 @@ class Window : public ogfx::gui::Window
 			{
 				m_list.addLine(ostd::Random::getString(ostd::Random::getui8(1, 40)));
 			}
+			m_list.addLine("Item 1");
+			m_list.addLine("Item 222");
+			m_list.addLine("Item 3333333");
 			m_list.getLine(10).setFontSize(40);
 			m_list.getLine(160).setTextColor(Colors::Crimson);
 			m_list.setSelectionChangedCallback([&](stdvec<ogfx::gui::widgets::ListView::Item*>& selection) -> void {\

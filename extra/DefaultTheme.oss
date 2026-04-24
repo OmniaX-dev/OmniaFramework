@@ -263,7 +263,7 @@ const $accentColorDark = #6B0A1DFF
 	(item) {
 		defaultTextColor = #202020FF
 		defaultFontSize = 16
-		defaultPadding = rect(5, 5, 20, 0)
+		defaultPadding = rect(5, 15, 20, 40)
 		defaultSelectionColor = $accentColor
 		defaultSelectionTextColor = color_white
 	}

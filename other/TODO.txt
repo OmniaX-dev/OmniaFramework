@@ -31,7 +31,9 @@ Add buttons to scroll tabs in TabPanel
 Add Font class, to handle different font attributes
 Add multi-selection to ListView
 Cache getStringDimensions() call in TabPanel::draw_tabs
-FIX: Optimize ListView 
+FIX: Optimize ListView
+FIX: Padding for ListView items
+
 
 
 

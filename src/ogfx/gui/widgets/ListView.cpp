@@ -135,14 +135,17 @@ namespace ogfx
 					if (!item.isValid()) continue;
 					f32 itemH = item.getDimensions().y;
 					if (y > visibleEnd) break;
+					f32 lineW = content.w;
+					if (content.w < bounds.w)
+						lineW = bounds.w;
 					if (item.isSelected())
 					{
 						textColor = item.getSelectedTextColor();
-						gfx.fillRect({ Vec2 { bounds.x, bounds.y + y + 4 } + getScrollOffset(), { content.w, itemH } }, item.getSelectedColor());
+						gfx.fillRect({ Vec2 { bounds.x, bounds.y + y + item.getPadding().h } + getScrollOffset(), { lineW, itemH } }, item.getSelectedColor());
 					}
 					else
 						textColor = item.getTextColor();
-					gfx.drawLine({ Vec2 { bounds.x, bounds.y + y + itemH + 4 } + getScrollOffset(), Vec2 { bounds.x + content.w, bounds.y + y + itemH + 4 } + getScrollOffset() }, Colors::Black, 1);
+					gfx.drawLine({ Vec2 { bounds.x, bounds.y + y + itemH + item.getPadding().h } + getScrollOffset(), Vec2 { bounds.x + lineW, bounds.y + y + itemH + item.getPadding().h } + getScrollOffset() }, getSeparatorLineColor(), 1);
 					gfx.drawString(item, bounds.getPosition() + Vec2 { 0, y } + getScrollOffset() + item.getPadding().getPosition(), textColor, item.getFontSize());
 					y += itemH;
 				}
@@ -234,22 +237,36 @@ namespace ogfx
 
 			bool ListView::removeLine(const String& text)
 			{
-				return false; //TODO: Implement
+				auto it = std::find_if(m_list.begin(), m_list.end(), [&](const Item& item) {
+					return item.getText() == text;
+				});
+				if (it != m_list.end())
+				{
+					m_list.erase(it);
+					return true;
+				}
+				return false;
 			}
 
 			bool ListView::removeLine(u32 index)
 			{
-				return false; //TODO: Implement
+				if (!hasLine(index))
+					return false;
+				m_list.erase(m_list.begin() + index);
+				return true;
 			}
 
 			bool ListView::hasLine(const String& text)
 			{
-				return false; //TODO: Implement
+				for (auto& item : m_list)
+					if (item.getText() == text)
+						return true;
+				return false;
 			}
 
 			bool ListView::hasLine(u32 index)
 			{
-				return false; //TODO: Implement
+				return m_list.size() > index;
 			}
 		}
 	}
