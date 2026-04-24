@@ -258,7 +258,7 @@ const $accentColorDark = #6B0A1DFF
 
 
 
-% ====== Slider ======
+% ====== ListView ======
 (list) {
 	(item) {
 		defaultTextColor = #202020FF
@@ -273,4 +273,21 @@ const $accentColorDark = #6B0A1DFF
 	showSeparatorLine = true
 
 }
-% ===================
+% ======================
+
+
+
+% ====== Context Menu ======
+(context) {
+	padding = rect(16, 0, 16, 0)
+	itemSpacing = 6.0
+	fontSize = 18
+	backgroundColor = #CCAAAAFF
+	selectionColor = $accentColor
+	selectionTextColor = #FFFFFFFF
+	separatorLineColor = #700000FF
+	textColor = $textColor
+	submenuIndicatorColor = $accentColorDark
+	borderColor = #400000FF
+}
+% ==========================

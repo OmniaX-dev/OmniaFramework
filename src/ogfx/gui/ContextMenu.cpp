@@ -33,7 +33,7 @@ namespace ogfx
 			{
 				auto s = gfx.getStringDimensions(entry.text, fontSize);
 				if (s.x > size.x)
-					size.x = s.x;
+					size.x = s.x + (entry.submenus.size() > 0 ? 40 : 0);
 				size.y += s.y;
 				entry.update_size(gfx, fontSize);
 			}
@@ -45,19 +45,53 @@ namespace ogfx
 			return *this;
 		}
 
+		void ContextMenu::applyTheme(const ostd::Stylesheet& theme)
+		{
+			setPadding(theme.get<Rectangle>("context.padding", getPadding(), {}, {}));
+			setItemSpacing(theme.get<f32>("context.itemSpacing", getItemSpacing(), {}, {}));
+			setFontSize(theme.get<i32>("context.fontSize", getFontSize(), {}, {}));
+			setBackgroundColor(theme.get<Color>("context.backgroundColor", getBackgroundColor(), {}, {}));
+			setSelectionColor(theme.get<Color>("context.selectionColor", getSelectionColor(), {}, {}));
+			setSelectionTextColor(theme.get<Color>("context.selectionTextColor", getSelectionTextColor(), {}, {}));
+			setSeparatorLineColor(theme.get<Color>("context.separatorLineColor", getSeparatorLineColor(), {}, {}));
+			setTextColor(theme.get<Color>("context.textColor", getTextColor(), {}, {}));
+			setSubmenuIndicatorColor(theme.get<Color>("context.submenuIndicatorColor", getSubmenuIndicatorColor(), {}, {}));
+			setBorderColor(theme.get<Color>("context.borderColor", getBorderColor(), {}, {}));
+		}
+
 		void ContextMenu::draw(BasicRenderer2D& gfx)
 		{
-			gfx.outlinedRect(*this, Colors::Crimson, Colors::Black, 2);
+			gfx.fillRect(*this, getBackgroundColor());
+			const f32 triPad = 14;
 			f32 y = 0;
+			i32 i = 0;
 			for (auto& entry : m_data.entries)
 			{
 				Vec2 entryPos = getPosition() + Vec2 { m_padding.x, y + m_padding.y };
 				Rectangle rect = { entryPos - Vec2 { m_padding.x, 0 }, getw(), m_entryHeight };
 				if (rect.contains(m_mousePos, true))
-					gfx.outlinedRect(rect, Colors::Chocolate, Colors::White, 1);
-				gfx.drawString(entry.text, entryPos, Colors::Black, getFontSize());
+				{
+					gfx.outlinedRect(rect, getSelectionColor(), getSeparatorLineColor(), 1, false, false, i != m_data.entries.size() , false);
+					gfx.drawVCenteredString(entry.text, { entryPos, getw(), m_entryHeight }, getSelectionTextColor(), getFontSize());
+				}
+				else
+				{
+					gfx.drawRect(rect, getSeparatorLineColor(), 1, false, false, i != m_data.entries.size() , false);
+					gfx.drawVCenteredString(entry.text, { entryPos, getw(), m_entryHeight }, getTextColor(), getFontSize());
+				}
+				if (entry.submenus.size() > 0)
+				{
+					Triangle tri {
+						{ rect.x + rect.w - m_entryHeight + triPad, rect.y + (triPad * 0.5f) },
+						{ rect.x + rect.w - (triPad * 0.5f), rect.y + (rect.h * 0.5f) },
+						{ rect.x + rect.w - m_entryHeight + triPad, rect.y + rect.h - (triPad * 0.5f) }
+					};
+					gfx.fillTriangle(tri, getSubmenuIndicatorColor());
+				}
 				y += m_entryHeight;
+				i++;
 			}
+			gfx.drawRect(*this, getBorderColor(), 2);
 		}
 
 		void ContextMenu::onMouseReleased(const Event& event)
@@ -81,6 +115,16 @@ namespace ogfx
 			{
 				m_mousePos = mousePos;
 			}
+			event.handle();
+		}
+
+		void ContextMenu::onMousePressed(const Event& event)
+		{
+			event.handle();
+		}
+
+		void ContextMenu::onMouseScrolled(const Event& event)
+		{
 			event.handle();
 		}
 
@@ -119,10 +163,11 @@ namespace ogfx
 			for (auto& entry : m_data.entries)
 			{
 				auto s = gfx.getStringDimensions(entry.text, getFontSize());
-				if (s.x > getw())
-					setw(s.x);
-				addh(s.y);
-				m_entryHeight = s.y;
+				f32 extra = (entry.submenus.size() > 0 ? s.y : 0);
+				if (s.x + extra > getw())
+					setw(s.x + extra);
+				addh(s.y + m_spacing);
+				m_entryHeight = s.y + m_spacing;
 				entry.update_size(gfx, getFontSize());
 			}
 			addSize({ m_padding.x + m_padding.w, m_padding.y + m_padding.h });

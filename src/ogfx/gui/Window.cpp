@@ -829,6 +829,7 @@ namespace ogfx
 			m_guiTheme = &theme;
 			m_rootWidget.__applyTheme(theme, true);
 			m_rootWidget.reloadTheme(true);
+			m_cmenu.applyTheme(theme);
 		}
 
 		void Window::__on_window_init(i32 width, i32 height, const String& title)
@@ -871,9 +872,11 @@ namespace ogfx
 				m_rootWidget.__draw(m_gfx);
 				onRedraw(m_gfx);
 				if (m_cmenu.isVisible())
+				{
+					stopTooltipTimer();
 					m_cmenu.draw(m_gfx);
-
-				if (isTooltipShown())
+				}
+				else if (isTooltipShown())
 				{
 					auto textSize = m_gfx.getStringDimensions(getTooltipText(), m_rootWidget.getTooltipFontSize());
 					Rectangle textBounds = { getMousePosition(), textSize };
@@ -902,6 +905,8 @@ namespace ogfx
 			}
 			else if (signal.ID == ostd::BuiltinSignals::WindowLostFocus)
 			{
+				if (m_cmenu.isVisible())
+					m_cmenu.hide();
 				evt.__original_signal_id = ostd::BuiltinSignals::WindowLostFocus;
 				m_rootWidget.__onWindowFocusLost(evt);
 			}
@@ -925,6 +930,8 @@ namespace ogfx
 			}
 			else if (signal.ID == ostd::BuiltinSignals::WindowResized)
 			{
+				if (m_cmenu.isVisible())
+					m_cmenu.hide();
 				evt.windowResized = &(ogfx::WindowResizedData&)signal.userData;
 				evt.__original_signal_id = ostd::BuiltinSignals::WindowResized;
 				m_rootWidget.__onWindowResized(evt);
@@ -941,12 +948,16 @@ namespace ogfx
 			{
 				evt.mouse = &(ogfx::MouseEventData&)signal.userData;
 				evt.__original_signal_id = ostd::BuiltinSignals::MouseScrolled;
+				if (m_cmenu.isVisible())
+					m_cmenu.onMouseScrolled(evt);
 				m_rootWidget.__onMouseScrolled(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::MousePressed)
 			{
 				evt.mouse = &(ogfx::MouseEventData&)signal.userData;
 				evt.__original_signal_id = ostd::BuiltinSignals::MousePressed;
+				if (m_cmenu.isVisible())
+					m_cmenu.onMousePressed(evt);
 				m_rootWidget.__onMousePressed(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::MouseReleased)

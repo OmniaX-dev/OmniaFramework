@@ -30,7 +30,7 @@ namespace ogfx
 		{
 			public: struct Entry
 			{
-				inline Entry(const String& t, const stdvec<Entry>& sub = {}) { text = t; }
+				inline Entry(const String& t, const stdvec<Entry>& sub = {}) { text = t; submenus = sub; }
 				String text { "" };
 				stdvec<Entry> submenus;
 
@@ -47,9 +47,12 @@ namespace ogfx
 			public:
 				inline ContextMenu(WindowCore& window) : m_window(window) { create(); }
 				ContextMenu& create(void);
+				void applyTheme(const ostd::Stylesheet& theme);
 				void draw(BasicRenderer2D& gfx);
 				void onMouseReleased(const Event& event);
 				void onMouseMoved(const Event& event);
+				void onMousePressed(const Event& event);
+				void onMouseScrolled(const Event& event);
 				void show(void);
 				void show(const Vec2& pos);
 				void hide(void);
@@ -59,6 +62,16 @@ namespace ogfx
 				inline bool isVisible(void) const { return m_visible; }
 				inline i32 getFontSize(void) const { return m_fontSize; }
 
+				OSTD_PARAM_GETSET(Rectangle, Padding, m_padding);
+				OSTD_PARAM_GETSET(f32, ItemSpacing, m_spacing);
+				OSTD_PARAM_GETSET(Color, BackgroundColor, m_backgroundColor);
+				OSTD_PARAM_GETSET(Color, SelectionColor, m_selectionColor);
+				OSTD_PARAM_GETSET(Color, SelectionTextColor, m_selectionTextColor);
+				OSTD_PARAM_GETSET(Color, SeparatorLineColor, m_separatorLineColor);
+				OSTD_PARAM_GETSET(Color, TextColor, m_textColor);
+				OSTD_PARAM_GETSET(Color, SubmenuIndicatorColor, m_submenuIndicatorColor);
+				OSTD_PARAM_GETSET(Color, BorderColor, m_borderColor);
+
 			private:
 				void update_size(void);
 
@@ -67,10 +80,19 @@ namespace ogfx
 				bool m_visible { false };
 				Instance m_data;
 				f32 m_entryHeight { 0 };
-				Rectangle m_padding { 10, 10, 10, 10 };
-				Vec2 m_mousePos;
+				Vec2 m_mousePos { 0, 0 };
 
+				Rectangle m_padding { 16, 0, 16, 0 };
+				f32 m_spacing { 8 };
 				i32 m_fontSize { 18 };
+				Color m_backgroundColor { "#6B0A1DFF" };
+				Color m_selectionColor { "#DC143CFF" };
+				Color m_selectionTextColor { "#F16A85FF" };
+				Color m_separatorLineColor { "#700000FF" };
+				Color m_textColor { "#F16A85FF" };
+				Color m_submenuIndicatorColor { "#111111FF" };
+				Color m_borderColor { "#400000FF" };
+
 
 				friend class Instance;
 		};

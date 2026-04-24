@@ -436,12 +436,24 @@ namespace ogfx
 	void BasicRenderer2D::drawCenteredString(const String& str, const Vec2& center, const Color& color, i32 fontSize, f32 scale)
 	{
 		auto dims = getStringDimensions(str, fontSize);
-		drawString(str, { center.x - (dims.x * scale) * 0.5f, center.y - (dims.y * scale) * 0.5f }, color, fontSize, scale);
+		drawString(str, { center.x - dims.x * 0.5f, center.y - dims.y * 0.5f }, color, fontSize, scale);
 	}
 
 	void BasicRenderer2D::drawCenteredString(const String& str, const Rectangle& bounds, const Color& color, i32 fontSize, f32 scale)
 	{
 		drawCenteredString(str, Vec2 { bounds.x + bounds.w * 0.5f, bounds.y + bounds.h * 0.5f }, color, fontSize, scale);
+	}
+
+	void BasicRenderer2D::drawVCenteredString(const String& str, const Rectangle& bounds, const Color& color, i32 fontSize, f32 scale)
+	{
+		auto dims = getStringDimensions(str, fontSize);
+		drawString(str, { bounds.x, (bounds.y + bounds.h * 0.5f) - dims.y * 0.5f }, color, fontSize, scale);
+	}
+
+	void BasicRenderer2D::drawHCenteredString(const String& str, const Rectangle& bounds, const Color& color, i32 fontSize, f32 scale)
+	{
+		auto dims = getStringDimensions(str, fontSize);
+		drawString(str, { (bounds.x + bounds.w * 0.5f) - dims.x * 0.5f, bounds.y }, color, fontSize, scale);
 	}
 	// ===================================================== SPECIALIZED =====================================================
 

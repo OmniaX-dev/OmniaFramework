@@ -87,6 +87,8 @@ namespace ogfx
 			void drawString(const String& str, const Vec2& position, const Color& color, i32 fontSize = 0, f32 scale = 1.0f);
 			void drawCenteredString(const String& str, const Vec2& center, const Color& color, i32 fontSize = 0, f32 scale = 1.0f);
 			void drawCenteredString(const String& str, const Rectangle& bounds, const Color& color, i32 fontSize = 0, f32 scale = 1.0f);
+			void drawVCenteredString(const String& str, const Rectangle& bounds, const Color& color, i32 fontSize = 0, f32 scale = 1.0f);
+			void drawHCenteredString(const String& str, const Rectangle& bounds, const Color& color, i32 fontSize = 0, f32 scale = 1.0f);
 
 			void drawLine(const FLine& line, const Color& color, i32 thickness = 1, bool rounded = true);
 			void drawRect(const Rectangle& rect, const Color& color, i32 thickness = 1, bool topEdge = true, bool rightEdge = true, bool bottomEdge = true, bool leftEdge = true);

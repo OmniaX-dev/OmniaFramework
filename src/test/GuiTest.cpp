@@ -152,7 +152,7 @@ class Window : public ogfx::gui::Window
 			t1.addWidget(m_slide, { 30, 250 });
 			t1.addWidget(m_slideLbl, { 340, 240 });
 			t1.addWidget(m_list, { 30, 300 });
-			t2.addWidget(m_panel2, { 500, 100 });
+			t1.addWidget(m_panel2, { 500, 100 });
 
 			m_panel3.addWidget(m_label4);
 
@@ -238,8 +238,8 @@ class Window : public ogfx::gui::Window
 			{
 				{ "Update" },
 				{ "File" },
-				{ "Open RAW" },
-				{ "Mouse Settings" },
+				{ "Open RAW", { { "Image" }, { "Text File" }, { "Audio" } } },
+				{ "Mouse Settings", { { "Test" } } },
 				{ "Terror" },
 				{ "Properties" }
 			}

@@ -33,6 +33,7 @@ Add multi-selection to ListView
 Cache getStringDimensions() call in TabPanel::draw_tabs
 FIX: Optimize ListView
 FIX: Padding for ListView items
+Add icons to ListView
 
 
 
