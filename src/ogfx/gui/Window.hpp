@@ -29,6 +29,7 @@
 #include <ogfx/gui/widgets/RootWidget.hpp>
 #include <ogfx/render/BasicRenderer.hpp>
 #include <ogfx/gui/WindowOutputHandler.hpp>
+#include <ogfx/gui/ContextMenu.hpp>
 
 namespace ogfx
 {
@@ -269,6 +270,8 @@ namespace ogfx
 				inline Window(i32 width, i32 height, const String& title) { initialize(width, height, title); }
 				void addWidget(Widget& widget, const Vec2& position = { 0, 0 });
 				void setTheme(const ostd::Stylesheet& theme) override;
+				inline void showContextMenu(const Vec2& pos) { m_cmenu.show(pos); }
+				inline void setContextMenu(const ContextMenu::Instance& instance) { m_cmenu.setInstance(instance); }
 
 				inline virtual void onInitialize(void) {  }
 				inline virtual void onDestroy(void) {  }
@@ -293,6 +296,7 @@ namespace ogfx
 				widgets::RootWidget m_rootWidget { *this };
 				ostd::StepTimer m_fixedUpdateTimer;
 				ostd::StepTimer::TimePoint m_lastFrameTime;
+				ContextMenu m_cmenu { *this };
 		};
 	}
 }

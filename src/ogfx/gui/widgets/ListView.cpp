@@ -158,6 +158,8 @@ namespace ogfx
 
 			void ListView::onMouseReleased(const Event& event)
 			{
+				if (!isMouseInside())
+					return;
 				if (event.mouse->button != ogfx::MouseEventData::eButton::Left)
 					return;
 				if (isMouseInsideAnyScrollbar())

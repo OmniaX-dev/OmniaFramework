@@ -340,8 +340,8 @@ namespace ostd
 			inline virtual Vec2 addPos(Vec2 pos) { return addPos(pos.x, pos.y); }
 			inline virtual f32 addw(f32 ww) { setw(getw() + ww); return getw(); }
 			inline virtual f32 addh(f32 hh) { seth(geth() + hh); return geth(); }
-			inline virtual Vec2 addSize(f32 ww, f32 hh) { return Vec2(addw(ww), addh(hh)); }
-			inline virtual Vec2 addSize(Vec2 size) { return addPos(size.x, size.y); }
+			inline virtual Vec2 addSize(f32 ww, f32 hh) { addw(ww), addh(hh); return getSize(); }
+			inline virtual Vec2 addSize(Vec2 size) { addSize(size.x, size.y); return getSize(); }
 
 			inline virtual f32 subx(f32 xx) { setx(getx() - xx); return getx(); }
 			inline virtual f32 suby(f32 yy) { sety(gety() - yy); return gety(); }

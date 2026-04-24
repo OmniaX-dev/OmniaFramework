@@ -495,11 +495,11 @@ namespace ogfx
 				break;
 		}
 		MouseEventData::eButton button = MouseEventData::eButton::None;
-		switch (btn)
+		switch (event.button.button)
 		{
-			case SDL_BUTTON_MASK(1): button = MouseEventData::eButton::Left; break;
-			case SDL_BUTTON_MASK(2): button = MouseEventData::eButton::Middle; break;
-			case SDL_BUTTON_MASK(3): button = MouseEventData::eButton::Right; break;
+			case SDL_BUTTON_LEFT: button = MouseEventData::eButton::Left; break;
+			case SDL_BUTTON_MIDDLE: button = MouseEventData::eButton::Middle; break;
+			case SDL_BUTTON_RIGHT: button = MouseEventData::eButton::Right; break;
 			default: button = MouseEventData::eButton::None; break;
 		}
 		MouseEventData mmd(*this, mx, my, button);
@@ -629,13 +629,6 @@ namespace ogfx
 		else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
 		{
 			MouseEventData mmd = get_mouse_state(event);
-			switch (event.button.button)
-			{
-				case SDL_BUTTON_MASK(1): mmd.button = MouseEventData::eButton::Left; break;
-				case SDL_BUTTON_MASK(2): mmd.button = MouseEventData::eButton::Middle; break;
-				case SDL_BUTTON_MASK(3): mmd.button = MouseEventData::eButton::Right; break;
-				default: mmd.button = MouseEventData::eButton::None; break;
-			}
 			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::MouseReleased, ostd::Signal::Priority::RealTime, mmd);
 		}
 		else if (event.type == SDL_EVENT_KEY_DOWN)
@@ -877,6 +870,8 @@ namespace ogfx
 				m_rootWidget.__update();
 				m_rootWidget.__draw(m_gfx);
 				onRedraw(m_gfx);
+				if (m_cmenu.isVisible())
+					m_cmenu.draw(m_gfx);
 
 				if (isTooltipShown())
 				{
@@ -938,6 +933,8 @@ namespace ogfx
 			{
 				evt.mouse = &(ogfx::MouseEventData&)signal.userData;
 				evt.__original_signal_id = ostd::BuiltinSignals::MouseMoved;
+				if (m_cmenu.isVisible())
+					m_cmenu.onMouseMoved(evt);
 				m_rootWidget.__onMouseMoved(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::MouseScrolled)
@@ -956,6 +953,8 @@ namespace ogfx
 			{
 				evt.mouse = &(ogfx::MouseEventData&)signal.userData;
 				evt.__original_signal_id = ostd::BuiltinSignals::MouseReleased;
+				if (m_cmenu.isVisible())
+					m_cmenu.onMouseReleased(evt);
 				m_rootWidget.__onMouseReleased(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::KeyPressed)

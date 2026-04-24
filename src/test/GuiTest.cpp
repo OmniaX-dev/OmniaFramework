@@ -182,6 +182,8 @@ class Window : public ogfx::gui::Window
 				}
 				return true;
 			});
+
+			setContextMenu(m_menu);
 		}
 
 		inline void onSignal(ostd::Signal& signal) override
@@ -191,6 +193,14 @@ class Window : public ogfx::gui::Window
 				auto& evtData = (ogfx::KeyEventData&)signal.userData;
 				if (evtData.keyCode == ogfx::KeyCode::Escape)
 					close();
+			}
+			else if (signal.ID == ostd::BuiltinSignals::MouseReleased)
+			{
+				auto& mmd = cast<ogfx::MouseEventData&>(signal.userData);
+				if (mmd.button == ogfx::MouseEventData::eButton::Right)
+				{
+					showContextMenu({ mmd.position_x, mmd.position_y });
+				}
 			}
 		}
 
@@ -223,6 +233,17 @@ class Window : public ogfx::gui::Window
 		Label m_slideLbl { *this };
 		ListView m_list { *this };
 		Label m_drawCallsLbl { *this };
+
+		ogfx::gui::ContextMenu::Instance m_menu {
+			{
+				{ "Update" },
+				{ "File" },
+				{ "Open RAW" },
+				{ "Mouse Settings" },
+				{ "Terror" },
+				{ "Properties" }
+			}
+		};
 
 		ostd::StepTimer m_timer;
 		ostd::AsyncJob<bool> m_progressJob;

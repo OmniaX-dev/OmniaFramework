@@ -71,7 +71,8 @@ namespace ogfx
 			{
 				if (!isMouseInside())
 					return;
-				set_value(mouse_position_to_value({ event.mouse->position_x, event.mouse->position_y }));
+				if (event.mouse->button == MouseEventData::eButton::Left)
+					set_value(mouse_position_to_value({ event.mouse->position_x, event.mouse->position_y }));
 			}
 
 			void Slider::onMouseScrolled(const Event& event)
