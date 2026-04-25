@@ -144,7 +144,7 @@ namespace ogfx
 				}
 			}
 
-			hide();
+			// hide();
 			event.handle();
 		}
 
@@ -244,6 +244,20 @@ namespace ogfx
 
 		void ContextMenu::onMousePressed(const Event& event)
 		{
+			if (!m_visible) return;
+			Vec2 mousePos { event.mouse->position_x, event.mouse->position_y };
+
+			for (i32 i = (i32)m_panels.size() - 1; i >= 0; --i)
+			{
+				i32 idx = entry_index_at(m_panels[i], mousePos);
+				if (idx >= 0)
+				{
+					event.handle();
+					return;
+				}
+			}
+
+			hide();
 			event.handle();
 		}
 

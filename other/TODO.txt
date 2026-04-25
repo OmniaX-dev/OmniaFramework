@@ -34,6 +34,7 @@ Cache getStringDimensions() call in TabPanel::draw_tabs
 FIX: Optimize ListView
 FIX: Padding for ListView items
 Add icons to ListView
+FIX: Limit FPS even when continuous events happen
 
 
 
@@ -57,15 +58,16 @@ Implement following widgets:
 	***Vertical Slider
 	***ListBox
 	***Context Menu
-	ComboBox
-	Menu Bar
+	***MenuBar
 	Toolbar
 	StatusBar
+	ComboBox
+	TreeView
 	Layouts
 		Vertical
 		Horizontal
 		Grid
 		Fill
 	Text Input
-	TreeView
+	Text Area
 	Hex Editor

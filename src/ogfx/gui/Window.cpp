@@ -830,6 +830,7 @@ namespace ogfx
 			m_rootWidget.__applyTheme(theme, true);
 			m_rootWidget.reloadTheme(true);
 			m_cmenu.applyTheme(theme);
+			m_menubar.applyTheme(theme);
 		}
 
 		void Window::__on_window_init(i32 width, i32 height, const String& title)
@@ -871,6 +872,8 @@ namespace ogfx
 				m_rootWidget.__update();
 				m_rootWidget.__draw(m_gfx);
 				onRedraw(m_gfx);
+				if (m_menubar.isVisible())
+					m_menubar.draw(m_gfx);
 				if (m_cmenu.isVisible())
 				{
 					stopTooltipTimer();
@@ -934,12 +937,16 @@ namespace ogfx
 					m_cmenu.hide();
 				evt.windowResized = &(ogfx::WindowResizedData&)signal.userData;
 				evt.__original_signal_id = ostd::BuiltinSignals::WindowResized;
+				if (m_menubar.isVisible())
+					m_menubar.onWindowResized(evt);
 				m_rootWidget.__onWindowResized(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::MouseMoved)
 			{
 				evt.mouse = &(ogfx::MouseEventData&)signal.userData;
 				evt.__original_signal_id = ostd::BuiltinSignals::MouseMoved;
+				if (m_menubar.isVisible())
+					m_menubar.onMouseMoved(evt);
 				if (m_cmenu.isVisible())
 					m_cmenu.onMouseMoved(evt);
 				m_rootWidget.__onMouseMoved(evt);
@@ -958,6 +965,8 @@ namespace ogfx
 				evt.__original_signal_id = ostd::BuiltinSignals::MousePressed;
 				if (m_cmenu.isVisible())
 					m_cmenu.onMousePressed(evt);
+				if (m_menubar.isVisible())
+					m_menubar.onMousePressed(evt);
 				m_rootWidget.__onMousePressed(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::MouseReleased)
@@ -994,6 +1003,8 @@ namespace ogfx
 		void Window::__on_update(f64 delta)
 		{
 			m_cmenu.update();
+			if (m_menubar.isVisible())
+				m_menubar.update();
 			onUpdate(delta);
 		}
 

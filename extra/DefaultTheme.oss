@@ -293,3 +293,18 @@ const $accentColorDark = #6B0A1DFF
 	selectionGradient = gradientV(#C21135FF - #820B23FF)
 }
 % ==========================
+
+
+
+% ====== MenuBar ======
+(menubar) {
+	height = 24.0
+	itemPadding = rect(0, 0, 15, 0)
+	fontSize = 16
+	backgroundColor = #CCAAAAFF
+	textColor = $textColor
+	selectionColor = $accentColor
+	selectionTextColor = #FFFFFFFF
+	borderColor = #400000FF
+}
+% =====================

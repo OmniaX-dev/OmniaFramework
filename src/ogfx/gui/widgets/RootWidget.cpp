@@ -38,7 +38,12 @@ namespace ogfx
 
 			void RootWidget::onWindowResized(const Event& event)
 			{
-				setSize(cast<f32>(event.windowResized->new_width), cast<f32>(event.windowResized->new_height));
+				Window& win = cast<Window&>(getWindow()); //TODO: Potentially unsage?
+				f32 offset_y = 0;
+				if (win.m_menubar.isVisible())
+					offset_y += win.m_menubar.geth();
+				sety(offset_y);
+				setSize(cast<f32>(event.windowResized->new_width), cast<f32>(event.windowResized->new_height) - offset_y);
 			}
 
 			void RootWidget::applyTheme(const ostd::Stylesheet& theme)

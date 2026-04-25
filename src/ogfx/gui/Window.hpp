@@ -30,6 +30,7 @@
 #include <ogfx/render/BasicRenderer.hpp>
 #include <ogfx/gui/WindowOutputHandler.hpp>
 #include <ogfx/gui/ContextMenu.hpp>
+#include <ogfx/gui/MenuBar.hpp>
 
 namespace ogfx
 {
@@ -272,6 +273,9 @@ namespace ogfx
 				void setTheme(const ostd::Stylesheet& theme) override;
 				inline void showContextMenu(const Vec2& pos) { m_cmenu.show(pos); }
 				inline void setContextMenu(const ContextMenu::Instance& instance) { m_cmenu.setInstance(instance); }
+				inline bool isContextMenuVisible(void) const { return m_cmenu.isVisible(); }
+				inline void hideContextMenu(void) { m_cmenu.hide(); }
+				inline MenuBar& getMenuBar(void) { return m_menubar; }
 
 				inline virtual void onInitialize(void) {  }
 				inline virtual void onDestroy(void) {  }
@@ -297,6 +301,9 @@ namespace ogfx
 				ostd::StepTimer m_fixedUpdateTimer;
 				ostd::StepTimer::TimePoint m_lastFrameTime;
 				ContextMenu m_cmenu { *this };
+				MenuBar m_menubar { *this };
+
+				friend class widgets::RootWidget;
 		};
 	}
 }

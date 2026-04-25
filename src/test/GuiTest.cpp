@@ -189,6 +189,31 @@ class Window : public ogfx::gui::Window
 			};
 
 			setContextMenu(m_menu);
+
+			auto onActivate = [this](const ogfx::gui::ContextMenu::Entry& e) {
+				out().fg("cyan").p("[MenuBar] Activated: ").fg("yellow").p(e.text)
+					 .fg("cyan").p(" (id=").fg("green").p(e.id).fg("cyan").p(")").reset().nl();
+
+				switch (e.id)
+				{
+					case TestMenuId::File_Exit:
+						close();
+						break;
+					// ... add real handlers as you build them out
+					default:
+						break;
+				}
+			};
+
+			fileMenu.onActivate = onActivate;
+			editMenu.onActivate = onActivate;
+			viewMenu.onActivate = onActivate;
+			helpMenu.onActivate = onActivate;
+
+			getMenuBar().addMenu("File", fileMenu)
+						.addMenu("Edit", editMenu)
+						.addMenu("View", viewMenu)
+						.addMenu("Help", helpMenu);
 		}
 
 		inline void onSignal(ostd::Signal& signal) override
@@ -239,7 +264,7 @@ class Window : public ogfx::gui::Window
 		ListView m_list { *this };
 		Label m_drawCallsLbl { *this };
 
-		enum MenuId { New = 1, Open, Save, SaveAs, Exit, CopyRaw, CopyFormatted };
+		enum MenuId : i32 { New = 1, Open, Save, SaveAs, Exit, CopyRaw, CopyFormatted };
 
 		ogfx::gui::ContextMenu::Instance m_menu { {
 			{ "File", -1, {
@@ -255,6 +280,95 @@ class Window : public ogfx::gui::Window
 				}},
 			}},
 			{ "Exit", MenuId::Exit } },
+			nullptr
+		};
+
+
+
+		enum TestMenuId : i32
+		{
+			// File
+			File_New = 1,
+			File_Open,
+			File_OpenRecent_Project1,
+			File_OpenRecent_Project2,
+			File_OpenRecent_Project3,
+			File_OpenRecent_ClearList,
+			File_Save,
+			File_SaveAs,
+			File_Export_PNG,
+			File_Export_JPG,
+			File_Export_SVG,
+			File_Export_PDF,
+			File_Exit,
+
+			// Edit
+			Edit_Undo,
+			Edit_Redo,
+			Edit_Cut,
+			Edit_Copy,
+			Edit_Paste,
+			Edit_SelectAll,
+
+			// View
+			View_ZoomIn,
+			View_ZoomOut,
+			View_ZoomReset,
+			View_Theme_Dark,
+			View_Theme_Light,
+			View_Theme_Crimson,
+
+			// Help
+			Help_Documentation,
+			Help_About,
+		};
+
+		ogfx::gui::ContextMenu::Instance fileMenu { {
+			{ "New",       TestMenuId::File_New },
+			{ "Open...",   TestMenuId::File_Open },
+			{ "Open Recent", {
+				{ "Project1.proj",       TestMenuId::File_OpenRecent_Project1 },
+				{ "Project2.proj",       TestMenuId::File_OpenRecent_Project2 },
+				{ "Project3.proj",       TestMenuId::File_OpenRecent_Project3 },
+				{ "Clear Recent List",   TestMenuId::File_OpenRecent_ClearList },
+			}},
+			{ "Save",      TestMenuId::File_Save },
+			{ "Save As...",TestMenuId::File_SaveAs },
+			{ "Export As", {
+				{ "PNG Image", TestMenuId::File_Export_PNG },
+				{ "JPG Image", TestMenuId::File_Export_JPG },
+				{ "SVG Vector",TestMenuId::File_Export_SVG },
+				{ "PDF Document", TestMenuId::File_Export_PDF },
+			}},
+			{ "Exit",      TestMenuId::File_Exit } },
+			nullptr
+		};
+
+		ogfx::gui::ContextMenu::Instance editMenu { {
+			{ "Undo",       TestMenuId::Edit_Undo },
+			{ "Redo",       TestMenuId::Edit_Redo },
+			{ "Cut",        TestMenuId::Edit_Cut },
+			{ "Copy",       TestMenuId::Edit_Copy },
+			{ "Paste",      TestMenuId::Edit_Paste },
+			{ "Select All", TestMenuId::Edit_SelectAll } },
+			nullptr
+		};
+
+		ogfx::gui::ContextMenu::Instance viewMenu { {
+			{ "Zoom In",    TestMenuId::View_ZoomIn },
+			{ "Zoom Out",   TestMenuId::View_ZoomOut },
+			{ "Reset Zoom", TestMenuId::View_ZoomReset },
+			{ "Theme", {
+				{ "Dark",    TestMenuId::View_Theme_Dark },
+				{ "Light",   TestMenuId::View_Theme_Light },
+				{ "Crimson", TestMenuId::View_Theme_Crimson },
+			}} },
+			nullptr
+		};
+
+		ogfx::gui::ContextMenu::Instance helpMenu { {
+			{ "Documentation", TestMenuId::Help_Documentation },
+			{ "About",         TestMenuId::Help_About } },
 			nullptr
 		};
 
