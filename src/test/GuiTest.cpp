@@ -50,6 +50,8 @@ class Window : public ogfx::gui::Window
 			m_img.enableAnimated();
 			m_img.setSize(256, 256);
 
+			getToolBar().setHeight(30);
+
 			m_label1.setText("Show Panel2");
 			m_label1.setCallback(ogfx::gui::Widget::eCallback::MousePressed, [&](const ogfx::gui::Event& event) -> void {
 				m_check1.setChecked(!m_check1.isChecked());
@@ -66,16 +68,6 @@ class Window : public ogfx::gui::Window
 			m_label1.enableBackground();
 			m_label1.reloadTheme();
 
-			m_check1.setText("Check this out!");
-			m_check1.setChecked(true);
-			m_check1.setStateChangedCallback([&](CheckBox& sender, bool state) -> void {
-				m_panel1.setVisible(state);
-			});
-
-			m_btn1.setText("BUTTON");
-			m_btn1.setCallback(ogfx::gui::Widget::eCallback::ActionPerformed, [&](const ogfx::gui::Event& event) -> void {
-				std::cout << showOpenFileDialog(filters) << "\n";
-			});
 			m_btn1.addThemeOverride("@.button.showIcon", true);
 			m_btn1.setAnimationData(ad);
 			m_btn1.setIcon("./img.png");
@@ -83,6 +75,16 @@ class Window : public ogfx::gui::Window
 			m_btn1.enableAnimated();
 			m_btn1.enableTooltip();
 			m_btn1.setTooltipText("Test tooltip");
+			m_btn1.setText("TEST BUTTON");
+			m_btn1.setCallback(ogfx::gui::Widget::eCallback::ActionPerformed, [&](const ogfx::gui::Event& event) -> void {
+				std::cout << showOpenFileDialog(filters) << "\n";
+			});
+
+			m_check1.setText("Check this out!");
+			m_check1.setChecked(true);
+			m_check1.setStateChangedCallback([&](CheckBox& sender, bool state) -> void {
+				m_panel1.setVisible(state);
+			});
 
 			m_label2.setText("Label2");
 			m_label3.setText("Label3");
@@ -132,6 +134,13 @@ class Window : public ogfx::gui::Window
 				std::cout << *(selection[0]) << "\n";
 			});
 
+			for (i32 i = 0; i < 20; i++)
+			{
+				auto& btn = getToolBar().addButton("./img.png");
+				btn.setAnimationData(ad);
+				btn.enableAnimated();
+			}
+
 			m_tabs.setSize(900, 700);
 			auto& t1 = m_tabs.addTab("Tab1");
 			auto& t2 = m_tabs.addTab("Tab2 Test");
@@ -163,12 +172,7 @@ class Window : public ogfx::gui::Window
 			m_panel2.addWidget(m_label3);
 			m_panel2.addWidget(m_panel1, { 400, 50 });
 			m_panel2.addWidget(m_label1, { 0, 500 });
-			// m_panel2.addWidget(m_btn1, { 0, 300 });
-			m_btn1.addThemeID("tool_button");
-			m_btn1.seth(26);
-			m_btn1.setText(" ");
-			m_btn1.disableAutoSize();
-			getToolBar().addWidget(m_btn1, { 0, 0 });
+			m_panel2.addWidget(m_btn1, { 0, 300 });
 			m_panel2.addWidget(m_img, { 20, 50 });
 
 			addWidget(m_tabs, { 0,  0 });

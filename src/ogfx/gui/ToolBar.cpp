@@ -37,7 +37,9 @@ namespace ogfx
 			setStylesheetCategoryName("toolbar");
 			setTypeName("ogfx::gui::widgets::ToolBar");
 			auto& win = cast<Window&>(getWindow());
-			setSize(win.getWindowWidth(), m_height);
+			w = win.getWindowWidth();
+			h = m_height;
+			disableBorder();
 			if (win.isMenuBarVisible())
 				setPosition(0, win.getMenuBar().getHeight());
 			else
@@ -45,10 +47,27 @@ namespace ogfx
 			return *this;
 		}
 
+		widgets::Button& ToolBar::addButton(const String& iconPath, const String& text, EventCallback callback)
+		{
+			static f32 pad = 0;
+			m_buttons.push_back({ getWindow() });
+			auto& btn = m_buttons.back();
+			btn.addThemeID("tool_button");
+			btn.setIcon(iconPath);
+			btn.setIconSize({ m_height, m_height });
+			btn.setText(text);
+			btn.setCallback(ogfx::gui::Widget::eCallback::ActionPerformed, callback);
+			btn.enableIconOnly();
+			addWidget(btn, { m_height * (m_buttons.size() - 1) + pad, 0 });
+			pad += 15;
+			return btn;
+		}
+
 		void ToolBar::onWindowResized(const Event& event)
 		{
 			auto& win = cast<Window&>(getWindow());
-			setSize(win.getWindowWidth(), m_height);
+			w = win.getWindowWidth();
+			h = m_height;
 			f32 offset_y = 0;
 			if (win.getMenuBar().isVisible())
 				offset_y += win.getMenuBar().geth();
@@ -59,7 +78,6 @@ namespace ogfx
 		{
 			auto& win = cast<Window&>(getWindow());
 			setHeight(theme.get<f32>("toolbar.height", getHeight(), {}, {}));
-			setItemPadding(theme.get<Rectangle>("toolbar.itemPadding", getItemPadding(), {}, {}));
 			setFontSize(theme.get<i32>("toolbar.fontSize", getFontSize(), {}, {}));
 			setBackgroundColor(theme.get<Color>("toolbar.backgroundColor", getBackgroundColor(), {}, {}));
 			setTextColor(theme.get<Color>("toolbar.textColor", getTextColor(), {}, {}));
@@ -80,6 +98,9 @@ namespace ogfx
 		void ToolBar::onUpdate(void)
 		{
 			if (!m_visible) return;
+			bool iconsOnly = !isButtonTextEnabled();
+			for (auto& btn : m_buttons)
+				btn.enableIconOnly(iconsOnly);
 		}
 
 		void ToolBar::onMousePressed(const Event& event)
@@ -97,6 +118,14 @@ namespace ogfx
 
 			Vec2 mousePos { event.mouse->position_x, event.mouse->position_y };
 
+		}
+
+		void ToolBar::refresh_size(void)
+		{
+			for (auto& btn : m_buttons)
+			{
+				btn.setIconSize({ m_height, m_height });
+			}
 		}
 	}
 }

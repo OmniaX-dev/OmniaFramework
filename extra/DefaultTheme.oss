@@ -196,7 +196,7 @@ const $accentColorDark = #6B0A1DFF
 	showBackground = true
 	showBorder = true
 	useBackgroundGradient = true
-	padding = rect(15, 8, 15, 8)
+	padding = rect(5, 5, 5, 5)
 	margin = rect(0, 0, 0, 0)
 	showIcon = false
 	(icon) {
@@ -308,7 +308,28 @@ const $accentColorDark = #6B0A1DFF
 	borderColor = #400000FF
 }
 % =====================
+
+
+
+% ====== MenuBar ======
+(toolbar) {
+	height = 30.0
+	fontSize = 16
+	backgroundColor = #AA9999FF
+	textColor = $textColor
+	selectionColor = $accentColor
+	selectionTextColor = #FFFFFFFF
+	borderColor = #400000FF
+}
+% =====================
 (@tool_button button) {
 	fontSize = 18
-	padding = rect(10, 0, 10, 0)
+	padding = rect(5, 0, 5, 0)
+	margin = rect(5, 0, 0, 0)
+	showBackground = true
+	backgroundColor = #FFAAAAAA
+	useBackgroundGradient = false
+	showBorder = true
+	borderColor = color_black
+	showIcon = true
 }
