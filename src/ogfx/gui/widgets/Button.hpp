@@ -45,6 +45,7 @@ namespace ogfx
 					inline String getText(void) const { return m_text; }
 					inline Image& getIcon(void) { return m_icon; }
 					OSTD_BOOL_PARAM_GETSET_E(Animated, m_animated);
+					OSTD_BOOL_PARAM_GETSET_E(AutoSize, m_autoSize);
 					OSTD_BOOL_PARAM_GETSET_E(Icon, m_showIcon);
 					OSTD_PARAM_GETSET(ostd::AnimationData, AnimationData, m_animData);
 					OSTD_PARAM_GETSET(Vec2, IconSize, m_iconSize);
@@ -57,6 +58,7 @@ namespace ogfx
 					bool m_textChanged { true };
 					Image m_icon;
 					Vec2 m_realIconSize { 0, 0 };
+					bool m_autoSize { true };
 
 					bool m_showIcon { false };
 					ostd::AnimationData m_animData;

@@ -73,6 +73,7 @@ namespace ogfx
 			void Button::setText(const String& text)
 			{
 				m_text = text;
+				m_textChanged = true;
 				__update_size();
 			}
 
@@ -107,6 +108,11 @@ namespace ogfx
 			void Button::__update_size(void)
 			{
 				m_realIconSize = getIconSize().propy(getGlobalContentBounds().getSize().y);
+				if (!isAutoSizeEnabled())
+				{
+					m_textChanged = false;
+					return;
+				}
 				auto size = getWindow().getGFX().getStringDimensions(getText(), getFontSize());
 				size.x += getPadding().left();
 				size.x += getPadding().right();

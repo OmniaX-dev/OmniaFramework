@@ -308,3 +308,7 @@ const $accentColorDark = #6B0A1DFF
 	borderColor = #400000FF
 }
 % =====================
+(@tool_button button) {
+	fontSize = 18
+	padding = rect(10, 0, 10, 0)
+}

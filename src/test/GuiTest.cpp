@@ -163,7 +163,12 @@ class Window : public ogfx::gui::Window
 			m_panel2.addWidget(m_label3);
 			m_panel2.addWidget(m_panel1, { 400, 50 });
 			m_panel2.addWidget(m_label1, { 0, 500 });
-			m_panel2.addWidget(m_btn1, { 0, 300 });
+			// m_panel2.addWidget(m_btn1, { 0, 300 });
+			m_btn1.addThemeID("tool_button");
+			m_btn1.seth(26);
+			m_btn1.setText(" ");
+			m_btn1.disableAutoSize();
+			getToolBar().addWidget(m_btn1, { 0, 0 });
 			m_panel2.addWidget(m_img, { 20, 50 });
 
 			addWidget(m_tabs, { 0,  0 });

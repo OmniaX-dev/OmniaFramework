@@ -42,6 +42,8 @@ namespace ogfx
 				f32 offset_y = 0;
 				if (win.m_menubar.isVisible())
 					offset_y += win.m_menubar.geth();
+				if (win.m_toolbar.isVisible())
+					offset_y += win.m_toolbar.geth();
 				sety(offset_y);
 				setSize(cast<f32>(event.windowResized->new_width), cast<f32>(event.windowResized->new_height) - offset_y);
 			}

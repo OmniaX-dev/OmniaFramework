@@ -829,8 +829,11 @@ namespace ogfx
 			m_guiTheme = &theme;
 			m_rootWidget.__applyTheme(theme, true);
 			m_rootWidget.reloadTheme(true);
+			m_toolbar.__applyTheme(theme, true);
+			m_toolbar.reloadTheme(true);
 			m_cmenu.applyTheme(theme);
 			m_menubar.applyTheme(theme);
+			m_toolbar.applyTheme(theme);
 		}
 
 		void Window::__on_window_init(i32 width, i32 height, const String& title)
@@ -874,6 +877,8 @@ namespace ogfx
 				onRedraw(m_gfx);
 				if (m_menubar.isVisible())
 					m_menubar.draw(m_gfx);
+				m_toolbar.__update();
+				m_toolbar.__draw(m_gfx);
 				if (m_cmenu.isVisible())
 				{
 					stopTooltipTimer();
@@ -900,11 +905,13 @@ namespace ogfx
 			{
 				evt.__original_signal_id = ostd::BuiltinSignals::WindowClosed;
 				m_rootWidget.__onWindowClosed(evt);
+				m_toolbar.__onWindowClosed(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::WindowFocused)
 			{
 				evt.__original_signal_id = ostd::BuiltinSignals::WindowFocused;
 				m_rootWidget.__onWindowFocused(evt);
+				m_toolbar.__onWindowFocused(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::WindowLostFocus)
 			{
@@ -912,6 +919,7 @@ namespace ogfx
 					m_cmenu.hide();
 				evt.__original_signal_id = ostd::BuiltinSignals::WindowLostFocus;
 				m_rootWidget.__onWindowFocusLost(evt);
+				m_toolbar.__onWindowFocusLost(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::FileDragAndDropped)
 			{
@@ -939,6 +947,9 @@ namespace ogfx
 				evt.__original_signal_id = ostd::BuiltinSignals::WindowResized;
 				if (m_menubar.isVisible())
 					m_menubar.onWindowResized(evt);
+				if (m_toolbar.isVisible())
+					m_toolbar.onWindowResized(evt);
+				m_toolbar.__onWindowResized(evt);
 				m_rootWidget.__onWindowResized(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::MouseMoved)
@@ -949,6 +960,9 @@ namespace ogfx
 					m_menubar.onMouseMoved(evt);
 				if (m_cmenu.isVisible())
 					m_cmenu.onMouseMoved(evt);
+				if (m_toolbar.isVisible())
+					m_toolbar.onMouseMoved(evt);
+				m_toolbar.__onMouseMoved(evt);
 				m_rootWidget.__onMouseMoved(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::MouseScrolled)
@@ -957,6 +971,7 @@ namespace ogfx
 				evt.__original_signal_id = ostd::BuiltinSignals::MouseScrolled;
 				if (m_cmenu.isVisible())
 					m_cmenu.onMouseScrolled(evt);
+				m_toolbar.__onMouseScrolled(evt);
 				m_rootWidget.__onMouseScrolled(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::MousePressed)
@@ -967,6 +982,9 @@ namespace ogfx
 					m_cmenu.onMousePressed(evt);
 				if (m_menubar.isVisible())
 					m_menubar.onMousePressed(evt);
+				if (m_toolbar.isVisible())
+					m_toolbar.onMousePressed(evt);
+				m_toolbar.__onMousePressed(evt);
 				m_rootWidget.__onMousePressed(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::MouseReleased)
@@ -975,18 +993,21 @@ namespace ogfx
 				evt.__original_signal_id = ostd::BuiltinSignals::MouseReleased;
 				if (m_cmenu.isVisible())
 					m_cmenu.onMouseReleased(evt);
+				m_toolbar.__onMouseReleased(evt);
 				m_rootWidget.__onMouseReleased(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::KeyPressed)
 			{
 				evt.keyboard = &(ogfx::KeyEventData&)signal.userData;
 				evt.__original_signal_id = ostd::BuiltinSignals::KeyPressed;
+				m_toolbar.__onKeyPressed(evt);
 				m_rootWidget.__onKeyPressed(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::KeyReleased)
 			{
 				evt.keyboard = &(ogfx::KeyEventData&)signal.userData;
 				evt.__original_signal_id = ostd::BuiltinSignals::KeyReleased;
+				m_toolbar.__onKeyReleased(evt);
 				m_rootWidget.__onKeyReleased(evt);
 				if (evt.keyboard->keyCode == KeyCode::Escape)
 					close();
@@ -995,6 +1016,7 @@ namespace ogfx
 			{
 				evt.keyboard = &(ogfx::KeyEventData&)signal.userData;
 				evt.__original_signal_id = ostd::BuiltinSignals::TextEntered;
+				m_toolbar.__onTextEntered(evt);
 				m_rootWidget.__onTextEntered(evt);
 			}
 			onSignal(signal);

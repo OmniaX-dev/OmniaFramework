@@ -86,6 +86,7 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/WidgetManager.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/ContextMenu.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/MenuBar.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/ToolBar.cpp
 
 	# gui/widgets
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Widget.cpp

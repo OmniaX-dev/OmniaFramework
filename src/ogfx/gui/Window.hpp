@@ -31,6 +31,7 @@
 #include <ogfx/gui/WindowOutputHandler.hpp>
 #include <ogfx/gui/ContextMenu.hpp>
 #include <ogfx/gui/MenuBar.hpp>
+#include <ogfx/gui/ToolBar.hpp>
 
 namespace ogfx
 {
@@ -274,8 +275,10 @@ namespace ogfx
 				inline void showContextMenu(const Vec2& pos) { m_cmenu.show(pos); }
 				inline void setContextMenu(const ContextMenu::Instance& instance) { m_cmenu.setInstance(instance); }
 				inline bool isContextMenuVisible(void) const { return m_cmenu.isVisible(); }
+				inline bool isMenuBarVisible(void) const { return m_menubar.isVisible(); }
 				inline void hideContextMenu(void) { m_cmenu.hide(); }
 				inline MenuBar& getMenuBar(void) { return m_menubar; }
+				inline ToolBar& getToolBar(void) { return m_toolbar; }
 
 				inline virtual void onInitialize(void) {  }
 				inline virtual void onDestroy(void) {  }
@@ -302,6 +305,7 @@ namespace ogfx
 				ostd::StepTimer::TimePoint m_lastFrameTime;
 				ContextMenu m_cmenu { *this };
 				MenuBar m_menubar { *this };
+				ToolBar m_toolbar { *this };
 
 				friend class widgets::RootWidget;
 		};
