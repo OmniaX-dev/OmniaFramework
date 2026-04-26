@@ -301,6 +301,7 @@ const $backgroundColor = rgba(30, 30, 30, 255)
 	textColor = $textColor
 	selectionColor = $accentColor
 	selectionTextColor = $accentColorLight
+	showBorder = false
 	borderColor = $borderColor
 }
 % =====================
@@ -316,6 +317,7 @@ const $backgroundColor = rgba(30, 30, 30, 255)
 	selectionColor = $accentColor
 	selectionTextColor = $accentColorLight
 	borderColor = $borderColor
+	showBorder = true
 }
 % =====================
 (@tool_button button) {

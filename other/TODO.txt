@@ -20,21 +20,22 @@
 ***Implement show/hide functionality for widgets
 ***Create reliable default stylesheet
 ***Implement global scale (probably query desktop scale and adjust accordingly)
+***Add Dark Mode Default theme
+***FIX: Optimize ListView
+***FIX: Limit FPS even when continuous events happen
 Add theme caching
 Implement cursors in Stylesheet
 FIX: Window getting exponentially bigger when Desktop scale changes
 FIX: Refreshing scroll when content extent changes
-Add Dark Mode Default theme, and see if I can query OS theme mode to saelect the right theme
+See if I can query OS theme mode to saelect the right theme
 FIX: Float values in stylesheet needing to have decimal point to be read as float
 Make parsing of vec2 and rect in stylesheet, consistent with other value functions like gradients and animations
 Add buttons to scroll tabs in TabPanel
 Add Font class, to handle different font attributes
 Add multi-selection to ListView
 Cache getStringDimensions() call in TabPanel::draw_tabs
-FIX: Optimize ListView
 FIX: Padding for ListView items
 Add icons to ListView
-FIX: Limit FPS even when continuous events happen
 Add gradient to listbox selection
 Add gradient to menubar background and selection
 Add cursor stack
@@ -43,6 +44,8 @@ Make label auto-size
 FIX: Tooltips
 XML Layout file?
 Add Hex Editor widget
+Add Message Boxes
+FIX: Widget Content extents increasing negatively not showing scrollbars
 
 
 
@@ -78,3 +81,6 @@ Implement following widgets:
 		Fill
 	Text Input
 	Text Area
+	Numeric Field
+	Color Picker
+	Calendar

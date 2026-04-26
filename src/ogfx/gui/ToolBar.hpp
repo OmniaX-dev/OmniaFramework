@@ -52,6 +52,7 @@ namespace ogfx
 				OSTD_PARAM_GETSET(Color, TextColor, m_textColor);
 				OSTD_PARAM_GETSET(Color, BorderColor, m_borderColor);
 				OSTD_BOOL_PARAM_GETSET_E_NEG(ButtonText, m_disableButtonText);
+				OSTD_BOOL_PARAM_GETSET_E(BottomBorder, m_bottomBorder);
 
 			private:
 				void refresh_size(void);
@@ -62,6 +63,7 @@ namespace ogfx
 				bool m_isStatusBar { false };
 
 				f32 m_height { 26 };
+				bool m_bottomBorder { false };
 				i32 m_fontSize { 16 };
 				Color m_backgroundColor { "#6B0A1DFF" };
 				Color m_textColor { "#F16A85FF" };

@@ -303,10 +303,13 @@ namespace ogfx
 				void __on_update(f64 delta) override;
 				void __on_fixed_update(void) override;
 
+				void __main_loop_cycle(void);
+
 			protected:
 				widgets::RootWidget m_rootWidget { *this };
 				ostd::StepTimer m_fixedUpdateTimer;
 				ostd::StepTimer::TimePoint m_lastFrameTime;
+				ostd::StepTimer m_mainLoopTimer;
 				ContextMenu m_cmenu { *this };
 				MenuBar m_menubar { *this };
 				ToolBar m_toolbar { *this };

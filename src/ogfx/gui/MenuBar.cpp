@@ -68,6 +68,7 @@ namespace ogfx
 			setSelectionColor(theme.get<Color>("menubar.selectionColor", getSelectionColor(), {}, {}));
 			setSelectionTextColor(theme.get<Color>("menubar.selectionTextColor", getSelectionTextColor(), {}, {}));
 			setBorderColor(theme.get<Color>("menubar.borderColor", getBorderColor(), {}, {}));
+			enableBorder(theme.get<bool>("menubar.showBorder", isBorderEnabled(), {}, {}));
 			setSize(m_window.getWindowWidth(), m_height);
 			recompute_layout();
 		}
@@ -141,7 +142,8 @@ namespace ogfx
 			}
 
 			// Bottom border line
-			gfx.drawLine({ { getx(), gety() + m_height }, { getx() + getw(), gety() + m_height } }, m_borderColor);
+			if (isBorderEnabled())
+				gfx.drawLine({ { getx(), gety() + m_height }, { getx() + getw(), gety() + m_height } }, m_borderColor);
 		}
 
 		void MenuBar::update(void)

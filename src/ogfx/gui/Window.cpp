@@ -71,7 +71,7 @@ namespace ogfx
 
 		m_window = SDL_CreateWindow("", m_windowWidth, m_windowHeight, SDL_WINDOW_RESIZABLE);
 		m_renderer = SDL_CreateRenderer(m_window, nullptr);
-		SDL_SetWindowMinimumSize(m_window, m_windowWidth, m_windowHeight);
+		// SDL_SetWindowMinimumSize(m_window, m_windowWidth, m_windowHeight);
 		setPosition(WindowsPositionCenter);
 		SDL_SetWindowTitle(m_window, m_title.c_str());
 		SDL_StartTextInput(m_window);
@@ -829,9 +829,13 @@ namespace ogfx
 			setTypeName("ogfx::gui::Window");
 			m_gfx.init(*this);
 			loadDefaultTHeme();
+			setBlockingEventsRefreshFPS(30);
 
 			m_fixedUpdateTimer.create(60.0, [this](f64 dt) {
 				__on_fixed_update();
+			});
+			m_mainLoopTimer.create(60.0, [this](f64 dt) {
+				__main_loop_cycle();
 			});
 			m_lastFrameTime = ostd::StepTimer::Clock::now();
 			onInitialize();
@@ -843,46 +847,51 @@ namespace ogfx
 			onClose();
 		}
 
+		void Window::__main_loop_cycle(void)
+		{
+			auto now = ostd::StepTimer::Clock::now();
+			f64 delta = std::chrono::duration<f64>(now - m_lastFrameTime).count();
+			m_lastFrameTime = now;
+
+			if (delta > 0.25)
+				delta = 0.25;
+
+			__on_update(delta);
+
+			before_render();
+			m_rootWidget.__update();
+			m_rootWidget.__draw(m_gfx);
+			onRedraw(m_gfx);
+			if (m_menubar.isVisible())
+				m_menubar.draw(m_gfx);
+			m_toolbar.__update();
+			m_toolbar.__draw(m_gfx);
+			m_statusbar.__update();
+			m_statusbar.__draw(m_gfx);
+			if (m_cmenu.isVisible())
+			{
+				stopTooltipTimer();
+				m_cmenu.draw(m_gfx);
+			}
+			else if (isTooltipShown())
+			{
+				auto textSize = m_gfx.getStringDimensions(getTooltipText(), m_rootWidget.getTooltipFontSize());
+				Rectangle textBounds = { getMousePosition(), textSize };
+				textBounds += Rectangle { 0, 0, 30, 10 };
+				m_gfx.outlinedRect(textBounds, m_rootWidget.getTooltipBackgroundColor(), m_rootWidget.getTooltipBorderColor(), m_rootWidget.getTooltipBorderWidth());
+				m_gfx.drawCenteredString(getTooltipText(), textBounds, m_rootWidget.getTooltipTextColor(), m_rootWidget.getTooltipFontSize());
+			}
+			m_gfx.endFrame();
+			after_render();
+		}
+
 		void Window::__main_loop(void)
 		{
 			while (isRunning())
 			{
-				auto now = ostd::StepTimer::Clock::now();
-				f64 delta = std::chrono::duration<f64>(now - m_lastFrameTime).count();
-				m_lastFrameTime = now;
-
-				if (delta > 0.25)
-					delta = 0.25;
-
-				m_fixedUpdateTimer.update();
-				__on_update(delta);
-
 				handle_events();
-				before_render();
-				m_rootWidget.__update();
-				m_rootWidget.__draw(m_gfx);
-				onRedraw(m_gfx);
-				if (m_menubar.isVisible())
-					m_menubar.draw(m_gfx);
-				m_toolbar.__update();
-				m_toolbar.__draw(m_gfx);
-				m_statusbar.__update();
-				m_statusbar.__draw(m_gfx);
-				if (m_cmenu.isVisible())
-				{
-					stopTooltipTimer();
-					m_cmenu.draw(m_gfx);
-				}
-				else if (isTooltipShown())
-				{
-					auto textSize = m_gfx.getStringDimensions(getTooltipText(), m_rootWidget.getTooltipFontSize());
-					Rectangle textBounds = { getMousePosition(), textSize };
-					textBounds += Rectangle { 0, 0, 30, 10 };
-					m_gfx.outlinedRect(textBounds, m_rootWidget.getTooltipBackgroundColor(), m_rootWidget.getTooltipBorderColor(), m_rootWidget.getTooltipBorderWidth());
-					m_gfx.drawCenteredString(getTooltipText(), textBounds, m_rootWidget.getTooltipTextColor(), m_rootWidget.getTooltipFontSize());
-				}
-				m_gfx.endFrame();
-				after_render();
+				m_fixedUpdateTimer.update();
+				m_mainLoopTimer.update();
 			}
 		}
 

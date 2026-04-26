@@ -124,6 +124,7 @@ class Window : public ogfx::gui::Window
 			m_panel2.setTitle("Panel 2");
 			m_panel2.enableTooltip();
 			m_panel2.setTooltipText("PANEL tooltip");
+			m_panel2.enableDraggable();
 
 			m_prog.setSize(300, 30);
 			m_slide.setSize(300, 30);
@@ -138,7 +139,7 @@ class Window : public ogfx::gui::Window
 			m_list.setSize(200, 300);
 			m_list.reloadTheme();
 
-			for (i32 i = 0; i < 500; i++)
+			for (i32 i = 0; i < 10000; i++)
 			{
 				m_list.addLine(ostd::Random::getString(ostd::Random::getui8(1, 40)));
 			}
@@ -165,7 +166,7 @@ class Window : public ogfx::gui::Window
 			}
 
 			m_tabs.setSize(900, 700);
-			m_tabs.addThemeOverride("@.tabPanel.borderWidth", 1.0f);
+			m_tabs.addThemeOverride("@.tabPanel.showBorder", false);
 			auto& t1 = m_tabs.addTab("Tab1");
 			auto& t2 = m_tabs.addTab("Tab2 Test");
 			auto& t3 = m_tabs.addTab("Long Tab Test");
@@ -200,6 +201,7 @@ class Window : public ogfx::gui::Window
 			m_panel2.addWidget(m_img, { 20, 50 });
 
 			addWidget(m_tabs, { 0,  0 });
+			getToolBar().reloadTheme(true);
 
 			m_drawCallsLbl.addThemeOverride("@.label.fontSize", 20);
 			m_drawCallsLbl.addThemeOverride("@.label.padding", ostd::Rectangle { 10, 5, 0, 0 });
@@ -270,7 +272,10 @@ class Window : public ogfx::gui::Window
 			else if (signal.ID == ostd::BuiltinSignals::WindowResized)
 			{
 				auto& wrd = cast<ogfx::WindowResizedData&>(signal.userData);
-				m_tabs.setSize(cast<f32>(wrd.new_width), cast<f32>(wrd.new_height - getMenuBar().geth() - getToolBar().geth() - getStatusBar().geth()));
+				m_tabs.setSize(cast<f32>(getWindowWidth()), cast<f32>(getWindowHeight() - getMenuBar().geth() - getToolBar().geth() - getStatusBar().geth()));
+				m_tabs.setPosition(0, -1);
+				m_tabs.refreshCurrentTab();
+
 			}
 		}
 

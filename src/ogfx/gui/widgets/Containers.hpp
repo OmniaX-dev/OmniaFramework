@@ -47,18 +47,26 @@ namespace ogfx
 					Panel& create(void);
 					void applyTheme(const ostd::Stylesheet& theme) override;
 					void afterDraw(ogfx::BasicRenderer2D& gfx) override;
+					void onMousePressed(const Event& event) override;
+					void onMouseReleased(const Event& event) override;
+					void onMouseDragged(const Event& event) override;
 					void onWindowResized(const Event& event) override;
 					void setTitlebarType(const String& type);
 					String getTitlebarType(void) const;
 					inline String getTitle(void) const { return m_title; }
 					inline void setTitle(const String& title) { m_title = title; }
 					inline f32 getTitlebarHeight(void) const { return m_titlebarHeight; }
+					OSTD_BOOL_PARAM_GETSET_I(Draggable, m_draggable);
 
 				private:
 					void draw_titlebar(BasicRenderer2D& gfx);
 
 				private:
 					String m_title { "Panel" };
+					Vec2 m_mousePos { 0, 0 };
+					bool m_mousePressed { false };
+					bool m_draggable { false };
+					Rectangle m_titleBarBounds;
 
 					Color m_titleColor { Colors::Black  };
 					i32 m_titlebarType = TitleBarTypes::NoneValue;
@@ -83,9 +91,10 @@ namespace ogfx
 					bool removeTab(i32 index);
 					bool removeTab(const String& title);
 					bool setCurrentTab(Panel& tab);
-					bool setCurrentTab(i32 index);
+					bool setCurrentTab(i32 index, bool ignore_same_tab = false);
 					void setTabBarHeight(f32 height);
 					bool isMouseInsideTabBar(const Vec2& mousePos);
+					inline void refreshCurrentTab(void) { setCurrentTab(m_currentTabIndex, true); }
 
 					inline f32 getTabBarHeight(void) const { return m_tabBarHeight; }
 					OSTD_PARAM_GETSET(Color, TabBarBackgroundColor, m_tabBarBackgroundColor);

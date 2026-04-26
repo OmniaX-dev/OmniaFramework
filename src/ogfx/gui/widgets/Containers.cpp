@@ -53,6 +53,32 @@ namespace ogfx
 				setTitlebarType(getThemeValue<String>(theme, "titlebarType", TitleBarTypes::None));
 			}
 
+			void Panel::onMousePressed(const Event& event)
+			{
+				if (!isDraggable())
+					return;
+				if (m_titleBarBounds.contains({ event.mouse->position_x, event.mouse->position_y }, true))
+				{
+					m_mousePressed = true;
+					m_mousePos = { event.mouse->position_x, event.mouse->position_y };
+				}
+			}
+
+			void Panel::onMouseReleased(const Event& event)
+			{
+				m_mousePressed = false;
+			}
+
+			void Panel::onMouseDragged(const Event& event)
+			{
+				if (m_mousePressed)
+				{
+					Vec2 mpos { event.mouse->position_x, event.mouse->position_y };
+					addPos(mpos - m_mousePos);
+					m_mousePos = mpos;
+				}
+			}
+
 			void Panel::afterDraw(ogfx::BasicRenderer2D& gfx)
 			{
 				draw_titlebar(gfx);
@@ -106,6 +132,7 @@ namespace ogfx
 					getGlobalPosition() + Vec2 { br, br },
 					Vec2 { getw(), m_titlebarHeight } - Vec2 { br * 2, br * 2 }
 				};
+				m_titleBarBounds = titleBarBounds;
 				switch (m_titlebarType)
 				{
 					case TitleBarTypes::FullValue:
@@ -256,13 +283,13 @@ namespace ogfx
 				return setCurrentTab(index);
 			}
 
-			bool TabPanel::setCurrentTab(i32 index)
+			bool TabPanel::setCurrentTab(i32 index, bool ignore_same_tab)
 			{
 				if (index < 0 || index >= (i32)m_tabs.size())
 					return false;
 
 				auto curr = m_tabs[index].get();
-				if (curr == m_currentTab && m_currentTab != nullptr)
+				if (!ignore_same_tab && curr == m_currentTab && m_currentTab != nullptr)
 					return false;
 				removeWidget(*m_currentTab);
 				m_currentTabIndex = index;
@@ -272,6 +299,7 @@ namespace ogfx
 				m_currentTab->setPosition({ 0, 0 });
 				m_currentTab->reloadTheme(true);
 				m_currentTab->resetScroll();
+				m_currentTab->updateScrollbarsSize();
 				return addWidget(*m_currentTab);
 			}
 

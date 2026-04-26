@@ -88,7 +88,9 @@ namespace ogfx
 			setBackgroundColor(theme.get<Color>("toolbar.backgroundColor", getBackgroundColor(), {}, {}));
 			setTextColor(theme.get<Color>("toolbar.textColor", getTextColor(), {}, {}));
 			setBorderColor(theme.get<Color>("toolbar.borderColor", getBorderColor(), {}, {}));
+			enableBottomBorder(theme.get<bool>("toolbar.showBorder", isBottomBorderEnabled(), {}, {}));
 			setSize(win.getWindowWidth(), m_height);
+			disableBorder();
 		}
 
 		void ToolBar::onDraw(BasicRenderer2D& gfx)
@@ -96,8 +98,11 @@ namespace ogfx
 			gfx.fillRect(*this, m_backgroundColor);
 
 			// Bottom border line
-			f32 lineOffset = (isStatusBar() ? 0.0f : m_height);
-			gfx.drawLine({ { getx(), gety() + lineOffset }, { getx() + getw(), gety() + lineOffset } }, m_borderColor);
+			if (isBottomBorderEnabled())
+			{
+				f32 lineOffset = (isStatusBar() ? 0.0f : m_height);
+				gfx.drawLine({ { getx(), gety() + lineOffset }, { getx() + getw(), gety() + lineOffset } }, m_borderColor);
+			}
 		}
 
 		void ToolBar::onUpdate(void)

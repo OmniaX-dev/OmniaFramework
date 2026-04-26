@@ -63,6 +63,7 @@ namespace ogfx
 				OSTD_PARAM_GETSET(Color, SelectionColor, m_selectionColor);
 				OSTD_PARAM_GETSET(Color, SelectionTextColor, m_selectionTextColor);
 				OSTD_PARAM_GETSET(Color, BorderColor, m_borderColor);
+				OSTD_BOOL_PARAM_GETSET_E(Border, m_showBorder);
 
 			private:
 				struct Slot
@@ -89,6 +90,7 @@ namespace ogfx
 				f32 m_height { 26 };
 				Rectangle m_itemPadding { 12, 0, 12, 0 };  // x = left, y = top, w = right, h = bottom
 				i32 m_fontSize { 16 };
+				bool m_showBorder { false };
 				Color m_backgroundColor { "#6B0A1DFF" };
 				Color m_textColor { "#F16A85FF" };
 				Color m_selectionColor { "#DC143CFF" };
