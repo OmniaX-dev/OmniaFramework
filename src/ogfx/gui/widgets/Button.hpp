@@ -62,6 +62,7 @@ namespace ogfx
 					OSTD_PARAM_GETSET(ostd::AnimationData, AnimationData, m_animData);
 					OSTD_PARAM_GETSET(Vec2, IconSize, m_iconSize);
 					OSTD_PARAM_GETSET(f32, IconSpacing, m_iconSpacing);
+					OSTD_PARAM_GETSET(Color, IconTintColor, m_iconTint);
 
 				private:
 					// Force a layout recompute on the next draw.
@@ -85,6 +86,7 @@ namespace ogfx
 					Animation m_anim;
 					Vec2 m_iconSize { 0, 0 };
 					f32 m_iconSpacing { 10 };
+					Color m_iconTint { Colors::White };
 
 					// Computed layout state (refreshed by recompute_layout).
 					bool m_layoutDirty { true };

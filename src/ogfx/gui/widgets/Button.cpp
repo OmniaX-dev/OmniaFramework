@@ -54,9 +54,9 @@ namespace ogfx
 				{
 					const Vec2 iconPos = contentTL + m_drawIconOffset;
 					if (isAnimatedEnabled())
-						gfx.drawAnimation(m_anim, iconPos, m_drawIconSize);
+						gfx.drawAnimation(m_anim, iconPos, m_drawIconSize, getIconTintColor());
 					else
-						gfx.drawImage(m_icon, iconPos, m_drawIconSize);
+						gfx.drawImage(m_icon, iconPos, m_drawIconSize, getIconTintColor());
 				}
 
 				// --- Text ---
@@ -110,6 +110,7 @@ namespace ogfx
 				enableAutoSize(getThemeValue<bool>(theme, "autoSize", m_autoSize));
 				enableAnimated(getThemeValue<bool>(theme, "icon.animated", m_animated));
 				setAnimationData(getThemeValue<AnimationData>(theme, "icon.animation", m_animData));
+				setIconTintColor(getThemeValue<Color>(theme, "icon.tint", getIconTintColor()));
 				String filePath = getThemeValue<String>(theme, "icon.path", m_icon.getFilePath());
 				if (filePath != m_icon.getFilePath())
 					setIcon(filePath);

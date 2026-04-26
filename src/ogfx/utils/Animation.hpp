@@ -45,6 +45,8 @@ namespace ogfx
 		inline void setRowOffset(i32 o) { m_animData.rowOffset = o; }
 		inline void setPixelOffsetX(f32 o) { m_animData.pixelOffsetX = o; }
 		inline void setPixelOffsetY(f32 o) { m_animData.pixelOffsetY = o; }
+		inline void setSpacingX(f32 s) { m_animData.spacingX = s; }
+		inline void setSpacingY(f32 s) { m_animData.spacingY = s; }
 		inline void setNRows(i32 n) { m_animData.rows = n; }
 		inline void setNColumns(i32 n) { m_animData.columns = n; }
 		inline void setFrameWidth(i32 f) { m_animData.frameWidth = f; }
@@ -60,6 +62,8 @@ namespace ogfx
 		inline i32 getRowOffset(void) { return m_animData.rowOffset; }
 		inline f32 getPixelOffsetX(void) { return m_animData.pixelOffsetX; }
 		inline f32 getPixelOffsetY(void) { return m_animData.pixelOffsetY; }
+		inline f32 getSpacingX(void) { return m_animData.spacingX; }
+		inline f32 getSpacingY(void) { return m_animData.spacingY; }
 		inline i32 getNRows(void) { return m_animData.rows; }
 		inline i32 getNColumns(void) { return m_animData.columns; }
 		inline i32 getFrameWidth(void) { return m_animData.frameWidth; }

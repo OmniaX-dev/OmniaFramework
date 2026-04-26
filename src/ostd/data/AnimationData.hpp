@@ -34,6 +34,8 @@ namespace ostd
 		i32 columnOffset { 0 };
 		f32 pixelOffsetX { 0.0f };
 		f32 pixelOffsetY { 0.0f };
+		f32 spacingX { 0.0f };;
+		f32 spacingY { 0.0f };;
 		i32 rows { 1 };
 		i32 columns { 1 };
 		f32 frameWidth{ 32 };
@@ -53,6 +55,8 @@ namespace ostd
 			str.add("  ").add("columnOffset: ").add(columnOffset).add(",\n");
 			str.add("  ").add("pixelOffsetX: ").add(pixelOffsetX, 2).add(",\n");
 			str.add("  ").add("pixelOffsetY: ").add(pixelOffsetY, 2).add(",\n");
+			str.add("  ").add("spacingX: ").add(spacingX, 2).add(",\n");
+			str.add("  ").add("CpacingY: ").add(spacingY, 2).add(",\n");
 			str.add("  ").add("rows: ").add(rows).add(",\n");
 			str.add("  ").add("columns: ").add(columns).add(",\n");
 			str.add("  ").add("frameWidth: ").add(frameWidth, 2).add(",\n");

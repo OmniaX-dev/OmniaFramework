@@ -52,6 +52,17 @@ class Window : public ogfx::gui::Window
 
 			getToolBar().setHeight(30);
 
+			ogfx::AnimationData iconsAD;
+			iconsAD.frameCount = 1;
+			iconsAD.fps = 1;
+			iconsAD.columns = 8;
+			iconsAD.rows = 5;
+			iconsAD.frameWidth = 64;
+			iconsAD.frameHeight = 64;
+			iconsAD.spacingX = 50;
+			iconsAD.spacingY = 48;
+			iconsAD.still = true;
+
 			m_label1.setText("Show Panel2");
 			m_label1.setCallback(ogfx::gui::Widget::eCallback::MousePressed, [&](const ogfx::gui::Event& event) -> void {
 				m_check1.setChecked(!m_check1.isChecked());
@@ -136,9 +147,15 @@ class Window : public ogfx::gui::Window
 
 			for (i32 i = 0; i < 20; i++)
 			{
-				auto& btn = getToolBar().addButton("./img.png");
-				btn.setAnimationData(ad);
+				iconsAD.columnOffset = ostd::Random::getui32(0, 7);
+				iconsAD.rowOffset = ostd::Random::getui32(0, 4);
+
+				if (iconsAD.rowOffset == 3)
+					iconsAD.columnOffset = ostd::Random::getui32(0, 4);
+
+				auto& btn = getToolBar().addButton("./icons.png");
 				btn.enableAnimated();
+				btn.setAnimationData(iconsAD);
 			}
 
 			m_tabs.setSize(900, 700);

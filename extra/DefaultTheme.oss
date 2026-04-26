@@ -332,4 +332,13 @@ const $accentColorDark = #6B0A1DFF
 	showBorder = true
 	borderColor = color_black
 	showIcon = true
+	(icon) {
+		tint = color_crimson
+	}
+}
+(@tool_button button:hover) {
+	borderColor = color_white
+	(icon) {
+		tint = color_white
+	}
 }

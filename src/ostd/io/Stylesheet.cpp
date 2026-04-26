@@ -593,6 +593,18 @@ namespace ostd
 					return l_error(true);
 				ad.pixelOffsetY = val.toFloat();
 			}
+			else if (prop == "spacingx")
+			{
+				if (!val.isNumeric(true))
+					return l_error(true);
+				ad.spacingX = val.toFloat();
+			}
+			else if (prop == "spacingy")
+			{
+				if (!val.isNumeric(true))
+					return l_error(true);
+				ad.spacingY = val.toFloat();
+			}
 			else if (prop == "rows")
 			{
 				if (!val.isInt())

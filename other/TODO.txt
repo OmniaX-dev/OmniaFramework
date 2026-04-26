@@ -37,6 +37,8 @@ Add icons to ListView
 FIX: Limit FPS even when continuous events happen
 Add gradient to listbox selection
 Add gradient to menubar background and selection
+Add cursor stack
+Add MacOS global menu integration
 
 
 
@@ -61,7 +63,7 @@ Implement following widgets:
 	***ListBox
 	***Context Menu
 	***MenuBar
-	Toolbar
+	***Toolbar
 	StatusBar
 	ComboBox
 	TreeView

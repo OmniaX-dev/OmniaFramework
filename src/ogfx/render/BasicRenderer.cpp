@@ -262,7 +262,7 @@ namespace ogfx
 
 
 	// ===================================================== SPECIALIZED =====================================================
-	void BasicRenderer2D::drawImage(const ogfx::Image& image, const Vec2& position, const Vec2& size, const Rectangle& srcRect)
+	void BasicRenderer2D::drawImage(const ogfx::Image& image, const Vec2& position, const Vec2& size, const Color& tint, const Rectangle& srcRect)
 	{
 		if (!m_initialized || !image.isLoaded())
 			return;
@@ -319,16 +319,16 @@ namespace ogfx
 
 		// 5. Push quad
 		u32 inds[6] = QUAD_INDICES_ARR;
-		push_polygon(verts, uvs, 4, inds, 6, Colors::White, tex, false);
+		push_polygon(verts, uvs, 4, inds, 6, tint, tex, false);
 	}
 
-	void BasicRenderer2D::drawAnimation(const Animation& anim, const Vec2& position, const Vec2& size)
+	void BasicRenderer2D::drawAnimation(const Animation& anim, const Vec2& position, const Vec2& size, const Color& tint)
 	{
 		if (!m_initialized) return;
 		if (!anim.hasImage()) return;
 		const Image& img = anim.getSpriteSheet();
 		if (!img.isLoaded() || !img.isValid()) return;
-		drawImage(img, position, size, anim.getFrameRect());
+		drawImage(img, position, size, tint, anim.getFrameRect());
 	}
 
 	void BasicRenderer2D::fillGradientRect(const Rectangle& rect, ColorGradient& gradient)

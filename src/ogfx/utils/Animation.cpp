@@ -30,6 +30,7 @@ namespace ogfx
 		m_timer.create(m_animData.fps, [&](f64 dt) -> void {
 			update_animation();
 		});
+		update_animation();
 		return *this;
 	}
 
@@ -76,10 +77,15 @@ namespace ogfx
 			else
 				m_currentFrame = 0;
 		}
-		i32 x = m_animData.pixelOffsetX + (((m_currentFrame % m_animData.columns) + m_animData.columnOffset) * m_animData.frameWidth);
-		i32 y = m_animData.pixelOffsetY + (m_animData.rowOffset * m_animData.frameHeight);
-		if (m_animData.rows > 1)
-			y = m_animData.pixelOffsetY + ((cast<i32>(m_currentFrame / m_animData.columns) + m_animData.rowOffset) * m_animData.frameHeight);
+		i32 col = m_currentFrame % m_animData.columns;
+		i32 row = (m_animData.rows > 1) ? cast<i32>(m_currentFrame / m_animData.columns) : 0;
+
+		i32 x = m_animData.pixelOffsetX
+			  + ((col + m_animData.columnOffset) * (m_animData.frameWidth + m_animData.spacingX));
+
+		i32 y = m_animData.pixelOffsetY
+			  + ((row + m_animData.rowOffset) * (m_animData.frameHeight + m_animData.spacingY));
+
 		m_frameRect = { cast<f32>(x), cast<f32>(y), m_animData.frameWidth, m_animData.frameHeight };
 	}
 }
