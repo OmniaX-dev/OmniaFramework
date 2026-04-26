@@ -279,6 +279,10 @@ namespace ogfx
 				inline void hideContextMenu(void) { m_cmenu.hide(); }
 				inline MenuBar& getMenuBar(void) { return m_menubar; }
 				inline ToolBar& getToolBar(void) { return m_toolbar; }
+				inline ToolBar& getStatusBar(void) { return m_statusbar; }
+				inline void showMenuBar(bool show = true) { m_menubar.show(show); }
+				inline void showToolBar(bool show = true) { m_toolbar.setVisible(show); }
+				inline void showStatusBar(bool show = true) { m_statusbar.setVisible(show); }
 
 				inline virtual void onInitialize(void) {  }
 				inline virtual void onDestroy(void) {  }
@@ -306,6 +310,7 @@ namespace ogfx
 				ContextMenu m_cmenu { *this };
 				MenuBar m_menubar { *this };
 				ToolBar m_toolbar { *this };
+				ToolBar m_statusbar { *this, true };
 
 				friend class widgets::RootWidget;
 		};

@@ -32,22 +32,19 @@ namespace ogfx
 		class ToolBar : public Widget
 		{
 			public:
-				ToolBar(Window& window);
-				ToolBar& create(void);
+				ToolBar(Window& window, bool statusbar = false);
+				ToolBar& create(bool statusbar = false);
 				widgets::Button& addButton(const String& iconPath, const String& text = "", EventCallback callback = nullptr);
 				void onWindowResized(const Event& event) override;
 				void applyTheme(const ostd::Stylesheet& theme) override;
 				void onDraw(BasicRenderer2D& gfx) override;
 				void onUpdate(void) override;
-				void onMousePressed(const Event& event) override;
-				void onMouseMoved(const Event& event) override;
 
 				inline void setw(f32 ww) override {  }
 				inline void seth(f32 hh) override { h = hh; refresh_size(); }
 
-				inline bool isVisible(void) const { return m_visible; }
-				inline void show(bool v = true) { m_visible = v; }
-				inline void hide(void) { show(false); }
+				inline bool isStatusBar(void) const { return m_isStatusBar; }
+				inline void setAsStatusBar(bool set = true) { m_isStatusBar = set; }
 
 				OSTD_PARAM_GETSET(f32, Height, m_height);
 				OSTD_PARAM_GETSET(i32, FontSize, m_fontSize);
@@ -60,9 +57,9 @@ namespace ogfx
 				void refresh_size(void);
 
 			private:
-				bool m_visible { true };
 				bool m_disableButtonText { true };
 				std::deque<widgets::Button> m_buttons;
+				bool m_isStatusBar { false };
 
 				f32 m_height { 26 };
 				i32 m_fontSize { 16 };

@@ -2,16 +2,19 @@
 
 
 % ==== Variables ====
-const $accentColor = #DC143CFF
-const $textColor = #111111FF
-const $accentColorLight = #F16A85FF
-const $accentColorDark = #6B0A1DFF
+const $accentColor = #2FB000FF
+const $textColor = #CCEECCFF
+const $borderColor = #111111FF
+const $darkColor = #223322FF
+const $accentColorLight = #87FF5CFF
+const $accentColorDark = #3B7500FF
+const $backgroundColor = rgba(30, 30, 30, 255)
 % ===================
 
 
 % ====== Root Widget ======
 (window) {
-	backgroundColor = rgba(160, 160, 160, 255)
+	backgroundColor = $backgroundColor
 	(tooltip) {
 		backgroundColor = #FFF7D6FF
 		borderColor = rgb(30, 30, 30)
@@ -25,11 +28,11 @@ const $accentColorDark = #6B0A1DFF
 
 % ====== Panel ======
 (panel) {
-	backgroundColor = #AAAAAAFF
+	backgroundColor = $backgroundColor
 	titleColor =  $accentColorDark
-	titlebarColor = #999999FF
-	titlebarBorderColor = #909090FF
-	borderColor = #909090FF
+	titlebarColor = $borderColor
+	titlebarBorderColor = $borderColor
+	borderColor = $borderColor
 	borderRadius = 0
 	borderWidth = 2
 	titlebarBorderWidth = 2
@@ -50,8 +53,8 @@ const $accentColorDark = #6B0A1DFF
 
 % ====== TabPanel ======
 (tabPanel) {
-	backgroundColor = #AAAAAAFF
-	borderColor = #666666FF
+	backgroundColor = $backgroundColor
+	borderColor = $borderColor
 	borderRadius = 0
 	borderWidth = 2
 	showBorder = true
@@ -62,8 +65,8 @@ const $accentColorDark = #6B0A1DFF
 
 	(tabBar) {
 		height = 35.0
-		backgroundColor = #888888FF
-		borderColor = #909090FF
+		backgroundColor = $darkColor
+		borderColor = $borderColor
 		borderWidth = 1
 		sidePadding = 20.0
 	}
@@ -77,27 +80,27 @@ const $accentColorDark = #6B0A1DFF
 % ====== Scrollbar ======
 (scrollbar) {
 	(thumb) {
-		color = rgb(140, 140, 140)
+		color = $darkColor
 		borderRadius = 30.0
-		borderColor = rgb(150, 150, 150)
+		borderColor = $borderColor
 		showBorder = true
 	}
 	(track) {
-		color = rgb(90, 90, 90)
+		color = #111111FF
 	}
 	width = 18.0
 }
 (scrollbar:hover) {
 	(thumb) {
-		color = #999999FF
+		color = $accentColorDark
 	}
 }
 (scrollbar:pressed) {
 	(thumb) {
-		color = #999999FF
+		color = #225500FF
 	}
 	(track) {
-		color = rgb(70, 70, 70)
+		color = #001100FF
 	}
 }
 % =======================
@@ -109,8 +112,6 @@ const $accentColorDark = #6B0A1DFF
 	checkBorderColor = $accentColorDark
 	checkBoxColor = $accentColor
 	textColor = $textColor
-	backgroundColor = color_transparent
-	borderColor = color_transparent
 	fontSize = 20
 	borderRadius = 0
 	borderWidth = 0
@@ -147,7 +148,7 @@ const $accentColorDark = #6B0A1DFF
 	fontSize = 20
 	showBackground = false
 	showBorder = false
-	padding = rect(15, 15, 15, 15)
+	padding = rect(4, 4, 4, 4)
 	margin = rect(0, 0, 0, 0)
 }
 (radioButton:hover) {
@@ -170,8 +171,6 @@ const $accentColorDark = #6B0A1DFF
 % ====== Label ======
 (label) {
 	textColor = $textColor
-	backgroundColor = color_transparent
-	borderColor = color_transparent
 	fontSize = 20
 	borderRadius = 0
 	borderWidth = 0
@@ -187,13 +186,12 @@ const $accentColorDark = #6B0A1DFF
 % ====== Button ======
 (button) {
 	textColor = $textColor
-	backgroundColor = #999999FF
-	backgroundGradient = gradientV(rgb(160, 160, 160) - rgb(120, 120, 120))
+	backgroundGradient = gradientV($accentColor - $accentColorDark)
 	borderColor = $accentColorDark
 	fontSize = 20
 	borderRadius = 0
 	borderWidth = 1
-	showBackground = true
+	showBackground = false
 	showBorder = true
 	useBackgroundGradient = true
 	padding = rect(5, 5, 5, 5)
@@ -203,13 +201,12 @@ const $accentColorDark = #6B0A1DFF
 	}
 }
 (button:hover) {
-	borderColor = $accentColor
-	backgroundColor = #BBBBBBFF
+	borderColor = $accentColorLight
 }
 (button:pressed) {
 	borderColor = $accentColorDark
 	textColor = #BBBBBBFF
-	backgroundGradient = gradientV(rgb(120, 120, 120) - rgb(160, 160, 160))
+	backgroundGradient = gradientV($accentColorDark - $accentColor)
 }
 % ====================
 
@@ -222,17 +219,16 @@ const $accentColorDark = #6B0A1DFF
 
 
 
-% ====== Image ======
+% ====== ProgressBar ======
 (progressbar) {
-	backgroundColor = #400000FF
-	progressColor = #AA0000FF
 	borderColor = $accentColor
+	borderWidth = 1
 	showDecimal = false
 	showText = true
 	useBackgroundGradient = true
-	backgroundGradient = gradientV(#400A1DFF - $accentColorDark)
+	backgroundGradient = gradientV($darkColor - $accentColorDark)
 	useProgressGradient = true
-	progressGradient = gradientV(#C21135FF - #820B23FF)
+	progressGradient = gradientV($accentColor - $accentColorDark)
 }
 % ===================
 
@@ -245,8 +241,8 @@ const $accentColorDark = #6B0A1DFF
 		size = vec2(10, 18)
 	}
 	(track) {
-		color = #500000FF
-		progressColor = #AA0000FF
+		color = $accentColorDark
+		progressColor = $accentColor
 		width = 6.0
 	}
 	showStepTicks = true
@@ -261,15 +257,15 @@ const $accentColorDark = #6B0A1DFF
 % ====== ListView ======
 (list) {
 	(item) {
-		defaultTextColor = #202020FF
+		defaultTextColor = $textColor
 		defaultFontSize = 16
-		defaultPadding = rect(5, 15, 20, 40)
+		defaultPadding = rect(5, 5, 20, 0)
 		defaultSelectionColor = $accentColor
 		defaultSelectionTextColor = color_white
 	}
-	backgroundColor = rgb(160, 160, 160)
-	borderColor = rgb(50, 50, 50)
-	separatorLineColor = rgb(40, 40, 40)
+	backgroundColor = $darkColor
+	borderColor = $borderColor
+	separatorLineColor = $borderColor
 	showSeparatorLine = true
 
 }
@@ -282,15 +278,15 @@ const $accentColorDark = #6B0A1DFF
 	padding = rect(16, 0, 16, 0)
 	itemSpacing = 6.0
 	fontSize = 18
-	backgroundColor = #CCAAAAFF
+	backgroundColor = $darkColor
 	selectionColor = $accentColor
-	selectionTextColor = #FFFFFFFF
-	separatorLineColor = #700000FF
+	selectionTextColor = $accentColorLight
+	separatorLineColor = $borderColor
 	textColor = $textColor
 	submenuIndicatorColor = $accentColorDark
-	borderColor = #400000FF
+	borderColor = $borderColor
 	useSelectionGradient = true
-	selectionGradient = gradientV(#C21135FF - #820B23FF)
+	selectionGradient = gradientV($accentColor - $accentColorDark)
 }
 % ==========================
 
@@ -301,25 +297,25 @@ const $accentColorDark = #6B0A1DFF
 	height = 24.0
 	itemPadding = rect(0, 0, 15, 0)
 	fontSize = 16
-	backgroundColor = #CCAAAAFF
+	backgroundColor = $darkColor
 	textColor = $textColor
 	selectionColor = $accentColor
-	selectionTextColor = #FFFFFFFF
-	borderColor = #400000FF
+	selectionTextColor = $accentColorLight
+	borderColor = $borderColor
 }
 % =====================
 
 
 
-% ====== MenuBar ======
+% ====== ToolBar ======
 (toolbar) {
 	height = 30.0
 	fontSize = 16
-	backgroundColor = #AA9999FF
+	backgroundColor = $darkColor
 	textColor = $textColor
 	selectionColor = $accentColor
-	selectionTextColor = #FFFFFFFF
-	borderColor = #400000FF
+	selectionTextColor = $accentColorLight
+	borderColor = $borderColor
 }
 % =====================
 (@tool_button button) {
@@ -327,25 +323,25 @@ const $accentColorDark = #6B0A1DFF
 	padding = rect(5, 0, 5, 0)
 	margin = rect(5, 0, 0, 0)
 	showBackground = true
-	backgroundColor = #FFAAAAAA
+	backgroundColor = $darkColor
 	useBackgroundGradient = false
 	showBorder = true
 	borderColor = color_black
 	showIcon = true
 	(icon) {
-		tint = color_crimson
+		tint = $accentColorLight
 	}
 }
 (@tool_button button:hover) {
-	borderColor = color_white
-	backgroundColor = rgb(128, 0, 0, 128)
+	borderColor = $textColor
+	backgroundColor = $accentColorDark
 	(icon) {
-		tint = color_white
+		tint = $textColor
 	}
 }
 (@tool_button button:pressed) {
 	borderColor = $accentColorDark
 	(icon) {
-		tint = $accentColorDark
+		tint = $accentColorLight
 	}
 }

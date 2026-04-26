@@ -26,12 +26,12 @@ namespace ogfx
 {
 	namespace gui
 	{
-		ToolBar::ToolBar(Window& window) : Widget({ 0, 0, 0, 0 }, window)
+		ToolBar::ToolBar(Window& window, bool statusbar) : Widget({ 0, 0, 0, 0 }, window)
 		{
-			create();
+			create(statusbar);
 		}
 
-		ToolBar& ToolBar::create(void)
+		ToolBar& ToolBar::create(bool statusbar)
 		{
 			setRootChild();
 			setStylesheetCategoryName("toolbar");
@@ -40,7 +40,11 @@ namespace ogfx
 			w = win.getWindowWidth();
 			h = m_height;
 			disableBorder();
-			if (win.isMenuBarVisible())
+			setAsStatusBar(statusbar);
+			hide();
+			if (isStatusBar())
+				setPosition(0, win.getWindowHeight() - m_height);
+			else if (win.isMenuBarVisible())
 				setPosition(0, win.getMenuBar().getHeight());
 			else
 				setPosition(0, 0);
@@ -69,7 +73,9 @@ namespace ogfx
 			w = win.getWindowWidth();
 			h = m_height;
 			f32 offset_y = 0;
-			if (win.getMenuBar().isVisible())
+			if (isStatusBar())
+				offset_y = (win.getWindowHeight() / win.getScaleFactor()) - m_height;
+			else if (win.getMenuBar().isVisible())
 				offset_y += win.getMenuBar().geth();
 			sety(offset_y);
 		}
@@ -87,37 +93,18 @@ namespace ogfx
 
 		void ToolBar::onDraw(BasicRenderer2D& gfx)
 		{
-			if (!m_visible) return;
-
 			gfx.fillRect(*this, m_backgroundColor);
 
 			// Bottom border line
-			gfx.drawLine({ { getx(), gety() + m_height }, { getx() + getw(), gety() + m_height } }, m_borderColor);
+			f32 lineOffset = (isStatusBar() ? 0.0f : m_height);
+			gfx.drawLine({ { getx(), gety() + lineOffset }, { getx() + getw(), gety() + lineOffset } }, m_borderColor);
 		}
 
 		void ToolBar::onUpdate(void)
 		{
-			if (!m_visible) return;
 			bool iconsOnly = !isButtonTextEnabled();
 			for (auto& btn : m_buttons)
 				btn.enableIconOnly(iconsOnly);
-		}
-
-		void ToolBar::onMousePressed(const Event& event)
-		{
-			if (!m_visible) return;
-
-			Vec2 mousePos { event.mouse->position_x, event.mouse->position_y };
-
-			// event.handle();
-		}
-
-		void ToolBar::onMouseMoved(const Event& event)
-		{
-			if (!m_visible) return;
-
-			Vec2 mousePos { event.mouse->position_x, event.mouse->position_y };
-
 		}
 
 		void ToolBar::refresh_size(void)

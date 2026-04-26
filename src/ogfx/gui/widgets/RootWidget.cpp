@@ -45,6 +45,8 @@ namespace ogfx
 				if (win.m_toolbar.isVisible())
 					offset_y += win.m_toolbar.geth();
 				sety(offset_y);
+				if (win.m_statusbar.isVisible())
+					offset_y += win.m_statusbar.geth();
 				setSize(cast<f32>(event.windowResized->new_width), cast<f32>(event.windowResized->new_height) - offset_y);
 			}
 

@@ -84,7 +84,7 @@ namespace ogfx
 				i32 m_openIndex { -1 };
 				i32 m_hoveredIndex { -1 };
 				bool m_active { false };
-				bool m_visible { true };
+				bool m_visible { false };
 
 				f32 m_height { 26 };
 				Rectangle m_itemPadding { 12, 0, 12, 0 };  // x = left, y = top, w = right, h = bottom

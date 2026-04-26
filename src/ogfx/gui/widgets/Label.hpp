@@ -60,11 +60,13 @@ namespace ogfx
 					inline Image& getImage(void) { return m_image; }
 					OSTD_BOOL_PARAM_GETSET_E(Animated, m_animated);
 					OSTD_PARAM_GETSET(AnimationData, AnimationData, m_animData);
+					OSTD_PARAM_GETSET(Color, TintColor, m_tintColor);
 
 				private:
 					Image m_image;
 					Animation m_anim;
 					AnimationData m_animData;
+					Color m_tintColor { Colors::White };
 					bool m_animated { false };
 			};
 		}

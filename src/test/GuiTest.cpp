@@ -49,8 +49,16 @@ class Window : public ogfx::gui::Window
 			m_img.setImage("./img.png");
 			m_img.enableAnimated();
 			m_img.setSize(256, 256);
+			m_img.addThemeOverride("@.image.tint", ogfx::Color("#2FB000FF"));
+
+			m_theme.loadFromFile("./DefaultThemeDark.oss", true, getDefaultStylesheetVariableList());
+			setTheme(m_theme);
 
 			getToolBar().setHeight(30);
+			getStatusBar().setHeight(24);
+			showMenuBar();
+			showToolBar();
+			showStatusBar();
 
 			ogfx::AnimationData iconsAD;
 			iconsAD.frameCount = 1;
@@ -127,10 +135,8 @@ class Window : public ogfx::gui::Window
 			});
 			m_slideLbl.setText(String("").add(m_slide.getValue(), 2));
 
-			m_drawCallsLbl.addThemeOverride("@.label.fontSize", 30);
-			m_drawCallsLbl.addThemeOverride("@.label.textColor", Colors::Crimson);
-
 			m_list.setSize(200, 300);
+			m_list.reloadTheme();
 
 			for (i32 i = 0; i < 500; i++)
 			{
@@ -159,6 +165,7 @@ class Window : public ogfx::gui::Window
 			}
 
 			m_tabs.setSize(900, 700);
+			m_tabs.addThemeOverride("@.tabPanel.borderWidth", 1.0f);
 			auto& t1 = m_tabs.addTab("Tab1");
 			auto& t2 = m_tabs.addTab("Tab2 Test");
 			auto& t3 = m_tabs.addTab("Long Tab Test");
@@ -193,18 +200,21 @@ class Window : public ogfx::gui::Window
 			m_panel2.addWidget(m_img, { 20, 50 });
 
 			addWidget(m_tabs, { 0,  0 });
-			addWidget(m_drawCallsLbl, { 39, m_tabs.getSize().y + 30 });
 
-			m_theme.loadFromFile("./DefaultTheme.oss", true, getDefaultStylesheetVariableList());
-			setTheme(m_theme);
+			m_drawCallsLbl.addThemeOverride("@.label.fontSize", 20);
+			m_drawCallsLbl.addThemeOverride("@.label.padding", ostd::Rectangle { 10, 5, 0, 0 });
+			getStatusBar().addWidget(m_drawCallsLbl, { 0, 0 });
 
 			m_progressJob.start([this] {
-				f32 prog = 0.0f;
-				while (prog < 100)
+				while (true)
 				{
-					prog += 0.6f;
-					ostd::Time::sleep(ostd::Random::getui32(10, 500));
-					this->m_prog.setProgress(prog);
+					f32 prog = 0.0f;
+					while (prog < 100)
+					{
+						prog += 0.6f;
+						ostd::Time::sleep(ostd::Random::getui32(10, 500));
+						this->m_prog.setProgress(prog);
+					}
 				}
 				return true;
 			});
@@ -213,8 +223,6 @@ class Window : public ogfx::gui::Window
 			m_menu.onActivate = [this](const ogfx::gui::ContextMenu::Entry& e) {
 				std::cout << e.text << "  -  " << (i32)e.id << "\n";
 			};
-
-			setContextMenu(m_menu);
 
 			auto onActivate = [this](const ogfx::gui::ContextMenu::Entry& e) {
 				out().fg("cyan").p("[MenuBar] Activated: ").fg("yellow").p(e.text)
@@ -255,15 +263,21 @@ class Window : public ogfx::gui::Window
 				auto& mmd = cast<ogfx::MouseEventData&>(signal.userData);
 				if (mmd.button == ogfx::MouseEventData::eButton::Right)
 				{
+					setContextMenu(m_menu);
 					showContextMenu({ mmd.position_x, mmd.position_y });
 				}
+			}
+			else if (signal.ID == ostd::BuiltinSignals::WindowResized)
+			{
+				auto& wrd = cast<ogfx::WindowResizedData&>(signal.userData);
+				m_tabs.setSize(cast<f32>(wrd.new_width), cast<f32>(wrd.new_height - getMenuBar().geth() - getToolBar().geth() - getStatusBar().geth()));
 			}
 		}
 
 		void onRedraw(ogfx::BasicRenderer2D& gfx) override
 		{
 			// gfx.fillRect(m_tabs.getGlobalPureContentBounds(), { 0, 255, 0, 100 });
-			m_drawCallsLbl.setText(String("").add(gfx.getDrawCallCount()));
+			m_drawCallsLbl.setText(String("DrawCalls: ").add(gfx.getDrawCallCount()));
 		}
 
 		void onFixedUpdate(void) override

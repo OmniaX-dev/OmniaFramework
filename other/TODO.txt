@@ -39,6 +39,10 @@ Add gradient to listbox selection
 Add gradient to menubar background and selection
 Add cursor stack
 Add MacOS global menu integration
+Make label auto-size
+FIX: Tooltips
+XML Layout file?
+Add Hex Editor widget
 
 
 
@@ -64,7 +68,7 @@ Implement following widgets:
 	***Context Menu
 	***MenuBar
 	***Toolbar
-	StatusBar
+	***StatusBar
 	ComboBox
 	TreeView
 	Layouts
@@ -74,4 +78,3 @@ Implement following widgets:
 		Fill
 	Text Input
 	Text Area
-	Hex Editor

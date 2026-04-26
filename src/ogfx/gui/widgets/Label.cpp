@@ -85,6 +85,7 @@ namespace ogfx
 			void ImageLabel::applyTheme(const ostd::Stylesheet& theme)
 			{
 				enableAnimated(getThemeValue<bool>(theme, "animated", m_animated));
+				setTintColor(getThemeValue<Color>(theme, "tint", getTintColor()));
 				setAnimationData(getThemeValue<AnimationData>(theme, "animation", m_animData));
 				String filePath = getThemeValue<String>(theme, "path", m_image.getFilePath());
 				if (filePath != m_image.getFilePath())
@@ -100,9 +101,9 @@ namespace ogfx
 			void ImageLabel::onDraw(ogfx::BasicRenderer2D& gfx)
 			{
 				if (isAnimatedEnabled())
-					gfx.drawAnimation(m_anim, getGlobalPosition() + getPadding().topLeft(), getSize() - getPadding().bottomRight());
+					gfx.drawAnimation(m_anim, getGlobalPosition() + getPadding().topLeft(), getSize() - getPadding().bottomRight(), getTintColor());
 				else
-					gfx.drawImage(m_image, getGlobalPosition() + getPadding().topLeft(), getSize() - getPadding().bottomRight());
+					gfx.drawImage(m_image, getGlobalPosition() + getPadding().topLeft(), getSize() - getPadding().bottomRight(), getTintColor());
 			}
 
 			void ImageLabel::onUpdate(void)

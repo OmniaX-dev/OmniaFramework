@@ -59,6 +59,11 @@ namespace ogfx
 				drawScrollbars(gfx);
 			}
 
+			void Panel::onWindowResized(const Event& event)
+			{
+				updateScrollbarsSize();
+			}
+
 			void Panel::setTitlebarType(const String& type)
 			{
 				String t = type.new_toLower().trim();

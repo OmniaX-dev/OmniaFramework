@@ -47,6 +47,7 @@ namespace ogfx
 					Panel& create(void);
 					void applyTheme(const ostd::Stylesheet& theme) override;
 					void afterDraw(ogfx::BasicRenderer2D& gfx) override;
+					void onWindowResized(const Event& event) override;
 					void setTitlebarType(const String& type);
 					String getTitlebarType(void) const;
 					inline String getTitle(void) const { return m_title; }
