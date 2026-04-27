@@ -242,7 +242,7 @@ namespace ogfx
 		f32 s = getScaleFactor();
 		auto state = getWindowState();
 		if (!state.maximized && !state.fullscreen)
-			setSize(getWindowWidth() * s, getWindowHeight() * s);
+			setSize(getWindowWidth(false) * s, getWindowHeight(false) * s);
 		SDL_SetRenderScale(m_renderer, s, s);
 	}
 

@@ -127,8 +127,8 @@ namespace ogfx
 			inline void hide(void) { SDL_HideWindow(m_window); m_visible = false; }
 			inline void show(void) { SDL_ShowWindow(m_window); m_visible = true; }
 			inline String getTitle(void) const { return m_title; }
-			inline i32 getWindowWidth(void) const { return m_windowWidth; }
-			inline i32 getWindowHeight(void) const { return m_windowHeight; }
+			inline i32 getWindowWidth(bool scaled = true) const { return scaled ? cast<f32>(m_windowWidth) / getScaleFactor() : m_windowWidth; }
+			inline i32 getWindowHeight(bool scaled = true) const { return scaled ? cast<f32>(m_windowHeight) / getScaleFactor() : m_windowHeight; }
 			inline Color getClearColor(void) const { return m_clearColor; }
 			inline void setClearColor(const Color& color) { m_clearColor = color; }
 			inline SDL_Renderer* getSDLRenderer(void) { return m_renderer; }

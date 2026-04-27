@@ -273,6 +273,7 @@ class Window : public ogfx::gui::Window
 			{
 				auto& wrd = cast<ogfx::WindowResizedData&>(signal.userData);
 				m_tabs.setSize(cast<f32>(getWindowWidth()), cast<f32>(getWindowHeight() - getMenuBar().geth() - getToolBar().geth() - getStatusBar().geth()));
+				std::cout << m_tabs.getSize() << "\n";
 				m_tabs.setPosition(0, -1);
 				m_tabs.refreshCurrentTab();
 

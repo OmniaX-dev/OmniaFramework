@@ -46,6 +46,7 @@ XML Layout file?
 Add Hex Editor widget
 Add Message Boxes
 FIX: Widget Content extents increasing negatively not showing scrollbars
+FIX: Button state getting hung after showing an openFileDialog
 
 
 

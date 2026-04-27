@@ -74,7 +74,7 @@ namespace ogfx
 			h = m_height;
 			f32 offset_y = 0;
 			if (isStatusBar())
-				offset_y = (win.getWindowHeight() / win.getScaleFactor()) - m_height;
+				offset_y = win.getWindowHeight() - m_height;
 			else if (win.getMenuBar().isVisible())
 				offset_y += win.getMenuBar().geth();
 			sety(offset_y);
