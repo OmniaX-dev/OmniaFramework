@@ -35,7 +35,7 @@ namespace ogfx
 		{
 			setRootChild();
 			setStylesheetCategoryName("toolbar");
-			setTypeName("ogfx::gui::widgets::ToolBar");
+			setTypeName("ogfx::gui::ToolBar");
 			auto& win = cast<Window&>(getWindow());
 			w = win.getWindowWidth();
 			h = m_height;
@@ -51,19 +51,18 @@ namespace ogfx
 			return *this;
 		}
 
-		widgets::Button& ToolBar::addButton(const String& iconPath, const String& text, EventCallback callback)
+		Button& ToolBar::addButton(const String& iconPath, const String& text, EventCallback callback)
 		{
-			static f32 pad = 0;
 			m_buttons.push_back({ getWindow() });
 			auto& btn = m_buttons.back();
 			btn.addThemeID("tool_button");
 			btn.setIcon(iconPath);
-			btn.setIconSize({ m_height, m_height });
 			btn.setText(text);
+			btn.setSizeMode(eSizeMode::LayoutManaged);
 			btn.setCallback(ogfx::gui::Widget::eCallback::ActionPerformed, callback);
 			btn.enableIconOnly();
-			addWidget(btn, { m_height * (m_buttons.size() - 1) + pad, 0 });
-			pad += 15;
+			btn.layoutHint().preferred = { m_height, m_height };
+			addWidget(btn);
 			return btn;
 		}
 

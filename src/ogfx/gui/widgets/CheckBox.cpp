@@ -25,73 +25,70 @@ namespace ogfx
 {
 	namespace gui
 	{
-		namespace widgets
+		CheckBox& CheckBox::create(const String& text)
 		{
-			CheckBox& CheckBox::create(const String& text)
-			{
-				setText(text);
-				setPadding({ 5, 5, 5, 5 });
-				setTypeName("ogfx::gui::widgets::CheckBox");
-				disableChildren();
-				enableBackground(false);
-				setStylesheetCategoryName("checkbox");
-				validate();
-				return *this;
-			}
+			setText(text);
+			setPadding({ 5, 5, 5, 5 });
+			setTypeName("ogfx::gui::CheckBox");
+			disableChildren();
+			enableBackground(false);
+			setStylesheetCategoryName("checkbox");
+			validate();
+			return *this;
+		}
 
-			void CheckBox::applyTheme(const ostd::Stylesheet& theme)
-			{
-				setCheckBorderColor(getThemeValue<Color>(theme, "checkBorderColor", Colors::White));
-				setCheckBoxColor(getThemeValue<Color>(theme, "checkBoxColor", Colors::White));
-				m_checkBorderRadius = getThemeValue<i32>(theme, "checkBorderRadius", 5);
-				m_checkBorderWidth = getThemeValue<i32>(theme, "checkBorderWidth", 1);
-			}
+		void CheckBox::applyTheme(const ostd::Stylesheet& theme)
+		{
+			setCheckBorderColor(getThemeValue<Color>(theme, "checkBorderColor", Colors::White));
+			setCheckBoxColor(getThemeValue<Color>(theme, "checkBoxColor", Colors::White));
+			m_checkBorderRadius = getThemeValue<i32>(theme, "checkBorderRadius", 5);
+			m_checkBorderWidth = getThemeValue<i32>(theme, "checkBorderWidth", 1);
+		}
 
-			void CheckBox::onDraw(ogfx::BasicRenderer2D& gfx)
-			{
-				if (m_textChanged)
-					__update_size(gfx);
-				gfx.drawRoundRect({ getGlobalContentPosition(), m_checkSize }, getCheckBorderColor(), m_checkBorderRadius, m_checkBorderWidth);
-				if (isChecked())
-					gfx.fillRoundRect({ getGlobalContentPosition() + 5, m_checkSize - 10 }, getCheckBoxColor(), m_checkBorderRadius / 2.0f);
-				gfx.drawString(getText(), getGlobalContentPosition() + Vec2 { m_checkSize.x + m_spacing, 0 }, getTextColor(), getFontSize());
-			}
+		void CheckBox::onDraw(ogfx::BasicRenderer2D& gfx)
+		{
+			if (m_textChanged)
+				__update_size(gfx);
+			gfx.drawRoundRect({ getGlobalContentPosition(), m_checkSize }, getCheckBorderColor(), m_checkBorderRadius, m_checkBorderWidth);
+			if (isChecked())
+				gfx.fillRoundRect({ getGlobalContentPosition() + 5, m_checkSize - 10 }, getCheckBoxColor(), m_checkBorderRadius / 2.0f);
+			gfx.drawString(getText(), getGlobalContentPosition() + Vec2 { m_checkSize.x + m_spacing, 0 }, getTextColor(), getFontSize());
+		}
 
-			void CheckBox::onMouseReleased(const Event& event)
-			{
-				if (!isMouseInside())
-					return;
-				setChecked(!isChecked());
-			}
+		void CheckBox::onMouseReleased(const Event& event)
+		{
+			if (!isMouseInside())
+				return;
+			setChecked(!isChecked());
+		}
 
-			void CheckBox::setText(const String& text)
-			{
-				m_text = text;
-				m_textChanged = true;
-			}
+		void CheckBox::setText(const String& text)
+		{
+			m_text = text;
+			m_textChanged = true;
+		}
 
-			void CheckBox::setChecked(bool checked)
-			{
-				if (m_checked == checked)
-					return;
-				m_checked = checked;
-				setThemeQualifier("active", m_checked);
-				if (callback_onStateChanged)
-					callback_onStateChanged(*this, m_checked);
-			}
+		void CheckBox::setChecked(bool checked)
+		{
+			if (m_checked == checked)
+				return;
+			m_checked = checked;
+			setThemeQualifier("active", m_checked);
+			if (callback_onStateChanged)
+				callback_onStateChanged(*this, m_checked);
+		}
 
-			void CheckBox::__update_size(ogfx::BasicRenderer2D& gfx)
-			{
-				auto size = gfx.getStringDimensions(getText(), getFontSize());
-				m_checkSize = { cast<f32>(size.y), cast<f32>(size.y) };
-				size.x += m_spacing + m_checkSize.x;
-				size.x += getPadding().left();
-				size.x += getPadding().right();
-				size.y += getPadding().top();
-				size.y += getPadding().bottom();
-				setSize({ cast<f32>(size.x), cast<f32>(size.y) });
-				m_textChanged = false;
-			}
+		void CheckBox::__update_size(ogfx::BasicRenderer2D& gfx)
+		{
+			auto size = gfx.getStringDimensions(getText(), getFontSize());
+			m_checkSize = { cast<f32>(size.y), cast<f32>(size.y) };
+			size.x += m_spacing + m_checkSize.x;
+			size.x += getPadding().left();
+			size.x += getPadding().right();
+			size.y += getPadding().top();
+			size.y += getPadding().bottom();
+			setSize({ cast<f32>(size.x), cast<f32>(size.y) });
+			m_textChanged = false;
 		}
 	}
 }

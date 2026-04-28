@@ -30,12 +30,12 @@ ogfx::WindowCore::FileDialogFilterList filters  = {
 };
 
 ostd::ConsoleOutputHandler out;
-using namespace ogfx::gui::widgets;
+using namespace ogfx::gui;
 
-class Window : public ogfx::gui::Window
+class TestWindow : public Window
 {
 	public:
-		inline Window(void) {  }
+		inline TestWindow(void) {  }
 		inline void onInitialize(void) override
 		{
 			ogfx::AnimationData ad;
@@ -55,6 +55,8 @@ class Window : public ogfx::gui::Window
 			setTheme(m_theme);
 
 			getToolBar().setHeight(30);
+			getToolBar().setLayout<BoxLayout>(BoxLayout::Orientation::Horizontal);
+			getToolBar().getLayout()->setSpacing(10);
 			getStatusBar().setHeight(24);
 			showMenuBar();
 			showToolBar();
@@ -72,7 +74,7 @@ class Window : public ogfx::gui::Window
 			iconsAD.still = true;
 
 			m_label1.setText("Show Panel2");
-			m_label1.setCallback(ogfx::gui::Widget::eCallback::MousePressed, [&](const ogfx::gui::Event& event) -> void {
+			m_label1.setCallback(Widget::eCallback::MousePressed, [&](const Event& event) -> void {
 				m_check1.setChecked(!m_check1.isChecked());
 			});
 			m_label1.disableTheming();
@@ -95,7 +97,7 @@ class Window : public ogfx::gui::Window
 			m_btn1.enableTooltip();
 			m_btn1.setTooltipText("Test tooltip");
 			m_btn1.setText("TEST BUTTON");
-			m_btn1.setCallback(ogfx::gui::Widget::eCallback::ActionPerformed, [&](const ogfx::gui::Event& event) -> void {
+			m_btn1.setCallback(Widget::eCallback::ActionPerformed, [&](const Event& event) -> void {
 				std::cout << showOpenFileDialog(filters) << "\n";
 			});
 
@@ -148,7 +150,7 @@ class Window : public ogfx::gui::Window
 			m_list.addLine("Item 3333333");
 			m_list.getLine(10).setFontSize(40);
 			m_list.getLine(160).setTextColor(Colors::Crimson);
-			m_list.setSelectionChangedCallback([&](stdvec<ogfx::gui::widgets::ListView::Item*>& selection) -> void {\
+			m_list.setSelectionChangedCallback([&](stdvec<ListView::Item*>& selection) -> void {\
 				std::cout << *(selection[0]) << "\n";
 			});
 
@@ -171,9 +173,6 @@ class Window : public ogfx::gui::Window
 			auto& t2 = m_tabs.addTab("Tab2 Test");
 			auto& t3 = m_tabs.addTab("Long Tab Test");
 
-			t2.addThemeOverride("@panel_tab.panel.backgroundColor", Colors::SkyBlue);
-			t3.addThemeOverride("@panel_tab.panel.backgroundColor", Colors::Orange);
-
 			t1.addWidget(m_check1, { 30, 30 });
 			m_radioGroup.addButton(t1, "Radio this out!", { 30, 80 });
 			m_radioGroup.addButton(t1, "Radio Opt. 2", { 30, 110 });
@@ -187,6 +186,26 @@ class Window : public ogfx::gui::Window
 			t1.addWidget(m_slideLbl, { 340, 240 });
 			t1.addWidget(m_list, { 30, 300 });
 			t1.addWidget(m_panel2, { 500, 100 });
+
+			t2.setLayout<BoxLayout>(BoxLayout::Orientation::Vertical);
+			t2.getLayout()->setSpacing(16);
+
+			auto* header = new Button(*this);
+			header->layoutHint().preferred = { -1, 32 };   // fixed 32px height, width follows cross-stretch
+
+			auto* body = new ListView(*this);
+			body->layoutHint().stretch = 1.0f;             // takes all leftover vertical space
+
+			auto* footer = new Button(*this);
+			footer->layoutHint().preferred = { -1, 24 };
+
+			t2.addWidget(*header);   // each addWidget() call triggers a relayout
+			t2.addWidget(*body);
+			for (i32 i = 0; i < 100; i++)
+			{
+				body->addLine(ostd::Random::getString(ostd::Random::getui8(1, 40)));
+			}
+			t2.addWidget(*footer);
 
 			m_panel3.addWidget(m_label4);
 
@@ -222,11 +241,11 @@ class Window : public ogfx::gui::Window
 			});
 
 
-			m_menu.onActivate = [this](const ogfx::gui::ContextMenu::Entry& e) {
+			m_menu.onActivate = [this](const ContextMenu::Entry& e) {
 				std::cout << e.text << "  -  " << (i32)e.id << "\n";
 			};
 
-			auto onActivate = [this](const ogfx::gui::ContextMenu::Entry& e) {
+			auto onActivate = [this](const ContextMenu::Entry& e) {
 				out().fg("cyan").p("[MenuBar] Activated: ").fg("yellow").p(e.text)
 					 .fg("cyan").p(" (id=").fg("green").p(e.id).fg("cyan").p(")").reset().nl();
 
@@ -264,16 +283,12 @@ class Window : public ogfx::gui::Window
 			{
 				auto& mmd = cast<ogfx::MouseEventData&>(signal.userData);
 				if (mmd.button == ogfx::MouseEventData::eButton::Right)
-				{
-					setContextMenu(m_menu);
-					showContextMenu({ mmd.position_x, mmd.position_y });
-				}
+					showContextMenu(m_menu, { mmd.position_x, mmd.position_y });
 			}
 			else if (signal.ID == ostd::BuiltinSignals::WindowResized)
 			{
 				auto& wrd = cast<ogfx::WindowResizedData&>(signal.userData);
 				m_tabs.setSize(cast<f32>(getWindowWidth()), cast<f32>(getWindowHeight() - getMenuBar().geth() - getToolBar().geth() - getStatusBar().geth()));
-				std::cout << m_tabs.getSize() << "\n";
 				m_tabs.setPosition(0, -1);
 				m_tabs.refreshCurrentTab();
 
@@ -312,7 +327,7 @@ class Window : public ogfx::gui::Window
 
 		enum MenuId : i32 { New = 1, Open, Save, SaveAs, Exit, CopyRaw, CopyFormatted };
 
-		ogfx::gui::ContextMenu::Instance m_menu { {
+		ContextMenu::Instance m_menu { {
 			{ "File", -1, {
 				{ "New",     MenuId::New },
 				{ "Open...", MenuId::Open },
@@ -369,7 +384,7 @@ class Window : public ogfx::gui::Window
 			Help_About,
 		};
 
-		ogfx::gui::ContextMenu::Instance fileMenu { {
+		ContextMenu::Instance fileMenu { {
 			{ "New",       TestMenuId::File_New },
 			{ "Open...",   TestMenuId::File_Open },
 			{ "Open Recent", {
@@ -390,7 +405,7 @@ class Window : public ogfx::gui::Window
 			nullptr
 		};
 
-		ogfx::gui::ContextMenu::Instance editMenu { {
+		ContextMenu::Instance editMenu { {
 			{ "Undo",       TestMenuId::Edit_Undo },
 			{ "Redo",       TestMenuId::Edit_Redo },
 			{ "Cut",        TestMenuId::Edit_Cut },
@@ -400,7 +415,7 @@ class Window : public ogfx::gui::Window
 			nullptr
 		};
 
-		ogfx::gui::ContextMenu::Instance viewMenu { {
+		ContextMenu::Instance viewMenu { {
 			{ "Zoom In",    TestMenuId::View_ZoomIn },
 			{ "Zoom Out",   TestMenuId::View_ZoomOut },
 			{ "Reset Zoom", TestMenuId::View_ZoomReset },
@@ -412,7 +427,7 @@ class Window : public ogfx::gui::Window
 			nullptr
 		};
 
-		ogfx::gui::ContextMenu::Instance helpMenu { {
+		ContextMenu::Instance helpMenu { {
 			{ "Documentation", TestMenuId::Help_Documentation },
 			{ "About",         TestMenuId::Help_About } },
 			nullptr
@@ -428,7 +443,7 @@ i32 main(i32 argc, char** argv)
 {
 	ostd::Random::autoSeed();
 	ostd::initialize();
-	Window window;
+	TestWindow window;
 	window.initialize(1200, 800, "OmniaFramework - Test Window");
 	window.setClearColor({ 0, 0, 0 });
 	window.setPosition({ 50, 50 });

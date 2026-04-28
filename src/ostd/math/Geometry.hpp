@@ -316,70 +316,71 @@ namespace ostd
 			inline virtual f32 gety(void) const { return y; }
 			inline virtual f32 getw(void) const { return w; }
 			inline virtual f32 geth(void) const { return h; }
-			inline virtual f32 getCenterX(void) const { return getx() + getw() / 2; }
-			inline virtual f32 getCenterY(void) const { return gety() + geth() / 2; }
+			inline f32 getCenterX(void) const { return getx() + getw() / 2; }
+			inline f32 getCenterY(void) const { return gety() + geth() / 2; }
 
 			inline virtual void setx(f32 xx) { x = xx; }
 			inline virtual void sety(f32 yy) { y = yy; }
 			inline virtual void setw(f32 ww) { w = ww; }
 			inline virtual void seth(f32 hh) { h = hh; }
 
-			inline virtual Vec2 getPosition(void) const { return Vec2(getx(), gety()); }
-			inline virtual Vec2 getSize(void) const { return Vec2(getw(), geth()); }
-			inline virtual Vec2 getCenter(void) const { return Vec2(getx() + getw() / 2, gety() + geth() / 2); }
+			inline Vec2 getPosition(void) const { return Vec2(getx(), gety()); }
+			inline Vec2 getSize(void) const { return Vec2(getw(), geth()); }
+			inline Vec2 getCenter(void) const { return Vec2(getx() + getw() / 2, gety() + geth() / 2); }
+			inline Rectangle getBounds(void) const { return *this; }
 
-			inline virtual void setPosition(const Vec2& pos) { setx(pos.x); sety(pos.y); }
-			inline virtual void setPosition(f32 xx, f32 yy) { setx(xx); sety(yy); }
-			inline virtual void setSize(Vec2 size) { setw(size.x); seth(size.y); }
-			inline virtual void setSize(f32 ww, f32 hh) { setw(ww); seth(hh); }
-			inline virtual void setBounds(f32 xx, f32 yy, f32 ww, f32 hh) { setx(xx); sety(yy); setw(ww); seth(hh); }
+			inline void setPosition(const Vec2& pos) { setx(pos.x); sety(pos.y); }
+			inline void setPosition(f32 xx, f32 yy) { setx(xx); sety(yy); }
+			inline void setSize(Vec2 size) { setw(size.x); seth(size.y); }
+			inline void setSize(f32 ww, f32 hh) { setw(ww); seth(hh); }
+			inline void setBounds(f32 xx, f32 yy, f32 ww, f32 hh) { setx(xx); sety(yy); setw(ww); seth(hh); }
 
-			inline virtual f32 addx(f32 xx) { setx(getx() + xx); return getx(); }
-			inline virtual f32 addy(f32 yy) { sety(gety() + yy); return gety(); }
-			inline virtual Vec2 addPos(f32 xx, f32 yy) { return Vec2(addx(xx), addy(yy)); }
-			inline virtual Vec2 addPos(Vec2 pos) { return addPos(pos.x, pos.y); }
-			inline virtual f32 addw(f32 ww) { setw(getw() + ww); return getw(); }
-			inline virtual f32 addh(f32 hh) { seth(geth() + hh); return geth(); }
-			inline virtual Vec2 addSize(f32 ww, f32 hh) { addw(ww), addh(hh); return getSize(); }
-			inline virtual Vec2 addSize(Vec2 size) { addSize(size.x, size.y); return getSize(); }
+			inline f32 addx(f32 xx) { setx(getx() + xx); return getx(); }
+			inline f32 addy(f32 yy) { sety(gety() + yy); return gety(); }
+			inline Vec2 addPos(f32 xx, f32 yy) { return Vec2(addx(xx), addy(yy)); }
+			inline Vec2 addPos(Vec2 pos) { return addPos(pos.x, pos.y); }
+			inline f32 addw(f32 ww) { setw(getw() + ww); return getw(); }
+			inline f32 addh(f32 hh) { seth(geth() + hh); return geth(); }
+			inline Vec2 addSize(f32 ww, f32 hh) { addw(ww), addh(hh); return getSize(); }
+			inline Vec2 addSize(Vec2 size) { addSize(size.x, size.y); return getSize(); }
 
-			inline virtual f32 subx(f32 xx) { setx(getx() - xx); return getx(); }
-			inline virtual f32 suby(f32 yy) { sety(gety() - yy); return gety(); }
-			inline virtual Vec2 subPos(f32 xx, f32 yy) { return Vec2(subx(xx), suby(yy)); }
-			inline virtual Vec2 subPos(Vec2 pos) { return subPos(pos.x, pos.y); }
-			inline virtual f32 subw(f32 ww) { setw(getw() - ww); return getw(); }
-			inline virtual f32 subh(f32 hh) { seth(geth() - hh); return geth(); }
-			inline virtual Vec2 subSize(f32 ww, f32 hh) { return Vec2(subw(ww), subh(hh)); }
-			inline virtual Vec2 subSize(Vec2 size) { return subPos(size.x, size.y); }
+			inline f32 subx(f32 xx) { setx(getx() - xx); return getx(); }
+			inline f32 suby(f32 yy) { sety(gety() - yy); return gety(); }
+			inline Vec2 subPos(f32 xx, f32 yy) { return Vec2(subx(xx), suby(yy)); }
+			inline Vec2 subPos(Vec2 pos) { return subPos(pos.x, pos.y); }
+			inline f32 subw(f32 ww) { setw(getw() - ww); return getw(); }
+			inline f32 subh(f32 hh) { seth(geth() - hh); return geth(); }
+			inline Vec2 subSize(f32 ww, f32 hh) { return Vec2(subw(ww), subh(hh)); }
+			inline Vec2 subSize(Vec2 size) { return subPos(size.x, size.y); }
 
-			inline virtual f32 mulx(f32 xx) { setx(getx() * xx); return getx(); }
-			inline virtual f32 muly(f32 yy) { sety(gety() * yy); return gety(); }
-			inline virtual Vec2 mulPos(f32 xx, f32 yy) { return Vec2(mulx(xx), muly(yy)); }
-			inline virtual Vec2 mulPos(Vec2 pos) { return mulPos(pos.x, pos.y); }
-			inline virtual f32 mulw(f32 ww) { setw(getw() * ww); return getw(); }
-			inline virtual f32 mulh(f32 hh) { seth(geth() * hh); return geth(); }
-			inline virtual Vec2 mulSize(f32 ww, f32 hh) { return Vec2(mulw(ww), mulh(hh)); }
-			inline virtual Vec2 mulSize(Vec2 size) { return mulPos(size.x, size.y); }
+			inline f32 mulx(f32 xx) { setx(getx() * xx); return getx(); }
+			inline f32 muly(f32 yy) { sety(gety() * yy); return gety(); }
+			inline Vec2 mulPos(f32 xx, f32 yy) { return Vec2(mulx(xx), muly(yy)); }
+			inline Vec2 mulPos(Vec2 pos) { return mulPos(pos.x, pos.y); }
+			inline f32 mulw(f32 ww) { setw(getw() * ww); return getw(); }
+			inline f32 mulh(f32 hh) { seth(geth() * hh); return geth(); }
+			inline Vec2 mulSize(f32 ww, f32 hh) { return Vec2(mulw(ww), mulh(hh)); }
+			inline Vec2 mulSize(Vec2 size) { return mulPos(size.x, size.y); }
 
-			inline virtual f32 divx(f32 xx) { setx(getx() / xx); return getx(); }
-			inline virtual f32 divy(f32 yy) { sety(gety() / yy); return gety(); }
-			inline virtual Vec2 divPos(f32 xx, f32 yy) { return Vec2(divx(xx), divy(yy)); }
-			inline virtual Vec2 divPos(Vec2 pos) { return divPos(pos.x, pos.y); }
-			inline virtual f32 divw(f32 ww) { setw(getw() / ww); return getw(); }
-			inline virtual f32 divh(f32 hh) { seth(geth() / hh); return geth(); }
-			inline virtual Vec2 divSize(f32 ww, f32 hh) { return Vec2(divw(ww), divh(hh)); }
-			inline virtual Vec2 divSize(Vec2 size) { return divPos(size.x, size.y); }
+			inline f32 divx(f32 xx) { setx(getx() / xx); return getx(); }
+			inline f32 divy(f32 yy) { sety(gety() / yy); return gety(); }
+			inline Vec2 divPos(f32 xx, f32 yy) { return Vec2(divx(xx), divy(yy)); }
+			inline Vec2 divPos(Vec2 pos) { return divPos(pos.x, pos.y); }
+			inline f32 divw(f32 ww) { setw(getw() / ww); return getw(); }
+			inline f32 divh(f32 hh) { seth(geth() / hh); return geth(); }
+			inline Vec2 divSize(f32 ww, f32 hh) { return Vec2(divw(ww), divh(hh)); }
+			inline Vec2 divSize(Vec2 size) { return divPos(size.x, size.y); }
 
-			inline virtual Vec2 topLeft(void) const { return getPosition(); }
-			inline virtual Vec2 topRight(void) const { return Vec2(getx() + getw(), gety()); }
-			inline virtual Vec2 bottomLeft(void) const { return Vec2(getx(), gety() + geth()); }
-			inline virtual Vec2 bottomRight(void) const { return Vec2(getx() + getw(), gety() + geth()); }
-			inline virtual Rectangle edgeRect(void) const { return { getx(), gety(), getx() + getw(), gety() + getw() }; }
+			inline Vec2 topLeft(void) const { return getPosition(); }
+			inline Vec2 topRight(void) const { return Vec2(getx() + getw(), gety()); }
+			inline Vec2 bottomLeft(void) const { return Vec2(getx(), gety() + geth()); }
+			inline Vec2 bottomRight(void) const { return Vec2(getx() + getw(), gety() + geth()); }
+			inline Rectangle edgeRect(void) const { return { getx(), gety(), getx() + getw(), gety() + getw() }; }
 
-			inline virtual f32 left(void) const { return getx(); }
-			inline virtual f32 right(void) const { return getw(); }
-			inline virtual f32 top(void) const { return gety(); }
-			inline virtual f32 bottom(void) const { return geth(); }
+			inline f32 left(void) const { return getx(); }
+			inline f32 right(void) const { return getw(); }
+			inline f32 top(void) const { return gety(); }
+			inline f32 bottom(void) const { return geth(); }
 
 			inline virtual String toString(void) const override { return String("{ ").add(x).add(", ").add(y).add(", ").add(w).add(", ").add(h).add(" }"); }
 
@@ -411,14 +412,14 @@ namespace ostd
 				f32 bottomY = std::min(y + h, rect.y + rect.h);
 				return { leftX, topY, rightX - leftX, bottomY - topY };
 			}
-			inline virtual bool contains(Vec2 p, bool includeBounds = false) const
+			inline virtual bool contains(Vec2 p, bool includeBounds = true) const
 			{
 				if (includeBounds)
 					return p.x >= x && p.y >= y && p.x <= x + w && p.y <= y + h;
 				else
 					return p.x > x && p.y > y && p.x < x + w && p.y < y + h;
 			}
-			inline bool contains(f32 xx, f32 yy, bool includeBounds = false) const { return contains({ xx, yy }, includeBounds); }
+			inline bool contains(f32 xx, f32 yy, bool includeBounds = true) const { return contains({ xx, yy }, includeBounds); }
 
 			inline virtual f32 getDistance(Vec2 p) const { return sqrt(fabs((p.x - getx()) * (p.x - getx()) + (p.y - gety()) * (p.y - gety()))); }
 

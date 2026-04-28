@@ -34,7 +34,7 @@ namespace ogfx
 			public:
 				ToolBar(Window& window, bool statusbar = false);
 				ToolBar& create(bool statusbar = false);
-				widgets::Button& addButton(const String& iconPath, const String& text = "", EventCallback callback = nullptr);
+				Button& addButton(const String& iconPath, const String& text = "", EventCallback callback = nullptr);
 				void onWindowResized(const Event& event) override;
 				void applyTheme(const ostd::Stylesheet& theme) override;
 				void onDraw(BasicRenderer2D& gfx) override;
@@ -59,7 +59,7 @@ namespace ogfx
 
 			private:
 				bool m_disableButtonText { true };
-				std::deque<widgets::Button> m_buttons;
+				std::deque<Button> m_buttons;
 				bool m_isStatusBar { false };
 
 				f32 m_height { 26 };

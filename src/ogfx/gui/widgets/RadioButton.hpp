@@ -26,60 +26,57 @@ namespace ogfx
 {
 	namespace gui
 	{
-		namespace widgets
+		class RadioButtonGroup;
+		class RadioButton : public Widget
 		{
-			class RadioButtonGroup;
-			class RadioButton : public Widget
-			{
-				public:
-					void applyTheme(const ostd::Stylesheet& theme) override;
-					void onMouseReleased(const Event& event) override;
-					void onDraw(ogfx::BasicRenderer2D& gfx) override;
-					void setText(const String& text);
-					inline String getText(void) const { return m_text; }
-					inline bool isSelected(void) const { return m_selected; }
-					OSTD_PARAM_GETSET(i32, OuterCircleBorderWidth, m_outerCircleBorderWidth);
-					OSTD_PARAM_GETSET(Color, InnerCircleColor, m_innerCircleColor);
-					OSTD_PARAM_GETSET(Color, OuterCircleColor, m_outerCircleColor);
+			public:
+				void applyTheme(const ostd::Stylesheet& theme) override;
+				void onMouseReleased(const Event& event) override;
+				void onDraw(ogfx::BasicRenderer2D& gfx) override;
+				void setText(const String& text);
+				inline String getText(void) const { return m_text; }
+				inline bool isSelected(void) const { return m_selected; }
+				OSTD_PARAM_GETSET(i32, OuterCircleBorderWidth, m_outerCircleBorderWidth);
+				OSTD_PARAM_GETSET(Color, InnerCircleColor, m_innerCircleColor);
+				OSTD_PARAM_GETSET(Color, OuterCircleColor, m_outerCircleColor);
 
-				private:
-					inline RadioButton(WindowCore& window, RadioButtonGroup& group, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(group, text); }
-					RadioButton& create(RadioButtonGroup& group, const String& text);
-					void __update_size(ogfx::BasicRenderer2D& gfx);
-					void __set_selected(bool selected);
+			private:
+				inline RadioButton(WindowCore& window, RadioButtonGroup& group, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(group, text); }
+				RadioButton& create(RadioButtonGroup& group, const String& text);
+				void __update_size(ogfx::BasicRenderer2D& gfx);
+				void __set_selected(bool selected);
 
-				private:
-					RadioButtonGroup* m_radioGroup { nullptr };
-					Vec2 m_circleSize { 0, 0 };
-					bool m_selected { false };
-					String m_text { "" };
-					bool m_textChanged { false };
-					f32 m_spacing { 6 };
-					i32 m_outerCircleBorderWidth { 1 };
-					Color m_innerCircleColor { 255, 255, 255 };
-					Color m_outerCircleColor { 255, 255, 255 };
+			private:
+				RadioButtonGroup* m_radioGroup { nullptr };
+				Vec2 m_circleSize { 0, 0 };
+				bool m_selected { false };
+				String m_text { "" };
+				bool m_textChanged { false };
+				f32 m_spacing { 6 };
+				i32 m_outerCircleBorderWidth { 1 };
+				Color m_innerCircleColor { 255, 255, 255 };
+				Color m_outerCircleColor { 255, 255, 255 };
 
-					friend class RadioButtonGroup;
-			};
-			class RadioButtonGroup
-			{
-				public:
-					RadioButtonGroup(void);
-					RadioButton& addButton(Widget& parent, const String& text, const Vec2& position = { 0, 0 });
-					inline void setSelectionChangedCallback(std::function<void(RadioButton& previous, RadioButton& sender)> callback) { callback_onSelectionChanged = std::move(callback); }
+				friend class RadioButtonGroup;
+		};
+		class RadioButtonGroup
+		{
+			public:
+				RadioButtonGroup(void);
+				RadioButton& addButton(Widget& parent, const String& text, const Vec2& position = { 0, 0 });
+				inline void setSelectionChangedCallback(std::function<void(RadioButton& previous, RadioButton& sender)> callback) { callback_onSelectionChanged = std::move(callback); }
 
-				private:
-					void set_selected(RadioButton& sender);
-					bool is_button_present(RadioButton& button);
-					void unselect_all(void);
+			private:
+				void set_selected(RadioButton& sender);
+				bool is_button_present(RadioButton& button);
+				void unselect_all(void);
 
-				private:
-					stdvec<std::unique_ptr<RadioButton>> m_buttons;
-					RadioButton* m_selected { nullptr };
-					std::function<void(RadioButton& previous, RadioButton& sender)> callback_onSelectionChanged { nullptr };
+			private:
+				stdvec<std::unique_ptr<RadioButton>> m_buttons;
+				RadioButton* m_selected { nullptr };
+				std::function<void(RadioButton& previous, RadioButton& sender)> callback_onSelectionChanged { nullptr };
 
-					friend class RadioButton;
-			};
-		}
+				friend class RadioButton;
+		};
 	}
 }

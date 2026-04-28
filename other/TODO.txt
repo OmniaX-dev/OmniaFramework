@@ -23,7 +23,6 @@
 ***Add Dark Mode Default theme
 ***FIX: Optimize ListView
 ***FIX: Limit FPS even when continuous events happen
-Add theme caching
 Implement cursors in Stylesheet
 FIX: Window getting exponentially bigger when Desktop scale changes
 FIX: Refreshing scroll when content extent changes
@@ -47,6 +46,8 @@ Add Hex Editor widget
 Add Message Boxes
 FIX: Widget Content extents increasing negatively not showing scrollbars
 FIX: Button state getting hung after showing an openFileDialog
+FIX: ListView last item is covered by scrollbar
+FIX: ListView last item not clickable even when no horizontal scrollbar present
 
 
 
@@ -73,13 +74,13 @@ Implement following widgets:
 	***MenuBar
 	***Toolbar
 	***StatusBar
+	***Layouts
+		***Vertical
+		***Horizontal
+		***Grid
+		***Fill
 	ComboBox
 	TreeView
-	Layouts
-		Vertical
-		Horizontal
-		Grid
-		Fill
 	Text Input
 	Text Area
 	Numeric Field

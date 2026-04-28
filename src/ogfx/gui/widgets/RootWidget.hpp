@@ -26,28 +26,25 @@ namespace ogfx
 {
 	namespace gui
 	{
-		namespace widgets
+		class RootWidget : public Widget
 		{
-			class RootWidget : public Widget
-			{
-				public:
-					RootWidget(WindowCore& window);
-					void onWindowResized(const Event& event) override;
-					void applyTheme(const ostd::Stylesheet& theme) override;
-					void onDraw(ogfx::BasicRenderer2D& gfx) override;
-					OSTD_PARAM_GETSET(Color, TooltipBackgroundColor, m_tooltipBackgroundColor);
-					OSTD_PARAM_GETSET(Color, TooltipBorderColor, m_tooltipBorderColor);
-					OSTD_PARAM_GETSET(Color, TooltipTextColor, m_tooltipTextColor);
-					OSTD_PARAM_GETSET(i32, TooltipBorderWidth, m_tooltipBorderWidth);
-					OSTD_PARAM_GETSET(i32, TooltipFontSize, m_tooltipFontSize);
+			public:
+				RootWidget(WindowCore& window);
+				void onWindowResized(const Event& event) override;
+				void applyTheme(const ostd::Stylesheet& theme) override;
+				void onDraw(ogfx::BasicRenderer2D& gfx) override;
+				OSTD_PARAM_GETSET(Color, TooltipBackgroundColor, m_tooltipBackgroundColor);
+				OSTD_PARAM_GETSET(Color, TooltipBorderColor, m_tooltipBorderColor);
+				OSTD_PARAM_GETSET(Color, TooltipTextColor, m_tooltipTextColor);
+				OSTD_PARAM_GETSET(i32, TooltipBorderWidth, m_tooltipBorderWidth);
+				OSTD_PARAM_GETSET(i32, TooltipFontSize, m_tooltipFontSize);
 
-				private:
-					Color m_tooltipBackgroundColor { "#FFF7D6FF" };
-					Color m_tooltipBorderColor { 50, 50, 50 };
-					Color m_tooltipTextColor { 50, 50, 50 };
-					i32 m_tooltipBorderWidth { 1 };
-					i32 m_tooltipFontSize { 20 };
-			};
-		}
+			private:
+				Color m_tooltipBackgroundColor { "#FFF7D6FF" };
+				Color m_tooltipBorderColor { 50, 50, 50 };
+				Color m_tooltipTextColor { 50, 50, 50 };
+				i32 m_tooltipBorderWidth { 1 };
+				i32 m_tooltipFontSize { 20 };
+		};
 	}
 }

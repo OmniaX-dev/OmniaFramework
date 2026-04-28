@@ -28,79 +28,115 @@ namespace ogfx
 {
 	namespace gui
 	{
-		namespace widgets
+		// ===========================================================================
+		// eSizeMode — shared across Button / Label / (and analogous on ImageLabel).
+		//
+		//   AutoSize:      widget computes its own size to fit content. Used when
+		//                  there's no layout managing it, and the user wants the
+		//                  widget to "just be the right size".
+		//
+		//   Manual:        user controls the widget's size; user also controls the
+		//                  content sizes (text/icon). Nothing is computed automatically.
+		//                  Content is drawn at its user-specified size, centered, and
+		//                  clipped at the widget edge if it doesn't fit.
+		//
+		//   LayoutManaged: parent's Layout controls the widget's size. Content
+		//                  (text/icon) is at its user-specified size, and the widget
+		//                  honors whatever bounds the layout assigns.
+		//                  This mode is auto-selected when added to a parent that
+		//                  has a layout — unless the user explicitly set Manual.
+		// ===========================================================================
+		enum class eSizeMode : u8
 		{
-			class Button : public Widget
-			{
-				public:
-					inline Button(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(""); }
-					inline Button(WindowCore& window, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(text); }
-					Button& create(const String& text);
-					void onDraw(ogfx::BasicRenderer2D& gfx) override;
-					void onUpdate(void) override;
-					void onMouseReleased(const Event& event) override;
-					void setText(const String& text);
-					void setIcon(const String& filePath);
-					void applyTheme(const ostd::Stylesheet& theme) override;
-					inline String getText(void) const { return m_text; }
-					inline Image& getIcon(void) { return m_icon; }
+			AutoSize,
+			Manual,
+			LayoutManaged
+		};
 
-					// When auto-size is enabled, the widget resizes itself to fit text+icon+padding
-					// at native font/icon size (text is drawn at scale 1.0).
-					// When auto-size is disabled, the widget keeps its user-defined size, and the
-					// content is scaled uniformly down/up to fit that size (text uses the renderer's
-					// scale parameter; icon is scaled proportionally).
-					OSTD_BOOL_PARAM_GETSET_E(AutoSize, m_autoSize);
+		class Button : public Widget
+		{
+			public:
+				inline Button(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(""); }
+				inline Button(WindowCore& window, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(text); }
+				Button& create(const String& text);
 
-					// Icon-only mode: text is ignored when laying out and drawing.
-					// Combined with auto-size, the button becomes a square based on font size.
-					// Combined with manual size, the icon scales to fit the content area.
-					OSTD_BOOL_PARAM_GETSET_E(IconOnly, m_iconOnly);
+				void onDraw(ogfx::BasicRenderer2D& gfx) override;
+				void onUpdate(void) override;
+				void onMouseReleased(const Event& event) override;
+				void onBoundsChanged(const Vec2& newSize) override;
+				void applyTheme(const ostd::Stylesheet& theme) override;
 
-					OSTD_BOOL_PARAM_GETSET_E(Animated, m_animated);
-					OSTD_BOOL_PARAM_GETSET_E(Icon, m_showIcon);
-					OSTD_PARAM_GETSET(ostd::AnimationData, AnimationData, m_animData);
-					OSTD_PARAM_GETSET(Vec2, IconSize, m_iconSize);
-					OSTD_PARAM_GETSET(f32, IconSpacing, m_iconSpacing);
-					OSTD_PARAM_GETSET(Color, IconTintColor, m_iconTint);
+				void setText(const String& text);
+				void setIcon(const String& filePath);
+				inline String getText(void) const { return m_text; }
+				inline Image& getIcon(void) { return m_icon; }
 
-				private:
-					// Force a layout recompute on the next draw.
-					inline void invalidate_layout(void) { m_layoutDirty = true; }
+				// =========================== SIZE MODE ============================
+				// Set the widget's size mode explicitly. After calling this, the
+				// auto-detection (LayoutManaged when parent has a layout) is
+				// disabled — the user's choice is respected.
+				void setSizeMode(eSizeMode mode);
+				inline eSizeMode getSizeMode(void) const { return m_sizeMode; }
 
-					// Recomputes layout. In auto-size mode this also resizes the widget.
-					// In manual-size mode this computes the scale factor that fits content
-					// into the current widget size.
-					void recompute_layout(void);
+				// The mode actually used by the layout/draw code. Resolves auto-
+				// detection: if the user hasn't explicitly set a mode and the
+				// parent has a layout, this returns LayoutManaged.
+				eSizeMode effectiveSizeMode(void) const;
+				// ==================================================================
 
-					// Returns the icon size at native (un-scaled) resolution. If m_iconSize is
-					// (0,0) and an icon is loaded, falls back to the icon's natural size; if no
-					// icon is loaded, falls back to font-size-based square. Aspect ratio of
-					// m_iconSize is preserved.
-					Vec2 native_icon_size(void) const;
+				OSTD_BOOL_PARAM_GETSET_E(IconOnly, m_iconOnly);
+				OSTD_BOOL_PARAM_GETSET_E(Animated, m_animated);
+				OSTD_BOOL_PARAM_GETSET_E(Icon, m_showIcon);
+				OSTD_PARAM_GETSET(ostd::AnimationData, AnimationData, m_animData);
+				OSTD_PARAM_GETSET(Vec2, IconSize, m_iconSize);
+				OSTD_PARAM_GETSET(f32, IconSpacing, m_iconSpacing);
+				OSTD_PARAM_GETSET(Color, IconTintColor, m_iconTint);
 
-				private:
-					String m_text { "" };
-					Image m_icon;
-					ostd::AnimationData m_animData;
-					Animation m_anim;
-					Vec2 m_iconSize { 0, 0 };
-					f32 m_iconSpacing { 10 };
-					Color m_iconTint { Colors::White };
+			private:
+				inline void invalidate_layout(void) { m_layoutDirty = true; }
 
-					// Computed layout state (refreshed by recompute_layout).
-					bool m_layoutDirty { true };
-					f32 m_contentScale { 1.0f };       // applied to text & icon when !m_autoSize
-					Vec2 m_drawIconSize { 0, 0 };      // final on-screen icon size
-					Vec2 m_drawIconOffset { 0, 0 };    // top-left of the icon inside the content area
-					Vec2 m_drawTextOffset { 0, 0 };    // top-left of the text inside the content area
+				// Re-runs the size + content computation. What this does depends
+				// entirely on effectiveSizeMode() — see the cpp for details.
+				void recompute_layout(void);
 
-					// Flags
-					bool m_autoSize { true };
-					bool m_iconOnly { false };
-					bool m_showIcon { false };
-					bool m_animated { false };
-			};
-		}
+				// Returns the icon size to draw, given the current effective text
+				// height. In AutoSize: max(text-height, hintFloor) with aspect
+				// preserved. In Manual/LayoutManaged: the user's m_iconSize hint
+				// (or fontSize fallback). Aspect ratio is always preserved when
+				// the icon is loaded with a known natural size.
+				Vec2 compute_icon_size(f32 textHeightHint) const;
+
+				// Native floor for the icon: m_iconSize if set, else font size.
+				// (User-configurable hint as discussed; the icon will not be
+				// drawn smaller than this in AutoSize mode.)
+				Vec2 icon_floor(void) const;
+
+			private:
+				String m_text { "" };
+				Image m_icon;
+				ostd::AnimationData m_animData;
+				Animation m_anim;
+				Vec2 m_iconSize { 0, 0 };
+				f32 m_iconSpacing { 10 };
+				Color m_iconTint { Colors::White };
+
+				// ===== Mode =====
+				eSizeMode m_sizeMode { eSizeMode::AutoSize };
+				bool m_modeExplicitlySet { false };
+				// ================
+
+				// ===== Computed draw state (refreshed by recompute_layout) =====
+				bool m_layoutDirty { true };
+				Vec2 m_drawIconSize { 0, 0 };
+				Vec2 m_drawIconOffset { 0, 0 };
+				Vec2 m_drawTextOffset { 0, 0 };
+				// ===============================================================
+
+				// ===== Flags =====
+				bool m_iconOnly { false };
+				bool m_showIcon { false };
+				bool m_animated { false };
+				// =================
+		};
 	}
 }

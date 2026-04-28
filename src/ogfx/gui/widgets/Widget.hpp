@@ -27,6 +27,9 @@
 #include <ostd/io/Stylesheet.hpp>
 #include <ostd/utils/Defines.hpp>
 #include <ostd/utils/Time.hpp>
+#include <ogfx/gui/LayoutHint.hpp>
+#include <ogfx/gui/Layout.hpp>
+#include <memory>
 #include <functional>
 
 namespace ogfx
@@ -107,6 +110,33 @@ namespace ogfx
 
 
 
+				// ============================== LAYOUT ==============================
+				void setLayout(std::unique_ptr<Layout> layout);
+				template<typename L, typename... Args>
+				inline L& setLayout(Args&&... args)
+				{
+					static_assert(std::is_base_of_v<Layout, L>, "L must derive from Layout");
+					auto owned = std::make_unique<L>(std::forward<Args>(args)...);
+					L* raw = owned.get();
+					setLayout(std::move(owned));
+					return *raw;
+				}
+				inline Layout* getLayout(void) { return m_layout.get(); }
+				inline bool hasLayout(void) const { return m_layout != nullptr; }
+
+				inline void setw(f32 w) override { Rectangle::setw(w); if (m_layout) relayout(); }
+				inline void seth(f32 h) override { Rectangle::seth(h); if (m_layout) relayout(); }
+
+				// Re-runs the owned Layout (if any) and recursively re-runs layouts
+				// on children that have their own. Safe to call when no layout is set.
+				void relayout(void);
+
+				inline LayoutHint& layoutHint(void) { return m_layoutHint; }
+				inline const LayoutHint& layoutHint(void) const { return m_layoutHint; }
+				// ====================================================================
+
+
+
 				// =============================== DIMENSIONS ===============================
 				virtual Vec2 getGlobalPosition(void) const;
 				virtual Vec2 getGlobalContentPosition(void) const;
@@ -126,6 +156,7 @@ namespace ogfx
 				inline static ostd::BaseObject* getDragAndDropData(void) { return s_dragAndDropData; }
 				inline WindowCore& getWindow(void) { return *m_window; }
 				inline Widget* getParent(void) { return m_parent; }
+				inline const Widget* getParent(void) const { return m_parent; }
 				inline i32 getZIndex(void) const { return m_zIndex; }
 				inline ogfx::MouseEventData::eButton getPressedMouseButton(void) const { return m_pressedButton; }
 				inline const stdvec<String>& getThemeIDList(void) const { return m_themeIDList; }
@@ -167,7 +198,7 @@ namespace ogfx
 				OSTD_BOOL_PARAM_GETSET_E(TopMost, m_topMost);
 				OSTD_BOOL_PARAM_GETSET_E(IgnoreScroll, m_ignoreScroll);
 				OSTD_BOOL_PARAM_GETSET_E(VScroll, m_vScrollEnabled);
-				OSTD_BOOL_PARAM_GETSET_E(HScroll, m_vScrollEnabled);
+				OSTD_BOOL_PARAM_GETSET_E(HScroll, m_hScrollEnabled);
 				OSTD_BOOL_PARAM_GETSET_E(BackgroundGradient, m_useBackgroundGradient);
 				OSTD_BOOL_PARAM_GETSET_E(Theming, m_enableTheming);
 				OSTD_BOOL_PARAM_GETSET_E(Tooltip, m_enableTooltip);
@@ -199,6 +230,8 @@ namespace ogfx
 				WindowCore* m_window { nullptr };
 				Widget* m_parent { nullptr };
 				WidgetManager m_widgets;
+				std::unique_ptr<Layout> m_layout;
+				LayoutHint m_layoutHint;
 
 				bool m_rootChild { false };
 				bool m_focused { false };
@@ -340,6 +373,7 @@ namespace ogfx
 				inline virtual void onWindowResized(const Event& event) {  }
 				inline virtual void onWindowFocused(const Event& event) {  }
 				inline virtual void onWindowFocusLost(const Event& event) {  }
+				inline virtual void onBoundsChanged(const Vec2& newSize) {  }
 		};
 	}
 }

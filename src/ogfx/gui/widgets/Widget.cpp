@@ -47,12 +47,17 @@ namespace ogfx
 			if (!result) return false;
 			if (!__skip_callback)
 				onWidgetAdded(child);
+			if (m_layout && !__skip_callback)
+				relayout();
 			return result;
 		}
 
 		bool Widget::removeWidget(Widget& child)
 		{
-			return m_widgets.removeWidget(child);
+			bool result = m_widgets.removeWidget(child);
+			if (result && m_layout)
+				relayout();
+			return result;
 		}
 
 		Vec2 Widget::getGlobalPosition(void) const
@@ -105,6 +110,14 @@ namespace ogfx
 
 		Rectangle Widget::getContentExtents(void) const
 		{
+			// If a layout owns this widget, prefer its measure() — it knows
+			// the real desired extent (e.g. a vertical box with 50 items
+			// reports 50*itemHeight even if only 5 are visible).
+			if (m_layout)
+			{
+				Vec2 desired = m_layout->measure(*this);
+				return { 0, 0, desired.x, desired.y };
+			}
 			f32 maxX = 0, maxY = 0;
 			for (auto* child : m_widgets.getWidgets())
 			{
@@ -214,6 +227,28 @@ namespace ogfx
 		void Widget::setVisible(bool v)
 		{
 			m_visible = v;
+		}
+
+		void Widget::setLayout(std::unique_ptr<Layout> layout)
+		{
+			m_layout = std::move(layout);
+			if (m_layout)
+				relayout();
+		}
+
+		void Widget::relayout(void)
+		{
+			if (!m_layout) return;
+			m_layout->arrange(*this);
+
+			// After our children's bounds changed, give *their* layouts a chance
+			// to re-run (a horizontal layout containing a vertical layout, etc.).
+			for (auto* c : m_widgets.getWidgets())
+			{
+				if (!c || c->isInvalid()) continue;
+				if (c->hasLayout())
+					c->relayout();
+			}
 		}
 
 		void Widget::setCallback(eCallback type, EventCallback callback)
@@ -440,6 +475,8 @@ namespace ogfx
 					callback_onWindowResized(event);
 				onWindowResized(event);
 			}
+			if (m_layout)
+				relayout();
 		}
 
 		void Widget::__onWindowFocused(const Event& event)

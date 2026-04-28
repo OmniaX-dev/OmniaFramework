@@ -273,6 +273,7 @@ namespace ogfx
 				void addWidget(Widget& widget, const Vec2& position = { 0, 0 });
 				void setTheme(const ostd::Stylesheet& theme) override;
 				inline void showContextMenu(const Vec2& pos) { m_cmenu.show(pos); }
+				inline void showContextMenu(const ContextMenu::Instance& instance, const Vec2& pos) { setContextMenu(instance); showContextMenu(pos); }
 				inline void setContextMenu(const ContextMenu::Instance& instance) { m_cmenu.setInstance(instance); }
 				inline bool isContextMenuVisible(void) const { return m_cmenu.isVisible(); }
 				inline bool isMenuBarVisible(void) const { return m_menubar.isVisible(); }
@@ -306,7 +307,7 @@ namespace ogfx
 				void __main_loop_cycle(void);
 
 			protected:
-				widgets::RootWidget m_rootWidget { *this };
+				RootWidget m_rootWidget { *this };
 				ostd::StepTimer m_fixedUpdateTimer;
 				ostd::StepTimer::TimePoint m_lastFrameTime;
 				ostd::StepTimer m_mainLoopTimer;
@@ -315,7 +316,7 @@ namespace ogfx
 				ToolBar m_toolbar { *this };
 				ToolBar m_statusbar { *this, true };
 
-				friend class widgets::RootWidget;
+				friend class RootWidget;
 		};
 	}
 }

@@ -374,9 +374,6 @@ namespace ogfx
 
 			if (m_vertexCount + 4 >= MaxVertices || m_indexCount + 6 >= MaxIndices)
 				flushBatch();
-			if (m_texture != nullptr)
-				flushBatch();
-			m_texture = nullptr;
 
 			SDL_FColor c0 = COLOR_CAST(colors[i]);
 			SDL_FColor c1 = COLOR_CAST(colors[i + 1]);

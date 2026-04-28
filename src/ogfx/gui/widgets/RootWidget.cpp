@@ -26,43 +26,40 @@ namespace ogfx
 {
 	namespace gui
 	{
-		namespace widgets
+		RootWidget::RootWidget(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window)
 		{
-			RootWidget::RootWidget(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window)
-			{
-				setRootChild();
-				setSize(cast<f32>(window.getWindowWidth()), cast<f32>(window.getWindowHeight()));
-				setStylesheetCategoryName("window");
-				setTypeName("ogfx::gui::widgets::RootWidget");
-			}
+			setRootChild();
+			setSize(cast<f32>(window.getWindowWidth()), cast<f32>(window.getWindowHeight()));
+			setStylesheetCategoryName("window");
+			setTypeName("ogfx::gui::RootWidget");
+		}
 
-			void RootWidget::onWindowResized(const Event& event)
-			{
-				Window& win = cast<Window&>(getWindow()); //TODO: Potentially unsage?
-				f32 offset_y = 0;
-				if (win.m_menubar.isVisible())
-					offset_y += win.m_menubar.geth();
-				if (win.m_toolbar.isVisible())
-					offset_y += win.m_toolbar.geth();
-				sety(offset_y);
-				if (win.m_statusbar.isVisible())
-					offset_y += win.m_statusbar.geth();
-				setSize(cast<f32>(event.windowResized->new_width), cast<f32>(event.windowResized->new_height) - offset_y);
-			}
+		void RootWidget::onWindowResized(const Event& event)
+		{
+			Window& win = cast<Window&>(getWindow()); //TODO: Potentially unsage?
+			f32 offset_y = 0;
+			if (win.m_menubar.isVisible())
+				offset_y += win.m_menubar.geth();
+			if (win.m_toolbar.isVisible())
+				offset_y += win.m_toolbar.geth();
+			sety(offset_y);
+			if (win.m_statusbar.isVisible())
+				offset_y += win.m_statusbar.geth();
+			setSize(cast<f32>(event.windowResized->new_width), cast<f32>(event.windowResized->new_height) - offset_y);
+		}
 
-			void RootWidget::applyTheme(const ostd::Stylesheet& theme)
-			{
-				setTooltipBackgroundColor(getThemeValue<Color>(theme, "tooltip.backgroundColor", getTooltipBackgroundColor()));
-				setTooltipBorderColor(getThemeValue<Color>(theme, "tooltip.borderColor", getTooltipBorderColor()));
-				setTooltipTextColor(getThemeValue<Color>(theme, "tooltip.textColor", getTooltipTextColor()));
-				setTooltipBorderWidth(getThemeValue<i32>(theme, "tooltip.borderWidth", getTooltipBorderWidth()));
-				setTooltipFontSize(getThemeValue<i32>(theme, "tooltip.fontSize", getTooltipFontSize()));
-			}
+		void RootWidget::applyTheme(const ostd::Stylesheet& theme)
+		{
+			setTooltipBackgroundColor(getThemeValue<Color>(theme, "tooltip.backgroundColor", getTooltipBackgroundColor()));
+			setTooltipBorderColor(getThemeValue<Color>(theme, "tooltip.borderColor", getTooltipBorderColor()));
+			setTooltipTextColor(getThemeValue<Color>(theme, "tooltip.textColor", getTooltipTextColor()));
+			setTooltipBorderWidth(getThemeValue<i32>(theme, "tooltip.borderWidth", getTooltipBorderWidth()));
+			setTooltipFontSize(getThemeValue<i32>(theme, "tooltip.fontSize", getTooltipFontSize()));
+		}
 
-			void RootWidget::onDraw(ogfx::BasicRenderer2D& gfx)
-			{
-				gfx.fillRect({ 0, 0, cast<f32>(getWindow().getWindowWidth()), cast<f32>(getWindow().getWindowHeight()) }, getBackgroundColor());
-			}
+		void RootWidget::onDraw(ogfx::BasicRenderer2D& gfx)
+		{
+			gfx.fillRect({ 0, 0, cast<f32>(getWindow().getWindowWidth()), cast<f32>(getWindow().getWindowHeight()) }, getBackgroundColor());
 		}
 	}
 }

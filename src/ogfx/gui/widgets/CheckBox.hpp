@@ -27,44 +27,40 @@ namespace ogfx
 {
 	namespace gui
 	{
-		namespace widgets
+		class CheckBox : public Widget
 		{
+			public:
+				inline CheckBox(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(""); }
+				inline CheckBox(WindowCore& window, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(text); }
+				CheckBox& create(const String& text);
+				void applyTheme(const ostd::Stylesheet& theme) override;
+				void onDraw(ogfx::BasicRenderer2D& gfx) override;
+				void onMouseReleased(const Event& event) override;
+				void setText(const String& text);
+				void setChecked(bool checked);
+				inline String getText(void) const { return m_text; }
+				inline Color getCheckBorderColor(void) const { return m_checkBorderColor; }
+				inline void setCheckBorderColor(const Color& color) { m_checkBorderColor = color; }
+				inline Color getCheckBoxColor(void) const { return m_checkBoxColor; }
+				inline void setCheckBoxColor(const Color& color) { m_checkBoxColor = color; }
+				inline bool isChecked(void) const { return m_checked; }
+				inline void setStateChangedCallback(std::function<void(CheckBox&, bool)> callback) { callback_onStateChanged = std::move(callback); }
 
-			class CheckBox : public Widget
-			{
-				public:
-					inline CheckBox(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(""); }
-					inline CheckBox(WindowCore& window, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(text); }
-					CheckBox& create(const String& text);
-					void applyTheme(const ostd::Stylesheet& theme) override;
-					void onDraw(ogfx::BasicRenderer2D& gfx) override;
-					void onMouseReleased(const Event& event) override;
-					void setText(const String& text);
-					void setChecked(bool checked);
-					inline String getText(void) const { return m_text; }
-					inline Color getCheckBorderColor(void) const { return m_checkBorderColor; }
-					inline void setCheckBorderColor(const Color& color) { m_checkBorderColor = color; }
-					inline Color getCheckBoxColor(void) const { return m_checkBoxColor; }
-					inline void setCheckBoxColor(const Color& color) { m_checkBoxColor = color; }
-					inline bool isChecked(void) const { return m_checked; }
-					inline void setStateChangedCallback(std::function<void(CheckBox&, bool)> callback) { callback_onStateChanged = std::move(callback); }
+			private:
+				void __update_size(ogfx::BasicRenderer2D& gfx);
 
-				private:
-					void __update_size(ogfx::BasicRenderer2D& gfx);
+			private:
+				bool m_checked { false };
+				String m_text { "" };
+				bool m_textChanged { false };
+				f32 m_spacing { 10 };
+				Vec2 m_checkSize  { 0, 0 };
+				i32 m_checkBorderRadius { 5 };
+				i32 m_checkBorderWidth { 1 };
+				Color m_checkBorderColor { 255, 255, 255 };
+				Color m_checkBoxColor { 255, 255, 255 };
 
-				private:
-					bool m_checked { false };
-					String m_text { "" };
-					bool m_textChanged { false };
-					f32 m_spacing { 10 };
-					Vec2 m_checkSize  { 0, 0 };
-					i32 m_checkBorderRadius { 5 };
-					i32 m_checkBorderWidth { 1 };
-					Color m_checkBorderColor { 255, 255, 255 };
-					Color m_checkBoxColor { 255, 255, 255 };
-
-					std::function<void(CheckBox&, bool)> callback_onStateChanged { nullptr };
-			};
-		}
+				std::function<void(CheckBox&, bool)> callback_onStateChanged { nullptr };
+		};
 	}
 }
