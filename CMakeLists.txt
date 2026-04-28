@@ -101,6 +101,7 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/ProgressBar.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Slider.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/ListView.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/ComboBox.cpp
 
 	# render
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/BasicRenderer.cpp

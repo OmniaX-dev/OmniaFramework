@@ -230,7 +230,7 @@ const $backgroundColor = rgba(30, 30, 30, 255)
 	useProgressGradient = true
 	progressGradient = gradientV($accentColor - $accentColorDark)
 }
-% ===================
+% =========================
 
 
 
@@ -319,7 +319,6 @@ const $backgroundColor = rgba(30, 30, 30, 255)
 	borderColor = $borderColor
 	showBorder = true
 }
-% =====================
 (@tool_button button) {
 	fontSize = 18
 	padding = rect(5, 0, 5, 0)
@@ -347,3 +346,26 @@ const $backgroundColor = rgba(30, 30, 30, 255)
 		tint = $accentColorLight
 	}
 }
+% =====================
+
+
+
+% ====== ComboBox ======
+(combo) {
+	borderColor = $accentColor
+	backgroundColor = $darkColor
+	borderWidth = 1
+	showBackground = true
+	showBorder = true
+	triangleIndicatorColor = $accentColor
+	triangleIndicatorPadding = 8.0
+}
+(combo:hover) {
+	triangleIndicatorColor = $accentColorLight
+	borderColor = $accentColorLight
+}
+(combo:active) {
+	triangleIndicatorColor = $accentColorDark
+	borderColor = $accentColorDark
+}
+% ======================

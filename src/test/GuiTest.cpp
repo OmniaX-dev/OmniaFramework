@@ -186,6 +186,7 @@ class TestWindow : public Window
 			t1.addWidget(m_slideLbl, { 340, 240 });
 			t1.addWidget(m_list, { 30, 300 });
 			t1.addWidget(m_panel2, { 500, 100 });
+			t1.addWidget(m_combo, { 400, 600 });
 
 			t2.setLayout<BoxLayout>(BoxLayout::Orientation::Vertical);
 			t2.getLayout()->setSpacing(16);
@@ -198,6 +199,8 @@ class TestWindow : public Window
 
 			auto* footer = new Button(*this);
 			footer->layoutHint().preferred = { -1, 24 };
+
+			m_combo.setSize(200, 30);
 
 			t2.addWidget(*header);   // each addWidget() call triggers a relayout
 			t2.addWidget(*body);
@@ -324,6 +327,7 @@ class TestWindow : public Window
 		Label m_slideLbl { *this };
 		ListView m_list { *this };
 		Label m_drawCallsLbl { *this };
+		ComboBox m_combo { *this };
 
 		enum MenuId : i32 { New = 1, Open, Save, SaveAs, Exit, CopyRaw, CopyFormatted };
 
