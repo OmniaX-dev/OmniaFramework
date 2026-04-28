@@ -32,19 +32,29 @@ namespace ogfx
 			public:
 				inline ComboBox(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
 				ComboBox& create(void);
-
-				void onDraw(ogfx::BasicRenderer2D& gfx) override;
-				void onUpdate(void) override;
-				void onMouseReleased(const Event& event) override;
+				i32 addMenuItem(const String& text);
+				bool removeMenuItem(const String& text);
+				bool removeMenuItem(i32 id);
+				void setItemCallback(ContextMenu::Instance::Callback callback);
+				void setw(f32 w) override;
 				void applyTheme(const ostd::Stylesheet& theme) override;
+				void onDraw(ogfx::BasicRenderer2D& gfx) override;
+				void onMouseReleased(const Event& event) override;
 				void handleSignal(ostd::Signal& signal) override;
+				inline ContextMenu::Entry getSelectedEntry(void) const { return m_selectedEntry; }
 
 				OSTD_PARAM_GETSET(Color, TriangleIndicatorColor, m_triangleColor);
 				OSTD_PARAM_GETSET(f32, TriangleIndicatorPadding, m_trianglePadding);
 
 			private:
+				String get_display_text(const String& entry);
+
+			private:
 				bool m_dropDownShown { false };
 				ContextMenu::Instance m_menu;
+				i32 m_nextItemID { 0 };
+				ContextMenu::Entry m_selectedEntry { "", -1 };
+				String m_selectedEntryText { "" };  // Truncated text, not always valid, so can't be exposed
 
 				Color m_triangleColor { "#008000FF" };
 				f32 m_trianglePadding { 8.0f };

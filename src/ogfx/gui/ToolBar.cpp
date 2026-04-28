@@ -82,25 +82,19 @@ namespace ogfx
 		void ToolBar::applyTheme(const ostd::Stylesheet& theme)
 		{
 			auto& win = cast<Window&>(getWindow());
-			setHeight(theme.get<f32>("toolbar.height", getHeight(), {}, {}));
-			setFontSize(theme.get<i32>("toolbar.fontSize", getFontSize(), {}, {}));
-			setBackgroundColor(theme.get<Color>("toolbar.backgroundColor", getBackgroundColor(), {}, {}));
-			setTextColor(theme.get<Color>("toolbar.textColor", getTextColor(), {}, {}));
-			setBorderColor(theme.get<Color>("toolbar.borderColor", getBorderColor(), {}, {}));
-			enableBottomBorder(theme.get<bool>("toolbar.showBorder", isBottomBorderEnabled(), {}, {}));
+			setHeight(getThemeValue<f32>(theme, "height", getHeight()));
 			setSize(win.getWindowWidth(), m_height);
+			enableBottomBorder(isBorderEnabled());
 			disableBorder();
 		}
 
-		void ToolBar::onDraw(BasicRenderer2D& gfx)
+		void ToolBar::afterDraw(BasicRenderer2D& gfx)
 		{
-			gfx.fillRect(*this, m_backgroundColor);
-
 			// Bottom border line
 			if (isBottomBorderEnabled())
 			{
 				f32 lineOffset = (isStatusBar() ? 0.0f : m_height);
-				gfx.drawLine({ { getx(), gety() + lineOffset }, { getx() + getw(), gety() + lineOffset } }, m_borderColor);
+				gfx.drawLine({ { getx(), gety() + lineOffset }, { getx() + getw(), gety() + lineOffset } }, getBorderColor());
 			}
 		}
 

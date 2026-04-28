@@ -76,7 +76,7 @@ namespace ogfx
 				bool addThemeID(const String& id);
 				bool removeThemeID(const String& id);
 				void setVisible(bool v);
-				void setCallback(eCallback type, EventCallback callback);
+				virtual void setCallback(eCallback type, EventCallback callback);
 				using Rectangle::contains; bool contains(Vec2 p, bool includeBounds = false) const override;
 				template<typename T>
 				inline T getThemeValue(const ostd::Stylesheet &theme, const String& key, const T& fallback)

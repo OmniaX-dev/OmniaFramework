@@ -201,6 +201,14 @@ class TestWindow : public Window
 			footer->layoutHint().preferred = { -1, 24 };
 
 			m_combo.setSize(200, 30);
+			m_combo.addMenuItem("Item 1");
+			m_combo.addMenuItem("Item 2");
+			m_combo.addMenuItem("Item 3");
+			m_combo.addMenuItem("Item 4");
+			m_combo.addMenuItem("ItemITEMITEMTIEMTIITEM");
+			m_combo.setItemCallback([&](const ContextMenu::Entry& entry) -> void {
+				std::cout << "COMBO: " << entry.text << "\n";
+			});
 
 			t2.addWidget(*header);   // each addWidget() call triggers a relayout
 			t2.addWidget(*body);
@@ -448,7 +456,7 @@ i32 main(i32 argc, char** argv)
 	ostd::Random::autoSeed();
 	ostd::initialize();
 	TestWindow window;
-	window.initialize(1200, 800, "OmniaFramework - Test Window");
+	window.initialize(1200, 1100, "OmniaFramework - Test Window");
 	window.setClearColor({ 0, 0, 0 });
 	window.setPosition({ 50, 50 });
 	// window.setWindowState(ogfx::WindowCore::eWindowState::Maximized);

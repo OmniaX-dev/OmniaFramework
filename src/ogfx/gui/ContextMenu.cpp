@@ -345,6 +345,12 @@ namespace ogfx
 			}
 			panel.size.x += m_padding.x + m_padding.w;
 			panel.size.y += m_padding.y + m_padding.h;
+
+			// Enforce minimum width from the Instance — applies to root only.       // NEW
+			// Submenus sit naturally to the right; forcing them wider tends to look  // NEW
+			// odd and can cause needless edge-flipping.                              // NEW
+			if (panel.entries == &m_data.entries && panel.size.x < m_data.minWidth)   // NEW
+				panel.size.x = m_data.minWidth;                                      // NEW
 		}
 
 		void ContextMenu::pop_to_depth(size_t depth)

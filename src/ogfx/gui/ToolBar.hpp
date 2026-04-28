@@ -37,7 +37,7 @@ namespace ogfx
 				Button& addButton(const String& iconPath, const String& text = "", EventCallback callback = nullptr);
 				void onWindowResized(const Event& event) override;
 				void applyTheme(const ostd::Stylesheet& theme) override;
-				void onDraw(BasicRenderer2D& gfx) override;
+				void afterDraw(BasicRenderer2D& gfx) override;
 				void onUpdate(void) override;
 
 				inline void setw(f32 ww) override {  }
@@ -47,10 +47,6 @@ namespace ogfx
 				inline void setAsStatusBar(bool set = true) { m_isStatusBar = set; }
 
 				OSTD_PARAM_GETSET(f32, Height, m_height);
-				OSTD_PARAM_GETSET(i32, FontSize, m_fontSize);
-				OSTD_PARAM_GETSET(Color, BackgroundColor, m_backgroundColor);
-				OSTD_PARAM_GETSET(Color, TextColor, m_textColor);
-				OSTD_PARAM_GETSET(Color, BorderColor, m_borderColor);
 				OSTD_BOOL_PARAM_GETSET_E_NEG(ButtonText, m_disableButtonText);
 				OSTD_BOOL_PARAM_GETSET_E(BottomBorder, m_bottomBorder);
 
@@ -64,10 +60,6 @@ namespace ogfx
 
 				f32 m_height { 26 };
 				bool m_bottomBorder { false };
-				i32 m_fontSize { 16 };
-				Color m_backgroundColor { "#6B0A1DFF" };
-				Color m_textColor { "#F16A85FF" };
-				Color m_borderColor { "#400000FF" };
 		};
 	}
 }

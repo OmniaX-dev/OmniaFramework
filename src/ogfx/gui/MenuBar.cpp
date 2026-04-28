@@ -104,8 +104,7 @@ namespace ogfx
 			// Anchor menu just below the label
 			Vec2 anchor { slot.rect.x, slot.rect.y + slot.rect.h };
 
-			m_window.setContextMenu(slot.instance);
-			m_window.showContextMenu(anchor);
+			m_window.showContextMenu(slot.instance, anchor);
 
 			m_openIndex = index;
 			m_active = true;

@@ -46,6 +46,61 @@ namespace ogfx
 				using Callback = std::function<void(const Entry&)>;
 				stdvec<Entry> entries;
 				Callback onActivate { nullptr };
+				f32 minWidth { 0 };
+
+				// Remove first entry whose text matches. Returns true if something was removed.
+				inline bool removeByText(const String& text, bool recursive = true)
+				{
+					return remove_if(entries, [&](const Entry& e) { return e.text == text; }, recursive);
+				}
+				// Remove first entry whose id matches. ID -1 is treated as "no id" and is skipped.
+				inline bool removeById(i32 id, bool recursive = true)
+				{
+					if (id < 0) return false;
+					return remove_if(entries, [&](const Entry& e) { return e.id == id; }, recursive);
+				}
+				// Remove ALL matches (handy if you reuse text/ids across submenus).
+				inline size_t removeAllByText(const String& text, bool recursive = true)
+				{
+					return remove_all_if(entries, [&](const Entry& e) { return e.text == text; }, recursive);
+				}
+				inline size_t removeAllById(i32 id, bool recursive = true)
+				{
+					if (id < 0) return 0;
+					return remove_all_if(entries, [&](const Entry& e) { return e.id == id; }, recursive);
+				}
+
+			private:
+				template <typename Pred>
+				static bool remove_if(stdvec<Entry>& list, Pred pred, bool recursive)
+				{
+					for (auto it = list.begin(); it != list.end(); ++it)
+					{
+						if (pred(*it)) { list.erase(it); return true; }
+					}
+					if (!recursive) return false;
+					for (auto& e : list)
+					{
+						if (remove_if(e.submenus, pred, true)) return true;
+					}
+					return false;
+				}
+				template <typename Pred>
+				static size_t remove_all_if(stdvec<Entry>& list, Pred pred, bool recursive)
+				{
+					size_t count = 0;
+					for (auto it = list.begin(); it != list.end(); )
+					{
+						if (pred(*it)) { it = list.erase(it); ++count; }
+						else ++it;
+					}
+					if (recursive)
+					{
+						for (auto& e : list)
+							count += remove_all_if(e.submenus, pred, true);
+					}
+					return count;
+				}
 			};
 			private: struct Panel
 			{

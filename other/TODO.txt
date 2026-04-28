@@ -48,6 +48,7 @@ FIX: Widget Content extents increasing negatively not showing scrollbars
 FIX: Button state getting hung after showing an openFileDialog
 FIX: ListView last item is covered by scrollbar
 FIX: ListView last item not clickable even when no horizontal scrollbar present
+FIX: Refresh display text in ComboBox when font size changes and also on theme reload
 
 
 

@@ -318,6 +318,7 @@ const $backgroundColor = rgba(30, 30, 30, 255)
 	selectionTextColor = $accentColorLight
 	borderColor = $borderColor
 	showBorder = true
+	showBackground = true
 }
 (@tool_button button) {
 	fontSize = 18
@@ -326,7 +327,7 @@ const $backgroundColor = rgba(30, 30, 30, 255)
 	showBackground = true
 	backgroundColor = $darkColor
 	useBackgroundGradient = false
-	showBorder = true
+	showBorder = false
 	borderColor = color_black
 	showIcon = true
 	(icon) {
@@ -336,12 +337,14 @@ const $backgroundColor = rgba(30, 30, 30, 255)
 (@tool_button button:hover) {
 	borderColor = $textColor
 	backgroundColor = $accentColorDark
+	showBorder = true
 	(icon) {
 		tint = $textColor
 	}
 }
 (@tool_button button:pressed) {
 	borderColor = $accentColorDark
+	showBorder = true
 	(icon) {
 		tint = $accentColorLight
 	}
@@ -359,13 +362,15 @@ const $backgroundColor = rgba(30, 30, 30, 255)
 	showBorder = true
 	triangleIndicatorColor = $accentColor
 	triangleIndicatorPadding = 8.0
+	textColor = $textColor
+	fontSize = 18
 }
 (combo:hover) {
 	triangleIndicatorColor = $accentColorLight
 	borderColor = $accentColorLight
 }
 (combo:active) {
-	triangleIndicatorColor = $accentColorDark
-	borderColor = $accentColorDark
+	triangleIndicatorColor = $accentColorLight
+	borderColor = $accentColorLight
 }
 % ======================
