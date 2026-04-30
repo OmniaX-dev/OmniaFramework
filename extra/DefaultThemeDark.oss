@@ -287,6 +287,8 @@ const $backgroundColor = rgba(30, 30, 30, 255)
 	borderColor = $borderColor
 	useSelectionGradient = true
 	selectionGradient = gradientV($accentColor - $accentColorDark)
+	animateOpen = true
+	animationDelay = 120
 }
 % ==========================
 

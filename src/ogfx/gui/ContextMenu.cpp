@@ -62,20 +62,52 @@ namespace ogfx
 			setBorderColor(theme.get<Color>("context.borderColor", getBorderColor(), {}, {}));
 			enableSelectionGradient(theme.get<bool>("context.useSelectionGradient", isSelectionGradientEnabled(), {}, {}));
 			setSelectionGradient(theme.get<ColorGradient>("context.selectionGradient", getSelectionGradient(), {}, {}));
+			enableOpenAnimation(theme.get<bool>("context.animateOpen", isOpenAnimationEnabled(), {}, {}));
+			setAnimationDelayMS(theme.get<i32>("context.animationDelay", getAnimationDelayMS(), {}, {}));
 		}
 
 		void ContextMenu::draw(BasicRenderer2D& gfx)
 		{
 			if (!m_visible) return;
 			for (const auto& panel : m_panels)
+			{
+				// Apply easing for a more natural feel
+				f32 t = panel.animProgress;
+				f32 eased = 1.0f - (1.0f - t) * (1.0f - t);  // ease-out quadratic
+
+				f32 visibleHeight = panel.size.y * eased;
+
+				Rectangle clip {
+					panel.position.x,
+					panel.position.y,
+					panel.size.x,
+					visibleHeight
+				};
+
+				gfx.pushClippingRect(clip);
 				draw_panel(gfx, panel);
+				gfx.popClippingRect();
+			}
 		}
 
 		void ContextMenu::update(void)
 		{
 			if (!m_visible) return;
 
-			if (m_pendingOpenPanelDepth >= 0 && m_hoverOpenTimerActive && m_hoverOpenTimer.read() >= SubmenuOpenDelayMs)
+			// Advance animation for any panel that isn't fully open yet.
+			f64 deltaMs = m_animClock.read();    // milliseconds since last update
+			m_animClock.restart(ostd::eTimeUnits::Milliseconds);
+
+			for (auto& panel : m_panels)
+			{
+				if (panel.animProgress < 1.0f)
+				{
+					panel.animProgress += (f32)(deltaMs / (f64)OpenAnimDurationMs);
+					if (panel.animProgress > 1.0f) panel.animProgress = 1.0f;
+				}
+			}
+
+			if (m_pendingOpenPanelDepth >= 0 && m_hoverOpenTimerActive && m_hoverOpenTimer.read() >= m_animationDelayMS)
 			{
 				Panel& parent = m_panels[m_pendingOpenPanelDepth];
 				i32 entryIdx = m_pendingOpenEntryIndex;
@@ -271,6 +303,7 @@ namespace ogfx
 			m_panels.clear();
 			push_panel(m_data.entries, pos, false);
 			m_visible = true;
+			m_animClock.startCount(ostd::eTimeUnits::Milliseconds);
 		}
 
 		void ContextMenu::hide(void)
@@ -282,6 +315,7 @@ namespace ogfx
 			m_hoverCloseTimerActive = false;
 			m_pendingOpenPanelDepth = -1;
 			m_pendingOpenEntryIndex = -1;
+			m_animClock.endCount();
 			m_visible = false;
 		}
 
@@ -327,6 +361,7 @@ namespace ogfx
 			if (p.position.y < 0) p.position.y = 0;
 			if (p.position.x < 0) p.position.x = 0;
 
+			p.animProgress = m_animateOpen ? 0.0f : 1.0f;
 			m_panels.push_back(p);
 		}
 

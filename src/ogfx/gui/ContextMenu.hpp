@@ -110,6 +110,8 @@ namespace ogfx
 				f32 entryHeight { 0 };
 				i32 hoveredIndex { -1 };
 				i32 openedSubmenuIndex { -1 };
+
+				f32 animProgress { 0 };  // 0.0 = collapsed, 1.0 = fully open
 			};
 			public:
 				inline ContextMenu(WindowCore& window) : m_window(window) { create(); }
@@ -140,6 +142,8 @@ namespace ogfx
 				OSTD_PARAM_GETSET(Color, BorderColor, m_borderColor);
 				OSTD_PARAM_GETSET(ColorGradient, SelectionGradient, m_selectionGradient);
 				OSTD_BOOL_PARAM_GETSET_E(SelectionGradient, m_useSelectionGradient);
+				OSTD_BOOL_PARAM_GETSET_E(OpenAnimation, m_animateOpen);
+				OSTD_PARAM_GETSET(u64, AnimationDelayMS, m_animationDelayMS);
 
 			private:
 				void push_panel(stdvec<Entry>& entries, const Vec2& anchorTopLeft, bool flipLeft = false);
@@ -156,6 +160,7 @@ namespace ogfx
 				Instance m_data;
 				f32 m_entryHeight { 0 };
 				Vec2 m_mousePos { 0, 0 };
+				ostd::Timer m_animClock;
 
 				stdvec<Panel> m_panels;
 
@@ -178,9 +183,11 @@ namespace ogfx
 				Color m_borderColor { "#400000FF" };
 				bool m_useSelectionGradient { true };
 				ColorGradient m_selectionGradient { { "#C21135FF", "#820B23FF" }, { 1.0f } };
+				bool m_animateOpen { true };
+				u64 m_animationDelayMS  { 300 };
 
-				static constexpr u64 SubmenuOpenDelayMs  { 300 };
 				static constexpr u64 SubmenuCloseDelayMs { 50 };
+				static constexpr u64 OpenAnimDurationMs { 120 };
 				friend class Instance;
 		};
 	}

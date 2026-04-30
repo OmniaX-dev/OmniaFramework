@@ -829,7 +829,7 @@ namespace ogfx
 			setTypeName("ogfx::gui::Window");
 			m_gfx.init(*this);
 			loadDefaultTHeme();
-			setBlockingEventsRefreshFPS(30);
+			setBlockingEventsRefreshFPS(60);
 
 			m_fixedUpdateTimer.create(60.0, [this](f64 dt) {
 				__on_fixed_update();
