@@ -93,4 +93,14 @@ namespace ogfx
 		bool m_back { false };
 		Rectangle m_frameRect { 0, 0, 0, 0 };
 	};
+
+	struct Icon
+	{
+		Image& sheet;
+		AnimationData info;
+		Animation asAnim(void) const { return { info, sheet }; }
+		AnimationData asAnimData(void) const { return info; }
+		inline operator Animation() const { return asAnim(); }
+		inline operator AnimationData() const { return asAnimData(); }
+	};
 }

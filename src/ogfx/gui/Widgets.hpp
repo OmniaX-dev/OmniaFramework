@@ -28,5 +28,13 @@
 #include <ogfx/gui/widgets/RadioButton.hpp>
 #include <ogfx/gui/widgets/ProgressBar.hpp>
 #include <ogfx/gui/widgets/Slider.hpp>
-#include <ogfx/gui/widgets/ListView.hpp>
 #include <ogfx/gui/widgets/ComboBox.hpp>
+#include <ogfx/gui/widgets/TreeView.hpp>
+
+namespace ogfx
+{
+	namespace gui
+	{
+		using ListView = TreeView;
+	}
+}

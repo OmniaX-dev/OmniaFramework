@@ -254,25 +254,6 @@ const $backgroundColor = rgba(30, 30, 30, 255)
 
 
 
-% ====== ListView ======
-(list) {
-	(item) {
-		defaultTextColor = $textColor
-		defaultFontSize = 16
-		defaultPadding = rect(5, 5, 20, 0)
-		defaultSelectionColor = $accentColor
-		defaultSelectionTextColor = color_white
-	}
-	backgroundColor = $darkColor
-	borderColor = $borderColor
-	separatorLineColor = $borderColor
-	showSeparatorLine = true
-
-}
-% ======================
-
-
-
 % ====== Context Menu ======
 (context) {
 	padding = rect(16, 0, 16, 0)
@@ -374,5 +355,31 @@ const $backgroundColor = rgba(30, 30, 30, 255)
 (combo:active) {
 	triangleIndicatorColor = $accentColorLight
 	borderColor = $accentColorLight
+}
+% ======================
+
+
+
+% ====== TreeView ======
+(tree) {
+	linePadding = rect(5, 5, 20, 0)
+	selectionColor = $accentColor
+	selectionTextColor = color_white
+	iconSpacing = 0.0
+	iconInset = 4.0
+	showIcons = true
+	fontSize = 16
+	textColor = $textColor
+	backgroundColor = $darkColor
+	borderColor = $borderColor
+	separatorLineColor = $borderColor
+	showSeparatorLine = true
+	iconTintColor = $accentColorLight
+	indentWidth = 16.0
+	chevronColor = $accentColorDark
+	chevronInset = 4.0
+	branchLineColor = $textColor
+	showBranchLines = true
+	branchLineThickness = 1.0
 }
 % ======================

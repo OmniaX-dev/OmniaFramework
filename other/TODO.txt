@@ -31,10 +31,8 @@ FIX: Float values in stylesheet needing to have decimal point to be read as floa
 Make parsing of vec2 and rect in stylesheet, consistent with other value functions like gradients and animations
 Add buttons to scroll tabs in TabPanel
 Add Font class, to handle different font attributes
-Add multi-selection to ListView
+Add multi-selection to TreeView
 Cache getStringDimensions() call in TabPanel::draw_tabs
-FIX: Padding for ListView items
-Add icons to ListView
 Add gradient to listbox selection
 Add gradient to menubar background and selection
 Add cursor stack
@@ -46,11 +44,13 @@ Add Hex Editor widget
 Add Message Boxes
 FIX: Widget Content extents increasing negatively not showing scrollbars
 FIX: Button state getting hung after showing an openFileDialog
-FIX: ListView last item is covered by scrollbar
-FIX: ListView last item not clickable even when no horizontal scrollbar present
+FIX: TreeView last item is covered by scrollbar
+FIX: TreeView last item not clickable even when no horizontal scrollbar present
 FIX: Refresh display text in ComboBox when font size changes and also on theme reload
 Add setSelectedMenuItem() function to ComboBox
 FIX: ContextMenu rendering partly outside the screen when showing it close to the right Window border
+Update theme for visible TreeView lines
+Add ToolBar::addButton overload that takes a ogfx::Icon wrapper
 
 
 
@@ -83,7 +83,7 @@ Implement following widgets:
 		***Grid
 		***Fill
 	***ComboBox
-	TreeView
+	***TreeView
 	Text Input
 	Text Area
 	Numeric Field

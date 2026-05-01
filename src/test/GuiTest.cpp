@@ -141,30 +141,57 @@ class TestWindow : public Window
 			m_list.setSize(200, 300);
 			m_list.reloadTheme();
 
-			for (i32 i = 0; i < 10000; i++)
+			// for (i32 i = 0; i < 10000; i++)
+			// {
+			//     m_list.addLine(ostd::Random::getString(ostd::Random::getui8(1, 40)));
+			// }
+			// m_list.addLine("Item 1");
+			// m_list.addLine("Item 222");
+			// m_list.addLine("Item 3333333");
+			// m_list.setSelectionChangedCallback([&](stdvec<TreeView::Item*>& selection) -> void {\
+			//     std::cout << *(selection[0]) << "\n";
+			// });
+
+			auto l_randomIcon = [&](const ogfx::AnimationData& src) -> ogfx::Icon {
+				static ogfx::Image img("./icons.png", getGFX());
+				ogfx::AnimationData ad = src;
+				ad.columnOffset = ostd::Random::getui32(0, 7);
+				ad.rowOffset = ostd::Random::getui32(0, 4);
+				if (ad.rowOffset == 3)
+					ad.columnOffset = ostd::Random::getui32(0, 4);
+				return { img, ad };
+			};
+
+
+			i32 listLen = 20;
+			for (i32 i = 0; i < listLen; i++)
 			{
-				m_list.addLine(ostd::Random::getString(ostd::Random::getui8(1, 40)));
+				auto& item = m_list.addRoot(String("Line ").add(i + 1), l_randomIcon(iconsAD));
 			}
-			m_list.addLine("Item 1");
-			m_list.addLine("Item 222");
-			m_list.addLine("Item 3333333");
-			m_list.getLine(10).setFontSize(40);
-			m_list.getLine(160).setTextColor(Colors::Crimson);
-			m_list.setSelectionChangedCallback([&](stdvec<ListView::Item*>& selection) -> void {\
-				std::cout << *(selection[0]) << "\n";
+
+			for (i32 i = 0; i < 30; i++)
+			{
+				i32 index = ostd::Random::geti32(0, listLen - 1);
+				auto& item = m_list.getLine(index);
+				auto& child = m_list.addChild(item, String("Child ").add(i + 1), l_randomIcon(iconsAD));
+			}
+			m_list.setSelectionChangedCallback([&](stdvec<TreeView::Item*>& selection) -> void {
+				auto path = (selection[0])->getFullPath();
+				for (i32 i = 0; i < path.size(); i++)
+				{
+					std::cout << path[i];
+					if (i < path.size() - 1)
+						std::cout << " -> ";
+				}
+				std::cout << "\n";
 			});
 
 			for (i32 i = 0; i < 20; i++)
 			{
-				iconsAD.columnOffset = ostd::Random::getui32(0, 7);
-				iconsAD.rowOffset = ostd::Random::getui32(0, 4);
-
-				if (iconsAD.rowOffset == 3)
-					iconsAD.columnOffset = ostd::Random::getui32(0, 4);
-
+				auto icon = l_randomIcon(iconsAD);
 				auto& btn = getToolBar().addButton("./icons.png");
 				btn.enableAnimated();
-				btn.setAnimationData(iconsAD);
+				btn.setAnimationData(icon);
 			}
 
 			m_tabs.setSize(900, 700);
@@ -194,7 +221,7 @@ class TestWindow : public Window
 			auto* header = new Button(*this);
 			header->layoutHint().preferred = { -1, 32 };   // fixed 32px height, width follows cross-stretch
 
-			auto* body = new ListView(*this);
+			auto* body = new TreeView(*this);
 			body->layoutHint().stretch = 1.0f;             // takes all leftover vertical space
 
 			auto* footer = new Button(*this);
@@ -214,7 +241,7 @@ class TestWindow : public Window
 			t2.addWidget(*body);
 			for (i32 i = 0; i < 100; i++)
 			{
-				body->addLine(ostd::Random::getString(ostd::Random::getui8(1, 40)));
+				body->addRoot(ostd::Random::getString(ostd::Random::getui8(1, 40)));
 			}
 			t2.addWidget(*footer);
 
@@ -333,7 +360,7 @@ class TestWindow : public Window
 		ProgressBar m_prog { *this, 0, 100 };
 		Slider m_slide { *this };
 		Label m_slideLbl { *this };
-		ListView m_list { *this };
+		TreeView m_list { *this };
 		Label m_drawCallsLbl { *this };
 		ComboBox m_combo { *this };
 
