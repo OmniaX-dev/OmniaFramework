@@ -77,6 +77,7 @@ namespace ogfx
 			else
 				m_currentFrame = 0;
 		}
+		if (m_animData.columns <= 0) return;
 		i32 col = m_currentFrame % m_animData.columns;
 		i32 row = (m_animData.rows > 1) ? cast<i32>(m_currentFrame / m_animData.columns) : 0;
 

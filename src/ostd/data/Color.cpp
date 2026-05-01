@@ -8,35 +8,35 @@ namespace ostd
 	Color::Color(void) : r(*this), g(*this), b(*this), a(*this)
 	{
 		set();
-		setTypeName("ox::Color");
+		setTypeName("ostd::Color");
 		BaseObject::setValid(true);
 	}
 
 	Color::Color(u8 rgb_single_value, u8 alpha) : r(*this), g(*this), b(*this), a(*this)
 	{
 		set(rgb_single_value, alpha);
-		setTypeName("ox::Color");
+		setTypeName("ostd::Color");
 		BaseObject::setValid(true);
 	}
 
 	Color::Color(u8 _r, u8 _g, u8 _b, u8 alpha) : r(*this), g(*this), b(*this), a(*this)
 	{
 		set(_r, _g, _b, alpha);
-		setTypeName("ox::Color");
+		setTypeName("ostd::Color");
 		BaseObject::setValid(true);
 	}
 
 	Color::Color(const String& color_string) : r(*this), g(*this), b(*this), a(*this)
 	{
 		set(color_string);
-		setTypeName("ox::Color");
+		setTypeName("ostd::Color");
 		BaseObject::setValid(true);
 	}
 
 	Color::Color(const FloatCol& normalized_color) : r(*this), g(*this), b(*this), a(*this)
 	{
 		set(normalized_color);
-		setTypeName("ox::Color");
+		setTypeName("ostd::Color");
 		BaseObject::setValid(true);
 	}
 
@@ -99,37 +99,88 @@ namespace ostd
 	{
 		String se(color_string);
 		se.trim();
+
+		// --- Step 1: Extract optional .lighten(x) or .darken(x) suffix ---
+		enum class Modifier { None, Lighten, Darken };
+		Modifier mod = Modifier::None;
+		f32 modAmount = 0.0f;
+
+		{
+			stdvec<String> matches;
+			auto positions = se.regexFind("\\.(lighten|darken)\\(\\s*([0-9]*\\.?[0-9]+)\\s*\\)\\s*$", true, &matches);
+
+			if (!positions.empty())
+			{
+				const String& whole = matches[0];
+				mod = whole.contains("lighten") ? Modifier::Lighten : Modifier::Darken;
+
+				// Extract the number between '(' and ')'
+				u32 openParen = whole.indexOf("(");
+				u32 closeParen = whole.indexOf(")");
+				String numStr = whole.new_substr(openParen + 1, closeParen);
+				numStr.trim();
+				modAmount = numStr.toFloat();
+
+				// Clamp to [0, 1]
+				if (modAmount < 0.0f) modAmount = 0.0f;
+				if (modAmount > 1.0f) modAmount = 1.0f;
+
+				// Strip the suffix from se
+				se = se.substr(0, positions[0]);
+				se.trim();
+			}
+		}
+
+		// --- Step 2: Default values ---
 		r = 0;
 		g = 0;
 		b = 0;
 		a = 255;
+
+		// --- Step 3: Normalize "#" prefix to "0x" ---
 		if (se.startsWith("#"))
 		{
 			String tmp = se.new_substr(1);
 			tmp.trim();
 			se = String("0x") + tmp;
 		}
+
+		// --- Step 4: Parse the color body ---
 		if (se.startsWith("0x"))
 		{
+			String hexPart = se.new_substr(2);
+			hexPart.trim();
+			u32 hexDigits = hexPart.len();
+
 			i64 ic = se.toInt();
-			union uC32 {
-				u8 data[4];
-				u32 value;
-			} c32_u;
-			c32_u.value = cast<u32>(ic);
-			a = c32_u.data[0];
-			b = c32_u.data[1];
-			g = c32_u.data[2];
-			r = c32_u.data[3];
+			u32 c = static_cast<u32>(ic);
+
+			if (hexDigits <= 6)
+			{
+				// RGB only — alpha defaults to 255
+				r = (c >> 16) & 0xFF;
+				g = (c >>  8) & 0xFF;
+				b = (c >>  0) & 0xFF;
+				a = 255;
+			}
+			else
+			{
+				// RGBA — 7 or 8 digits
+				r = (c >> 24) & 0xFF;
+				g = (c >> 16) & 0xFF;
+				b = (c >>  8) & 0xFF;
+				a = (c >>  0) & 0xFF;
+			}
 		}
-		else if ((se.startsWith("(") || se.startsWith("rgba(") || se.startsWith("rgb(")) && se.endsWith(")") && se.contains(","))
+		else if ((se.startsWith("(") || se.startsWith("rgba(") || se.startsWith("rgb("))
+				 && se.endsWith(")") && se.contains(","))
 		{
 			se = se.substr(se.indexOf("(") + 1, se.len() - 1);
 			se.trim();
 			auto tokens = se.tokenize(",", true, false);
 			if (tokens.count() < 3 || tokens.count() > 4)
 			{
-				OX_WARN("ox::Color::set(const String&) -> Invalid rgb string format: %s.", color_string.c_str());
+				OX_WARN("ostd::Color::set(const String&) -> Invalid rgb string format: %s.", color_string.c_str());
 				return *this;
 			}
 			r = tokens.next().toInt();
@@ -140,8 +191,16 @@ namespace ostd
 		}
 		else
 		{
-			OX_WARN("ox::Color::set(const String&) -> Unkown color string format: %s", color_string.c_str());
+			OX_WARN("ostd::Color::set(const String&) -> Unknown color string format: %s", color_string.c_str());
+			return *this;
 		}
+
+		// --- Step 5: Apply lighten/darken modifier ---
+		if (mod == Modifier::Lighten)
+			lighten(modAmount);
+		else if (mod == Modifier::Darken)
+			darken(modAmount);
+
 		return *this;
 	}
 

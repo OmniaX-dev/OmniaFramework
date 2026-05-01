@@ -167,7 +167,8 @@ namespace ostd
 			bool contains(const String& str) const;
 			bool startsWith(const String& str) const;
 			bool endsWith(const String& str) const;
-			bool regexMatches(const String& regex_pattern, bool case_insensitive = false) const;
+			stdvec<u32> regexFind(const String& regex_pattern, bool case_insensitive = false, stdvec<String>* outMatchList = nullptr) const;
+			inline bool regexMatches(const String& regex_pattern, bool case_insensitive = false) const { return regexFind(regex_pattern, case_insensitive, nullptr).size() > 0; }
 			u32 count(const String& str) const;
 			i32 indexOf(char c, u32 start = 0) const;
 			i32 indexOf(const String& str, u32 start = 0) const;

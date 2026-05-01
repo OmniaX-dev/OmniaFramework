@@ -90,6 +90,7 @@ namespace ogfx
 				TreeView& create(void);
 				void applyTheme(const ostd::Stylesheet& theme) override;
 				void onDraw(ogfx::BasicRenderer2D& gfx) override;
+				void onUpdate(void) override;
 				void afterDraw(ogfx::BasicRenderer2D& gfx) override;
 				void onMouseReleased(const Event& event) override;
 				Rectangle getContentExtents(void) const override;
@@ -103,11 +104,15 @@ namespace ogfx
 				bool removeLine(u32 index);
 				bool hasLine(const String& text);
 				bool hasLine(u32 index);
+				void expandAll(void);
+				void collapseAll(void);
 				inline stdvec<Item*>& getSelection(void) { return m_selectedList; }
 				inline void setSelectionChangedCallback(std::function<void(stdvec<Item*>& selection)> callback) { callback_onSelectionChanged = std::move(callback); }
 				inline void setChevronDrawCallback(ChevronDrawCallback cb) { m_chevronDrawCallback = std::move(cb); }
 
 
+				OSTD_PARAM_GETSET(Color, BackgroundColor2, m_backgroundColor2);
+				OSTD_BOOL_PARAM_GETSET_E(AlternatingBackground, m_showAlternatingBackground);
 				OSTD_PARAM_GETSET(Color, SeparatorLineColor, m_lineColor);
 				OSTD_BOOL_PARAM_GETSET_E(ShowSeparatorLine, m_showLine);
 				OSTD_BOOL_PARAM_GETSET_E(Icons, m_showIcons);
@@ -149,6 +154,8 @@ namespace ogfx
 				Color m_selectionColor { Colors::Crimson };
 				Color m_selectionTextColor{ Colors::White };
 				Color m_iconTintColor { Colors::White };
+				Color m_backgroundColor2 { Colors::Black };
+				bool m_showAlternatingBackground { true };
 
 				f32 m_indentWidth { 16 };
 				Color m_chevronColor { Colors::White };

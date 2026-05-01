@@ -135,6 +135,8 @@ namespace ogfx
 
 		void TreeView::applyTheme(const ostd::Stylesheet& theme)
 		{
+			enableAlternatingBackground(getThemeValue<bool>(theme, "showAlternatingBackground", isAlternatingBackgroundEnabled()));
+			setBackgroundColor2(getThemeValue<Color>(theme, "backgroundColor2", getBackgroundColor2()));
 			setSeparatorLineColor(getThemeValue<Color>(theme, "separatorLineColor", getSeparatorLineColor()));
 			enableShowSeparatorLine(getThemeValue<bool>(theme, "showSeparatorLine", isShowSeparatorLineEnabled()));
 			setLinePadding(getThemeValue<Rectangle>(theme, "linePadding", getLinePadding()));
@@ -165,6 +167,7 @@ namespace ogfx
 			// Walk forward through visible items only, advancing y for each one we draw.
 			f32 y = 0;
 			i32 startIdx = 0;
+			u32 visibleRow = 0; // counts only items whose row is actually drawn
 			for (auto& itemPtr : m_list)
 			{
 				auto& item = *itemPtr;
@@ -172,6 +175,7 @@ namespace ogfx
 				f32 itemH = item.getDimensions().y;
 				if (y + itemH > visibleStart) break;
 				y += itemH;
+				visibleRow++;
 				startIdx++;
 			}
 
@@ -186,14 +190,21 @@ namespace ogfx
 				if (content.w < bounds.w)
 					lineW = bounds.w;
 				auto pad = getLinePadding();
-				Rectangle lineRect = { Vec2 { bounds.x, bounds.y + y + pad.h } + getScrollOffset(), { lineW, itemH } };
+				Rectangle lineRect = { Vec2 { bounds.x, bounds.y + y + pad.right() } + getScrollOffset(), { lineW, itemH } };
 				if (item.isSelected())
 				{
 					textColor = getLineSelectionTextColor();
 					gfx.fillRect(lineRect, getLineSelectionColor());
 				}
 				else
+				{
 					textColor = getTextColor();
+					if (isAlternatingBackgroundEnabled())
+					{
+						bool lineColorToggle = visibleRow % 2 == 0;
+						gfx.fillRect(lineRect, (lineColorToggle ? getBackgroundColor() : getBackgroundColor2()));
+					}
+				}
 
 				// Branch lines (drawn under everything else for this row).
 				if (isBranchLinesEnabled())
@@ -215,7 +226,7 @@ namespace ogfx
 					};
 					if (m_chevronDrawCallback)
 					{
-						gfx.pushClippingRect(chevronBounds);
+						gfx.pushClippingRect(chevronBounds, true);
 						m_chevronDrawCallback(*this, item, chevronBounds, gfx);
 						gfx.popClippingRect();
 					}
@@ -234,9 +245,43 @@ namespace ogfx
 						getIconTintColor());
 					textX += itemH + getIconSpacing();
 				}
-				gfx.drawLine({ Vec2 { bounds.x, bounds.y + y + itemH + pad.h } + getScrollOffset(), Vec2 { bounds.x + lineW, bounds.y + y + itemH + pad.h } + getScrollOffset() }, getSeparatorLineColor(), 1);
+				if (isShowSeparatorLineEnabled())
+					gfx.drawLine({ Vec2 { bounds.x, bounds.y + y + itemH + pad.h } + getScrollOffset(), Vec2 { bounds.x + lineW, bounds.y + y + itemH + pad.h } + getScrollOffset() }, getSeparatorLineColor(), 1);
 				gfx.drawVCenteredString(item, lineRect + Rectangle { textX, 0, -(textX * 2), 0 }, textColor, getFontSize());
 				y += itemH;
+				visibleRow++;
+			}
+		}
+
+		void TreeView::onUpdate(void)
+		{
+			ScrollableWidget::onUpdate();
+			const f32 scrollY = -getScrollOffset().y;
+			const f32 visibleH = getContentBounds().h;
+			const f32 visibleStart = scrollY;
+			const f32 visibleEnd  = scrollY + visibleH;
+			f32 y = 0;
+			i32 startIdx = 0;
+			for (auto& itemPtr : m_list)
+			{
+				auto& item = *itemPtr;
+				if (!item.isValid() || !item.isVisible()) { startIdx++; continue; }
+				f32 itemH = item.getDimensions().y;
+				if (y + itemH > visibleStart) break;
+				y += itemH;
+				startIdx++;
+			}
+
+			for (i32 i = startIdx; i < (i32)m_list.size(); i++)
+			{
+				auto& item = *m_list[i];
+				if (!item.isValid()) continue;
+				if (!item.isVisible()) continue;
+				if (!item.isIconEnabled()) continue;
+				if (y > visibleEnd) break;
+				if (item.getIcon().getFrameCount() != 1)
+					std::cout << item.getIcon().getCurrentFrame() << "\n";
+				item.getIcon().update();
 			}
 		}
 
@@ -488,6 +533,26 @@ namespace ogfx
 		bool TreeView::hasLine(u32 index)
 		{
 			return m_list.size() > index;
+		}
+
+		void TreeView::expandAll(void)
+		{
+			for (auto& itemPtr : m_list)
+			{
+				if (itemPtr->m_hasChildren && !itemPtr->m_expanded)
+					itemPtr->m_expanded = true;
+			}
+			m_extentsDirty = true;
+		}
+
+		void TreeView::collapseAll(void)
+		{
+			for (auto& itemPtr : m_list)
+			{
+				if (itemPtr->m_hasChildren && itemPtr->m_expanded)
+					itemPtr->m_expanded = false;
+			}
+			m_extentsDirty = true;
 		}
 
 		void TreeView::render_chevron(ogfx::BasicRenderer2D& gfx, const Item& item, const Rectangle& bounds)

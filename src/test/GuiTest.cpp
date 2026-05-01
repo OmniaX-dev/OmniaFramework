@@ -152,7 +152,7 @@ class TestWindow : public Window
 			//     std::cout << *(selection[0]) << "\n";
 			// });
 
-			auto l_randomIcon = [&](const ogfx::AnimationData& src) -> ogfx::Icon {
+			auto l_randomIcon = [this](const ogfx::AnimationData& src) -> ogfx::Icon {
 				static ogfx::Image img("./icons.png", getGFX());
 				ogfx::AnimationData ad = src;
 				ad.columnOffset = ostd::Random::getui32(0, 7);
@@ -175,6 +175,8 @@ class TestWindow : public Window
 				auto& item = m_list.getLine(index);
 				auto& child = m_list.addChild(item, String("Child ").add(i + 1), l_randomIcon(iconsAD));
 			}
+			static ogfx::Image animImg("./img.png", getGFX());
+			m_list.getLine(20).setIcon({ animImg, ad });
 			m_list.setSelectionChangedCallback([&](stdvec<TreeView::Item*>& selection) -> void {
 				auto path = (selection[0])->getFullPath();
 				for (i32 i = 0; i < path.size(); i++)
@@ -185,6 +187,13 @@ class TestWindow : public Window
 				}
 				std::cout << "\n";
 			});
+			// m_list.setChevronDrawCallback([&](TreeView& sender, const TreeView::Item& item, const ostd::Rectangle& bounds, ogfx::BasicRenderer2D& gfx) -> void {
+			//     if (item.isExpanded())
+			//         gfx.fillRect(bounds, Colors::Red);
+			//     else
+			//         gfx.fillRect(bounds, Colors::Blue);
+			// });
+			m_list.collapseAll();
 
 			for (i32 i = 0; i < 20; i++)
 			{

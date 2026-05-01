@@ -257,20 +257,38 @@ namespace ostd
 		if (key == "")
 			return false;
 		String themeID = "";
-		auto l_parseColor = [this](const String& _value) -> String {
-			String value = _value.new_toLower().trim();
-			if (value.startsWith("color(") && value.endsWith(")"))
+		auto l_isVec2 = [this](String& value) -> bool {
+			value.trim();
+			if (value.new_toLower().startsWith("vec2(") && value.new_toLower().endsWith(")"))
+			{
+				value.substr(5, value.len() - 1).trim();
+				return true;
+			}
+			return false;
+		};
+		auto l_isRect = [this](String& value) -> bool {
+			value.trim();
+			if (value.new_toLower().startsWith("rect(") && value.new_toLower().endsWith(")"))
+			{
+				value.substr(5, value.len() - 1).trim();
+				return true;
+			}
+			return false;
+		};
+		auto l_isColor = [this](String& value) -> bool {
+			value.trim();
+			if (value.new_toLower().startsWith("color(") && value.new_toLower().endsWith(")"))
 			{
 				value.substr(6, value.len() - 1).trim();
-				return value;
+				return true;
 			}
-			else if ((value.startsWith("#") && (value.len() == 7 || value.len() == 9)) ||
-					 (value.startsWith("rgb(") && value.endsWith(")")) ||
-					 (value.startsWith("rgba(") && value.endsWith(")")))
+			else if ((value.new_toLower().startsWith("#")) ||
+					 (value.new_toLower().startsWith("rgb(")) ||
+					 (value.new_toLower().startsWith("rgba(")))
 			{
-				return value;
+				return true;
 			}
-			return "";
+			return false;
 		};
 		auto l_isColorGradientValue = [this](const String& _value) -> bool {
 			String value = _value.new_toLower().trim();
@@ -314,10 +332,10 @@ namespace ostd
 			themeID = key.new_substr(1, key.indexOf(" ")).trim();
 			key.substr(key.indexOf(" ") + 1).trim();
 		}
-		if (value.isInt())
-			set(key, cast<i32>(value.toInt()), themeID);
-		else if (value.isNumeric(true))
+		if (value.isNumeric(true))
 			set(key, value.toFloat(), themeID);
+		else if (value.isInt())
+			set(key, cast<i32>(value.toInt()), themeID);
 		else if (value == "true" || value == "false")
 			set(key, value == "true", themeID);
 		else if (value.startsWith("\"") && value.endsWith("\""))
@@ -325,9 +343,9 @@ namespace ostd
 			valuePreserveCase.substr(1, value.len() - 1);
 			set(key, valuePreserveCase, themeID);
 		}
-		else if (String v = l_parseColor(value); v != "")
+		else if (l_isColor(value))
 		{
-			set(key, Color(v), themeID);
+			set(key, parseColor(value, variables), themeID);
 		}
 		else if (l_isColorGradientValue(value))
 		{
@@ -353,35 +371,13 @@ namespace ostd
 			else
 				return false;
 		}
-		else if (value.startsWith("vec2(") && value.endsWith(")"))
+		else if (l_isVec2(value))
 		{
-			value.substr(5, value.len() - 1).trim();
-			auto tokens = value.tokenize(",");
-			if (tokens.count() != 2)
-				return false;
-			stdvec<f32> vec;
-			for (const auto& tok : tokens)
-			{
-				if (!tok.isNumeric(true))
-					return false;
-				vec.push_back(tok.toFloat());
-			}
-			set(key, Vec2(vec[0], vec[1]), themeID);
+			set(key, parseVec2(value, variables), themeID);
 		}
-		else if (value.startsWith("rect(") && value.endsWith(")"))
+		else if (l_isRect(value))
 		{
-			value.substr(5, value.len() - 1).trim();
-			auto tokens = value.tokenize(",");
-			if (tokens.count() != 4)
-				return false;
-			stdvec<f32> vec;
-			for (const auto& tok : tokens)
-			{
-				if (!tok.isNumeric(true))
-					return false;
-				vec.push_back(tok.toFloat());
-			}
-			set(key, Rectangle(vec[0], vec[1], vec[2], vec[3]), themeID);
+			set(key, parseRect(value, variables), themeID);
 		}
 		else if (exitCondition)
 		{
@@ -462,6 +458,44 @@ namespace ostd
 		//     std::cout << l << "\n";
 		// std::cout << "\n\n\n";
 		return newLines;
+	}
+
+	Color Stylesheet::parseColor(const String& _value, const VariableList& variables)
+	{
+		String value = replaceVariables(_value, variables);
+		return Color(value);
+	}
+
+	Vec2 Stylesheet::parseVec2(const String& _value, const VariableList& variables)
+	{
+		String value = replaceVariables(_value, variables);
+		auto tokens = value.tokenize(",");
+		if (tokens.count() != 2)
+			return { 0, 0 };
+		stdvec<f32> vec;
+		for (const auto& tok : tokens)
+		{
+			if (!tok.isNumeric(true))
+				return { 0, 0 };
+			vec.push_back(tok.toFloat());
+		}
+		return { vec[0], vec[1] };
+	}
+
+	Rectangle Stylesheet::parseRect(const String& _value, const VariableList& variables)
+	{
+		String value = replaceVariables(_value, variables);
+		auto tokens = value.tokenize(",");
+		if (tokens.count() != 4)
+			return { 0, 0, 0, 0 };
+		stdvec<f32> vec;
+		for (const auto& tok : tokens)
+		{
+			if (!tok.isNumeric(true))
+				return { 0, 0, 0, 0 };
+			vec.push_back(tok.toFloat());
+		}
+		return { vec[0], vec[1], vec[2], vec[3] };
 	}
 
 	ColorGradient Stylesheet::parseColorGradient(const String& _value, const VariableList& variables)
@@ -671,7 +705,7 @@ namespace ostd
 					break;
 			}
 		}
-		return lineCopy;
+		return lineCopy.trim();
 	}
 
 	void Stylesheet::debugPrint(void)

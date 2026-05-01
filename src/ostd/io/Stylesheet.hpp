@@ -50,8 +50,21 @@ namespace ostd
 			{
 				if (auto v = getVariant(key, themeIDList, qualifierList))
 				{
+					// Direct match: return as-is
 					if (auto p = std::get_if<T>(v))
 						return *p;
+
+					// Cross-cast for numeric types
+					if constexpr (std::is_same_v<T, i32>)
+					{
+						if (auto p = std::get_if<f32>(v))
+							return cast<i32>(*p);
+					}
+					else if constexpr (std::is_same_v<T, f32>)
+					{
+						if (auto p = std::get_if<i32>(v))
+							return cast<f32>(*p);
+					}
 				}
 				return fallback;
 			}
@@ -63,6 +76,9 @@ namespace ostd
 			bool parseThemeFileLine(const String& line, const VariableList& variables, bool exitCondition = false);
 			String parseGroupSelector(const String& rawSelector) const;
 			stdvec<String> parseGroup(const String& selector, const stdvec<String>& group);
+			Color parseColor(const String& _value, const VariableList& variables);
+			Vec2 parseVec2(const String& _value, const VariableList& variables);
+			Rectangle parseRect(const String& _value, const VariableList& variables);
 			ColorGradient parseColorGradient(const String& _value, const VariableList& variables);
 			AnimationData parseAnim(const String& _value, bool& outError, const VariableList& variables);
 			String replaceVariables(const String& line, const VariableList& variables, bool stop_at_first_match = true);

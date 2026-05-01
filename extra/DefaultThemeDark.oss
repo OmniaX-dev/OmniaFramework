@@ -39,7 +39,7 @@ const $backgroundColor = rgba(30, 30, 30, 255)
 	showBorder = true
 	showBackground = true
 	titlebarType =  full
-	titlebarHeight = 18
+	titlebarHeight = 35
 	titlebarFontSize = 18
 	titlebarTextAlign = text_left
 	scrollSpeed = 1.2
@@ -362,18 +362,20 @@ const $backgroundColor = rgba(30, 30, 30, 255)
 
 % ====== TreeView ======
 (tree) {
-	linePadding = rect(5, 5, 20, 0)
+	linePadding = rect(5, 5, 0, 0)
 	selectionColor = $accentColor
 	selectionTextColor = color_white
 	iconSpacing = 0.0
-	iconInset = 4.0
+	iconInset = 4
 	showIcons = true
 	fontSize = 16
 	textColor = $textColor
 	backgroundColor = $darkColor
+	backgroundColor2 = $darkColor.lighten(0.06)
+	showAlternatingBackground = true
 	borderColor = $borderColor
 	separatorLineColor = $borderColor
-	showSeparatorLine = true
+	showSeparatorLine = false
 	iconTintColor = $accentColorLight
 	indentWidth = 16.0
 	chevronColor = $accentColorDark

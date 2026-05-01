@@ -523,18 +523,35 @@ namespace ostd
 		return m_data.ends_with(str);
 	}
 
-	bool String::regexMatches(const String& regex_pattern, bool case_insensitive) const
+	stdvec<u32> String::regexFind(const String& regex_pattern, bool case_insensitive, stdvec<String>* outMatchList) const
 	{
+		stdvec<u32> indices;
+		if (outMatchList)
+			outMatchList->clear();
+
 		try
 		{
-			boost::regex rgx(regex_pattern.cpp_str(), case_insensitive ? boost::regex_constants::icase : boost::regex_constants::normal);
-			return boost::regex_search(m_data, rgx);
+			boost::regex rgx(regex_pattern.cpp_str(),
+				case_insensitive ? boost::regex_constants::icase : boost::regex_constants::normal);
+
+			auto begin = boost::sregex_iterator(m_data.begin(), m_data.end(), rgx);
+			auto end = boost::sregex_iterator();
+
+			for (auto it = begin; it != end; ++it)
+			{
+				const boost::smatch& match = *it;
+				indices.push_back(static_cast<u32>(match.position()));
+				if (outMatchList)
+					outMatchList->emplace_back(match.str(0));
+			}
 		}
 		catch (const boost::regex_error& err)
 		{
 			std::cerr << err.what() << '\n'; //TODO: Better error handling
-			return false;
+			// indices is already empty, outMatchList already cleared
 		}
+
+		return indices;
 	}
 
 	u32 String::count(const String& str) const

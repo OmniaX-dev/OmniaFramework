@@ -36,6 +36,7 @@ namespace ogfx
 		inline Animation(const AnimationData& ad, Image& spriteSheet) { create(ad, spriteSheet); };
 		inline Animation& create(const AnimationData& ad) { return create(ad, InvalidImage); }
 		inline void update(void) { m_timer.update(); }
+		inline i32 getCurrentFrame(void) const { return m_currentFrame; }
 		Animation& create(const AnimationData& ad, Image& spriteSheet);
 		void resetAnimation(void);
 
