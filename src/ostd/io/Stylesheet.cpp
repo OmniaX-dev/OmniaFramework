@@ -931,9 +931,6 @@ namespace ostd
 				macro.params.push_back({ "$" + tok, MacroParamDefault });
 			}
 		}
-		// std::sort(macro.params.begin(), macro.params.end(), [](const auto& a, const auto& b) {
-		//     return a.first.len() > b.first.len();
-		// });
 		m_macros[name] = macro;
 		return true;
 	}
@@ -970,23 +967,46 @@ namespace ostd
 			callArgs.push_back(arg);
 			return callArgs;
 		};
+		auto l_escapeRegex = [](const String& s) -> String {
+			ostd::String result = s;
+			result.replaceAll("\\", "\\\\");
+			result.replaceAll(".",  "\\.");
+			result.replaceAll("^",  "\\^");
+			result.replaceAll("$",  "\\$");
+			result.replaceAll("|",  "\\|");
+			result.replaceAll("(",  "\\(");
+			result.replaceAll(")",  "\\)");
+			result.replaceAll("[",  "\\[");
+			result.replaceAll("]",  "\\]");
+			result.replaceAll("{",  "\\{");
+			result.replaceAll("}",  "\\}");
+			result.replaceAll("*",  "\\*");
+			result.replaceAll("+",  "\\+");
+			result.replaceAll("?",  "\\?");
+			result.replaceAll("/",  "\\/");
+			return result;
+		};
 
 		auto callArgs = l_splitByTopLevelComma(call);
 		auto tokens = macro.body.tokenize("\n");
 		for (auto& line : tokens)
 		{
 			i32 argIndex = 0;
-			for (const auto&[pname, pval] : macro.params)
+			for (const auto&[_pname, _pval] : macro.params)
 			{
+				String pname = l_escapeRegex(_pname);
+				String pval = "";
 				if (argIndex < callArgs.size())
 				{
-					line.replaceAll(pname, callArgs[argIndex++]);
+					pval = callArgs[argIndex++].new_replaceAll("$", "$$");
+					line.regexReplace(pname, pval);
 					std::cout << pname << " " << callArgs[argIndex - 1] << "\n " << line << "\n";
 					continue;
 				}
 				if (pval == MacroParamDefault)
 					return {};
-				line.replaceAll(pname, pval);
+				pval = _pval.new_replaceAll("$", "$$");
+				line.regexReplace(pname, pval);
 			}
 			std::cout << "\n";
 			lines.push_back(line);

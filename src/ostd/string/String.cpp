@@ -120,15 +120,20 @@ namespace ostd
 
 	String& String::replaceAll(const String& what, const String& with)
 	{
-		while (contains(what))
-			replaceFirst(what, with);
+		if (what.len() == 0) return *this;
+		size_t pos = 0;
+		while ((pos = m_data.find(what.cpp_str(), pos)) != std::string::npos)
+		{
+			m_data.replace(pos, what.len(), with.cpp_str());
+			pos += with.len();
+		}
 		return *this;
 	}
 
-	String& String::replaceFirst(const String& what, const String& with)
+	String& String::replaceFirst(const String& what, const String& with, i32 startIndex)
 	{
-		i32 index = indexOf(what);
-		if (index == -1) return *this;
+		i32 index = indexOf(what, startIndex);
+		if (index < 0) return *this;
 		m_data.replace(index, what.len(), with.cpp_str());
 		return *this;
 	}
@@ -323,10 +328,10 @@ namespace ostd
 		return __str.replaceAll(what, with);
 	}
 
-	String String::new_replaceFirst(const String& what, const String& with) const
+	String String::new_replaceFirst(const String& what, const String& with, i32 startIndex) const
 	{
 		String __str = m_data;
-		return __str.replaceFirst(what, with);
+		return __str.replaceFirst(what, with, startIndex);
 	}
 
 	String String::new_regexReplace(const String& regex_pattern, const String& replace_with, bool case_insensitive) const

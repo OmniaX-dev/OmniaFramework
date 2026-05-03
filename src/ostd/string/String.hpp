@@ -104,7 +104,7 @@ namespace ostd
 			String& addRightPadding(u32 new_string_length, char c = ' ');
 			String& reverse(void);
 			String& replaceAll(const String& what, const String& with);
-			String& replaceFirst(const String& what, const String& with);
+			String& replaceFirst(const String& what, const String& with, i32 startIndex = 0);
 			String& regexReplace(const String& regex_pattern, const String& replace_with, bool case_insensitive = false);
 			String& put(u32 index, char c);
 			String& substr(u32 start, i32 end = -1);
@@ -134,7 +134,7 @@ namespace ostd
 			String new_addRightPadding(u32 new_string_length, char c = ' ') const;
 			String new_reverse(void) const;
 			String new_replaceAll(const String& what, const String& with) const;
-			String new_replaceFirst(const String& what, const String& with) const;
+			String new_replaceFirst(const String& what, const String& with, i32 startIndex = 0) const;
 			String new_regexReplace(const String& regex_pattern, const String& replace_with, bool case_insensitive = false) const;
 			String new_put(u32 index, char c) const;
 			String new_substr(u32 start, i32 end = -1) const;

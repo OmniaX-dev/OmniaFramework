@@ -13,7 +13,7 @@ const $crimsonAccent = rgba(220,  20,  60, 150)
 % ===================
 
 
-macro set_focus_border(color, test = "ciccio,ciao", width = 1, width2 = false) {
+macro set_focus_border(color, test = "str", width = 1, width2 = false) {
 	focusBorderColor = $color;
 	showFocusBorder = $width2;
 	focusBorderWidth = $width;
