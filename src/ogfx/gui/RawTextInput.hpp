@@ -1,6 +1,6 @@
 /*
     OmniaFramework - A collection of useful functionality
-    Copyright (C) 2025  OmniaX-Dev
+    Copyright (C) 2026  OmniaX-Dev
 
     This file is part of OmniaFramework.
 
