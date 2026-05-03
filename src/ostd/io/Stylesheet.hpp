@@ -24,6 +24,7 @@
 #include <ostd/data/Color.hpp>
 #include <ostd/math/Geometry.hpp>
 #include <ostd/data/AnimationData.hpp>
+#include <ostd/io/StaticHashMap.hpp>
 #include <variant>
 
 
@@ -34,6 +35,13 @@ namespace ostd
 		public: using QualifierList = stdvec<std::pair<const String, bool>>;
 		public: using VariableList = stdumap<String, std::pair<String, bool>>;
 		public: using TypeVariant = std::variant<i32, f32, bool, String, Color, Rectangle, Vec2, ColorGradient, AnimationData>;
+		private: struct Macro
+		{
+			String body { "" };
+			stdvec<std::pair<String, String>> params;
+
+			inline i32 argCount(void) const { return params.size(); }
+		};
 		public:
 			Stylesheet(void);
 			Stylesheet& clear(void);
@@ -82,9 +90,14 @@ namespace ostd
 			ColorGradient parseColorGradient(const String& _value, const VariableList& variables);
 			AnimationData parseAnim(const String& _value, bool& outError, const VariableList& variables);
 			String replaceVariables(const String& line, const VariableList& variables, bool stop_at_first_match = true);
+			bool parseMacro(const String& macroCode);
+			stdvec<String> parseMacroCall(const String& call, const Macro& macro);
 
 		private:
 			stdumap<String, TypeVariant> m_values;
+			stdumap<String, Macro> m_macros;
 			const String m_validNameRegex { "^[A-Za-z_][A-Za-z0-9_]*$" };
+
+			inline static const String MacroParamDefault { "NO_VAL" };
 	};
 }

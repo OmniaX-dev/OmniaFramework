@@ -22,6 +22,7 @@
 #include "FileSystem.hpp"
 #include "Logger.hpp"
 #include <algorithm>
+#include <optional>
 
 namespace ostd
 {
@@ -65,6 +66,8 @@ namespace ostd
 		bool debug_print = false;
 		bool brokenLine = false;
 		String brokenLineBuffer =  "";
+		String macroCode = "";
+		bool inMacro = false;
 		for (auto& line : lines)
 		{
 			lineNumber++;
@@ -85,6 +88,30 @@ namespace ostd
 			{
 				brokenLine = true;
 				brokenLineBuffer = line.new_trim().substr(0, line.len() - 1).trim();
+				continue;
+			}
+			if (inMacro)
+			{
+				for (const auto& c : line)
+				{
+					macroCode += c;
+					if (c == '}')
+					{
+						inMacro = false;
+						macroCode.trim();
+						if (!parseMacro(macroCode))
+							l_warn("Invalid macro");
+						macroCode = "";
+						break;
+					}
+				}
+				continue;
+			}
+			if (line.startsWith("macro "))
+			{
+				line.substr(6).trim();
+				macroCode += line;
+				inMacro = true;
 				continue;
 			}
 			if (line.startsWith("const ") || line.startsWith("$"))
@@ -249,14 +276,6 @@ namespace ostd
 
 	bool Stylesheet::parseThemeFileLine(const String& line, const VariableList& variables, bool exitCondition)
 	{
-		if (!line.contains("="))
-			return false;
-		String key = line.new_substr(0, line.indexOf("=")).trim();
-		String valuePreserveCase = line.new_substr(line.indexOf("=") + 1).trim();
-		String value = valuePreserveCase.new_toLower();
-		if (key == "")
-			return false;
-		String themeID = "";
 		auto l_isVec2 = [this](String& value) -> bool {
 			value.trim();
 			if (value.new_toLower().startsWith("vec2(") && value.new_toLower().endsWith(")"))
@@ -324,6 +343,55 @@ namespace ostd
 			}
 			return false;
 		};
+		auto l_findMacroCall = [this](String& value, String& outKey) -> std::optional<Macro> {
+			for (const auto& m : m_macros)
+			{
+				stdvec<String> matches;
+				stdvec<u32> indices = value.regexFind("^(.+\\.)?" + m.first + "[ \\t]*\\(", false, &matches);
+
+				if (!indices.empty())
+				{
+					u32 paren_index = indices[0] + matches[0].len() - 1;
+					String from_paren = value.new_substr(paren_index);
+					String match_text = value.new_substr(indices[0], paren_index);
+					i32 dot_index = match_text.lastIndexOf('.');
+					if (dot_index >= 0)
+						outKey = value.new_substr(0, dot_index);
+					if (from_paren.startsWith("(") && from_paren.endsWith(")"))
+					{
+						from_paren.substr(1, from_paren.len() - 1).trim();
+						value = from_paren;
+						return m.second;
+					}
+					return std::nullopt;
+				}
+			}
+			return std::nullopt;
+		};
+
+		{
+			String tmpLine = line.new_trim(), key = "";
+			if (auto m = l_findMacroCall(tmpLine, key); m != std::nullopt)
+			{
+				auto& macro = m.value();
+				auto expanded = parseMacroCall(tmpLine, macro);
+				for (const auto& l : expanded)
+				{
+					if (!parseThemeFileLine(key + "." + l, variables, false))
+						return false;
+				}
+				return true;
+			}
+		}
+
+		if (!line.contains("="))
+			return false;
+		String key = line.new_substr(0, line.indexOf("=")).trim();
+		String valuePreserveCase = line.new_substr(line.indexOf("=") + 1).trim();
+		String value = valuePreserveCase.new_toLower();
+		if (key == "")
+			return false;
+		String themeID = "";
 
 		if (key.startsWith("@"))
 		{
@@ -706,6 +774,224 @@ namespace ostd
 			}
 		}
 		return lineCopy.trim();
+	}
+
+	bool Stylesheet::parseMacro(const String& macroCode)
+	{
+		auto l_isWhiteSpace = [](char c) { return c == ' ' || c == '\n' || c == '\t'; };
+
+		String name = "";
+		String params = "";
+		String body = "";
+
+		i32 index = 0;
+		bool valid = false;
+		for ( ; index < macroCode.len(); index++)
+		{
+			char c = macroCode[index];
+			if (l_isWhiteSpace(c))
+				continue;
+			if (c == '(')
+			{
+				index++;
+				if (index == macroCode.len())
+					return false;
+				valid = true;
+				break;
+			}
+			name += c;
+		}
+		if (!valid) return false;
+		if (!name.regexMatches(m_validNameRegex))
+			return false;
+
+		valid = false;
+		bool inStr = false;
+		for ( ; index < macroCode.len(); index++)
+		{
+			char c = macroCode[index];
+			if (inStr)
+			{
+				params += c;
+				inStr = inStr && c != '"';
+				continue;
+			}
+			if (l_isWhiteSpace(c))
+				continue;
+			if (c == '"')
+			{
+				params += c;
+				inStr = true;
+				continue;
+			}
+			if (c == ',')
+			{
+				params += '\n';
+				continue;
+			}
+			if (c == ')')
+			{
+				index++;
+				if (index == macroCode.len())
+					return false;
+				valid = true;
+				break;
+			}
+			params += c;
+		}
+		if (!valid) return false;
+
+		valid = false;
+		inStr = false;
+		bool open = false;
+		for ( ; index < macroCode.len(); index++)
+		{
+			char c = macroCode[index];
+			if (!open)
+			{
+				if (c == '{')
+					open = true;
+				continue;
+			}
+			if (inStr)
+			{
+				body += c;
+				inStr = inStr && c != '"';
+				continue;
+			}
+			if (l_isWhiteSpace(c))
+				continue;
+			if (c == '"')
+			{
+				body += c;
+				inStr = true;
+				continue;
+			}
+			if (c == ';')
+			{
+				body += '\n';
+				continue;
+			}
+			if (c == '}')
+			{
+				index++;
+				if (index != macroCode.len())
+					return false;
+				valid = true;
+				break;
+			}
+			body += c;
+		}
+		if (!valid) return false;
+
+		Macro macro;
+		macro.body = body;
+
+		auto l_paramExists = [](const String& param, const stdvec<std::pair<String, String>>& list) -> bool {
+			for (const auto& p : list)
+			{
+				if (p.first == param)
+					return true;
+			}
+			return false;
+		};
+
+		auto tokens = params.tokenize("\n");
+		bool defaultVal = false;
+		for (auto& tok : tokens)
+		{
+			if (tok.contains("="))
+			{
+				if (tok.count("=") != 1)
+					return false;
+				i32 i = tok.indexOf("=");
+				if (i < 1 || i > tok.len() - 2)
+					return false;
+				String pname = tok.new_substr(0, i).trim();
+				String pval = tok.new_substr(i + 1).trim();
+				if (pname == "" || pval == "")
+					return false;
+				if (!pname.regexMatches(m_validNameRegex))
+					return false;
+				if (l_paramExists("$" + pname, macro.params))
+					return false;
+				macro.params.push_back({ "$" + pname, pval });
+				defaultVal = true;
+			}
+			else
+			{
+				if (defaultVal)
+					return false;
+				if (tok == "")
+					return false;
+				if (!tok.regexMatches(m_validNameRegex))
+					return false;
+				if (l_paramExists("$" + tok, macro.params))
+					return false;
+				macro.params.push_back({ "$" + tok, MacroParamDefault });
+			}
+		}
+		// std::sort(macro.params.begin(), macro.params.end(), [](const auto& a, const auto& b) {
+		//     return a.first.len() > b.first.len();
+		// });
+		m_macros[name] = macro;
+		return true;
+	}
+
+	stdvec<String> Stylesheet::parseMacroCall(const String& call, const Macro& macro)
+	{
+		stdvec<String> lines;
+
+		auto l_splitByTopLevelComma = [](const String& call) -> stdvec<String> {
+			stdvec<String> callArgs;
+			i32 openP = 0;
+			String arg = "";
+			for (i32 i = 0; i < call.len(); i++)
+			{
+				char c = call[i];
+				if (c == '(')
+					openP++;
+				if (c == ')')
+					openP--;
+				if (openP < 0)
+					return {};
+				if (c == ',' && openP == 0)
+				{
+					if (arg.trim() == "")
+						return {};
+					callArgs.push_back(arg);
+					arg = "";
+					continue;
+				}
+				arg += c;
+			}
+			if (arg.trim() == "")
+				return {};
+			callArgs.push_back(arg);
+			return callArgs;
+		};
+
+		auto callArgs = l_splitByTopLevelComma(call);
+		auto tokens = macro.body.tokenize("\n");
+		for (auto& line : tokens)
+		{
+			i32 argIndex = 0;
+			for (const auto&[pname, pval] : macro.params)
+			{
+				if (argIndex < callArgs.size())
+				{
+					line.replaceAll(pname, callArgs[argIndex++]);
+					std::cout << pname << " " << callArgs[argIndex - 1] << "\n " << line << "\n";
+					continue;
+				}
+				if (pval == MacroParamDefault)
+					return {};
+				line.replaceAll(pname, pval);
+			}
+			std::cout << "\n";
+			lines.push_back(line);
+		}
+		return lines;
 	}
 
 	void Stylesheet::debugPrint(void)

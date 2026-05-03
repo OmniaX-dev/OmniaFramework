@@ -39,10 +39,10 @@ namespace ogfx
 		Widget::~Widget(void)
 		{
 			if (m_window && m_tabIndex >= 0)
-		        cast<Window&>(*m_window).getFocusManager().unregisterTabIndex(*this);
-		    auto& fm = cast<Window&>(*m_window).getFocusManager();
-		    if (fm.getFocused() == this)
-		        fm.clearFocus();  // you'd add this method
+				cast<Window&>(*m_window).getFocusManager().unregisterTabIndex(*this);
+			auto& fm = cast<Window&>(*m_window).getFocusManager();
+			if (fm.getFocused() == this)
+				fm.clearFocus();  // you'd add this method
 		}
 
 		bool Widget::addWidget(Widget& child, const Vec2& position, bool __skip_callback)
@@ -316,9 +316,8 @@ namespace ogfx
 			if (m_showBorder)
 				gfx.drawRoundRect({ getGlobalPosition(), getSize() }, m_borderColor, m_borderRadius, m_borderWidth);
 			afterDraw(gfx);
-
-			if (isFocused())
-				gfx.drawRoundRect({ getGlobalPosition(), getSize() }, Colors::Red, m_borderRadius, 3);
+			if (isFocused() && isFocusBorderEnabled())
+				gfx.drawRoundRect({ getGlobalPosition(), getSize() }, m_focusBorderColor, m_borderRadius, m_focusBorderWidth);
 		}
 
 		void Widget::__update(void)
@@ -527,6 +526,9 @@ namespace ogfx
 			setBorderWidth(getThemeValue<i32>(theme, "borderWidth", m_borderWidth));
 			enableBorder(getThemeValue<bool>(theme, "showBorder", m_showBorder));
 			setBorderColor(getThemeValue<Color>(theme, "borderColor", m_borderColor));
+			enableFocusBorder(getThemeValue<bool>(theme, "showFocusBorder", m_showFocusBorder));
+			setFocusBorderColor(getThemeValue<Color>(theme, "focusBorderColor", m_focusBorderColor));
+			setFocusBorderWidth(getThemeValue<i32>(theme, "focusBorderWidth", m_focusBorderWidth));
 			enableBackground(getThemeValue<bool>(theme, "showBackground", m_showBackground));
 			setPadding(getThemeValue<Rectangle>(theme, "padding", m_padding));
 			setMargin(getThemeValue<Rectangle>(theme, "margin", m_margin));

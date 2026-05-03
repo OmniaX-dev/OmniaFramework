@@ -172,8 +172,10 @@ namespace ogfx
 				OSTD_PARAM_GETSET(Color, TextColor, m_textColor);
 				OSTD_PARAM_GETSET(Color, BackgroundColor, m_backgroundColor);
 				OSTD_PARAM_GETSET(Color, BorderColor, m_borderColor);
+				OSTD_PARAM_GETSET(Color, FocusBorderColor, m_focusBorderColor);
 				OSTD_PARAM_GETSET(i32, BorderRadius, m_borderRadius);
 				OSTD_PARAM_GETSET(i32, BorderWidth, m_borderWidth);
+				OSTD_PARAM_GETSET(i32, FocusBorderWidth, m_focusBorderWidth);
 				OSTD_PARAM_GETSET(i32, FontSize, m_fontSize);
 				OSTD_PARAM_GETSET(ostd::ColorGradient, BackgroundGradient, m_backgroundGradient);
 				OSTD_PARAM_GETSET(Rectangle, Padding, m_padding);
@@ -199,6 +201,7 @@ namespace ogfx
 				OSTD_BOOL_PARAM_GETSET_E(DragAndDrop, m_acceptDragAndDrop);
 				OSTD_BOOL_PARAM_GETSET_E(Background, m_showBackground);
 				OSTD_BOOL_PARAM_GETSET_E(Border, m_showBorder);
+				OSTD_BOOL_PARAM_GETSET_E(FocusBorder, m_showFocusBorder);
 				OSTD_BOOL_PARAM_GETSET_E(ManualDraw, m_manualDraw);
 				OSTD_BOOL_PARAM_GETSET_E(TopMost, m_topMost);
 				OSTD_BOOL_PARAM_GETSET_E(IgnoreScroll, m_ignoreScroll);
@@ -300,6 +303,9 @@ namespace ogfx
 				i32 m_borderWidth { 2 };
 				Color m_borderColor { 255, 255, 255 };
 				bool m_showBorder { false };
+				i32 m_focusBorderWidth { 2 };
+				Color m_focusBorderColor { 0, 150, 20 };
+				bool m_showFocusBorder { false };
 				Color m_backgroundColor { Colors::Transparent };
 				bool m_showBackground { false };
 				i32 m_fontSize { 20 };

@@ -304,6 +304,7 @@ namespace ogfx
 			push_panel(m_data.entries, pos, false);
 			m_visible = true;
 			m_animClock.startCount(ostd::eTimeUnits::Milliseconds);
+			cast<Window&>(m_window).getFocusManager().clearFocus();
 		}
 
 		void ContextMenu::hide(void)

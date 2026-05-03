@@ -56,6 +56,7 @@ Add ToolBar::addButton overload that takes a ogfx::Icon wrapper
 Redesign theme overrides to be more robust
 FIX: Animated icons not working in TreeView
 Add modifiers to Event.keyboard path
+Check if possible, then change all WindowCore& refs to Window&
 
 
 
