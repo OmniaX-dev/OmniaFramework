@@ -160,14 +160,14 @@ namespace ogfx
 				Instance m_data;
 				f32 m_entryHeight { 0 };
 				Vec2 m_mousePos { 0, 0 };
-				ostd::Timer m_animClock;
+				ostd::Counter m_animClock;
 
 				stdvec<Panel> m_panels;
 
 				i32 m_pendingOpenPanelDepth { -1 };
 				i32 m_pendingOpenEntryIndex { -1 };
-				ostd::Timer m_hoverOpenTimer;
-				ostd::Timer m_hoverCloseTimer;
+				ostd::Counter m_hoverOpenTimer;
+				ostd::Counter m_hoverCloseTimer;
 				bool m_hoverOpenTimerActive { false };
 				bool m_hoverCloseTimerActive { false };
 

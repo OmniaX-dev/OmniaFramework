@@ -27,11 +27,19 @@ namespace ogfx
 	{
 		m_animData = ad;
 		m_spriteSheet = &spriteSheet;
-		m_timer.create(m_animData.fps, [&](f64 dt) -> void {
-			update_animation();
-		});
+		m_timer.startCount(ostd::eTimeUnits::Milliseconds);
 		update_animation();
 		return *this;
+	}
+
+	void Animation::update(void)
+	{
+		f64 dtms = (1.0 / cast<f64>(m_animData.fps)) * 1000.0;
+		if (m_timer.read() >= dtms)
+		{
+			update_animation();
+			m_timer.restart(ostd::eTimeUnits::Milliseconds);
+		}
 	}
 
 	void Animation::resetAnimation(void)

@@ -59,11 +59,11 @@ namespace ostd
 
 
 	template <class T>
-	class _Counter
+	class _BasicCounter
 	{
 		public:
-			inline _Counter(void) { m_count = 200; m_current = 0; }
-			inline _Counter(T count, T step = 1) { m_count = count; m_current = 0; m_step = step; }
+			inline _BasicCounter(void) { m_count = 200; m_current = 0; }
+			inline _BasicCounter(T count, T step = 1) { m_count = count; m_current = 0; m_step = step; }
 			inline void setCount(T count) { m_count = count; m_counting = false; m_current = 0; }
 			inline T getCount(void) { return m_count; }
 			inline T getCurrent(void) { return m_current; };
@@ -87,15 +87,15 @@ namespace ostd
 			bool m_counting { false };
 	};
 
-	typedef _Counter<u64> Counter;
-	typedef _Counter<f32> FloatCounter;
-	typedef _Counter<f64> DoubleCounter;
+	typedef _BasicCounter<u64> BasicCounter;
+	typedef _BasicCounter<f32> BasicFloatCounter;
+	typedef _BasicCounter<f64> BasicDoubleCounter;
 
 	class OutputHandlerBase;
-	class Timer
+	class Counter
 	{
 		public:
-			inline Timer(void) { m_started = false; m_current = 0; m_timeUnit = eTimeUnits::Nanoseconds; m_dest = nullptr; }
+			inline Counter(void) { m_started = false; m_current = 0; m_timeUnit = eTimeUnits::Nanoseconds; m_dest = nullptr; }
 			u64 start(bool print = true, const String& name = "", eTimeUnits timeUnit = eTimeUnits::Nanoseconds, OutputHandlerBase* __destination = nullptr);
 			u64 startCount(eTimeUnits timeUnit = eTimeUnits::Nanoseconds);
 			u64 end(bool print = true);
@@ -172,7 +172,7 @@ namespace ostd
 			u16 years;
 
 		private:
-			Timer m_rtClock;
+			Counter m_rtClock;
 			f32 m_timeOfDay;
 			f32 m_totalSeconds;
 	};

@@ -38,6 +38,7 @@ namespace ogfx
 			setPadding({ 5, 5, 5, 5 });
 			setTypeName("ogfx::gui::Label");
 			disableChildren();
+			disableFocus();
 			enableBackground(false);
 			setStylesheetCategoryName("label");
 			validate();
@@ -127,6 +128,7 @@ namespace ogfx
 			setPadding({ 0, 0, 0, 0 });
 			setTypeName("ogfx::gui::ImageLabel");
 			disableChildren();
+			disableFocus();
 			disableBackground();
 			disableBorder();
 			setStylesheetCategoryName("image");

@@ -100,9 +100,11 @@ class TestWindow : public Window
 			m_btn1.setCallback(Widget::eCallback::ActionPerformed, [&](const Event& event) -> void {
 				std::cout << showOpenFileDialog(filters) << "\n";
 			});
+			m_btn1.setTabIndex(1);
 
 			m_check1.setText("Check this out!");
 			m_check1.setChecked(true);
+			m_check1.setTabIndex(2);
 			m_check1.setStateChangedCallback([&](CheckBox& sender, bool state) -> void {
 				m_panel1.setVisible(state);
 			});
@@ -195,12 +197,13 @@ class TestWindow : public Window
 			// });
 			m_list.collapseAll();
 
-			for (i32 i = 0; i < 20; i++)
+			for (i32 i = 0; i < 17; i++)
 			{
 				auto icon = l_randomIcon(iconsAD);
 				auto& btn = getToolBar().addButton("./icons.png");
 				btn.enableAnimated();
 				btn.setAnimationData(icon);
+				btn.setTabIndex(i + 100);
 			}
 
 			m_tabs.setSize(900, 700);
@@ -210,9 +213,12 @@ class TestWindow : public Window
 			auto& t3 = m_tabs.addTab("Long Tab Test");
 
 			t1.addWidget(m_check1, { 30, 30 });
-			m_radioGroup.addButton(t1, "Radio this out!", { 30, 80 });
-			m_radioGroup.addButton(t1, "Radio Opt. 2", { 30, 110 });
-			m_radioGroup.addButton(t1, "Radio 3", { 30, 140 });
+			auto& rb1 = m_radioGroup.addButton(t1, "Radio this out!", { 30, 80 });
+			rb1.setTabIndex(3);
+			auto& rb2 = m_radioGroup.addButton(t1, "Radio Opt. 2", { 30, 110 });
+			rb2.setTabIndex(4);
+			auto& rb3 = m_radioGroup.addButton(t1, "Radio 3", { 30, 140 });
+			rb3.setTabIndex(5);
 			m_radioGroup.setSelectionChangedCallback([&](RadioButton& previous, RadioButton& sender) -> void {
 				std::cout << previous.getText() << "\n";
 				std::cout << sender.getText() << "\n\n";
@@ -492,7 +498,7 @@ i32 main(i32 argc, char** argv)
 	ostd::Random::autoSeed();
 	ostd::initialize();
 	TestWindow window;
-	window.initialize(1200, 1100, "OmniaFramework - Test Window");
+	window.initialize(1200, 900, "OmniaFramework - Test Window");
 	window.setClearColor({ 0, 0, 0 });
 	window.setPosition({ 50, 50 });
 	// window.setWindowState(ogfx::WindowCore::eWindowState::Maximized);

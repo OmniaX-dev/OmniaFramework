@@ -25,6 +25,8 @@
 ***FIX: Limit FPS even when continuous events happen
 ***FIX: Float values in stylesheet needing to have decimal point to be read as float
 ***Make parsing of vec2 and rect in stylesheet, consistent with other value functions like gradients and animations
+***FIX: ToolBar::AddButton not consistent order
+***FIX: KeyPress crash on TreeView
 Implement cursors in Stylesheet
 FIX: Window getting exponentially bigger when Desktop scale changes
 FIX: Refreshing scroll when content extent changes
@@ -52,6 +54,8 @@ FIX: ContextMenu rendering partly outside the screen when showing it close to th
 Update theme for visible TreeView lines
 Add ToolBar::addButton overload that takes a ogfx::Icon wrapper
 Redesign theme overrides to be more robust
+FIX: Animated icons not working in TreeView
+Add modifiers to Event.keyboard path
 
 
 

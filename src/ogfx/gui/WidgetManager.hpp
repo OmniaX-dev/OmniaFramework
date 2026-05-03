@@ -39,10 +39,8 @@ namespace ogfx
 			public:
 				WidgetManager(WindowCore& window, Widget& owner);
 				bool hasWidget(Widget& widget);
-				bool requestFocus(Widget& widget);
 				bool addWidget(Widget& widget);
 				bool removeWidget(Widget& widget);
-				Widget* focusNext(void);
 
 				void draw(ogfx::BasicRenderer2D& gfx);
 				void update(void);
@@ -71,9 +69,9 @@ namespace ogfx
 				WindowCore& m_window;
 				Widget& m_owner;
 				stdvec<Widget*> m_widgetList;
-				Widget* m_focused { nullptr };
-				bool m_tabNavigationEnabled { true };
 				Widget* m_mousePressedOnWidget { nullptr };
+
+				friend class FocusManager;
 		};
 	}
 }

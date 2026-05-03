@@ -1008,6 +1008,7 @@ namespace ogfx
 			{
 				evt.keyboard = &(ogfx::KeyEventData&)signal.userData;
 				evt.__original_signal_id = ostd::BuiltinSignals::KeyReleased;
+				m_focusManager.onKeyReleased(evt);
 				m_toolbar.__onKeyReleased(evt);
 				m_statusbar.__onKeyReleased(evt);
 				m_rootWidget.__onKeyReleased(evt);

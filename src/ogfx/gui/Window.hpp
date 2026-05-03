@@ -32,6 +32,7 @@
 #include <ogfx/gui/ContextMenu.hpp>
 #include <ogfx/gui/MenuBar.hpp>
 #include <ogfx/gui/ToolBar.hpp>
+#include <ogfx/gui/FocusManager.hpp>
 
 namespace ogfx
 {
@@ -181,7 +182,7 @@ namespace ogfx
 			String m_title { "" };
 			i32 m_blockingEventsDelay { 33 };
 			Vec2 m_mousePosition { 0, 0 };
-			ostd::Timer m_tooltipTimer;
+			ostd::Counter m_tooltipTimer;
 			String m_tooltipText { "" };
 
 			bool m_running { false };
@@ -259,7 +260,7 @@ namespace ogfx
 			i32 m_fps { 0 };
 			ostd::StepTimer m_fixedUpdateTImer;
 			ostd::StepTimer m_fpsUpdateTimer;
-			ostd::Timer m_fpsUpdateClock;
+			ostd::Counter m_fpsUpdateClock;
 			u64 m_frameTimeAcc { 0 };
 			i32 m_frameCount { 0 };
 	};
@@ -284,6 +285,7 @@ namespace ogfx
 				inline void showMenuBar(bool show = true) { m_menubar.show(show); }
 				inline void showToolBar(bool show = true) { m_toolbar.setVisible(show); }
 				inline void showStatusBar(bool show = true) { m_statusbar.setVisible(show); }
+				inline FocusManager& getFocusManager(void) { return m_focusManager; }
 
 				inline virtual void onInitialize(void) {  }
 				inline virtual void onDestroy(void) {  }
@@ -308,6 +310,7 @@ namespace ogfx
 
 			protected:
 				RootWidget m_rootWidget { *this };
+				FocusManager m_focusManager { *this };
 				ostd::StepTimer m_fixedUpdateTimer;
 				ostd::StepTimer::TimePoint m_lastFrameTime;
 				ostd::StepTimer m_mainLoopTimer;
@@ -317,6 +320,7 @@ namespace ogfx
 				ToolBar m_statusbar { *this, true };
 
 				friend class RootWidget;
+				friend class FocusManager;
 		};
 	}
 }

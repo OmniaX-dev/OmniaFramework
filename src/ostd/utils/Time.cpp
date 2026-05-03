@@ -412,7 +412,7 @@ namespace ostd
 
 
 
-	u64 Timer::start(bool print, const String& name, eTimeUnits timeUnit, OutputHandlerBase* __destination)
+	u64 Counter::start(bool print, const String& name, eTimeUnits timeUnit, OutputHandlerBase* __destination)
 	{
 		m_timeUnit = timeUnit;
 		m_started = true;
@@ -459,7 +459,7 @@ namespace ostd
 		return 0;
 	}
 
-	u64 Timer::startCount(eTimeUnits timeUnit)
+	u64 Counter::startCount(eTimeUnits timeUnit)
 	{
 		m_timeUnit = timeUnit;
 		m_started = true;
@@ -483,7 +483,7 @@ namespace ostd
 		return 0;
 	}
 
-	u64 Timer::end(bool print)
+	u64 Counter::end(bool print)
 	{
 		if (!m_started) return 0;
 		m_started = false;
@@ -537,7 +537,7 @@ namespace ostd
 		return diff;
 	}
 
-	u64 Timer::endCount(bool stop)
+	u64 Counter::endCount(bool stop)
 	{
 		if (!m_started) return 0;
 		m_started = !stop;
@@ -562,7 +562,7 @@ namespace ostd
 		return diff;
 	}
 
-	u64 Timer::restart(eTimeUnits timeUnit)
+	u64 Counter::restart(eTimeUnits timeUnit)
 	{
 		if (!m_started)
 		{
@@ -574,7 +574,7 @@ namespace ostd
 		return elapsed;
 	}
 
-	u64 Timer::getEpoch(eTimeUnits timeUnit)
+	u64 Counter::getEpoch(eTimeUnits timeUnit)
 	{
 		switch (timeUnit)
 		{

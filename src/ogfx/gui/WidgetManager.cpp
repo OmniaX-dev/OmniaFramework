@@ -19,9 +19,9 @@
 */
 
 #include "WidgetManager.hpp"
+#include "Window.hpp"
 #include "widgets/Widget.hpp"
 #include "../render/BasicRenderer.hpp"
-#include "../utils/Keycodes.hpp"
 #include "../../ostd/io/Memory.hpp"
 
 namespace ogfx
@@ -39,41 +39,11 @@ namespace ogfx
 			return found && widget.isValid();
 		}
 
-		bool WidgetManager::requestFocus(Widget& widget)
-		{
-			if (!hasWidget(widget)) return false;
-			if (&widget == m_focused) return true;
-			for (auto& w : m_widgetList)
-			{
-				if (w == nullptr) continue;
-				if (w->isInvalid()) continue;
-				if (!w->isVisible()) continue;
-				if (w->m_focused)
-				{
-					w->m_focused = false;
-					w->onFocusLost(Event(m_window));
-					w->setThemeQualifier("focused", false);
-				}
-				else
-					w->m_focused = false;
-			}
-			widget.m_focused = true;
-			widget.onFocusGained(Event(m_window));
-			widget.setThemeQualifier("focused", true);
-			m_focused = &widget;
-			return true;
-		}
-
 		bool WidgetManager::addWidget(Widget& widget)
 		{
 			if (hasWidget(widget)) return false;
 			widget.m_parent = &m_owner;
 			m_widgetList.push_back(&widget);
-			if (widget.m_topMost)
-				return true;
-			std::ranges::sort(m_widgetList, {}, [](Widget* w) {
-				return w->m_zIndex;
-			});
 			widget.refresh();
 			return true;
 		}
@@ -82,32 +52,6 @@ namespace ogfx
 		{
 			STDVEC_REMOVE(m_widgetList, &widget);
 			return true;
-		}
-
-		Widget* WidgetManager::focusNext(void)
-		{
-			if (m_widgetList.empty())
-				return nullptr;
-
-			Widget* next = nullptr;
-			Widget* smallest = nullptr;
-
-			i32 currentTabIndex = (m_focused != nullptr ? m_focused->m_tabIndex : std::numeric_limits<i32>::max());
-			for (Widget* w : m_widgetList)
-			{
-				i32 tab_i = w->m_tabIndex;
-				if (tab_i < 0) continue;
-				if (!smallest || tab_i < smallest->m_tabIndex)
-					smallest = w;
-				if (tab_i > currentTabIndex)
-				{
-					if (!next || tab_i < next->m_tabIndex)
-						next = w;
-				}
-			}
-			Widget*  w = next ? next : smallest;
-			requestFocus(*w);
-			return w;
 		}
 
 		void WidgetManager::draw(ogfx::BasicRenderer2D& gfx)
@@ -157,6 +101,7 @@ namespace ogfx
 				if (!w->contains(event.mouse->position_x, event.mouse->position_y, true))
 					continue;
 				event.mouse->mousePressedOnWidget = w;
+				cast<Window&>(m_window).getFocusManager().requestFocus(*w);
 				w->__onMousePressed(event);
 				m_mousePressedOnWidget = w;
 				if (event.isHandled() || w->m_stopEvents)
@@ -182,7 +127,6 @@ namespace ogfx
 				event.mouse->mousePressedOnWidget = m_mousePressedOnWidget;
 				w->__onMouseReleased(event);
 				processDragAndDrop(w, event);
-				// requestFocus(*w);
 				if (w->isMouseInside() && w->m_stopEvents)
 					break;
 			}
@@ -275,22 +219,24 @@ namespace ogfx
 
 		void WidgetManager::onKeyPressed(const Event& event)
 		{
-			if (!m_focused || !m_focused->isVisible()) return;
-			m_focused->__onKeyPressed(event);
+			auto focused = cast<Window&>(m_window).getFocusManager().getFocused();
+			if (!focused || !focused->isVisible()) return;
+			focused->__onKeyPressed(event);
 		}
 
 		void WidgetManager::onKeyReleased(const Event& event)
 		{
-			if (!m_focused || !m_focused->isVisible()) return;
-			m_focused->__onKeyReleased(event);
-			if (m_tabNavigationEnabled && event.keyboard->keyCode == KeyCode::Tab)
-				focusNext();
+			auto focus = cast<Window&>(m_window).getFocusManager();
+			auto focused = focus.getFocused();
+			if (!focused || !focused->isVisible()) return;
+			focused->__onKeyReleased(event);
 		}
 
 		void WidgetManager::onTextEntered(const Event& event)
 		{
-			if (!m_focused || !m_focused->isVisible()) return;
-			m_focused->__onTextEntered(event);
+			auto focused = cast<Window&>(m_window).getFocusManager().getFocused();
+			if (!focused || !focused->isVisible()) return;
+			focused->__onTextEntered(event);
 		}
 
 		void WidgetManager::onWindowClosed(const Event& event)

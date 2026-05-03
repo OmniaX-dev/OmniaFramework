@@ -35,9 +35,9 @@ namespace ogfx
 		inline Animation(const AnimationData& ad) { create(ad); };
 		inline Animation(const AnimationData& ad, Image& spriteSheet) { create(ad, spriteSheet); };
 		inline Animation& create(const AnimationData& ad) { return create(ad, InvalidImage); }
-		inline void update(void) { m_timer.update(); }
 		inline i32 getCurrentFrame(void) const { return m_currentFrame; }
 		Animation& create(const AnimationData& ad, Image& spriteSheet);
+		void update(void);
 		void resetAnimation(void);
 
 		inline void setFrameCount(i32 n) { m_animData.frameCount = n; }
@@ -88,7 +88,7 @@ namespace ogfx
 	private:
 		inline static Image InvalidImage;
 		AnimationData m_animData;
-		ostd::StepTimer m_timer;
+		ostd::Counter m_timer;
 		Image* m_spriteSheet { nullptr };
 		i32 m_currentFrame { 0 };
 		bool m_back { false };

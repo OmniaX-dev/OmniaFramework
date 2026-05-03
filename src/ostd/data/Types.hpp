@@ -44,6 +44,19 @@ using stdvec = std::vector<T>;
 template<typename Key, typename Value>
 using stdumap = std::unordered_map<Key, Value>;
 
+using i8Range = std::numeric_limits<i8>;
+using i16Range = std::numeric_limits<i16>;
+using i32Range = std::numeric_limits<i32>;
+using i64Range = std::numeric_limits<i64>;
+
+using u8Range = std::numeric_limits<u8>;
+using u16Range = std::numeric_limits<u16>;
+using u32Range = std::numeric_limits<u32>;
+using u64Range = std::numeric_limits<u64>;
+
+using f32Range = std::numeric_limits<f32>;
+using f64Range = std::numeric_limits<f64>;
+
 #define cast static_cast
 
 namespace ostd

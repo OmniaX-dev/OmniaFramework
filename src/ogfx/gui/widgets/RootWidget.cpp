@@ -29,6 +29,7 @@ namespace ogfx
 		RootWidget::RootWidget(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window)
 		{
 			setRootChild();
+			disableFocus();
 			setSize(cast<f32>(window.getWindowWidth()), cast<f32>(window.getWindowHeight()));
 			setStylesheetCategoryName("window");
 			setTypeName("ogfx::gui::RootWidget");

@@ -66,6 +66,11 @@ namespace ogfx
 			public:
 				// ================================== MAIN =================================
 				Widget(const Rectangle& bounds, WindowCore& window);
+				Widget(Widget&&) = default;
+				Widget& operator=(Widget&&) = delete;
+				Widget(const Widget&) = delete;
+				Widget& operator=(const Widget&) = delete;
+				virtual ~Widget(void);
 				bool addWidget(Widget& child, const Vec2& position = { 0, 0 }, bool __skip_callback = false);
 				bool removeWidget(Widget& child);
 				void enable(bool enable = true);
@@ -76,6 +81,7 @@ namespace ogfx
 				bool addThemeID(const String& id);
 				bool removeThemeID(const String& id);
 				void setVisible(bool v);
+				bool setTabIndex(i32 index);
 				virtual void setCallback(eCallback type, EventCallback callback);
 				using Rectangle::contains; bool contains(Vec2 p, bool includeBounds = false) const override;
 				template<typename T>
@@ -154,10 +160,10 @@ namespace ogfx
 				inline static void setDragAndDropData(ostd::BaseObject& data) { s_dragAndDropData = &data; s_hasDragAndDropData = true; }
 				inline static void clearDragAndDropData(void) { s_dragAndDropData = nullptr; }
 				inline static ostd::BaseObject* getDragAndDropData(void) { return s_dragAndDropData; }
+				inline i32 getTabIndex(void) const { return m_tabIndex; }
 				inline WindowCore& getWindow(void) { return *m_window; }
 				inline Widget* getParent(void) { return m_parent; }
 				inline const Widget* getParent(void) const { return m_parent; }
-				inline i32 getZIndex(void) const { return m_zIndex; }
 				inline ogfx::MouseEventData::eButton getPressedMouseButton(void) const { return m_pressedButton; }
 				inline const stdvec<String>& getThemeIDList(void) const { return m_themeIDList; }
 				inline const ostd::Stylesheet::QualifierList& getThemeQualifierList(void) const { return m_qualifierList; }
@@ -172,7 +178,6 @@ namespace ogfx
 				OSTD_PARAM_GETSET(ostd::ColorGradient, BackgroundGradient, m_backgroundGradient);
 				OSTD_PARAM_GETSET(Rectangle, Padding, m_padding);
 				OSTD_PARAM_GETSET(Rectangle, Margin, m_margin);
-				OSTD_PARAM_GETSET(i32, TabIndex, m_tabIndex);
 				OSTD_PARAM_GETSET(Vec2, ContentOffset, m_contentOffset);
 				OSTD_PARAM_GETSET(String, TooltipText, m_tooltipText);
 
@@ -236,7 +241,6 @@ namespace ogfx
 				bool m_rootChild { false };
 				bool m_focused { false };
 				i32 m_tabIndex { -1 };
-				i32 m_zIndex { -1 };
 				String m_tooltipText { "" };
 				MouseEventData::eButton m_pressedButton { MouseEventData::eButton::None };
 				// ====================
@@ -313,6 +317,7 @@ namespace ogfx
 				static ostd::BaseObject* s_dragAndDropData;
 				static bool s_hasDragAndDropData;
 				friend class WidgetManager;
+				friend class FocusManager;
 				// ====================
 
 

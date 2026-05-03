@@ -277,11 +277,11 @@ namespace ogfx
 				auto& item = *m_list[i];
 				if (!item.isValid()) continue;
 				if (!item.isVisible()) continue;
-				if (!item.isIconEnabled()) continue;
+				f32 itemH = item.getDimensions().y;
 				if (y > visibleEnd) break;
-				if (item.getIcon().getFrameCount() != 1)
-					std::cout << item.getIcon().getCurrentFrame() << "\n";
-				item.getIcon().update();
+				if (item.isIconEnabled())
+					item.getIcon().update();
+				y += itemH;
 			}
 		}
 

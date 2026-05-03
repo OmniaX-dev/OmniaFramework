@@ -30,6 +30,7 @@ namespace ogfx
 			setPadding({ 0, 0, 0, 0 });
 			setTypeName("ogfx::gui::ProgressBar");
 			disableChildren();
+			disableFocus();
 			enableBackground();
 			enableBorder();
 			setStylesheetCategoryName("progressbar");

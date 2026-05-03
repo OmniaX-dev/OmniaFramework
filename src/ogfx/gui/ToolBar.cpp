@@ -48,6 +48,7 @@ namespace ogfx
 				setPosition(0, win.getMenuBar().getHeight());
 			else
 				setPosition(0, 0);
+			
 			return *this;
 		}
 

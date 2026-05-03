@@ -36,6 +36,15 @@ namespace ogfx
 			m_window = &window;
 		}
 
+		Widget::~Widget(void)
+		{
+			if (m_window && m_tabIndex >= 0)
+		        cast<Window&>(*m_window).getFocusManager().unregisterTabIndex(*this);
+		    auto& fm = cast<Window&>(*m_window).getFocusManager();
+		    if (fm.getFocused() == this)
+		        fm.clearFocus();  // you'd add this method
+		}
+
 		bool Widget::addWidget(Widget& child, const Vec2& position, bool __skip_callback)
 		{
 			if (!m_allowChildren)
@@ -229,6 +238,16 @@ namespace ogfx
 			m_visible = v;
 		}
 
+		bool Widget::setTabIndex(i32 index)
+		{
+			if (cast<Window&>(getWindow()).getFocusManager().registerTabIndex(*this, index))
+			{
+				m_tabIndex = index;
+				return true;
+			}
+			return false;
+		}
+
 		void Widget::setLayout(std::unique_ptr<Layout> layout)
 		{
 			m_layout = std::move(layout);
@@ -297,6 +316,9 @@ namespace ogfx
 			if (m_showBorder)
 				gfx.drawRoundRect({ getGlobalPosition(), getSize() }, m_borderColor, m_borderRadius, m_borderWidth);
 			afterDraw(gfx);
+
+			if (isFocused())
+				gfx.drawRoundRect({ getGlobalPosition(), getSize() }, Colors::Red, m_borderRadius, 3);
 		}
 
 		void Widget::__update(void)
@@ -416,41 +438,26 @@ namespace ogfx
 		void Widget::__onKeyPressed(const Event& event)
 		{
 			if (event.isHandled() || !isKeyPressedEventEnabled()) return;
-			if (hasChildren())
-				m_widgets.onKeyPressed(event);
-			if (!event.isHandled())
-			{
-				if (callback_onKeyPressed)
-					callback_onKeyPressed(event);
-				onKeyPressed(event);
-			}
+			if (callback_onKeyPressed)
+				callback_onKeyPressed(event);
+			onKeyPressed(event);
 		}
 
 		void Widget::__onKeyReleased(const Event& event)
 		{
 			if (event.isHandled() || !isKeyReleasedEventEnabled()) return;
 			m_pressedButton = ogfx::MouseEventData::eButton::None;
-			if (hasChildren())
-				m_widgets.onKeyReleased(event);
-			if (!event.isHandled())
-			{
-				if (callback_onKeyReleased)
-					callback_onKeyReleased(event);
-				onKeyReleased(event);
-			}
+			if (callback_onKeyReleased)
+				callback_onKeyReleased(event);
+			onKeyReleased(event);
 		}
 
 		void Widget::__onTextEntered(const Event& event)
 		{
 			if (event.isHandled() || !isTextEnteredEventEnabled()) return;
-			if (hasChildren())
-				m_widgets.onTextEntered(event);
-			if (!event.isHandled())
-			{
-				if (callback_onTextEntered)
-					callback_onTextEntered(event);
-				onTextEntered(event);
-			}
+			if (callback_onTextEntered)
+				callback_onTextEntered(event);
+			onTextEntered(event);
 		}
 
 		void Widget::__onWindowClosed(const Event& event)

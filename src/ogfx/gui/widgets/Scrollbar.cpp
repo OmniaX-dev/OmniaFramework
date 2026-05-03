@@ -31,6 +31,7 @@ namespace ogfx
 			setMargin({ 0, 0, 0, 0 });
 			setTypeName("ogfx::gui::Label");
 			disableChildren();
+			disableFocus();
 			enableBackground(true);
 			enableBorder(false);
 			enableTopMost(true);
@@ -154,6 +155,7 @@ namespace ogfx
 			setMargin({ 0, 0, 0, 0 });
 			setTypeName("ogfx::gui::Label");
 			disableChildren();
+			disableFocus();
 			enableBackground(true);
 			enableBorder(false);
 			enableTopMost(true);

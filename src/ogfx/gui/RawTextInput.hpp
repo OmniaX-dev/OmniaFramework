@@ -1,21 +1,21 @@
 /*
-    OmniaFramework - A collection of useful functionality
-    Copyright (C) 2026  OmniaX-Dev
+	OmniaFramework - A collection of useful functionality
+	Copyright (C) 2026  OmniaX-Dev
 
-    This file is part of OmniaFramework.
+	This file is part of OmniaFramework.
 
-    OmniaFramework is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	OmniaFramework is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    OmniaFramework is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	OmniaFramework is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
@@ -60,35 +60,35 @@ namespace ogfx
 					u8 extraPaddingLeft { 0 };
 
 					bool cursorBlink { true };
-					ostd::Counter cursorBlinkCounter { 30 };
+					ostd::BasicCounter cursorBlinkCounter { 30 };
 			};
 			public: struct tDefaultThemes
 			{
 				inline static const Theme DebugTheme {
-					{ 220, 	220, 	255 },	//Text Color
-					{ 10, 	20, 	120 },	//Border Color
-					{ 0, 	0, 		22 },	//Background Color
-					{ 220, 	10, 	10 },	//Cursor Color
+					{ 220,     220,     255 },    //Text Color
+					{ 10,     20,     120 },    //Border Color
+					{ 0,     0,         22 },    //Background Color
+					{ 220,     10,     10 },    //Cursor Color
 
-					2,						//Cursor Width
-					0,						//Extra Padding Top
-					0,						//Extra Padding Left
+					2,                        //Cursor Width
+					0,                        //Extra Padding Top
+					0,                        //Extra Padding Left
 
-					true,					//Cursor Blink
-					{ 30 }				//Cursor Blink Timer
+					true,                    //Cursor Blink
+					{ 30 }                //Cursor Blink Timer
 				};
 				inline static const Theme DefaultTheme {
-					{ 120, 	120, 	180 },	//Text Color
-					{ 10, 	20, 	120 },	//Border Color
-					{ 0, 	2, 		10 },	//Background Color
-					{ 20, 	100, 	255 },	//Cursor Color
+					{ 120,     120,     180 },    //Text Color
+					{ 10,     20,     120 },    //Border Color
+					{ 0,     2,         10 },    //Background Color
+					{ 20,     100,     255 },    //Cursor Color
 
-					2,						//Cursor Width
-					0,						//Extra Padding Top
-					0,						//Extra Padding Left
+					2,                        //Cursor Width
+					0,                        //Extra Padding Top
+					0,                        //Extra Padding Left
 
-					true,					//Cursor Blink
-					{ 30 }				//Cursor Blink Timer
+					true,                    //Cursor Blink
+					{ 30 }                //Cursor Blink Timer
 				};
 			};
 			public: enum eActionEventType { None = 0, Enter, Tab };
@@ -156,7 +156,7 @@ namespace ogfx
 				u16 m_cursorPosition { 0 };
 				bool m_cursorState { true };
 
-				ostd::Counter m_keyRepeatCounter { 1 };
+				ostd::BasicCounter m_keyRepeatCounter { 1 };
 				char m_lastChar { 0 };
 				i32 m_lastKeyCode { 0 };
 
