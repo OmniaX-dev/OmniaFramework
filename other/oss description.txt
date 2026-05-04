@@ -1,0 +1,85 @@
+Value Types:
+    Color:
+        #RRGGBB - Hex representation
+        #RRGGBBAA - Hex representation
+        rgb(r, g, b) - r, g and b are u8 values
+        rgb(r, g, b, a) - r, g, b and a are u8 values
+        color(...) - where ... can be any of the forms above. This form is already kind of deprecated, since it's useless, but supported anyways
+        All of the color representations support .lighten(f32) and .darken(f32) postfixes (This doesn't apply to the outer parenthesis of color(...), only to the raw hex/rgba representations))
+
+    Rect:
+        rect(f32, f32, f32, f32)
+
+    Vec2:
+        vec2(f32, f32)
+
+    Color Gradients:
+        gradienth(color - color - ...) - Where each <color> can be in any of the Color value-types described above
+        gradientv(color - color - ...) - Same as gradienth
+        w_gradienth(color - weight - color - ...) - same as gradienth/gradientv but between every two colors there is an f32 weight, the weights count is always one less than the colors count.
+        w_gradientv(color - weight - color - ...) - Same as w_gradienth
+
+    File:
+        file("file/path/string") - containing string literal of a file path
+
+    Animation:
+        anim(paramName: paramVal, paramName: paramVal, ...) - Where paramNames correspond to arbitrary parameters of the animation, and paramValue can either be an integer, an f32 or a bool
+
+    Integer/Float:
+        numeric literals like 1 or 1.0 for float
+
+    Bool:
+        true/false
+
+    String:
+        "String Literal"
+
+
+
+
+Variables:
+    They are pattern-matched replaces, and are declared outside group selectors, in one of two forms:
+        $var1 = someValue - Where someValue is of a valid value-type
+        const $var2 = someValue - same as above, but non-mutable
+    They can be referenced anywhere a value-type can appear
+
+
+
+Macros:
+    Parametrized function-like macros that expand at parse-time into their body.
+    They are declared as follows:
+        macro someMacro(param1, param2, param3 = someVal) {
+            someProperty = $param1;
+            someProperty2 = $param2;
+        }
+    They can have default values for parameters, and those default values can be of any value-type (including global variables).
+    They can also be inlined, like: macro test(param1, param2 = 4) { someValue = $param1; someOtherValue = $param2; }
+
+
+
+Group Selectors:
+    They define theming blocks, and they are defined as follows:
+        ([@theming_id] name[:qualifier]) {
+            someField = someValue
+            some_macro_call()
+            some_macro_call2(someParam1, someParam2)
+            someField2 = someValue2
+            (innerSelector) {
+                someInnerProperty = someValue
+            }
+        }
+    The square brackets are there only to signify optionality, and are not part of the syntax.
+    The body of the theme block is new-line-based, making the block non-inlineable.
+    Macro calls can only appear here, and as full lines in the body.
+    innerSelectors are only defined using a name, and don't support theme_id or qualifier
+
+
+
+
+
+The stylesheet supports \ (backslash) truncated lines
+Comments are inline and are defined using the % symbol
+The language is case-insensitive
+
+
+

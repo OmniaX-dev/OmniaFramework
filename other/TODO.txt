@@ -27,6 +27,7 @@
 ***Make parsing of vec2 and rect in stylesheet, consistent with other value functions like gradients and animations
 ***FIX: ToolBar::AddButton not consistent order
 ***FIX: KeyPress crash on TreeView
+***FIX: Animated icons not working in TreeView
 Implement cursors in Stylesheet
 FIX: Window getting exponentially bigger when Desktop scale changes
 FIX: Refreshing scroll when content extent changes
@@ -35,7 +36,7 @@ Add buttons to scroll tabs in TabPanel
 Add Font class, to handle different font attributes
 Add multi-selection to TreeView
 Cache getStringDimensions() call in TabPanel::draw_tabs
-Add gradient to listbox selection
+Add gradient to TreeView selection
 Add gradient to menubar background and selection
 Add cursor stack
 Add MacOS global menu integration
@@ -51,10 +52,8 @@ FIX: TreeView last item not clickable even when no horizontal scrollbar present
 FIX: Refresh display text in ComboBox when font size changes and also on theme reload
 Add setSelectedMenuItem() function to ComboBox
 FIX: ContextMenu rendering partly outside the screen when showing it close to the right Window border
-Update theme for visible TreeView lines
 Add ToolBar::addButton overload that takes a ogfx::Icon wrapper
 Redesign theme overrides to be more robust
-FIX: Animated icons not working in TreeView
 Add modifiers to Event.keyboard path
 Check if possible, then change all WindowCore& refs to Window&
 
