@@ -10,13 +10,20 @@ const $accentColorLight = #87FF5CFF
 const $accentColorDark = #3B7500FF
 const $backgroundColor = rgba(30, 30, 30, 255)
 const $crimsonAccent = rgba(220,  20,  60, 150)
+const $blueAccent = #0075C7
 % ===================
 
 
-macro set_focus_border(color, test = "str", width = 1, width2 = false) {
+macro set_focus_border(color, width = 1, show = true) {
 	focusBorderColor = $color;
-	showFocusBorder = $width2;
+	showFocusBorder = $show;
 	focusBorderWidth = $width;
+}
+
+macro set_common_values(_borderColor = $borderColor, _fontSize = 18, _showBorder = true) {
+	borderColor = $_borderColor;
+	fontSize = $_fontSize;
+	showBorder = $_showBorder;
 }
 
 
@@ -36,15 +43,14 @@ macro set_focus_border(color, test = "str", width = 1, width2 = false) {
 
 % ====== Panel ======
 (panel) {
+	set_common_values()
 	backgroundColor = $backgroundColor
 	titleColor =  $accentColorDark
 	titlebarColor = $borderColor
 	titlebarBorderColor = $borderColor
-	borderColor = $borderColor
 	borderRadius = 0
 	borderWidth = 2
 	titlebarBorderWidth = 2
-	showBorder = true
 	showBackground = true
 	titlebarType =  full
 	titlebarHeight = 35
@@ -61,15 +67,13 @@ macro set_focus_border(color, test = "str", width = 1, width2 = false) {
 
 % ====== TabPanel ======
 (tabPanel) {
+	set_common_values()
 	backgroundColor = $backgroundColor
-	borderColor = $borderColor
 	borderRadius = 0
 	borderWidth = 2
-	showBorder = true
 	showBackground = true
 	margin = rect(0, 0, 0, 0)
 	textColor = $textColor
-	fontSize = 18
 
 	(tabBar) {
 		height = 35.0
@@ -117,18 +121,18 @@ macro set_focus_border(color, test = "str", width = 1, width2 = false) {
 
 % ====== CheckBox ======
 (checkbox) {
+	set_common_values($borderColor, 18, false)
 	checkBorderColor = $accentColorDark
 	checkBoxColor = $accentColor
 	textColor = $textColor
-	fontSize = 20
 	borderRadius = 0
 	borderWidth = 0
 	checkBorderRadius = 6
 	checkBorderWidth = 2
 	showBackground = false
-	showBorder = false
-	padding = rect(15, 15, 15, 15)
+	padding = rect(4, 4, 4, 4)
 	margin = rect(0, 0, 0, 0)
+	set_focus_border($blueAccent)
 }
 (checkbox:hover) {
 	checkBorderColor = $accentColorLight
@@ -149,15 +153,15 @@ macro set_focus_border(color, test = "str", width = 1, width2 = false) {
 
 % ====== RadioButton ======
 (radioButton) {
+	set_common_values($borderColor, 18, false)
 	innerCircleColor = $accentColorDark
 	outerCircleColor = $accentColor
 	outerCircleBorderWidth = 2
 	textColor = $textColor
-	fontSize = 20
 	showBackground = false
-	showBorder = false
 	padding = rect(4, 4, 4, 4)
 	margin = rect(0, 0, 0, 0)
+	set_focus_border($blueAccent)
 }
 (radioButton:hover) {
 	outerCircleColor = $accentColorLight
@@ -178,12 +182,11 @@ macro set_focus_border(color, test = "str", width = 1, width2 = false) {
 
 % ====== Label ======
 (label) {
+	set_common_values($borderColor, 18, false)
 	textColor = $textColor
-	fontSize = 20
 	borderRadius = 0
 	borderWidth = 0
 	showBackground = false
-	showBorder = false
 	padding = rect(15, 15, 15, 15)
 	margin = rect(0, 0, 0, 0)
 }
@@ -193,20 +196,19 @@ macro set_focus_border(color, test = "str", width = 1, width2 = false) {
 
 % ====== Button ======
 (button) {
+	set_common_values($accentColorDark)
 	textColor = $textColor
 	backgroundGradient = gradientV($accentColor - $accentColorDark)
-	borderColor = $accentColorDark
-	fontSize = 20
 	borderRadius = 0
 	borderWidth = 1
 	showBackground = false
-	showBorder = true
 	useBackgroundGradient = true
 	padding = rect(5, 5, 5, 5)
 	margin = rect(0, 0, 0, 0)
 	showIcon = false
 	(icon) {
 	}
+	set_focus_border($blueAccent)
 }
 (button:hover) {
 	borderColor = $accentColorLight
@@ -229,7 +231,7 @@ macro set_focus_border(color, test = "str", width = 1, width2 = false) {
 
 % ====== ProgressBar ======
 (progressbar) {
-	borderColor = $accentColor
+	set_common_values($accentColor)
 	borderWidth = 1
 	showDecimal = false
 	showText = true
@@ -257,6 +259,7 @@ macro set_focus_border(color, test = "str", width = 1, width2 = false) {
 	stepTickHeight = 6.0
 	stepTickColor = $accentColor
 	padding = rect(5, 5, 5, 5)
+	set_focus_border($blueAccent)
 }
 % ===================
 
@@ -264,16 +267,15 @@ macro set_focus_border(color, test = "str", width = 1, width2 = false) {
 
 % ====== Context Menu ======
 (context) {
+	set_common_values()
 	padding = rect(16, 0, 16, 0)
 	itemSpacing = 6.0
-	fontSize = 18
 	backgroundColor = $darkColor
 	selectionColor = $accentColor
 	selectionTextColor = $accentColorLight
 	separatorLineColor = $borderColor
 	textColor = $textColor
 	submenuIndicatorColor = $accentColorDark
-	borderColor = $borderColor
 	useSelectionGradient = true
 	selectionGradient = gradientV($accentColor - $accentColorDark)
 	animateOpen = true
@@ -285,15 +287,13 @@ macro set_focus_border(color, test = "str", width = 1, width2 = false) {
 
 % ====== MenuBar ======
 (menubar) {
+	set_common_values($borderColor, 16, false)
 	height = 24.0
 	itemPadding = rect(0, 0, 15, 0)
-	fontSize = 16
 	backgroundColor = $darkColor
 	textColor = $textColor
 	selectionColor = $accentColor
 	selectionTextColor = $accentColorLight
-	showBorder = false
-	borderColor = $borderColor
 }
 % =====================
 
@@ -301,29 +301,26 @@ macro set_focus_border(color, test = "str", width = 1, width2 = false) {
 
 % ====== ToolBar ======
 (toolbar) {
+	set_common_values()
 	height = 30.0
-	fontSize = 16
 	backgroundColor = $darkColor
 	textColor = $textColor
 	selectionColor = $accentColor
 	selectionTextColor = $accentColorLight
-	borderColor = $borderColor
-	showBorder = true
 	showBackground = true
 }
 (@tool_button button) {
-	fontSize = 18
+	set_common_values(color_black, 18, false)
 	padding = rect(5, 0, 5, 0)
 	margin = rect(5, 0, 0, 0)
 	showBackground = true
 	backgroundColor = $darkColor
 	useBackgroundGradient = false
-	showBorder = false
-	borderColor = color_black
 	showIcon = true
 	(icon) {
 		tint = $accentColorLight
 	}
+	set_focus_border($blueAccent)
 }
 (@tool_button button:hover) {
 	borderColor = $textColor
@@ -346,15 +343,13 @@ macro set_focus_border(color, test = "str", width = 1, width2 = false) {
 
 % ====== ComboBox ======
 (combo) {
-	borderColor = $accentColor
+	set_common_values($accentColor)
 	backgroundColor = $darkColor
 	borderWidth = 1
 	showBackground = true
-	showBorder = true
 	triangleIndicatorColor = $accentColor
 	triangleIndicatorPadding = 8.0
 	textColor = $textColor
-	fontSize = 18
 }
 (combo:hover) {
 	triangleIndicatorColor = $accentColorLight
@@ -370,18 +365,17 @@ macro set_focus_border(color, test = "str", width = 1, width2 = false) {
 
 % ====== TreeView ======
 (tree) {
+	set_common_values($borderColor, 16, true)
 	linePadding = rect(5, 5, 0, 0)
 	selectionColor = $accentColor
 	selectionTextColor = color_white
 	iconSpacing = 0.0
 	iconInset = 4
 	showIcons = true
-	fontSize = 16
 	textColor = $textColor
 	backgroundColor = $darkColor
 	backgroundColor2 = $darkColor.lighten(0.06)
 	showAlternatingBackground = true
-	borderColor = $borderColor
 	separatorLineColor = $borderColor
 	showSeparatorLine = false
 	iconTintColor = $accentColorLight
@@ -391,6 +385,6 @@ macro set_focus_border(color, test = "str", width = 1, width2 = false) {
 	branchLineColor = $textColor
 	showBranchLines = true
 	branchLineThickness = 1.0
-	set_focus_border(#FF0000.lighten(0.5), "bella balla", 5)
+	set_focus_border($blueAccent)
 }
 % ======================

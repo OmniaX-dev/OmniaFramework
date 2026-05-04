@@ -31,6 +31,7 @@ namespace ogfx
 			setPadding({ 5, 5, 5, 5 });
 			setTypeName("ogfx::gui::ComboBox");
 			disableChildren();
+			disableFocus();
 			setStylesheetCategoryName("combo");
 			connectSignal(ostd::BuiltinSignals::MouseReleased);
 			connectSignal(ostd::BuiltinSignals::MouseMoved);

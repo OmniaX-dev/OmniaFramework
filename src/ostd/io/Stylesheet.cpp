@@ -101,6 +101,7 @@ namespace ostd
 						macroCode.trim();
 						if (!parseMacro(macroCode))
 							l_warn("Invalid macro");
+						std::cout << macroCode << "\n";
 						macroCode = "";
 						break;
 					}
@@ -347,7 +348,7 @@ namespace ostd
 			for (const auto& m : m_macros)
 			{
 				stdvec<String> matches;
-				stdvec<u32> indices = value.regexFind("^(.+\\.)?" + m.first + "[ \\t]*\\(", false, &matches);
+				stdvec<u32> indices = value.regexFind("^(.+\\.)?" + m.first + "\\b[ \\t]*\\(", false, &matches);
 
 				if (!indices.empty())
 				{
@@ -942,10 +943,24 @@ namespace ostd
 		auto l_splitByTopLevelComma = [](const String& call) -> stdvec<String> {
 			stdvec<String> callArgs;
 			i32 openP = 0;
+			bool inStr = false;
 			String arg = "";
 			for (i32 i = 0; i < call.len(); i++)
 			{
 				char c = call[i];
+				if (inStr)
+				{
+					arg += c;
+					if (c == '"')
+						inStr = false;
+					continue;
+				}
+				if (c == '"')
+				{
+					arg += c;
+					inStr = true;
+					continue;
+				}
 				if (c == '(')
 					openP++;
 				if (c == ')')
@@ -962,6 +977,8 @@ namespace ostd
 				}
 				arg += c;
 			}
+			if (inStr)  // unterminated string
+				return {};
 			if (arg.trim() == "")
 				return {};
 			callArgs.push_back(arg);
@@ -994,21 +1011,19 @@ namespace ostd
 			i32 argIndex = 0;
 			for (const auto&[_pname, _pval] : macro.params)
 			{
-				String pname = l_escapeRegex(_pname);
+				String pname = l_escapeRegex(_pname) + "\\b";
 				String pval = "";
 				if (argIndex < callArgs.size())
 				{
 					pval = callArgs[argIndex++].new_replaceAll("$", "$$");
 					line.regexReplace(pname, pval);
-					std::cout << pname << " " << callArgs[argIndex - 1] << "\n " << line << "\n";
 					continue;
 				}
-				if (pval == MacroParamDefault)
+				if (_pval == MacroParamDefault)
 					return {};
 				pval = _pval.new_replaceAll("$", "$$");
 				line.regexReplace(pname, pval);
 			}
-			std::cout << "\n";
 			lines.push_back(line);
 		}
 		return lines;
