@@ -101,7 +101,6 @@ namespace ostd
 						macroCode.trim();
 						if (!parseMacro(macroCode))
 							l_warn("Invalid macro");
-						std::cout << macroCode << "\n";
 						macroCode = "";
 						break;
 					}
