@@ -115,7 +115,7 @@ namespace ogfx
 				setThemeQualifier("active", true);
 				m_dropDownShown = true;
 				Vec2 anchor = getGlobalPosition() + Vec2 { 0, geth() };
-				cast<Window&>(getWindow()).showContextMenu(m_menu, anchor);
+				getWindow().showContextMenu(m_menu, anchor);
 			}
 		}
 

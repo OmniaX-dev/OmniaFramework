@@ -86,7 +86,7 @@ namespace ogfx
 			public:
 				using ChevronDrawCallback = std::function<void(TreeView& sender, const Item& item, const Rectangle& bounds, BasicRenderer2D& gfx)>;
 
-				inline TreeView(WindowCore& window) : ScrollableWidget(window) { create(); }
+				inline TreeView(Window& window) : ScrollableWidget(window) { create(); }
 				TreeView& create(void);
 				void applyTheme(const ostd::Stylesheet& theme) override;
 				void onDraw(ogfx::BasicRenderer2D& gfx) override;

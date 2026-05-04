@@ -41,8 +41,8 @@ namespace ogfx
 		class Label : public Widget
 		{
 			public:
-				inline Label(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(""); }
-				inline Label(WindowCore& window, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(text); }
+				inline Label(Window& window) : Widget({ 0, 0, 0, 0 }, window) { create(""); }
+				inline Label(Window& window, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(text); }
 				Label& create(const String& text);
 
 				void onDraw(ogfx::BasicRenderer2D& gfx) override;
@@ -94,8 +94,8 @@ namespace ogfx
 		class ImageLabel : public Widget
 		{
 			public:
-				inline ImageLabel(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(""); }
-				inline ImageLabel(WindowCore& window, const String& filePath) : Widget({ 0, 0, 0, 0 }, window) { create(filePath); }
+				inline ImageLabel(Window& window) : Widget({ 0, 0, 0, 0 }, window) { create(""); }
+				inline ImageLabel(Window& window, const String& filePath) : Widget({ 0, 0, 0, 0 }, window) { create(filePath); }
 				ImageLabel& create(const String& filePath);
 
 				void applyTheme(const ostd::Stylesheet& theme) override;

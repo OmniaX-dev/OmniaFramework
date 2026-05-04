@@ -26,7 +26,7 @@ namespace ogfx
 {
 	namespace gui
 	{
-		RootWidget::RootWidget(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window)
+		RootWidget::RootWidget(Window& window) : Widget({ 0, 0, 0, 0 }, window)
 		{
 			setRootChild();
 			disableFocus();
@@ -37,7 +37,7 @@ namespace ogfx
 
 		void RootWidget::onWindowResized(const Event& event)
 		{
-			Window& win = cast<Window&>(getWindow()); //TODO: Potentially unsage?
+			Window& win = getWindow();
 			f32 offset_y = 0;
 			if (win.m_menubar.isVisible())
 				offset_y += win.m_menubar.geth();

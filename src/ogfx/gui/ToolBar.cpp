@@ -36,7 +36,7 @@ namespace ogfx
 			setRootChild();
 			setStylesheetCategoryName("toolbar");
 			setTypeName("ogfx::gui::ToolBar");
-			auto& win = cast<Window&>(getWindow());
+			auto& win = getWindow();
 			w = win.getWindowWidth();
 			h = m_height;
 			disableBorder();
@@ -69,7 +69,7 @@ namespace ogfx
 
 		void ToolBar::onWindowResized(const Event& event)
 		{
-			auto& win = cast<Window&>(getWindow());
+			auto& win = getWindow();
 			w = win.getWindowWidth();
 			h = m_height;
 			f32 offset_y = 0;
@@ -82,7 +82,7 @@ namespace ogfx
 
 		void ToolBar::applyTheme(const ostd::Stylesheet& theme)
 		{
-			auto& win = cast<Window&>(getWindow());
+			auto& win = getWindow();
 			setHeight(getThemeValue<f32>(theme, "height", getHeight()));
 			setSize(win.getWindowWidth(), m_height);
 			enableBottomBorder(isBorderEnabled());

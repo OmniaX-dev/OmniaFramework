@@ -30,7 +30,7 @@ namespace ogfx
 		class ComboBox : public Widget
 		{
 			public:
-				inline ComboBox(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
+				inline ComboBox(Window& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
 				ComboBox& create(void);
 				i32 addMenuItem(const String& text);
 				bool removeMenuItem(const String& text);

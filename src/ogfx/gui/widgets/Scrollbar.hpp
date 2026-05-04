@@ -30,7 +30,7 @@ namespace ogfx
 		class VerticalScrollBar : public Widget
 		{
 			public:
-				inline VerticalScrollBar(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
+				inline VerticalScrollBar(Window& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
 				VerticalScrollBar& create(void);
 				void applyTheme(const ostd::Stylesheet& theme) override;
 				void afterDraw(ogfx::BasicRenderer2D& gfx) override;
@@ -68,7 +68,7 @@ namespace ogfx
 		class HorizontalScrollbar : public Widget
 		{
 			public:
-				inline HorizontalScrollbar(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
+				inline HorizontalScrollbar(Window& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
 				HorizontalScrollbar& create(void);
 				void applyTheme(const ostd::Stylesheet& theme) override;
 				void afterDraw(ogfx::BasicRenderer2D& gfx) override;
@@ -106,7 +106,7 @@ namespace ogfx
 		class ScrollableWidget : public Widget
 		{
 			public:
-				inline ScrollableWidget(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
+				inline ScrollableWidget(Window& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
 				ScrollableWidget& create(void);
 				virtual void onUpdate(void) override;
 				void drawScrollbars(ogfx::BasicRenderer2D& gfx);

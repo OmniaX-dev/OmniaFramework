@@ -28,7 +28,7 @@ namespace ogfx
 {
 	namespace gui
 	{
-		WidgetManager::WidgetManager(WindowCore& window, Widget& owner) : m_window(window), m_owner(owner)
+		WidgetManager::WidgetManager(Window& window, Widget& owner) : m_window(window), m_owner(owner)
 		{
 			//
 		}
@@ -101,7 +101,7 @@ namespace ogfx
 				if (!w->contains(event.mouse->position_x, event.mouse->position_y, true))
 					continue;
 				event.mouse->mousePressedOnWidget = w;
-				cast<Window&>(m_window).getFocusManager().requestFocus(*w);
+				m_window.getFocusManager().requestFocus(*w);
 				w->__onMousePressed(event);
 				m_mousePressedOnWidget = w;
 				if (event.isHandled() || w->m_stopEvents)
@@ -219,14 +219,14 @@ namespace ogfx
 
 		void WidgetManager::onKeyPressed(const Event& event)
 		{
-			auto focused = cast<Window&>(m_window).getFocusManager().getFocused();
+			auto focused = m_window.getFocusManager().getFocused();
 			if (!focused || !focused->isVisible()) return;
 			focused->__onKeyPressed(event);
 		}
 
 		void WidgetManager::onKeyReleased(const Event& event)
 		{
-			auto focus = cast<Window&>(m_window).getFocusManager();
+			auto focus = m_window.getFocusManager();
 			auto focused = focus.getFocused();
 			if (!focused || !focused->isVisible()) return;
 			focused->__onKeyReleased(event);
@@ -234,7 +234,7 @@ namespace ogfx
 
 		void WidgetManager::onTextEntered(const Event& event)
 		{
-			auto focused = cast<Window&>(m_window).getFocusManager().getFocused();
+			auto focused = m_window.getFocusManager().getFocused();
 			if (!focused || !focused->isVisible()) return;
 			focused->__onTextEntered(event);
 		}

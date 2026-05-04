@@ -31,7 +31,7 @@ namespace ogfx
 		ostd::BaseObject* Widget::s_dragAndDropData { nullptr };
 		bool Widget::s_hasDragAndDropData { false };
 
-		Widget::Widget(const Rectangle& bounds, WindowCore& window) : Rectangle(bounds), m_widgets(window, *this)
+		Widget::Widget(const Rectangle& bounds, Window& window) : Rectangle(bounds), m_widgets(window, *this)
 		{
 			m_window = &window;
 		}
@@ -39,8 +39,8 @@ namespace ogfx
 		Widget::~Widget(void)
 		{
 			if (m_window && m_tabIndex >= 0)
-				cast<Window&>(*m_window).getFocusManager().unregisterTabIndex(*this);
-			auto& fm = cast<Window&>(*m_window).getFocusManager();
+				m_window->getFocusManager().unregisterTabIndex(*this);
+			auto& fm = m_window->getFocusManager();
 			if (fm.getFocused() == this)
 				fm.clearFocus();  // you'd add this method
 		}
@@ -240,7 +240,7 @@ namespace ogfx
 
 		bool Widget::setTabIndex(i32 index)
 		{
-			if (cast<Window&>(getWindow()).getFocusManager().registerTabIndex(*this, index))
+			if (getWindow().getFocusManager().registerTabIndex(*this, index))
 			{
 				m_tabIndex = index;
 				return true;

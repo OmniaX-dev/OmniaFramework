@@ -30,8 +30,8 @@ namespace ogfx
 		class CheckBox : public Widget
 		{
 			public:
-				inline CheckBox(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(""); }
-				inline CheckBox(WindowCore& window, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(text); }
+				inline CheckBox(Window& window) : Widget({ 0, 0, 0, 0 }, window) { create(""); }
+				inline CheckBox(Window& window, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(text); }
 				CheckBox& create(const String& text);
 				void applyTheme(const ostd::Stylesheet& theme) override;
 				void onDraw(ogfx::BasicRenderer2D& gfx) override;

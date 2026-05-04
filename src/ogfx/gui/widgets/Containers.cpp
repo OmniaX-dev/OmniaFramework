@@ -47,7 +47,7 @@ namespace ogfx
 			m_titlebarHeight = getThemeValue<f32>(theme, "titlebarHeight", 30);
 			m_titlebarBorderWidth = getThemeValue<i32>(theme, "titlebarBorderWidth", 1);
 			m_titlebarFontSize = getThemeValue<i32>(theme, "titlebarFontSize", 26);
-			m_titleTextAlign = getThemeValue<i32>(theme, "titlebarTextAlign", cast<i32>(WindowCore::eTextAlign::Left));
+			m_titleTextAlign = getThemeValue<i32>(theme, "titlebarTextAlign", cast<i32>(Window::eTextAlign::Left));
 			setTitlebarType(getThemeValue<String>(theme, "titlebarType", TitleBarTypes::None));
 		}
 
@@ -137,7 +137,7 @@ namespace ogfx
 				{
 					gfx.outlinedRoundRect(titleBarBounds, m_titlebarColor, m_titlebarColor, { cast<f32>(getBorderRadius()), cast<f32>(getBorderRadius()), 0, 0 }, getBorderWidth());
 					gfx.drawLine({ getGlobalPosition() + Vec2 { 0, m_titlebarHeight - 2 }, getGlobalPosition() + Vec2 { getGlobalBounds().w, m_titlebarHeight - 2 } }, m_titlebarBorderColor, m_titlebarBorderWidth);
-					if (m_titleTextAlign == cast<i32>(WindowCore::eTextAlign::Center))
+					if (m_titleTextAlign == cast<i32>(Window::eTextAlign::Center))
 						gfx.drawCenteredString(m_title, titleBarBounds, m_titleColor, m_titlebarFontSize);
 					else
 						gfx.drawString(m_title, titleBarBounds.getPosition() + Vec2 { 10, 5 }, m_titleColor, m_titlebarFontSize);
@@ -145,7 +145,7 @@ namespace ogfx
 				}
 				case TitleBarTypes::MinimalValue:
 				{
-					if (m_titleTextAlign == cast<i32>(WindowCore::eTextAlign::Center))
+					if (m_titleTextAlign == cast<i32>(Window::eTextAlign::Center))
 						gfx.drawCenteredString(m_title, titleBarBounds, m_titleColor, m_titlebarFontSize);
 					else
 						gfx.drawString(m_title, titleBarBounds.getPosition() + Vec2 { 10, 5 }, m_titleColor, m_titlebarFontSize);
@@ -268,6 +268,8 @@ namespace ogfx
 			auto it = std::find_if(m_tabs.begin(), m_tabs.end(), [&](const std::unique_ptr<Panel>& p) { return p->getTitle() == title; });
 			if (it == m_tabs.end())
 				return false;
+			if (m_currentTab == it->get())
+				prepare_for_current_tab_removal();
 			m_tabs.erase(it);
 			return true;
 		}
@@ -289,6 +291,7 @@ namespace ogfx
 			auto curr = m_tabs[index].get();
 			if (!ignore_same_tab && curr == m_currentTab && m_currentTab != nullptr)
 				return false;
+			getWindow().getFocusManager().clearFocus();
 			removeWidget(*m_currentTab);
 			m_currentTabIndex = index;
 			m_currentTab = curr;
@@ -320,6 +323,7 @@ namespace ogfx
 				return;
 			if (m_tabs.size() < 2)
 			{
+				getWindow().getFocusManager().clearFocus();
 				m_currentTab = nullptr;
 				return;
 			}
@@ -327,6 +331,8 @@ namespace ogfx
 
 			if (it == m_tabs.end())
 				return;  // shouldn't happen but defensive
+
+			getWindow().getFocusManager().clearFocus();
 
 			if (it != m_tabs.begin())
 				m_currentTab = (it - 1)->get();  // tab to the left

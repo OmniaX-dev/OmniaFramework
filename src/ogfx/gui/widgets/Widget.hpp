@@ -36,6 +36,7 @@ namespace ogfx
 {
 	namespace gui
 	{
+		class Window;
 		class Widget : public ostd::BaseObject, public Rectangle
 		{
 			private: struct ThemeOverride
@@ -65,7 +66,7 @@ namespace ogfx
 			public: using EventCallback = std::function<void(const Event&)>;
 			public:
 				// ================================== MAIN =================================
-				Widget(const Rectangle& bounds, WindowCore& window);
+				Widget(const Rectangle& bounds, Window& window);
 				Widget(Widget&&) = default;
 				Widget& operator=(Widget&&) = delete;
 				Widget(const Widget&) = delete;
@@ -161,7 +162,7 @@ namespace ogfx
 				inline static void clearDragAndDropData(void) { s_dragAndDropData = nullptr; }
 				inline static ostd::BaseObject* getDragAndDropData(void) { return s_dragAndDropData; }
 				inline i32 getTabIndex(void) const { return m_tabIndex; }
-				inline WindowCore& getWindow(void) { return *m_window; }
+				inline Window& getWindow(void) { return *m_window; }
 				inline Widget* getParent(void) { return m_parent; }
 				inline const Widget* getParent(void) const { return m_parent; }
 				inline ogfx::MouseEventData::eButton getPressedMouseButton(void) const { return m_pressedButton; }
@@ -235,7 +236,7 @@ namespace ogfx
 
 			private:
 				// ======= CORE =======
-				WindowCore* m_window { nullptr };
+				Window* m_window { nullptr };
 				Widget* m_parent { nullptr };
 				WidgetManager m_widgets;
 				std::unique_ptr<Layout> m_layout;

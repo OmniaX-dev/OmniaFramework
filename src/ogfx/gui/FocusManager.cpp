@@ -138,17 +138,24 @@ namespace ogfx
 
 		void FocusManager::clearFocus(void)
 		{
-		    if (m_focused)
-		    {
-		        m_focused->m_focused = false;
-		        m_focused = nullptr;
-		    }
+			if (m_focused)
+			{
+				m_focused->m_focused = false;
+				m_focused = nullptr;
+			}
 		}
 
 		void FocusManager::onKeyReleased(const Event& event)
 		{
 			if (isTabNavigationEnabled() && event.keyboard->keyCode == KeyCode::Tab)
 				focusNext();
+			else if (event.keyboard->keyCode == KeyCode::Space || event.keyboard->keyCode == KeyCode::Return || event.keyboard->keyCode == KeyCode::Return2 || event.keyboard->keyCode == KeyCode::KpEnter)
+			{
+				if (!m_focused)
+					return;
+				if (m_focused->callback_onActionPerformed)
+					m_focused->callback_onActionPerformed(event);
+			}
 		}
 	}
 }

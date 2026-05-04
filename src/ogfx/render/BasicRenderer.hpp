@@ -26,6 +26,7 @@
 #include <ogfx/resources/Image.hpp>
 #include <ostd/io/IOHandlers.hpp>
 #include <ogfx/render/FontGlyphAtlas.hpp>
+#include <ostd/io/StaticHashMap.hpp>
 
 namespace ogfx
 {
@@ -70,8 +71,11 @@ namespace ogfx
 			i32 openFont(const ostd::UByte resource_data[], u32 data_size, i32 fontSize = 0);
 			i32 setFontSize(i32 fontSize);
 			Vec2 getStringDimensions(const String& message, i32 fontSize = 0, TTF_Font* font = nullptr);
+			stdvec<Vec2> getStringDimensionsPerCharacter(const String& message, i32 fontSize = 0, TTF_Font* font = nullptr);
 
 			inline u32 getDrawCallCount(void) { return m_lastFrameDrawCallCount; }
+			inline u32 getCacheHitCount(void) { return m_cacheHitCount; }
+			inline u32 getCacheMissCount(void) { return m_cacheMissCount; }
 			inline bool hasOpenFont(void) { return m_fontOpen; }
 			inline TTF_Font* getSDLFont(void) { return m_font;  }
 			inline bool isValid(void) const { return m_initialized && m_fontOpen && (m_font != nullptr || m_fontFromMemory); }
@@ -164,6 +168,11 @@ namespace ogfx
 			SDL_Texture* m_lastUsedGlyphAtlasTex { nullptr };
 			SignalHandler m_sigHandler { *this };
 
+			ostd::StaticHashMap<String, stdvec<Vec2>> m_strDimsCache;
+			i32 m_cacheHitCount { 0 };
+			i32 m_cacheMissCount { 0 };
+
 			inline static constexpr i32 DefaultFontSize { 16 };
+			inline static constexpr i32 MaxStringDimsCacheSize { 512 };
 	};
 }

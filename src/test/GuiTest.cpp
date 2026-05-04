@@ -24,7 +24,7 @@
 #include <ogfx/ogfx.hpp>
 #include <ostd/utils/Async.hpp>
 
-ogfx::WindowCore::FileDialogFilterList filters  = {
+ogfx::gui::Window::FileDialogFilterList filters  = {
 	{ "Image files", { "png", "jpg", "jpeg", "bmp" } },
 	{ "All files", { "*" } }
 };
@@ -279,6 +279,14 @@ class TestWindow : public Window
 			m_drawCallsLbl.addThemeOverride("@.label.padding", ostd::Rectangle { 10, 5, 0, 0 });
 			getStatusBar().addWidget(m_drawCallsLbl, { 0, 0 });
 
+			m_cacheHitsLbl.addThemeOverride("@.label.fontSize", 20);
+			m_cacheHitsLbl.addThemeOverride("@.label.padding", ostd::Rectangle { 10, 5, 0, 0 });
+			getStatusBar().addWidget(m_cacheHitsLbl, { 200, 0 });
+
+			m_cacheMissesLbl.addThemeOverride("@.label.fontSize", 20);
+			m_cacheMissesLbl.addThemeOverride("@.label.padding", ostd::Rectangle { 10, 5, 0, 0 });
+			getStatusBar().addWidget(m_cacheMissesLbl, { 400, 0 });
+
 			m_progressJob.start([this] {
 				while (true)
 				{
@@ -352,6 +360,8 @@ class TestWindow : public Window
 		{
 			// gfx.fillRect(m_tabs.getGlobalPureContentBounds(), { 0, 255, 0, 100 });
 			m_drawCallsLbl.setText(String("DrawCalls: ").add(gfx.getDrawCallCount()));
+			m_cacheHitsLbl.setText(String("Cache Hits: ").add(gfx.getCacheHitCount()));
+			m_cacheMissesLbl.setText(String("Cache Miss: ").add(gfx.getCacheMissCount()));
 		}
 
 		void onFixedUpdate(void) override
@@ -377,6 +387,8 @@ class TestWindow : public Window
 		Label m_slideLbl { *this };
 		TreeView m_list { *this };
 		Label m_drawCallsLbl { *this };
+		Label m_cacheHitsLbl { *this };
+		Label m_cacheMissesLbl { *this };
 		ComboBox m_combo { *this };
 
 		enum MenuId : i32 { New = 1, Open, Save, SaveAs, Exit, CopyRaw, CopyFormatted };
@@ -501,7 +513,7 @@ i32 main(i32 argc, char** argv)
 	window.initialize(1200, 900, "OmniaFramework - Test Window");
 	window.setClearColor({ 0, 0, 0 });
 	window.setPosition({ 50, 50 });
-	// window.setWindowState(ogfx::WindowCore::eWindowState::Maximized);
+	// window.setWindowState(ogfx::gui::Window::eWindowState::Maximized);
 	window.mainLoop();
 	return 0;
 }

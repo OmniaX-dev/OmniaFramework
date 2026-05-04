@@ -251,6 +251,17 @@ namespace ostd
 			m_entries.pop_back();
 		}
 
+		// Removes the first element
+		void pop_front(void)
+		{
+			if (m_entries.empty()) return;
+			m_index.erase(m_entries.front().first);
+			m_entries.pop_front();
+			// Rebuild all remaining indices (everything shifted by 1)
+			for (i32 i = 0; i < size(); i++)
+				m_index[m_entries[cast<u32>(i)].first] = i;
+		}
+
 	// ============================================================
 	//  Removal
 	// ============================================================

@@ -29,15 +29,15 @@ namespace ostd
 namespace ogfx
 {
 	class BasicRenderer2D;
-	class WindowCore;
 	namespace gui
 	{
 		class Event;
 		class Widget;
+		class Window;
 		class WidgetManager
 		{
 			public:
-				WidgetManager(WindowCore& window, Widget& owner);
+				WidgetManager(Window& window, Widget& owner);
 				bool hasWidget(Widget& widget);
 				bool addWidget(Widget& widget);
 				bool removeWidget(Widget& widget);
@@ -59,14 +59,14 @@ namespace ogfx
 				void onWindowFocusLost(const Event& event);
 
 				inline i32 widgetCount(void) const { return m_widgetList.size(); }
-				inline WindowCore& getWindow(void) { return m_window; }
+				inline Window& getWindow(void) { return m_window; }
 				inline const stdvec<Widget*>& getWidgets(void) const { return m_widgetList; }
 
 			private:
 				void processDragAndDrop(Widget* widget, const Event& event);
 
 			private:
-				WindowCore& m_window;
+				Window& m_window;
 				Widget& m_owner;
 				stdvec<Widget*> m_widgetList;
 				Widget* m_mousePressedOnWidget { nullptr };

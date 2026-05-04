@@ -41,7 +41,7 @@ namespace ogfx
 				OSTD_PARAM_GETSET(Color, OuterCircleColor, m_outerCircleColor);
 
 			private:
-				inline RadioButton(WindowCore& window, RadioButtonGroup& group, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(group, text); }
+				inline RadioButton(Window& window, RadioButtonGroup& group, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(group, text); }
 				RadioButton& create(RadioButtonGroup& group, const String& text);
 				void __update_size(ogfx::BasicRenderer2D& gfx);
 				void __set_selected(bool selected);

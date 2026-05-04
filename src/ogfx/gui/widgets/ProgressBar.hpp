@@ -30,7 +30,7 @@ namespace ogfx
 		class ProgressBar : public Widget
 		{
 			public:
-				inline ProgressBar(WindowCore& window, f32 min = 0.0f, f32 max = 1.0f, f32 start = 0.0f) : Widget({ 0, 0, 0, 0 }, window), m_progress(std::clamp(start, min, max)), m_min(min), m_max(max) { create(); }
+				inline ProgressBar(Window& window, f32 min = 0.0f, f32 max = 1.0f, f32 start = 0.0f) : Widget({ 0, 0, 0, 0 }, window), m_progress(std::clamp(start, min, max)), m_min(min), m_max(max) { create(); }
 				ProgressBar& create(void);
 				void applyTheme(const ostd::Stylesheet& theme) override;
 				void onDraw(ogfx::BasicRenderer2D& gfx) override;

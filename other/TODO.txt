@@ -28,6 +28,7 @@
 ***FIX: ToolBar::AddButton not consistent order
 ***FIX: KeyPress crash on TreeView
 ***FIX: Animated icons not working in TreeView
+***Check if possible, then change all WindowCore& refs to Window&
 Implement cursors in Stylesheet
 FIX: Window getting exponentially bigger when Desktop scale changes
 FIX: Refreshing scroll when content extent changes
@@ -55,7 +56,6 @@ FIX: ContextMenu rendering partly outside the screen when showing it close to th
 Add ToolBar::addButton overload that takes a ogfx::Icon wrapper
 Redesign theme overrides to be more robust
 Add modifiers to Event.keyboard path
-Check if possible, then change all WindowCore& refs to Window&
 
 
 

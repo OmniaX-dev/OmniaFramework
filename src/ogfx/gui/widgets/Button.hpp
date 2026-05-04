@@ -56,8 +56,8 @@ namespace ogfx
 		class Button : public Widget
 		{
 			public:
-				inline Button(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(""); }
-				inline Button(WindowCore& window, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(text); }
+				inline Button(Window& window) : Widget({ 0, 0, 0, 0 }, window) { create(""); }
+				inline Button(Window& window, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(text); }
 				Button& create(const String& text);
 
 				void onDraw(ogfx::BasicRenderer2D& gfx) override;

@@ -41,7 +41,7 @@ namespace ogfx
 				inline static constexpr i32 MinimalValue = 2;
 			};
 			public:
-				inline Panel(WindowCore& window) : ScrollableWidget(window) { create(); }
+				inline Panel(Window& window) : ScrollableWidget(window) { create(); }
 				Panel& create(void);
 				void applyTheme(const ostd::Stylesheet& theme) override;
 				void afterDraw(ogfx::BasicRenderer2D& gfx) override;
@@ -78,7 +78,7 @@ namespace ogfx
 		class TabPanel : public Widget
 		{
 			public:
-				inline TabPanel(WindowCore& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
+				inline TabPanel(Window& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
 				TabPanel& create(void);
 				void applyTheme(const ostd::Stylesheet& theme) override;
 				void onMousePressed(const Event& event) override;

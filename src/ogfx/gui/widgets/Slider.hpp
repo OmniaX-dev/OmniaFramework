@@ -29,7 +29,7 @@ namespace ogfx
 		class Slider : public Widget
 		{
 			public:
-				inline Slider(WindowCore& window, bool vertical = false, f32 min = 0.0f, f32 max = 1.0f, f32 step = 0.1f) : Widget({ 0, 0, 0, 0 }, window) { create(vertical, min, max, step); }
+				inline Slider(Window& window, bool vertical = false, f32 min = 0.0f, f32 max = 1.0f, f32 step = 0.1f) : Widget({ 0, 0, 0, 0 }, window) { create(vertical, min, max, step); }
 				Slider& create(bool vertical, f32 min, f32 max, f32 step);
 				void applyTheme(const ostd::Stylesheet& theme) override;
 				void onMouseReleased(const Event& event) override;

@@ -114,7 +114,7 @@ namespace ogfx
 				f32 animProgress { 0 };  // 0.0 = collapsed, 1.0 = fully open
 			};
 			public:
-				inline ContextMenu(WindowCore& window) : m_window(window) { create(); }
+				inline ContextMenu(Window& window) : m_window(window) { create(); }
 				ContextMenu& create(void);
 				void applyTheme(const ostd::Stylesheet& theme);
 				void draw(BasicRenderer2D& gfx);
@@ -155,7 +155,7 @@ namespace ogfx
 				void relayout_panels(void);
 
 			private:
-				WindowCore& m_window;
+				Window& m_window;
 				bool m_visible { false };
 				Instance m_data;
 				f32 m_entryHeight { 0 };

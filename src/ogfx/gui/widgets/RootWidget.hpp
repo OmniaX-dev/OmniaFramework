@@ -29,7 +29,7 @@ namespace ogfx
 		class RootWidget : public Widget
 		{
 			public:
-				RootWidget(WindowCore& window);
+				RootWidget(Window& window);
 				void onWindowResized(const Event& event) override;
 				void applyTheme(const ostd::Stylesheet& theme) override;
 				void onDraw(ogfx::BasicRenderer2D& gfx) override;

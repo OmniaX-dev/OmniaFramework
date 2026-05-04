@@ -232,28 +232,64 @@ namespace ogfx
 
 	Vec2 BasicRenderer2D::getStringDimensions(const String& message, i32 fontSize, TTF_Font* font)
 	{
-		if (!isValid()) return { 0, 0 };
+		auto dimensions = getStringDimensionsPerCharacter(message, fontSize, font);
+		if (dimensions.empty())
+			return { 0, 0 };
+		f32 totalWidth = 0;
+		for (const auto& d : dimensions)
+			totalWidth += d.x;
+		return { totalWidth, dimensions[0].y };
+	}
+
+	stdvec<Vec2> BasicRenderer2D::getStringDimensionsPerCharacter(const String& message, i32 fontSize, TTF_Font* font)
+	{
+		if (!isValid()) return {  };
 		if (fontSize <= 0) fontSize = m_fontSize;
 		if (!font) font = m_font;
+
+		auto l_buildCacheKey = [&](void) -> String {
+			return String("").add(message).add(fontSize).add(reinterpret_cast<uintptr_t>(font));
+		};
+
+		String cacheKey = l_buildCacheKey();
+
+		auto it = m_strDimsCache.find(cacheKey);
+		if (it != m_strDimsCache.end())
+		{
+			m_cacheHitCount++;
+			return it->second;
+		}
+
 		i32 oldFontSize = getFontSize();
 		setFontSize(fontSize);
 
 		auto glyphs = m_fontGlyphAtlas.processString(message, font, fontSize);
-		if (glyphs.empty()) return { 0, 0 };
+		if (glyphs.empty()) return {  };
 
-		f32 totalWidth = 0;
+		stdvec<Vec2> dimensions;
+		dimensions.reserve(message.len());
+
+		f32 charWidth = 0;
 		for (size_t i = 0; i < glyphs.size(); i++)
 		{
-			totalWidth += glyphs[i]->advance;
+			charWidth += glyphs[i]->advance;
 			if (i > 0)
 			{
 				i32 kern = 0;
 				TTF_GetGlyphKerning(font, glyphs[i - 1]->codepoint, glyphs[i]->codepoint, &kern);
-				totalWidth += kern;
+				charWidth += kern;
 			}
+			dimensions.push_back({ charWidth, glyphs[0]->size.y });
+			charWidth = 0;
 		}
 		setFontSize(oldFontSize);
-		return { totalWidth, glyphs[0]->size.y };
+
+		if (m_strDimsCache.size() >= MaxStringDimsCacheSize)
+			m_strDimsCache.pop_back();
+		m_strDimsCache.insert(cacheKey, dimensions);
+
+		m_cacheMissCount++;
+		return dimensions;
 	}
 	// ===================================================== UTILS =====================================================
 
