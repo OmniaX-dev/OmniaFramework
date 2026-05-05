@@ -60,6 +60,15 @@ Add modifiers to Event.keyboard path
 
 
 
+Text:
+	Check if Text Entered events are enabled via SDL
+	Add utf-8 codepoint walking functions to String
+	Change the stored text in KeyEventData from a single char to the full utf-8 string
+	Implement a font-fallback chain in FontGlyphAtlas
+
+
+
+
 Implement following widgets:
 	***Label
 	***Checkbox

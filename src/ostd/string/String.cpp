@@ -680,55 +680,6 @@ namespace ostd
 		return str;
 	}
 
-	stdvec<u32> String::decodeUTF8(const String& s)
-	{
-		stdvec<u32> out;
-		const char* p = s.m_data.data();
-		const char* end = p + s.m_data.size();
-
-		while (p < end)
-			out.push_back(utf8_next(p, end));
-
-		return out;
-	}
-
-
-	u32 String::utf8_next(const char*& p, const char* end)
-	{
-		u8 c = cast<u8>(*p++);
-
-		// ASCII fast path
-		if (c < 0x80)
-			return c;
-
-		// 2-byte sequence
-		if ((c >> 5) == 0x6) {
-			u32 cp = (c & 0x1F) << 6;
-			cp |= (cast<u8>(*p++) & 0x3F);
-			return cp;
-		}
-
-		// 3-byte sequence
-		if ((c >> 4) == 0xE) {
-			u32 cp = (c & 0x0F) << 12;
-			cp |= (cast<u8>(*p++) & 0x3F) << 6;
-			cp |= (cast<u8>(*p++) & 0x3F);
-			return cp;
-		}
-
-		// 4-byte sequence
-		if ((c >> 3) == 0x1E) {
-			u32 cp = (c & 0x07) << 18;
-			cp |= (cast<u8>(*p++) & 0x3F) << 12;
-			cp |= (cast<u8>(*p++) & 0x3F) << 6;
-			cp |= (cast<u8>(*p++) & 0x3F);
-			return cp;
-		}
-
-		// Invalid byte → return replacement character
-		return 0xFFFD;
-	}
-
 	String operator+(const cpp_string& str1, const String& str)
 	{
 		return String(str1) + str;

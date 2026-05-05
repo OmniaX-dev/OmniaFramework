@@ -72,8 +72,8 @@ namespace ostd
 			inline char at(u32 index) const { return m_data[index]; }
 			inline u32 len(void) const { return m_data.length(); }
 			inline char operator[](u32 index) const { return m_data[index]; }
-			inline bool operator== (const char* str2) const { return std::strcmp(c_str(), str2) == 0; }
-			   inline bool operator!= (const char* str2) const { return std::strcmp(c_str(), str2) != 0; }
+			inline bool operator==(const char* str2) const { return std::strcmp(c_str(), str2) == 0; }
+			inline bool operator!=(const char* str2) const { return std::strcmp(c_str(), str2) != 0; }
 			inline String operator+(const String& str2) const { return m_data + str2.cpp_str(); }
 			friend String operator+(const cpp_string& str1, const String& str);
 			inline String& operator+=(const String& str2) { m_data += str2.cpp_str(); return *this; }
@@ -83,7 +83,7 @@ namespace ostd
 			inline operator std::filesystem::path() const { return cpp_str(); }
 			inline String& clr(void) { m_data = ""; return *this; }
 			inline String& set(const cpp_string& str) { m_data = str; return *this; }
-			inline stdvec<u32> getUTF8Codepoints(void) const { return decodeUTF8(m_data); }
+			inline stdvec<u32> getUTF8Codepoints(void) const { return utf8::decode(m_data); }
 			inline bool empty(void) const { return m_data.empty(); }
 
 			inline auto begin(void) { return m_data.begin(); }
@@ -179,12 +179,29 @@ namespace ostd
 			static String getHexStr(u64 value, bool prefix = true, u8 nbytes = 1);
 			static String getBinStr(u64 value, bool prefix = true, u8 nbytes = 1);
 			static String duplicateChar(uchar c, u16 count);
-			static stdvec<u32> decodeUTF8(const String& s);
+
+			struct utf8
+			{
+				utf8() = delete;  // Pure namespace — never instantiated.
+
+				// Navigation
+				static u32 align_to_codepoint(const cpp_string& s, u32 byte_pos);
+				static u32 prev_codepoint_start(const cpp_string& s, u32 byte_pos);
+				static u32 next_codepoint_start(const cpp_string& s, u32 byte_pos);
+				static u8  codepoint_length(const cpp_string& s, u32 byte_pos);
+				static u8  encode_length(u32 codepoint);
+
+				// Encoding/decoding
+				static String      encode(u32 codepoint);
+				static String      encode(const stdvec<u32>& codepoints);
+				static stdvec<u32> decode(const cpp_string& s);
+
+				// Utilities
+				static u32  count_codepoints(const cpp_string& s);
+				static bool is_valid(const cpp_string& s);
+			};
 
 			friend std::ostream& operator<<(std::ostream& out, const String& val);
-
-		private:
-			static u32 utf8_next(const char*& p, const char* end);
 
 		private:
 			ostd::cpp_string m_data;

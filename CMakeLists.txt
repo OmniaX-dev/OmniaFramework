@@ -69,6 +69,8 @@ list(APPEND OSTD_SOURCE_FILES
 	# string
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/string/String.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/string/TextStyleParser.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/string/utf8.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/string/TextBuffer.cpp
 
 	# utils
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/Logic.cpp
@@ -103,6 +105,7 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Slider.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/ComboBox.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/TreeView.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Text.cpp
 
 	# render
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/BasicRenderer.cpp
@@ -119,6 +122,7 @@ list(APPEND OGFX_SOURCE_FILES
 list(APPEND TEST_SOURCE_FILES
 	# ${CMAKE_CURRENT_LIST_DIR}/src/test/GraphicsWindowTest.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/test/GuiTest.cpp
+	# ${CMAKE_CURRENT_LIST_DIR}/src/test/TextBufferUnitTest.cpp
 )
 #-----------------------------------------------------------------------------------------
 
