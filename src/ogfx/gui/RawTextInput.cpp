@@ -1,27 +1,27 @@
 /*
-    OmniaFramework - A collection of useful functionality
-    Copyright (C) 2026  OmniaX-Dev
+	OmniaFramework - A collection of useful functionality
+	Copyright (C) 2026  OmniaX-Dev
 
-    This file is part of OmniaFramework.
+	This file is part of OmniaFramework.
 
-    OmniaFramework is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	OmniaFramework is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    OmniaFramework is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	OmniaFramework is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "RawTextInput.hpp"
 #include "../gui/Window.hpp"
 #include "../../io/Logger.hpp"
-#include "utils/Keycodes.hpp"
+#include "../utils/Keycodes.hpp"
 
 namespace ogfx
 {
@@ -55,9 +55,9 @@ namespace ogfx
 					OX_ERROR("Invalid character filter in RawTextInput event listener.");
 					return; //TODO: Better error
 				}
-				if (parent.m_charFilter->isValidChar(data.text))
+				if (parent.m_charFilter->isValidChar(data.text[0]))
 				{
-					if (parent.m_lastChar == data.text && parent.m_keyRepeatCounter.isCounting())
+					if (parent.m_lastChar == data.text[0] && parent.m_keyRepeatCounter.isCounting())
 					{
 						onSignalHandled(signal);
 						return;
@@ -66,10 +66,10 @@ namespace ogfx
 					String s2 = "";
 					if (parent.m_cursorPosition < parent.m_text.len())
 						s2 = parent.m_text.new_substr(parent.m_cursorPosition);
-					s1.addChar(data.text).add(s2);
+					s1.addChar(data.text[0]).add(s2);
 					parent.m_text = s1;
 					parent.m_cursorPosition++;
-					parent.m_lastChar = data.text;
+					parent.m_lastChar = data.text[0];
 					parent.m_keyRepeatCounter.start();
 					if (parent.m_theme.cursorBlink)
 						parent.m_theme.cursorBlinkCounter.start();

@@ -94,6 +94,7 @@ namespace ostd
 			String selectedText(void) const;
 			void clearSelection(void);
 			void selectAll(void);
+			void selectWordAt(u32 byte_offset);
 			void selectRange(u32 start_byte, u32 end_byte);
 
 			// ===================== Cursor movement ====================
@@ -108,6 +109,7 @@ namespace ostd
 			void moveLineEnd(bool extend = false);
 			void moveDocumentStart(bool extend = false);
 			void moveDocumentEnd(bool extend = false);
+			void setCursorByteOffset(u32 byte_offset, bool extend);
 
 			// ======================== Mutation ========================
 			// All mutators replace the current selection (if any) before

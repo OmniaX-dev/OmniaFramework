@@ -30,6 +30,7 @@
 #include <ogfx/gui/widgets/Slider.hpp>
 #include <ogfx/gui/widgets/ComboBox.hpp>
 #include <ogfx/gui/widgets/TreeView.hpp>
+#include <ogfx/gui/widgets/Text.hpp>
 
 namespace ogfx
 {

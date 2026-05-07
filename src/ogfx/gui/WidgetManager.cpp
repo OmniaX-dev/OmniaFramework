@@ -217,28 +217,6 @@ namespace ogfx
 			}
 		}
 
-		void WidgetManager::onKeyPressed(const Event& event)
-		{
-			auto focused = m_window.getFocusManager().getFocused();
-			if (!focused || !focused->isVisible()) return;
-			focused->__onKeyPressed(event);
-		}
-
-		void WidgetManager::onKeyReleased(const Event& event)
-		{
-			auto focus = m_window.getFocusManager();
-			auto focused = focus.getFocused();
-			if (!focused || !focused->isVisible()) return;
-			focused->__onKeyReleased(event);
-		}
-
-		void WidgetManager::onTextEntered(const Event& event)
-		{
-			auto focused = m_window.getFocusManager().getFocused();
-			if (!focused || !focused->isVisible()) return;
-			focused->__onTextEntered(event);
-		}
-
 		void WidgetManager::onWindowClosed(const Event& event)
 		{
 			for (auto& w : m_widgetList)

@@ -617,20 +617,20 @@ namespace ogfx
 			MouseEventData mmd = get_mouse_state(event);
 			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::MouseReleased, ostd::Signal::Priority::RealTime, mmd);
 		}
+		else if (event.type == SDL_EVENT_TEXT_INPUT)
+		{
+			KeyEventData ked(*this, 0, event.text.text, KeyEventData::eKeyEvent::Text);
+			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::TextEntered, ostd::Signal::Priority::RealTime, ked);
+		}
 		else if (event.type == SDL_EVENT_KEY_DOWN)
 		{
-			KeyEventData ked(*this, (i32)event.key.key, 0, KeyEventData::eKeyEvent::Pressed);
+			KeyEventData ked(*this, (i32)event.key.key, "", KeyEventData::eKeyEvent::Pressed);
 			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::KeyPressed, ostd::Signal::Priority::RealTime, ked);
 		}
 		else if (event.type == SDL_EVENT_KEY_UP)
 		{
-			KeyEventData ked(*this, (i32)event.key.key, 0, KeyEventData::eKeyEvent::Released);
+			KeyEventData ked(*this, (i32)event.key.key, "", KeyEventData::eKeyEvent::Released);
 			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::KeyReleased, ostd::Signal::Priority::RealTime, ked);
-		}
-		else if (event.type == SDL_EVENT_TEXT_INPUT)
-		{
-			KeyEventData ked(*this, 0, event.text.text[0], KeyEventData::eKeyEvent::Text);
-			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::TextEntered, ostd::Signal::Priority::RealTime, ked);
 		}
 		__on_event(event);
 	}
@@ -1002,7 +1002,9 @@ namespace ogfx
 				evt.__original_signal_id = ostd::BuiltinSignals::KeyPressed;
 				m_toolbar.__onKeyPressed(evt);
 				m_statusbar.__onKeyPressed(evt);
-				m_rootWidget.__onKeyPressed(evt);
+				auto focused = m_focusManager.getFocused();
+				if (focused)
+					focused->__onKeyPressed(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::KeyReleased)
 			{
@@ -1011,7 +1013,9 @@ namespace ogfx
 				m_focusManager.onKeyReleased(evt);
 				m_toolbar.__onKeyReleased(evt);
 				m_statusbar.__onKeyReleased(evt);
-				m_rootWidget.__onKeyReleased(evt);
+				auto focused = m_focusManager.getFocused();
+				if (focused)
+					focused->__onKeyReleased(evt);
 				if (evt.keyboard->keyCode == KeyCode::Escape)
 					close();
 			}
@@ -1021,7 +1025,9 @@ namespace ogfx
 				evt.__original_signal_id = ostd::BuiltinSignals::TextEntered;
 				m_toolbar.__onTextEntered(evt);
 				m_statusbar.__onTextEntered(evt);
-				m_rootWidget.__onTextEntered(evt);
+				auto focused = m_focusManager.getFocused();
+				if (focused)
+					focused->__onTextEntered(evt);
 			}
 			onSignal(signal);
 		}

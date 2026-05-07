@@ -29,6 +29,9 @@
 ***FIX: KeyPress crash on TreeView
 ***FIX: Animated icons not working in TreeView
 ***Check if possible, then change all WindowCore& refs to Window&
+***Add utf-8 codepoint walking functions to String
+***Change the stored text in KeyEventData from a single char to the full utf-8 string
+***Check if Text Entered events are enabled via SDL
 Implement cursors in Stylesheet
 FIX: Window getting exponentially bigger when Desktop scale changes
 FIX: Refreshing scroll when content extent changes
@@ -56,15 +59,15 @@ FIX: ContextMenu rendering partly outside the screen when showing it close to th
 Add ToolBar::addButton overload that takes a ogfx::Icon wrapper
 Redesign theme overrides to be more robust
 Add modifiers to Event.keyboard path
+Implement a font-fallback chain in FontGlyphAtlas
+Implement appendText in TextBuffer and TextEdit
+Implement per-glyph caching in BasicRenderer2D
+Added double-click event to widgets
+Implement shift-selection in TextEdit (mouse/keyboard)
+Implement ctrl-selection/navigation in TextEdit
+Implement home/end and pg up/pg down in TextEdit
 
 
-
-
-Text:
-	Check if Text Entered events are enabled via SDL
-	Add utf-8 codepoint walking functions to String
-	Change the stored text in KeyEventData from a single char to the full utf-8 string
-	Implement a font-fallback chain in FontGlyphAtlas
 
 
 

@@ -325,6 +325,13 @@ namespace ostd
 		move_cursor_to(cast<u32>(m_buffer.len()), extend);
 	}
 
+	void TextBuffer::setCursorByteOffset(u32 byte_offset, bool extend)
+	{
+		const u32 clamped = clamp_to_codepoint_boundary(byte_offset);
+		move_cursor_to(clamped, extend);
+		m_desiredColumn = -1;
+	}
+
 
 	// ============================================================
 	//  Mutation
@@ -600,6 +607,50 @@ namespace ostd
 				return WordClass::Word;
 			return WordClass::Punctuation;
 		}
+	}
+
+	void TextBuffer::selectWordAt(u32 byte_offset)
+	{
+		m_desiredColumn = -1;
+		if (m_buffer.empty()) return;
+
+		// Clamp to a valid codepoint boundary first. If we're past end, back up
+		// to the last codepoint so we have something to classify.
+		u32 pos = clamp_to_codepoint_boundary(byte_offset);
+		if (pos >= m_buffer.len()) {
+			// At end-of-buffer — step back one codepoint to get something to
+			// classify, then expand from there.
+			if (m_buffer.len() == 0) return;
+			pos = String::utf8::prev_codepoint_start(m_buffer.cpp_str(), m_buffer.len());
+		}
+
+		// Expand left and right from `pos`. The trick: prev_word_boundary and
+		// next_word_boundary are *almost* what we want, but they're designed
+		// for "skip the run AND following whitespace" semantics. For word
+		// *selection*, we want just the run.
+		//
+		// Easiest: classify the byte at pos, then walk outward in both
+		// directions while the class matches.
+
+		const cpp_string& s = m_buffer.cpp_str();
+		const WordClass cls = classify_byte(cast<u8>(s[pos]));
+
+		// Walk left: advance start backward while previous codepoint is same class.
+		u32 start = pos;
+		while (start > 0) {
+			const u32 prev = String::utf8::prev_codepoint_start(s, start);
+			if (classify_byte(cast<u8>(s[prev])) != cls) break;
+			start = prev;
+		}
+
+		// Walk right: advance end forward while current codepoint is same class.
+		u32 end = pos;
+		while (end < s.size()) {
+			if (classify_byte(cast<u8>(s[end])) != cls) break;
+			end = String::utf8::next_codepoint_start(s, end);
+		}
+
+		selectRange(start, end);
 	}
 
 	u32 TextBuffer::prev_word_boundary(u32 byte_offset) const

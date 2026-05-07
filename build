@@ -43,5 +43,22 @@ else
         cd bin
         ./ostd_test
         cd ..
+	elif [[ "$1" == "dbg" ]]; then
+		printf "\n\033[0;32mDebugging Test Application...\n\n\033[0m"
+		cd bin
+		gdb -batch \
+		    -ex 'set pagination off' \
+		    -ex 'set print pretty on' \
+		    -ex 'set logging file ../gdb-last.log' \
+		    -ex 'set logging overwrite on' \
+		    -ex 'set logging on' \
+		    -ex 'handle SIGPIPE nostop noprint pass' \
+		    -ex run \
+		    -ex 'bt full' \
+		    -ex 'info locals' \
+		    -ex 'info args' \
+		    -ex quit \
+		    --args ./ostd_test
+        cd ..
     fi
 fi

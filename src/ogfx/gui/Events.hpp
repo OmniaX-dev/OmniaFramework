@@ -70,7 +70,7 @@ namespace ogfx
 	{
 		public: enum class eKeyEvent { Pressed = 0, Released, Text };
 		public:
-			inline KeyEventData(WindowCore& parent, i32 key, char _text, eKeyEvent evt) : parentWindow(parent), keyCode(key), text(_text), eventType(evt)
+			inline KeyEventData(WindowCore& parent, i32 key, const String& _text, eKeyEvent evt) : parentWindow(parent), keyCode(key), text(_text), eventType(evt)
 			{
 				setTypeName("ogfx::KeyEventData");
 				validate();
@@ -78,7 +78,7 @@ namespace ogfx
 
 		public:
 			i32 keyCode;
-			char text;
+			String text;
 			eKeyEvent eventType;
 			WindowCore& parentWindow;
 	};

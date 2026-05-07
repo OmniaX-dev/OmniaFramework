@@ -229,6 +229,7 @@ class TestWindow : public Window
 			t1.addWidget(m_list, { 30, 300 });
 			t1.addWidget(m_panel2, { 500, 100 });
 			t1.addWidget(m_combo, { 400, 600 });
+			t1.addWidget(m_text, { 400, 700 });
 
 			t2.setLayout<BoxLayout>(BoxLayout::Orientation::Vertical);
 			t2.getLayout()->setSpacing(16);
@@ -390,6 +391,7 @@ class TestWindow : public Window
 		Label m_cacheHitsLbl { *this };
 		Label m_cacheMissesLbl { *this };
 		ComboBox m_combo { *this };
+		TextEdit m_text { *this };
 
 		enum MenuId : i32 { New = 1, Open, Save, SaveAs, Exit, CopyRaw, CopyFormatted };
 

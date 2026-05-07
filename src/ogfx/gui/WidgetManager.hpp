@@ -50,9 +50,6 @@ namespace ogfx
 				void onMouseMoved(const Event& event);
 				void onMouseScrolled(const Event& event);
 				void onMouseDragged(const Event& event);
-				void onKeyPressed(const Event& event);
-				void onKeyReleased(const Event& event);
-				void onTextEntered(const Event& event);
 				void onWindowClosed(const Event& event);
 				void onWindowResized(const Event& event);
 				void onWindowFocused(const Event& event);
