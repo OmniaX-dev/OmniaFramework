@@ -22,6 +22,7 @@
 
 #include <ostd/data/BaseObject.hpp>
 #include <ostd/math/Geometry.hpp>
+#include <ogfx/utils/Keycodes.hpp>
 
 namespace ogfx
 {
@@ -68,18 +69,76 @@ namespace ogfx
 	};
 	class KeyEventData : public ostd::BaseObject
 	{
+		public: struct KeyModifiers
+		{
+			bool lshift { false };
+			bool rshift { false };
+			bool ctrl   { false };
+			bool alt    { false };
+			bool meta   { false };  // Win/Cmd/Super
+
+			inline bool any(void) const { return rshift || lshift || ctrl || alt || meta; }
+			inline bool anyShift(void) const { return lshift || rshift; }
+			inline bool shiftOnly(void) const { return (lshift || rshift) && !ctrl && !alt && !meta; }
+			inline bool ctrlOnly(void)  const { return ctrl && !lshift && !rshift && !alt && !meta; }
+			inline bool metaOnly(void)  const { return meta && !lshift && !rshift && !alt && !ctrl; }
+			inline bool altOnly(void)  const { return alt && !lshift && !rshift && !meta && !ctrl; }
+			inline bool primaryOnly(void) const
+			{
+				#ifdef MAC_OS
+					return metaOnly();
+				#else
+					return ctrlOnly();
+				#endif
+			}
+			inline bool primaryShiftOnly(void) const
+			{
+			#ifdef MAC_OS
+				return meta && anyShift() && !ctrl && !alt;
+			#else
+				return ctrl && anyShift() && !meta && !alt;
+			#endif
+			}
+			inline bool primaryAltOnly(void) const
+			{
+			#ifdef MAC_OS
+				return meta && alt && !ctrl && !anyShift();
+			#else
+				return ctrl && alt && !ctrl && !anyShift();
+			#endif
+			}
+			inline bool shiftAltOnly(void) const
+			{
+				return alt && anyShift() && !ctrl && !meta;
+			}
+			inline bool primary(void) const
+			{
+			#ifdef MAC_OS
+				return meta;
+			#else
+				return ctrl;
+			#endif
+			}
+		};
 		public: enum class eKeyEvent { Pressed = 0, Released, Text };
 		public:
-			inline KeyEventData(WindowCore& parent, i32 key, const String& _text, eKeyEvent evt) : parentWindow(parent), keyCode(key), text(_text), eventType(evt)
+			inline KeyEventData(WindowCore& parent, i32 key, const String& _text, eKeyEvent evt, const KeyModifiers& mod) : parentWindow(parent), keyCode(key), text(_text), eventType(evt), modifiers(mod)
 			{
 				setTypeName("ogfx::KeyEventData");
 				validate();
 			}
+			inline bool isCopy(void) const { return eventType == eKeyEvent::Pressed && modifiers.primaryOnly() && keyCode == KeyCode::C; }
+			inline bool isCut(void) const { return eventType == eKeyEvent::Pressed && modifiers.primaryOnly() && keyCode == KeyCode::X; }
+			inline bool isPaste(void) const { return eventType == eKeyEvent::Pressed && modifiers.primaryOnly() && keyCode == KeyCode::V; }
+			inline bool isSelectAll(void) const { return eventType == eKeyEvent::Pressed && modifiers.primaryOnly() && keyCode == KeyCode::A; }
+			inline bool isUndo(void) const { return eventType == eKeyEvent::Pressed && modifiers.primaryOnly() && keyCode == KeyCode::Z; }
+			inline bool isRedo(void) const { return eventType == eKeyEvent::Pressed && ((modifiers.primaryShiftOnly() && keyCode == KeyCode::Z) || (modifiers.primaryOnly() && keyCode == KeyCode::Y)); }
 
 		public:
 			i32 keyCode;
 			String text;
 			eKeyEvent eventType;
+			KeyModifiers modifiers;
 			WindowCore& parentWindow;
 	};
 	class DropEventData : public ostd::BaseObject

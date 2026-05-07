@@ -436,6 +436,14 @@ namespace ostd
 		replace_range(start, end, String(""));
 	}
 
+	void TextBuffer::deleteSelection(void)
+	{
+		if (hasSelection()) {
+			replace_range(selectionStart(), selectionEnd(), String(""));
+			return;
+		}
+	}
+
 
 	// ============================================================
 	//  toString

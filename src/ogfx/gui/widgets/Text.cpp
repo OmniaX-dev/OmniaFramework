@@ -26,6 +26,224 @@ namespace ogfx
 {
 	namespace gui
 	{
+		String TextEdit::CharacterFilter::predictResult(const String& utf8, const ostd::TextBuffer& buffer)
+		{
+			const String& current = buffer.text();
+			const u32 selStart = buffer.selectionStart();
+			const u32 selEnd   = buffer.selectionEnd();
+			String head = current.new_substr(0, cast<i32>(selStart));
+			String tail = current.new_substr(selEnd, cast<i32>(current.len()));
+			return head + utf8 + tail;
+		}
+
+
+
+
+
+		bool TextEdit::IntegerFilter::isValidChar(const String& utf8, const ostd::TextBuffer& buffer)
+		{
+			// Reject anything that isn't a single ASCII byte. Multi-codepoint
+			// input (IME, emoji, accented chars) is never valid in an integer.
+			if (utf8.len() != 1) return false;
+			const char c = utf8[0];
+			const bool isDigit = (c >= '0' && c <= '9');
+			const bool isSign  = (c == '-');
+			if (!isDigit && !isSign) return false;
+
+			// Predict the post-insert string and validate it as a prefix.
+			const String result = predictResult(utf8, buffer);
+			return isValidIntegerPrefix(result);
+		}
+
+		bool TextEdit::IntegerFilter::isValidIntegerPrefix(const String& s) const
+		{
+			if (s.empty()) return true;
+			const ostd::cpp_string& bytes = s.cpp_str();
+
+			u32 i = 0;
+			// Optional leading minus.
+			if (bytes[0] == '-') {
+				if (!m_allowNegative) return false;
+				i = 1;
+				if (bytes.size() == 1) return true;  // Just "-" by itself: valid prefix.
+			}
+
+			// Everything from i onward must be digits. Count them while we're at it.
+			u32 digitCount = 0;
+			while (i < bytes.size()) {
+				if (bytes[i] < '0' || bytes[i] > '9') return false;
+				digitCount++;
+				i++;
+			}
+
+			if (m_maxDigits > 0 && digitCount > cast<u32>(m_maxDigits))
+				return false;
+
+			return true;
+		}
+
+
+
+
+
+		bool TextEdit::DecimalFilter::isValidChar(const String& utf8, const ostd::TextBuffer& buffer)
+		{
+			if (utf8.len() != 1) return false;
+			const char c = utf8[0];
+			const bool isDigit = (c >= '0' && c <= '9');
+			const bool isSign  = (c == '-');
+			const bool isSep   = (c == m_separator);
+			if (!isDigit && !isSign && !isSep) return false;
+
+			const String result = predictResult(utf8, buffer);
+			return isValidDecimalPrefix(result);
+		}
+
+		bool TextEdit::DecimalFilter::isValidDecimalPrefix(const String& s) const
+		{
+			if (s.empty()) return true;
+			const ostd::cpp_string& bytes = s.cpp_str();
+
+			u32 i = 0;
+			if (bytes[0] == '-') {
+				if (!m_allowNegative) return false;
+				i = 1;
+				if (bytes.size() == 1) return true;  // Just "-": valid prefix.
+			}
+
+			u32 intDigits = 0;
+			u32 fracDigits = 0;
+			bool seenSep = false;
+
+			while (i < bytes.size()) {
+				const char c = bytes[i];
+				if (c == m_separator) {
+					if (seenSep) return false;     // Two separators: invalid.
+					if (intDigits == 0) return false;  // ".5" without a leading digit:
+													   // we choose to require it for now.
+					seenSep = true;
+				}
+				else if (c >= '0' && c <= '9') {
+					if (seenSep) fracDigits++;
+					else         intDigits++;
+				}
+				else {
+					return false;
+				}
+				i++;
+			}
+
+			if (m_maxIntDigits  > 0 && intDigits  > cast<u32>(m_maxIntDigits))  return false;
+			if (m_maxFracDigits > 0 && fracDigits > cast<u32>(m_maxFracDigits)) return false;
+
+			return true;
+		}
+
+
+
+
+
+		bool TextEdit::DateFilter::isValidChar(const String& utf8, const ostd::TextBuffer& buffer)
+		{
+			if (utf8.len() != 1) return false;
+			const String result = predictResult(utf8, buffer);
+			return isValidDatePrefix(result);
+		}
+
+		void TextEdit::DateFilter::buildPositionMap(void)
+		{
+			m_slots.clear();
+			// Local helper to push a run of digit slots.
+			auto pushDigits = [&](eSlot s, u32 n) {
+				for (u32 i = 0; i < n; i++) m_slots.push_back(s);
+			};
+			auto pushSep = [&]() { m_slots.push_back(eSlot::Sep); };
+
+			switch (m_format) {
+				case eFormat::DDMMYY:
+					pushDigits(eSlot::Day, 2);   pushSep();
+					pushDigits(eSlot::Month, 2); pushSep();
+					pushDigits(eSlot::Year, 2);  break;
+				case eFormat::DDMMYYYY:
+					pushDigits(eSlot::Day, 2);   pushSep();
+					pushDigits(eSlot::Month, 2); pushSep();
+					pushDigits(eSlot::Year, 4);  break;
+				case eFormat::MMDDYY:
+					pushDigits(eSlot::Month, 2); pushSep();
+					pushDigits(eSlot::Day, 2);   pushSep();
+					pushDigits(eSlot::Year, 2);  break;
+				case eFormat::MMDDYYYY:
+					pushDigits(eSlot::Month, 2); pushSep();
+					pushDigits(eSlot::Day, 2);   pushSep();
+					pushDigits(eSlot::Year, 4);  break;
+				case eFormat::YYYYMMDD:
+					pushDigits(eSlot::Year, 4);  pushSep();
+					pushDigits(eSlot::Month, 2); pushSep();
+					pushDigits(eSlot::Day, 2);   break;
+				case eFormat::YYMMDD:
+					pushDigits(eSlot::Year, 2);  pushSep();
+					pushDigits(eSlot::Month, 2); pushSep();
+					pushDigits(eSlot::Day, 2);   break;
+			}
+		}
+
+		bool TextEdit::DateFilter::isValidDatePrefix(const String& s) const
+		{
+			const ostd::cpp_string& bytes = s.cpp_str();
+			if (bytes.size() > m_slots.size()) return false;
+
+			// Track the running values so we can validate ranges as soon as
+			// a field is fully entered.
+			u32 dayVal = 0,   dayChars = 0;
+			u32 monthVal = 0, monthChars = 0;
+			u32 yearVal = 0,  yearChars = 0;
+
+			for (u32 i = 0; i < bytes.size(); i++) {
+				const char c = bytes[i];
+				const eSlot expected = m_slots[i];
+
+				if (expected == eSlot::Sep) {
+					if (c != m_separator) return false;
+					// Separator means a field just ended — validate it.
+					// (Only the field that *just ended* needs validation; earlier
+					// fields were already validated when their separators were typed.)
+				}
+				else {
+					if (c < '0' || c > '9') return false;
+					const u32 d = cast<u32>(c - '0');
+					if (expected == eSlot::Day)   { dayVal   = dayVal   * 10 + d; dayChars++;   }
+					if (expected == eSlot::Month) { monthVal = monthVal * 10 + d; monthChars++; }
+					if (expected == eSlot::Year)  { yearVal  = yearVal  * 10 + d; yearChars++;  }
+				}
+
+				// Range validation as soon as a field is fully populated.
+				if (expected == eSlot::Day && dayChars == 2) {
+					if (dayVal < 1 || dayVal > 31) return false;
+				}
+				if (expected == eSlot::Month && monthChars == 2) {
+					if (monthVal < 1 || monthVal > 12) return false;
+				}
+				// No range check for year — historically valid years span millennia.
+
+				// Also reject impossible *partial* values: a 2-digit day field
+				// can't start with '4'-'9' if the second digit would always make
+				// it exceed 31. Day field: first digit must be 0-3.
+				// Month field: first digit must be 0-1.
+				if (expected == eSlot::Day && dayChars == 1) {
+					if (dayVal > 3) return false;
+				}
+				if (expected == eSlot::Month && monthChars == 1) {
+					if (monthVal > 1) return false;
+				}
+			}
+
+			return true;
+		}
+
+
+
+
+
 		TextEdit& TextEdit::create(void)
 		{
 			setPadding({ 0, 0, 0, 0 });
@@ -118,7 +336,12 @@ namespace ogfx
 			//    code path (which handles kerning, atlas, etc.).
 			// -------------------------------------------------------------
 			if (!m_buffer.empty())
-				gfx.drawString(m_buffer.text(), { textX, textY }, getTextColor(), getFontSize());
+			{
+				if (std::isprint(m_charMask))
+					gfx.drawString(String::duplicateChar(m_charMask, m_buffer.text().len()), { textX, textY }, getTextColor(), getFontSize());
+				else
+					gfx.drawString(m_buffer.text(), { textX, textY }, getTextColor(), getFontSize());
+			}
 
 			// -------------------------------------------------------------
 			// 8. Draw the cursor. Only when focused and the blink is in the
@@ -182,16 +405,15 @@ namespace ogfx
 		void TextEdit::onTextEntered(const Event& event)
 		{
 			auto& data = *event.keyboard;
-			if (!m_charFilter || m_charFilter->isValidChar(data.text))
+			const String toInsert = clamp_input_to_max_length(data.text);
+			if (toInsert.empty()) return;
+			if (!m_charFilter || m_charFilter->isValidChar(data.text, m_buffer))
 			{
-				if (m_lastChar == data.text && m_keyRepeatTimer.isCounting())
+				if (m_lastChar == toInsert && m_keyRepeatTimer.isCounting())
 					return;
-				m_buffer.insertText(data.text);
-				m_lastChar = data.text;
+				m_buffer.insertText(toInsert);
+				m_lastChar = toInsert;
 				m_keyRepeatTimer.start();
-				if (m_cursorBlink)
-					m_cursorBlinkTimer.start();
-				m_cursorState = true;
 			}
 		}
 
@@ -200,37 +422,114 @@ namespace ogfx
 			auto& data = *event.keyboard;
 			if (m_lastKeyCode == data.keyCode && m_keyRepeatTimer.isCounting())
 				return;
-			if (data.keyCode == KeyCode::Backspace)
+
+			const bool extend = data.modifiers.anyShift();
+			const bool word   = data.modifiers.primary();
+
+			// ----- Editing operations (chords first, since they're more specific) -----
+
+			if (data.isCopy())
 			{
-				m_keyRepeatTimer.start();
-				m_lastKeyCode = data.keyCode;
-				m_buffer.backspace();
+				const String sel = m_buffer.selectedText();
+				if (!sel.empty())
+					SDL_SetClipboardText(sel);
 			}
+			else if (data.isCut())
+			{
+				const String sel = m_buffer.selectedText();
+				if (!sel.empty())
+				{
+					SDL_SetClipboardText(sel);
+					m_buffer.deleteSelection();
+				}
+			}
+			else if (data.isPaste())
+			{
+				const String clipboardText = SDL_GetClipboardText();
+				if (!clipboardText.empty())
+				{
+					const String toInsert = clamp_input_to_max_length(clipboardText);
+					if (!toInsert.empty())
+						m_buffer.insertText(toInsert);
+				}
+			}
+			else if (data.isSelectAll())
+			{
+				m_buffer.selectAll();
+			}
+			else if (data.isUndo())
+			{
+				std::cout << "Undo is not implemented yet!\n";
+			}
+			else if (data.isRedo())
+			{
+				std::cout << "Redo is not implemented yet!\n";
+			}
+
+			// ----- Cursor movement -----
+
 			else if (data.keyCode == KeyCode::Left)
 			{
-				m_keyRepeatTimer.start();
-				m_lastKeyCode = data.keyCode;
-				m_buffer.moveLeft();
+				if (word) m_buffer.moveWordLeft(extend);
+				else      m_buffer.moveLeft(extend);
 			}
 			else if (data.keyCode == KeyCode::Right)
 			{
-				m_keyRepeatTimer.start();
+				if (word) m_buffer.moveWordRight(extend);
+				else      m_buffer.moveRight(extend);
+			}
+			else if (data.keyCode == KeyCode::Home || data.keyCode == KeyCode::Pageup)
+			{
+				// PageUp on single-line == Home. When you go multiline, split these.
+				if (word) m_buffer.moveDocumentStart(extend);
+				else      m_buffer.moveLineStart(extend);
+			}
+			else if (data.keyCode == KeyCode::End || data.keyCode == KeyCode::Pagedown)
+			{
+				if (word) m_buffer.moveDocumentEnd(extend);
+				else      m_buffer.moveLineEnd(extend);
+			}
 
-				m_lastKeyCode = data.keyCode;
-				m_buffer.moveRight();
+			// ----- Deletion -----
+
+			else if (data.keyCode == KeyCode::Backspace)
+			{
+				if (word) m_buffer.backspaceWord();
+				else      m_buffer.backspace();
+			}
+			else if (data.keyCode == KeyCode::Delete)
+			{
+				if (word) m_buffer.deleteWord();
+				else      m_buffer.deleteForward();
+			}
+
+			// ----- Other -----
+
+			else if (data.keyCode == KeyCode::Escape)
+			{
+				// Clear selection if there is one; otherwise no-op (the widget could
+				// give up focus here, but that's an opinionated choice — leave it
+				// up to the application via callback_onEscape if you want).
+				if (m_buffer.hasSelection())
+					m_buffer.clearSelection();
 			}
 			else if (data.keyCode == KeyCode::Return)
 			{
-				m_keyRepeatTimer.start();
-				m_lastKeyCode = data.keyCode;
 				if (callback_onActionPerformed)
 					callback_onActionPerformed(event);
 			}
-		}
+			else
+			{
+				// Unrecognized key — don't engage the repeat throttle, and don't
+				// record m_lastKeyCode. Returning here keeps the throttle accurate
+				// (if the user presses an unhandled key followed by a real one,
+				// the real one fires immediately rather than being suppressed).
+				return;
+			}
 
-		void TextEdit::onKeyReleased(const Event& event)
-		{
-
+			// Single bookkeeping point for every accepted branch.
+			m_keyRepeatTimer.start();
+			m_lastKeyCode = data.keyCode;
 		}
 
 		void TextEdit::onMousePressed(const Event& event)
@@ -292,6 +591,34 @@ namespace ogfx
 
 			if (m_cursorBlink) m_cursorBlinkTimer.start();
 			m_cursorState = true;
+		}
+
+		void TextEdit::setText(const String& text)
+		{
+			if (m_maxLength <= 0) {
+				m_buffer.setText(text);
+				return;
+			}
+
+			const u32 inputCps = String::utf8::count_codepoints(text.cpp_str());
+			if (inputCps <= cast<u32>(m_maxLength)) {
+				m_buffer.setText(text);
+				return;
+			}
+
+			m_buffer.setText(String::utf8::truncate(text, cast<u32>(m_maxLength)));
+		}
+
+		void TextEdit::setMaxLength(i32 codepoints)
+		{
+			m_maxLength = codepoints;
+			if (m_maxLength <= 0) return;
+
+			const u32 currentCps = m_buffer.codepointCount();
+			if (currentCps <= cast<u32>(m_maxLength)) return;
+
+			const String truncated = String::utf8::truncate(m_buffer.text(), cast<u32>(m_maxLength));
+			m_buffer.setText(truncated);
 		}
 
 		void TextEdit::rebuild_layout(BasicRenderer2D& gfx)
@@ -440,6 +767,38 @@ namespace ogfx
 			const f32 distLo = doc_x - xs[lo];
 			const f32 distHi = xs[hi] - doc_x;
 			return cast<u32>((distLo <= distHi) ? bs[lo] : bs[hi]);
+		}
+
+		String TextEdit::clamp_input_to_max_length(const String& utf8) const
+		{
+			if (m_maxLength <= 0) return utf8;
+
+			const u32 currentCps = m_buffer.codepointCount();
+
+			u32 selCps = 0;
+			if (m_buffer.hasSelection()) {
+				const u32 a = m_buffer.selectionStart();
+				const u32 b = m_buffer.selectionEnd();
+				const String selected = m_buffer.text().new_substr(a, cast<i32>(b));
+				selCps = String::utf8::count_codepoints(selected.cpp_str());
+			}
+
+			const u32 insertedCps = String::utf8::count_codepoints(utf8.cpp_str());
+			const u32 resultCps   = currentCps - selCps + insertedCps;
+			const u32 capCps      = cast<u32>(m_maxLength);
+
+			if (resultCps <= capCps) return utf8;
+
+			// Overflow. Truncate ONLY in the appending case: cursor at end, no selection.
+			const bool atEnd = (m_buffer.cursorByteOffset() == m_buffer.byteSize());
+			if (!atEnd || m_buffer.hasSelection()) {
+				// Mid-buffer insert or replace-selection: reject the whole input.
+				return String("");
+			}
+
+			// Appending case: truncate to fit.
+			const u32 availableCps = capCps - currentCps;
+			return String::utf8::truncate(utf8, availableCps);
 		}
 	}
 }

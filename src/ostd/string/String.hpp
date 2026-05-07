@@ -199,6 +199,7 @@ namespace ostd
 				// Utilities
 				static u32  count_codepoints(const cpp_string& s);
 				static bool is_valid(const cpp_string& s);
+				static String truncate(const String& s, u32 maxCps);
 			};
 
 			friend std::ostream& operator<<(std::ostream& out, const String& val);

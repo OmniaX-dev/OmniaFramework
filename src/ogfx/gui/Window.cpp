@@ -525,6 +525,15 @@ namespace ogfx
 
 	void WindowCore::__handle_event(SDL_Event& event)
 	{
+		auto l_keymod_status = [](SDL_Keymod m) -> KeyEventData::KeyModifiers {
+			return {
+				.lshift = (m & SDL_KMOD_LSHIFT) != 0,
+				.rshift = (m & SDL_KMOD_RSHIFT) != 0,
+				.ctrl   = (m & SDL_KMOD_CTRL)  != 0,
+				.alt    = (m & SDL_KMOD_ALT)   != 0,
+				.meta   = (m & SDL_KMOD_GUI)   != 0,
+			};
+		};
 		if (event.type == REDRAW_EVENT)
 		{
 			//Doesn't need to do anything, the event exists just to make SDL_WaitEventTimeout() return early
@@ -619,17 +628,17 @@ namespace ogfx
 		}
 		else if (event.type == SDL_EVENT_TEXT_INPUT)
 		{
-			KeyEventData ked(*this, 0, event.text.text, KeyEventData::eKeyEvent::Text);
+			KeyEventData ked(*this, 0, event.text.text, KeyEventData::eKeyEvent::Text, l_keymod_status(event.key.mod));
 			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::TextEntered, ostd::Signal::Priority::RealTime, ked);
 		}
 		else if (event.type == SDL_EVENT_KEY_DOWN)
 		{
-			KeyEventData ked(*this, (i32)event.key.key, "", KeyEventData::eKeyEvent::Pressed);
+			KeyEventData ked(*this, (i32)event.key.key, "", KeyEventData::eKeyEvent::Pressed, l_keymod_status(event.key.mod));
 			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::KeyPressed, ostd::Signal::Priority::RealTime, ked);
 		}
 		else if (event.type == SDL_EVENT_KEY_UP)
 		{
-			KeyEventData ked(*this, (i32)event.key.key, "", KeyEventData::eKeyEvent::Released);
+			KeyEventData ked(*this, (i32)event.key.key, "", KeyEventData::eKeyEvent::Released, l_keymod_status(event.key.mod));
 			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::KeyReleased, ostd::Signal::Priority::RealTime, ked);
 		}
 		__on_event(event);

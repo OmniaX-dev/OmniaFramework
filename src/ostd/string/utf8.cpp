@@ -279,4 +279,16 @@ namespace ostd
 
 		return true;
 	}
+
+	String String::utf8::truncate(const String& s, u32 maxCps)
+	{
+		const cpp_string& bytes = s.cpp_str();
+		u32 i = 0;
+		u32 cpCount = 0;
+		while (i < bytes.size() && cpCount < maxCps) {
+			i = String::utf8::next_codepoint_start(bytes, i);
+			cpCount++;
+		}
+		return s.new_substr(0, cast<i32>(i));
+	}
 }

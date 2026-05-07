@@ -33,7 +33,53 @@ namespace ogfx
 			public: class CharacterFilter
 			{
 				public:
-					inline virtual bool isValidChar(const String& utf8) { return true; }
+					virtual ~CharacterFilter(void) = default;
+					inline virtual bool isValidChar(const String& utf8, const ostd::TextBuffer& buffer) = 0;
+				protected:
+					// Helper: build the string that would result from inserting `utf8`
+					// at the current cursor (replacing any selection). Use this in
+					// subclasses to ask "is the resulting string a valid prefix?"
+					static String predictResult(const String& utf8, const ostd::TextBuffer& buffer);
+			};
+			public: class IntegerFilter : public CharacterFilter
+			{
+				public:
+					inline IntegerFilter(bool allowNegative = true, i32 maxDigits = -1) : m_allowNegative(allowNegative), m_maxDigits(maxDigits) {}
+					bool isValidChar(const String& utf8, const ostd::TextBuffer& buffer) override;
+				private:
+					bool isValidIntegerPrefix(const String& s) const;
+				private:
+					bool m_allowNegative;
+					i32  m_maxDigits;
+			};
+			public: class DecimalFilter : public CharacterFilter
+			{
+				public:
+					inline DecimalFilter(bool allowNegative = true, char separator = '.', i32 maxIntegerDigits = -1, i32 maxFractionDigits = -1) : m_allowNegative(allowNegative), m_separator(separator), m_maxIntDigits(maxIntegerDigits), m_maxFracDigits(maxFractionDigits) {}
+					bool isValidChar(const String& utf8, const ostd::TextBuffer& buffer) override;
+				private:
+					bool isValidDecimalPrefix(const String& s) const;
+				private:
+					bool m_allowNegative;
+					char m_separator;
+					i32  m_maxIntDigits;
+					i32  m_maxFracDigits;
+			};
+			public: class DateFilter : public CharacterFilter
+			{
+				public: enum class eFormat{ DDMMYY, DDMMYYYY, MMDDYY, MMDDYYYY, YYYYMMDD, YYMMDD };
+				private: enum class eSlot { Day, Month, Year, Sep };
+
+				public:
+					DateFilter(eFormat format = eFormat::DDMMYYYY, char separator = '.') : m_format(format), m_separator(separator) { buildPositionMap(); }
+					bool isValidChar(const String& utf8, const ostd::TextBuffer& buffer) override;
+				private:
+					void buildPositionMap(void);
+					bool isValidDatePrefix(const String& s) const;
+				private:
+					stdvec<eSlot> m_slots;
+					eFormat       m_format;
+					char          m_separator;
 			};
 			public: struct TextPadding
 			{
@@ -58,18 +104,20 @@ namespace ogfx
 				void onFocusLost(const Event& event) override;
 				void onTextEntered(const Event& event) override;
 				void onKeyPressed(const Event& event) override;
-				void onKeyReleased(const Event& event) override;
 				void onMousePressed(const Event& event) override;
 				void onMouseReleased(const Event& event) override;
 				void onMouseDragged(const Event& event) override;
 
-				inline void setText(const String& text) { m_buffer.setText(text); }
+				void setText(const String& text);
+				void setMaxLength(i32 codepoints);
+				inline void setFilter(CharacterFilter* filter) { m_charFilter = filter; }
 
 			private:
 				void rebuild_layout(BasicRenderer2D& gfx);
 				void ensure_cursor_visible(const Rectangle& bounds);
 				f32 layout_x_for_byte(u32 byte_offset) const;
 				u32 byte_offset_for_pixel_x(f32 widget_local_x) const;
+				String clamp_input_to_max_length(const String& utf8) const;
 
 			private:
 				ostd::TextBuffer m_buffer { "", true };
@@ -80,6 +128,8 @@ namespace ogfx
 				bool m_lastClickValid { false };
 				bool m_mouseSelecting { false };
 				f32  m_lastMouseLocalX { 0.0f };
+				i32 m_maxLength { -1 };
+				char m_charMask { '\0' };
 				CharacterFilter* m_charFilter { nullptr };
 				String m_lastChar { "" };
 				i32 m_lastKeyCode { 0 };
@@ -92,5 +142,6 @@ namespace ogfx
 				TextPadding m_textPadding;
 				Color m_selectionColor { 60, 110, 200, 200 };  // bluish, semi-transparent
 		};
+
 	}
 }

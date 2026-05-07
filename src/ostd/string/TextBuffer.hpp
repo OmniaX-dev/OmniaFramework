@@ -121,6 +121,7 @@ namespace ostd
 			void backspaceWord(void);
 			void deleteWord(void);
 			void deleteCurrentLine(void);
+			void deleteSelection(void);
 
 			// ===================== Notifications ======================
 			inline void setOnChanged(ChangeCallback cb)     { m_onChanged = std::move(cb); }
