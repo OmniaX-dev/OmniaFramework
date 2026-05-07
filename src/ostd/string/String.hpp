@@ -111,6 +111,7 @@ namespace ostd
 			String& fixedLength(u32 length, char fill_character = ' ', const String& truncate_indicator = "... ");
 
 			String& addChar(char c);
+			String& addPtr(const void* p, const String& prefix = "0x");
 			String& add(const String& se);
 			String& add(u8 i);
 			String& add(i8 i);
@@ -122,7 +123,6 @@ namespace ostd
 			String& add(i64 i);
 			String& add(f32 f, u8 precision = 0);
 			String& add(f64 f, u8 precision = 0);
-			String& add(const void* p, const String& prefix = "0x");
 
 			//New String
 			String new_ltrim(void) const;
@@ -142,6 +142,7 @@ namespace ostd
 			String new_fixedLength(u32 length, char fill_character = ' ', const String& truncate_indicator = "... ") const;
 
 			String new_addChar(char c) const;
+			String new_addPtr(const void* p, const String& prefix = "0x");
 			String new_add(const String& se) const;
 			String new_add(u8 i) const;
 			String new_add(i8 i) const;
@@ -153,7 +154,6 @@ namespace ostd
 			String new_add(i64 i) const;
 			String new_add(f32 f, u8 precision = 0) const;
 			String new_add(f64 f, u8 precision = 0) const;
-			String new_add(const void* p, const String& prefix = "0x");
 
 			//Utility
 			i64 toInt(void) const;
