@@ -21,6 +21,7 @@
 #pragma once
 
 #include <functional>
+#include <deque>
 #include <ostd/data/BaseObject.hpp>
 #include <ostd/string/String.hpp>
 #include <ostd/math/Geometry.hpp>
@@ -127,6 +128,54 @@ namespace ostd
 			inline void setOnChanged(ChangeCallback cb)     { m_onChanged = std::move(cb); }
 			inline void setOnCursorMoved(ChangeCallback cb) { m_onCursorMoved = std::move(cb); }
 
+			// ======================== Undo / Redo =====================
+			// History is recorded automatically as a side-effect of any
+			// content-mutating operation. Each entry stores enough state to
+			// either reverse the edit (for undo) or re-apply it (for redo),
+			// including the cursor and anchor position from before the edit
+			// so that selection state is faithfully restored.
+			//
+			// Coalescing: rapid sequential single-character edits of the same
+			// kind (typing, backspacing, forward-deleting) are merged into a
+			// single undo step so that Ctrl+Z reverses a *word* worth of
+			// typing rather than one character at a time. The chain is broken
+			// by: explicit cursor movement, mode switches, calls to
+			// commitUndoStep(), edits of a different kind, or the timeout
+			// elapsing between edits.
+			//
+			// Limit: setMaxUndoSteps(0) disables the limit (unlimited
+			// history). The default is 2048 steps, after which the oldest
+			// entries are dropped.
+			bool undo(void);
+			bool redo(void);
+			inline bool canUndo(void) const { return !m_undoStack.empty(); }
+			inline bool canRedo(void) const { return !m_redoStack.empty(); }
+
+			// Drops all undo and redo history. Call this after loading a
+			// document if you don't want the user to be able to undo *back*
+			// into the previous document state.
+			void clearHistory(void);
+
+			// Forces the next edit to start a new undo step rather than
+			// coalescing with the previous one. Useful before a "save" point
+			// or when the widget loses focus.
+			inline void commitUndoStep(void) { m_lastEditKind = EditKind::None; }
+
+			// 0 means unlimited. Default is 2048. Lowering the limit may
+			// drop old entries immediately to fit.
+			void setMaxUndoSteps(u32 max);
+			inline u32 maxUndoSteps(void) const { return m_maxUndoSteps; }
+
+			// Coalescing timeout in milliseconds. Two consecutive edits of
+			// the same kind are merged only if the gap between them is less
+			// than this. Default is 1000 ms. 0 disables coalescing entirely.
+			inline void setUndoCoalesceTimeout(u32 ms) { m_coalesceTimeout_ms = ms; }
+			inline u32 undoCoalesceTimeout(void) const { return m_coalesceTimeout_ms; }
+
+			// For diagnostics / tests.
+			inline u32 undoStackSize(void) const { return cast<u32>(m_undoStack.size()); }
+			inline u32 redoStackSize(void) const { return cast<u32>(m_redoStack.size()); }
+
 			// ==================== BaseObject hooks ====================
 			String toString(void) const override;
 
@@ -134,7 +183,21 @@ namespace ostd
 			// The two chokepoints — every public method funnels through these.
 			// replace_range is the only place buffer content changes.
 			// move_cursor_to is the only place m_cursor/m_anchor change.
-			void replace_range(u32 start_byte, u32 end_byte, const String& with);
+			//
+			// `kind` controls undo coalescing: see EditKind below for the
+			// rules. Default is Generic, which never coalesces. Public
+			// methods that perform single-codepoint edits override this.
+			enum class EditKind : u8
+			{
+				None,             // Sentinel — never matches, breaks the chain.
+				Generic,          // Selection-replace, paste, line delete, etc.
+				InsertCodepoint,  // A single typed codepoint, no selection.
+				Backspace,        // A single-codepoint delete-left, no selection.
+				DeleteForward,    // A single-codepoint delete-right, no selection.
+			};
+
+			void replace_range(u32 start_byte, u32 end_byte, const String& with,
+			                   EditKind kind = EditKind::Generic);
 			void move_cursor_to(u32 byte_offset, bool extend);
 
 			// Helpers
@@ -149,6 +212,34 @@ namespace ostd
 
 			void fire_changed(void);
 			void fire_cursor_moved(void);
+
+			// ----- Undo / redo internals -----
+			//
+			// An UndoEntry records a single atomic edit as a triple:
+			// "at byte offset `start`, the substring `removed` was replaced
+			// with `inserted`". Plus the pre-edit cursor/anchor so that undo
+			// can restore the selection.
+			//
+			// To undo: replace [start, start + inserted.len()) with `removed`,
+			// restore cursor/anchor.
+			// To redo: replace [start, start + removed.len()) with `inserted`,
+			// place cursor at start + inserted.len() with anchor == cursor
+			// (matches replace_range's normal post-edit state).
+			struct UndoEntry
+			{
+				u32      start         { 0 };
+				String   removed;          // What was there before.
+				String   inserted;         // What's there now.
+				u32      cursor_before { 0 };
+				u32      anchor_before { 0 };
+				EditKind kind          { EditKind::Generic };
+				u64      timestamp_ms  { 0 };
+			};
+
+			void push_undo_entry(UndoEntry entry);
+			void apply_entry_inverse(const UndoEntry& e);  // for undo()
+			void apply_entry_forward(const UndoEntry& e);  // for redo()
+			bool try_coalesce_with_top(const UndoEntry& candidate);
 
 		private:
 			String m_buffer;
@@ -170,5 +261,24 @@ namespace ostd
 
 			ChangeCallback m_onChanged { nullptr };
 			ChangeCallback m_onCursorMoved { nullptr };
+
+			// ----- Undo / redo state -----
+			std::deque<UndoEntry> m_undoStack;
+			std::deque<UndoEntry> m_redoStack;
+
+			// Default 2048 steps. 0 means unlimited.
+			u32 m_maxUndoSteps { 2048 };
+
+			// Coalesce timeout in ms. 0 disables coalescing.
+			u32 m_coalesceTimeout_ms { 1000 };
+
+			// Tracks the kind of the most recent edit so we can decide
+			// whether to coalesce the next one with it.
+			EditKind m_lastEditKind { EditKind::None };
+
+			// Reentrancy guard: when true, replace_range skips the undo
+			// recording step (because we're already in the middle of an
+			// undo() or redo() call applying a stored entry).
+			bool m_applyingHistory { false };
 	};
 }

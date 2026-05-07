@@ -459,11 +459,13 @@ namespace ogfx
 			}
 			else if (data.isUndo())
 			{
-				std::cout << "Undo is not implemented yet!\n";
+				if (m_buffer.canUndo())
+					m_buffer.undo();
 			}
 			else if (data.isRedo())
 			{
-				std::cout << "Redo is not implemented yet!\n";
+				if (m_buffer.canRedo())
+					m_buffer.redo();
 			}
 
 			// ----- Cursor movement -----

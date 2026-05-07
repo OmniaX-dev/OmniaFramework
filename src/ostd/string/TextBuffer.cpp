@@ -19,6 +19,7 @@
 */
 
 #include "TextBuffer.hpp"
+#include <ostd/utils/Time.hpp>
 
 namespace ostd
 {
@@ -101,12 +102,16 @@ namespace ostd
 		m_multiline = ml;
 		if (!m_multiline)
 		{
-			strip_newlines_from_buffer();
-			m_cursor = clamp_to_codepoint_boundary(m_cursor);
-			m_anchor = clamp_to_codepoint_boundary(m_anchor);
-			m_lineStartsDirty = true;
-			fire_changed();
-			fire_cursor_moved();
+			// Strip newlines via replace_range so the change is undoable as
+			// a single step. We compute the stripped form on a copy and
+			// hand it to the chokepoint.
+			String stripped = m_buffer;
+			stripped.replaceAll("\r\n", " ");
+			stripped.replaceAll("\n", " ");
+			stripped.replaceAll("\r", " ");
+			if (stripped.cpp_str() != m_buffer.cpp_str())
+				replace_range(0, cast<u32>(m_buffer.len()), stripped, EditKind::Generic);
+			// If nothing changed (no newlines to strip), no edit is recorded.
 		}
 	}
 
@@ -117,24 +122,29 @@ namespace ostd
 
 	void TextBuffer::setText(const String& text)
 	{
-		m_buffer = text;
-		if (!m_multiline) strip_newlines_from_buffer();
-		m_cursor = m_anchor = cast<u32>(m_buffer.len());
+		// Strip newlines first if we're in single-line mode, since
+		// replace_range writes the input as-is. We do this on a copy so the
+		// caller's String isn't mutated.
+		String to_set = text;
+		if (!m_multiline)
+		{
+			to_set.replaceAll("\r\n", " ");
+			to_set.replaceAll("\n", " ");
+			to_set.replaceAll("\r", " ");
+		}
+		// Route through replace_range so this counts as an undoable operation.
+		// replace_range will leave the cursor at the end of the inserted text,
+		// matching the original setText() contract.
+		replace_range(0, cast<u32>(m_buffer.len()), to_set, EditKind::Generic);
 		m_desiredColumn = -1;
-		m_lineStartsDirty = true;
-		fire_changed();
-		fire_cursor_moved();
 	}
 
 	void TextBuffer::clear(void)
 	{
-		if (m_buffer.empty() && m_cursor == 0 && m_anchor == 0) return;
-		m_buffer.clr();
-		m_cursor = m_anchor = 0;
+		// replace_range already short-circuits no-op edits, so we don't need
+		// the explicit empty-and-cursor-at-zero guard the original had.
+		replace_range(0, cast<u32>(m_buffer.len()), String(""), EditKind::Generic);
 		m_desiredColumn = -1;
-		m_lineStartsDirty = true;
-		fire_changed();
-		fire_cursor_moved();
 	}
 
 
@@ -180,6 +190,7 @@ namespace ostd
 	{
 		if (!hasSelection()) return;
 		m_anchor = m_cursor;
+		m_lastEditKind = EditKind::None;
 		fire_cursor_moved();
 	}
 
@@ -188,6 +199,7 @@ namespace ostd
 		m_anchor = 0;
 		m_cursor = cast<u32>(m_buffer.len());
 		m_desiredColumn = -1;
+		m_lastEditKind = EditKind::None;
 		fire_cursor_moved();
 	}
 
@@ -198,6 +210,7 @@ namespace ostd
 		m_anchor = a;
 		m_cursor = b;
 		m_desiredColumn = -1;
+		m_lastEditKind = EditKind::None;
 		fire_cursor_moved();
 	}
 
@@ -357,7 +370,30 @@ namespace ostd
 			to_insert.replaceAll("\r\n", "\n");
 			to_insert.replaceAll("\r", "\n");
 		}
-		replace_range(selectionStart(), selectionEnd(), to_insert);
+		// Decide the edit kind for undo coalescing. The caller might be
+		// pasting a whole document (definitely Generic — one undo step for
+		// the entire paste) or it might be the keyboard handler shovelling
+		// one typed character at a time through this method (TextEdit does
+		// exactly that — every keystroke arrives as a single-codepoint
+		// String). For the typing case we want the same coalescing as
+		// insertCodepoint, so consecutive typed characters collapse into
+		// one undo step.
+		//
+		// Note: we deliberately *don't* exclude the selection-replace case
+		// here. The selection-replace becomes one InsertCodepoint entry,
+		// and subsequent typing merges into it — so "select, type 'hello'"
+		// is undone in one step. The kind-mismatch check in
+		// try_coalesce_with_top stops this entry from merging backward
+		// into whatever Generic edit preceded the selection, which is the
+		// part that actually matters.
+		EditKind kind = EditKind::Generic;
+		if (!to_insert.empty()
+			&& String::utf8::count_codepoints(to_insert.cpp_str()) == 1
+			&& to_insert.cpp_str() != "\n")
+		{
+			kind = EditKind::InsertCodepoint;
+		}
+		replace_range(selectionStart(), selectionEnd(), to_insert, kind);
 		m_desiredColumn = -1;
 	}
 
@@ -366,7 +402,16 @@ namespace ostd
 		if (!m_multiline && codepoint == '\n') return;
 		const String encoded = String::utf8::encode(codepoint);
 		if (encoded.empty()) return;  // Invalid codepoint — silently drop.
-		replace_range(selectionStart(), selectionEnd(), encoded);
+		// Tag as InsertCodepoint unconditionally (except for newlines, where
+		// each line break is a natural undo boundary). When this replaces a
+		// selection, the kind-mismatch check in try_coalesce_with_top stops
+		// it from merging into the previous entry — but it can serve as the
+		// *start* of a fresh coalesce chain that subsequent typing extends,
+		// which means "select, type 'hello'" undoes in one step.
+		const EditKind kind = (codepoint == '\n')
+			? EditKind::Generic
+			: EditKind::InsertCodepoint;
+		replace_range(selectionStart(), selectionEnd(), encoded, kind);
 		m_desiredColumn = -1;
 	}
 
@@ -380,7 +425,7 @@ namespace ostd
 		}
 		if (m_cursor == 0) return;
 		const u32 prev = String::utf8::prev_codepoint_start(m_buffer.cpp_str(), m_cursor);
-		replace_range(prev, m_cursor, String(""));
+		replace_range(prev, m_cursor, String(""), EditKind::Backspace);
 	}
 
 	void TextBuffer::deleteForward(void)
@@ -393,7 +438,7 @@ namespace ostd
 		}
 		if (m_cursor >= m_buffer.len()) return;
 		const u32 next = String::utf8::next_codepoint_start(m_buffer.cpp_str(), m_cursor);
-		replace_range(m_cursor, next, String(""));
+		replace_range(m_cursor, next, String(""), EditKind::DeleteForward);
 	}
 
 	void TextBuffer::backspaceWord(void)
@@ -467,7 +512,8 @@ namespace ostd
 	//  Private — chokepoints
 	// ============================================================
 
-	void TextBuffer::replace_range(u32 start_byte, u32 end_byte, const String& with)
+	void TextBuffer::replace_range(u32 start_byte, u32 end_byte, const String& with,
+	                               EditKind kind)
 	{
 		// Defensive clamping. In normal usage the public methods already
 		// produce well-formed boundaries, but we want the chokepoint itself
@@ -479,6 +525,12 @@ namespace ostd
 		// Skip no-op edits to avoid spurious notifications.
 		if (start_byte == end_byte && with.empty()) return;
 
+		// Snapshot pre-edit state for undo recording. We must do this BEFORE
+		// mutating m_buffer or m_cursor/m_anchor.
+		const u32    cursor_before = m_cursor;
+		const u32    anchor_before = m_anchor;
+		const String removed       = m_buffer.new_substr(start_byte, cast<i32>(end_byte));
+
 		// Build the new buffer.
 		String head = m_buffer.new_substr(0, cast<i32>(start_byte));
 		String tail = m_buffer.new_substr(end_byte, cast<i32>(m_buffer.len()));
@@ -489,8 +541,28 @@ namespace ostd
 		m_cursor = m_anchor = new_cursor;
 
 		m_lineStartsDirty = true;
+
+		// Record this edit on the undo stack — but only if it didn't itself
+		// originate from undo()/redo() applying a stored entry.
+		if (!m_applyingHistory)
+		{
+			UndoEntry e;
+			e.start         = start_byte;
+			e.removed       = removed;
+			e.inserted      = with;
+			e.cursor_before = cursor_before;
+			e.anchor_before = anchor_before;
+			e.kind          = kind;
+			e.timestamp_ms  = Time::getRunningTime_ms();
+			push_undo_entry(std::move(e));
+		}
+
 		fire_changed();
-		fire_cursor_moved();
+		// During history application the apply_*_entry functions will set
+		// the final cursor/anchor and fire onCursorMoved themselves — firing
+		// here would emit an intermediate position that observers might act
+		// on (e.g. scroll the view). Skip it in that case.
+		if (!m_applyingHistory) fire_cursor_moved();
 	}
 
 	void TextBuffer::move_cursor_to(u32 byte_offset, bool extend)
@@ -503,7 +575,13 @@ namespace ostd
 		m_cursor = byte_offset;
 		if (!extend) m_anchor = byte_offset;
 		if (m_cursor != old_cursor || m_anchor != old_anchor)
+		{
+			// Any deliberate cursor movement breaks the undo coalesce chain.
+			// Without this, typing "ab", moving the cursor, then typing "cd"
+			// would produce a single undo step "abcd" — surprising to the user.
+			m_lastEditKind = EditKind::None;
 			fire_cursor_moved();
+		}
 	}
 
 
@@ -729,5 +807,189 @@ namespace ostd
 	void TextBuffer::fire_cursor_moved(void)
 	{
 		if (m_onCursorMoved) m_onCursorMoved(*this);
+	}
+
+
+	// ============================================================
+	//  Undo / Redo
+	// ============================================================
+
+	bool TextBuffer::undo(void)
+	{
+		if (m_undoStack.empty()) return false;
+
+		// Move the entry from undo to redo before applying, so that the
+		// reentrancy guard sees a clean stack-top — we don't want
+		// apply_entry_inverse() to accidentally try to coalesce into the
+		// entry we're undoing.
+		UndoEntry e = std::move(m_undoStack.back());
+		m_undoStack.pop_back();
+
+		apply_entry_inverse(e);
+
+		m_redoStack.push_back(std::move(e));
+
+		// Any new edit after an undo starts a fresh chain — never coalesce
+		// across an undo boundary.
+		m_lastEditKind = EditKind::None;
+		m_desiredColumn = -1;
+		return true;
+	}
+
+	bool TextBuffer::redo(void)
+	{
+		if (m_redoStack.empty()) return false;
+
+		UndoEntry e = std::move(m_redoStack.back());
+		m_redoStack.pop_back();
+
+		apply_entry_forward(e);
+
+		m_undoStack.push_back(std::move(e));
+
+		m_lastEditKind = EditKind::None;
+		m_desiredColumn = -1;
+		return true;
+	}
+
+	void TextBuffer::clearHistory(void)
+	{
+		m_undoStack.clear();
+		m_redoStack.clear();
+		m_lastEditKind = EditKind::None;
+	}
+
+	void TextBuffer::setMaxUndoSteps(u32 max)
+	{
+		m_maxUndoSteps = max;
+		if (max == 0) return;  // Unlimited — nothing to trim.
+		// Drop oldest entries from the front until we fit. Both stacks share
+		// the same limit; redo entries existed in undo before they were
+		// undone, so trimming undo while leaving redo unbounded would be
+		// inconsistent.
+		while (m_undoStack.size() > m_maxUndoSteps) m_undoStack.pop_front();
+		while (m_redoStack.size() > m_maxUndoSteps) m_redoStack.pop_front();
+	}
+
+	void TextBuffer::push_undo_entry(UndoEntry entry)
+	{
+		// A new edit invalidates any pending redos — the linear undo model.
+		// (Branching/persistent undo is out of scope; the linear model is
+		// what every text editor does.)
+		m_redoStack.clear();
+
+		// Try to coalesce this edit with the one on top of the stack.
+		if (!try_coalesce_with_top(entry))
+		{
+			m_undoStack.push_back(std::move(entry));
+			// Enforce the size limit by dropping the oldest entry. We do this
+			// inside the non-coalesce branch because coalescing doesn't grow
+			// the stack.
+			if (m_maxUndoSteps != 0 && m_undoStack.size() > m_maxUndoSteps)
+				m_undoStack.pop_front();
+		}
+
+		// Record the kind of the most-recent edit for the *next* coalesce
+		// decision. We do this after coalescing because the coalesced entry
+		// retains the same kind as the previous one.
+		m_lastEditKind = m_undoStack.empty() ? EditKind::None : m_undoStack.back().kind;
+	}
+
+	bool TextBuffer::try_coalesce_with_top(const UndoEntry& candidate)
+	{
+		// Coalescing requires:
+		//  - A previous entry exists.
+		//  - The previous edit's kind is the same coalescible kind.
+		//  - The candidate is itself a coalescible kind (Generic never merges).
+		//  - The candidate occurred within the timeout window of the previous.
+		//  - The kinds aren't EditKind::None or EditKind::Generic.
+		if (m_undoStack.empty()) return false;
+		if (m_coalesceTimeout_ms == 0) return false;
+		if (candidate.kind != m_lastEditKind) return false;
+		if (candidate.kind == EditKind::None || candidate.kind == EditKind::Generic)
+			return false;
+
+		UndoEntry& top = m_undoStack.back();
+
+		// Hard timeout: we don't merge edits that are more than
+		// m_coalesceTimeout_ms apart, even if everything else lines up. This
+		// matches the behavior of pretty much every text editor — a pause in
+		// typing is the user's natural "step boundary".
+		if (candidate.timestamp_ms < top.timestamp_ms) return false;  // clock weirdness
+		if (candidate.timestamp_ms - top.timestamp_ms > m_coalesceTimeout_ms)
+			return false;
+
+		switch (candidate.kind)
+		{
+			case EditKind::InsertCodepoint:
+			{
+				// New insert must start exactly where the previous one ended.
+				const u32 prev_end = top.start + cast<u32>(top.inserted.len());
+				if (candidate.start != prev_end) return false;
+				// Merge: append the new inserted text. cursor_before / anchor_before
+				// stay as the *original* values so undo rewinds to the start of
+				// the typing run.
+				top.inserted = top.inserted + candidate.inserted;
+				top.timestamp_ms = candidate.timestamp_ms;
+				return true;
+			}
+			case EditKind::Backspace:
+			{
+				// Each successive backspace removes a codepoint immediately to
+				// the LEFT of the previous removal. So candidate's range ends
+				// where top's range begins.
+				if (candidate.start + cast<u32>(candidate.removed.len()) != top.start)
+					return false;
+				// Merge: prepend the newly-removed codepoint, slide start left.
+				top.removed = candidate.removed + top.removed;
+				top.start = candidate.start;
+				top.timestamp_ms = candidate.timestamp_ms;
+				return true;
+			}
+			case EditKind::DeleteForward:
+			{
+				// Each successive delete-forward removes a codepoint at the
+				// SAME position (cursor doesn't move on forward delete). So
+				// candidate.start should equal top.start.
+				if (candidate.start != top.start) return false;
+				// Merge: append the newly-removed codepoint to the run.
+				top.removed = top.removed + candidate.removed;
+				top.timestamp_ms = candidate.timestamp_ms;
+				return true;
+			}
+			default:
+				return false;
+		}
+	}
+
+	void TextBuffer::apply_entry_inverse(const UndoEntry& e)
+	{
+		// Undo replaces what was inserted with what was removed, then
+		// restores the cursor and anchor to their pre-edit positions. We use
+		// the chokepoint with the reentrancy guard so notifications still
+		// fire but no new history is recorded. replace_range suppresses its
+		// own cursor-moved fire while m_applyingHistory is true; we fire it
+		// here exactly once with the final restored cursor/anchor.
+		const u32 inserted_end = e.start + cast<u32>(e.inserted.len());
+		m_applyingHistory = true;
+		replace_range(e.start, inserted_end, e.removed);
+		m_applyingHistory = false;
+		m_cursor = e.cursor_before;
+		m_anchor = e.anchor_before;
+		fire_cursor_moved();
+	}
+
+	void TextBuffer::apply_entry_forward(const UndoEntry& e)
+	{
+		// Redo re-applies the original edit. replace_range's natural
+		// post-edit cursor (at start + inserted.len(), anchor == cursor)
+		// matches what an in-progress edit would leave behind, so we don't
+		// need to override it. Same pattern: suppress replace_range's
+		// cursor-moved fire and emit one ourselves.
+		const u32 removed_end = e.start + cast<u32>(e.removed.len());
+		m_applyingHistory = true;
+		replace_range(e.start, removed_end, e.inserted);
+		m_applyingHistory = false;
+		fire_cursor_moved();
 	}
 }

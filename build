@@ -49,7 +49,7 @@ else
 		gdb -batch \
 		    -ex 'set pagination off' \
 		    -ex 'set print pretty on' \
-		    -ex 'set logging file ../gdb-last.log' \
+		    -ex 'set logging file gdb-last.log' \
 		    -ex 'set logging overwrite on' \
 		    -ex 'set logging on' \
 		    -ex 'handle SIGPIPE nostop noprint pass' \
