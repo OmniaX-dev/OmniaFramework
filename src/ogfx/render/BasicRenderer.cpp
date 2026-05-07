@@ -248,7 +248,7 @@ namespace ogfx
 		if (!font) font = m_font;
 
 		auto l_buildCacheKey = [&](void) -> String {
-			return String("").add(message).add(fontSize).add(reinterpret_cast<uintptr_t>(font));
+			return String("").add(message).add(fontSize).add(font);
 		};
 
 		String cacheKey = l_buildCacheKey();

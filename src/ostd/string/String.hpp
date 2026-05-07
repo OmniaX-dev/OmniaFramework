@@ -122,6 +122,7 @@ namespace ostd
 			String& add(i64 i);
 			String& add(f32 f, u8 precision = 0);
 			String& add(f64 f, u8 precision = 0);
+			String& add(const void* p, const String& prefix = "0x");
 
 			//New String
 			String new_ltrim(void) const;
@@ -152,6 +153,7 @@ namespace ostd
 			String new_add(i64 i) const;
 			String new_add(f32 f, u8 precision = 0) const;
 			String new_add(f64 f, u8 precision = 0) const;
+			String new_add(const void* p, const String& prefix = "0x");
 
 			//Utility
 			i64 toInt(void) const;

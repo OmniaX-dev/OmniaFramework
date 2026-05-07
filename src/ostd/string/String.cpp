@@ -265,6 +265,13 @@ namespace ostd
 		return add(s);
 	}
 
+	String& String::add(const void* p, const String& prefix)
+	{
+		std::stringstream stream;
+		stream << prefix << std::hex << std::uppercase << reinterpret_cast<uintptr_t>(p);
+		return add(stream.str());
+	}
+
 
 
 	//New String
@@ -429,6 +436,12 @@ namespace ostd
 	{
 		String __str = m_data;
 		return __str.add(f, precision);
+	}
+
+	String String::new_add(const void* p, const String& prefix)
+	{
+		String __str = m_data;
+		return __str.add(p, prefix);
 	}
 
 
