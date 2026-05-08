@@ -270,7 +270,23 @@ namespace ogfx
 
 		void TextEdit::applyTheme(const ostd::Stylesheet& theme)
 		{
-
+			enableCursorBlink(getThemeValue<bool>(theme, "cursorBlink", isCursorBlinkEnabled()));
+			setCursorWidth(getThemeValue<f32>(theme, "cursorWidth", getCursorWidth()));
+			setCursorColor(getThemeValue<Color>(theme, "cursorColor", getCursorColor()));
+			setSelectionColor(getThemeValue<Color>(theme, "selectionColor", getSelectionColor()));
+			setMaxLength(getThemeValue<i32>(theme, "macLength", getMaxLength()));
+			setTextPadding(getThemeValue<f32>(theme, "textPaddingLeft", getTextPadding().left),
+							  getThemeValue<f32>(theme, "textPaddingRight", getTextPadding().right));
+			String mask = getThemeValue<String>(theme, "characterMask", String(""));
+			if (mask.len() != 1)
+				clearCharacterMask();
+			else
+				setCharacterMask(mask[0]);
+			String styleStr = getThemeValue<String>(theme, "cursorStyle", String("line"));
+			if      (styleStr == "block")      setCursorStyle(CursorStyle::Block);
+			else if (styleStr == "box")        setCursorStyle(CursorStyle::Box);
+			else if (styleStr == "underscore") setCursorStyle(CursorStyle::Underscore);
+			else                               setCursorStyle(CursorStyle::Line);
 		}
 
 		void TextEdit::onDraw(ogfx::BasicRenderer2D& gfx)
@@ -330,20 +346,6 @@ namespace ogfx
 			}
 
 			// -------------------------------------------------------------
-			// 7. Draw the text itself. Single drawString call — the layout
-			//    cache is only used for cursor / selection positioning;
-			//    actual glyph rendering goes through the renderer's existing
-			//    code path (which handles kerning, atlas, etc.).
-			// -------------------------------------------------------------
-			if (!m_buffer.empty())
-			{
-				if (std::isprint(m_charMask))
-					gfx.drawString(String::duplicateChar(m_charMask, m_buffer.text().len()), { textX, textY }, getTextColor(), getFontSize());
-				else
-					gfx.drawString(m_buffer.text(), { textX, textY }, getTextColor(), getFontSize());
-			}
-
-			// -------------------------------------------------------------
 			// 8. Draw the cursor. Only when focused and the blink is in the
 			//    "on" phase. The cursor renders ON TOP of everything else so
 			//    it's visible inside selections.
@@ -351,10 +353,53 @@ namespace ogfx
 			if (isFocused() && (m_cursorState || !m_cursorBlink))
 			{
 				const f32 cx = textX + layout_x_for_byte(m_buffer.cursorByteOffset());
-				gfx.fillRect(
-					{ cx, textY, m_cursorWidth, m_layout.lineHeight },
-					m_cursorColor
-				);
+				auto l_char_width_at_cursor = [this](void) -> f32 {
+					const u32 byteOff = m_buffer.cursorByteOffset();
+					const auto& bs = m_layout.byteOffsets;
+					const auto& xs = m_layout.xPositions;
+					auto it = std::lower_bound(bs.begin(), bs.end(), byteOff);
+					if (it != bs.end() && (it + 1) != bs.end()) {
+						const size_t idx = std::distance(bs.begin(), it);
+						return xs[idx + 1] - xs[idx];
+					}
+					return m_layout.lineHeight * 0.6f; // fallback at end-of-text
+				};
+				switch (m_cursorStyle)
+				{
+					case CursorStyle::Line:
+						gfx.fillRect({ cx, textY, m_cursorWidth, m_layout.lineHeight }, m_cursorColor);
+						break;
+					case CursorStyle::Block:
+					{
+						gfx.fillRect({ cx, textY, l_char_width_at_cursor(), m_layout.lineHeight }, m_cursorColor);
+						break;
+					}
+					case CursorStyle::Box:
+					{
+						gfx.drawRect({ cx, textY, l_char_width_at_cursor(), m_layout.lineHeight }, m_cursorColor, m_cursorWidth);
+						break;
+					}
+					case CursorStyle::Underscore:
+					{
+						const f32 underH = std::max(2.0f, m_layout.lineHeight * 0.1f);
+						gfx.fillRect({ cx, textY + m_layout.lineHeight - underH, l_char_width_at_cursor(), m_cursorWidth }, m_cursorColor);
+						break;
+					}
+				}
+			}
+
+			// -------------------------------------------------------------
+			// 7. Draw the text itself. Single drawString call — the layout
+			//    cache is only used for cursor / selection positioning;
+			//    actual glyph rendering goes through the renderer's existing
+			//    code path (which handles kerning, atlas, etc.).
+			// -------------------------------------------------------------
+			if (!m_buffer.empty())
+			{
+				if (hasCharacterMask())
+					gfx.drawString(String::duplicateChar(m_charMask, m_buffer.text().len()), { textX, textY }, getTextColor(), getFontSize());
+				else
+					gfx.drawString(m_buffer.text(), { textX, textY }, getTextColor(), getFontSize());
 			}
 		}
 
@@ -392,14 +437,10 @@ namespace ogfx
 			}
 		}
 
-		void TextEdit::onFocusGained(const Event& event)
-		{
-
-		}
-
 		void TextEdit::onFocusLost(const Event& event)
 		{
-
+			if (m_buffer.hasSelection())
+				m_buffer.clearSelection();
 		}
 
 		void TextEdit::onTextEntered(const Event& event)
@@ -407,7 +448,7 @@ namespace ogfx
 			auto& data = *event.keyboard;
 			const String toInsert = clamp_input_to_max_length(data.text);
 			if (toInsert.empty()) return;
-			if (!m_charFilter || m_charFilter->isValidChar(data.text, m_buffer))
+			if (!m_filter || m_filter->isValidChar(data.text, m_buffer))
 			{
 				if (m_lastChar == toInsert && m_keyRepeatTimer.isCounting())
 					return;
@@ -425,17 +466,22 @@ namespace ogfx
 
 			const bool extend = data.modifiers.anyShift();
 			const bool word   = data.modifiers.primary();
+			const bool mask   = hasCharacterMask();
 
 			// ----- Editing operations (chords first, since they're more specific) -----
 
 			if (data.isCopy())
 			{
+				if (hasCharacterMask() && !isCopyOnMaskEnabled())
+					return;
 				const String sel = m_buffer.selectedText();
 				if (!sel.empty())
 					SDL_SetClipboardText(sel);
 			}
 			else if (data.isCut())
 			{
+				if (hasCharacterMask() && !isCopyOnMaskEnabled())
+					return;
 				const String sel = m_buffer.selectedText();
 				if (!sel.empty())
 				{
@@ -472,12 +518,14 @@ namespace ogfx
 
 			else if (data.keyCode == KeyCode::Left)
 			{
-				if (word) m_buffer.moveWordLeft(extend);
+				if (mask && word) m_buffer.moveDocumentStart(extend);
+				else if (!mask && word) m_buffer.moveWordLeft(extend);
 				else      m_buffer.moveLeft(extend);
 			}
 			else if (data.keyCode == KeyCode::Right)
 			{
-				if (word) m_buffer.moveWordRight(extend);
+				if (mask && word) m_buffer.moveDocumentEnd(extend);
+				else if (!mask && word) m_buffer.moveWordRight(extend);
 				else      m_buffer.moveRight(extend);
 			}
 			else if (data.keyCode == KeyCode::Home || data.keyCode == KeyCode::Pageup)
@@ -496,13 +544,35 @@ namespace ogfx
 
 			else if (data.keyCode == KeyCode::Backspace)
 			{
-				if (word) m_buffer.backspaceWord();
-				else      m_buffer.backspace();
+				if (m_buffer.hasSelection())
+				{
+					m_buffer.deleteSelection();
+				}
+				else if (mask && word)
+				{
+					if (m_buffer.cursorByteOffset() > 0) {
+						m_buffer.selectRange(0, m_buffer.cursorByteOffset());
+						m_buffer.deleteSelection();
+					}
+				}
+				else if (!mask && word) m_buffer.backspaceWord();
+				else                    m_buffer.backspace();
 			}
 			else if (data.keyCode == KeyCode::Delete)
 			{
-				if (word) m_buffer.deleteWord();
-				else      m_buffer.deleteForward();
+				if (m_buffer.hasSelection())
+				{
+					m_buffer.deleteSelection();
+				}
+				else if (mask && word)
+				{
+					if (m_buffer.cursorByteOffset() < m_buffer.byteSize()) {
+						m_buffer.selectRange(m_buffer.cursorByteOffset(), m_buffer.byteSize());
+						m_buffer.deleteSelection();
+					}
+				}
+				else if (!mask && word) m_buffer.deleteWord();
+				else                    m_buffer.deleteForward();
 			}
 
 			// ----- Other -----
@@ -556,7 +626,10 @@ namespace ogfx
 				// we mark the drag flag so subsequent drag motion extends the
 				// selection by word — though we'll keep the simple implementation
 				// for now where dragging after a double-click extends by character.
-				m_buffer.selectWordAt(hit);
+				if (hasCharacterMask())
+					m_buffer.selectAll();
+				else
+					m_buffer.selectWordAt(hit);
 				m_mouseSelecting = true;
 				m_lastClickValid = false;  // Don't triple-click into something weird.
 			}
@@ -640,11 +713,15 @@ namespace ogfx
 				return;
 			}
 
+			const String displayText = hasCharacterMask()
+				? String::duplicateChar(m_charMask, m_buffer.text().len())
+				: m_buffer.text();
+
 			// One call to the renderer. Returns one Vec2 per codepoint:
 			//   .x = advance (incl. kerning) contributed by that glyph
 			//   .y = glyph height (same for all glyphs at this font/size)
 			const stdvec<Vec2> perChar =
-				gfx.getStringDimensionsPerCharacter(m_buffer.text(), getFontSize());
+				gfx.getStringDimensionsPerCharacter(displayText, getFontSize());
 
 			if (perChar.empty())
 			{

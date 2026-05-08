@@ -397,5 +397,11 @@ macro set_common_values(_borderColor = $borderColor, _fontSize = 18, _showBorder
 	set_focus_border($blueAccent)
 	backgroundColor = $darkColor
 	textColor = $textColor
+	cursorBlink = true
+	cursorWidth = 2
+	cursorColor = $crimsonAccent
+	selectionColor = $blueAccent
+	cursorStyle = "line"
+	characterMask = "*"
 }
 % ======================

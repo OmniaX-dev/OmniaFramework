@@ -72,6 +72,7 @@ Resolve lifetime issue for character filter in TextEdit
 Implement notification system
 Fix cursor not advancing when selection is present and left arrow is pressed in TextEdit
 Check widgets/layouts interactions
+Add per-widget font
 
 
 
