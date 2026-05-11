@@ -34,6 +34,12 @@
 ***Check if Text Entered events are enabled via SDL
 ***Add modifiers to Event.keyboard path
 ***Implement max length in TextEdit
+***Make label auto-size
+***Implement shift-selection in TextEdit (mouse/keyboard)
+***Implement ctrl-selection/navigation in TextEdit
+***Implement home/end and pg up/pg down in TextEdit
+***Implement Undo stack in TextBuffer
+***Resolve lifetime issue for character filter in TextEdit
 Implement cursors in Stylesheet
 FIX: Window getting exponentially bigger when Desktop scale changes
 FIX: Refreshing scroll when content extent changes
@@ -46,7 +52,6 @@ Add gradient to TreeView selection
 Add gradient to menubar background and selection
 Add cursor stack
 Add MacOS global menu integration
-Make label auto-size
 FIX: Tooltips
 XML Layout file?
 Add Hex Editor widget
@@ -64,11 +69,6 @@ Implement a font-fallback chain in FontGlyphAtlas
 Implement appendText in TextBuffer and TextEdit
 Implement per-glyph caching in BasicRenderer2D
 Added double-click event to widgets
-Implement shift-selection in TextEdit (mouse/keyboard)
-Implement ctrl-selection/navigation in TextEdit
-Implement home/end and pg up/pg down in TextEdit
-Implement Undo stack in TextBuffer
-Resolve lifetime issue for character filter in TextEdit
 Implement notification system
 Fix cursor not advancing when selection is present and left arrow is pressed in TextEdit
 Check widgets/layouts interactions
