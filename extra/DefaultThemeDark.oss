@@ -402,6 +402,19 @@ macro set_common_values(_borderColor = $borderColor, _fontSize = 18, _showBorder
 	cursorColor = $crimsonAccent
 	selectionColor = $blueAccent
 	cursorStyle = "line"
-	characterMask = "*"
 }
 % ======================
+
+
+
+% ====== ColorPicker ======
+(colorPicker) {
+	set_common_values()
+	set_focus_border($blueAccent)
+	backgroundColor = $darkColor
+	padding = rect(8, 8, 8, 8)
+	stripWidth = 20
+	regionSpacing = 8
+	cursorRadius = 6
+}
+% =========================

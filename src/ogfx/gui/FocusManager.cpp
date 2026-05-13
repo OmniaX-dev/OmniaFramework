@@ -69,11 +69,15 @@ namespace ogfx
 			if (m_focused)
 			{
 				m_focused->m_focused = false;
+				if (m_focused->callback_onFocusLost)
+					m_focused->callback_onFocusLost(Event(m_window));
 				m_focused->onFocusLost(Event(m_window));
 				m_focused->setThemeQualifier("focused", false);
 			}
 
 			widget.m_focused = true;
+			if (widget.callback_onFocusGained)
+				widget.callback_onFocusGained(Event(m_window));
 			widget.onFocusGained(Event(m_window));
 			widget.setThemeQualifier("focused", true);
 			m_focused = &widget;

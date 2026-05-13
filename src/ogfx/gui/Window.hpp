@@ -272,6 +272,7 @@ namespace ogfx
 				inline Window(void) {  }
 				inline Window(i32 width, i32 height, const String& title) { initialize(width, height, title); }
 				void addWidget(Widget& widget, const Vec2& position = { 0, 0 });
+				void removeWidget(Widget& widget);
 				void setTheme(const ostd::Stylesheet& theme) override;
 				inline void showContextMenu(const Vec2& pos) { m_cmenu.show(pos); }
 				inline void showContextMenu(const ContextMenu::Instance& instance, const Vec2& pos) { setContextMenu(instance); showContextMenu(pos); }

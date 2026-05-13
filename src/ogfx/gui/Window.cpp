@@ -819,6 +819,11 @@ namespace ogfx
 			setTheme(*m_guiTheme);
 		}
 
+		void Window::removeWidget(Widget& widget)
+		{
+			m_rootWidget.removeWidget(widget);
+		}
+
 		void Window::setTheme(const ostd::Stylesheet& theme)
 		{
 			m_guiTheme = &theme;

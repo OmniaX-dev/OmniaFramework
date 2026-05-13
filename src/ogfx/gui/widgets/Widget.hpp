@@ -57,6 +57,8 @@ namespace ogfx
 				KeyPressed,
 				KeyReleased,
 				TextEntered,
+				FocusLost,
+				FocusGained,
 				WindowClosed,
 				WindowResized,
 				WindowFocused,
@@ -343,6 +345,8 @@ namespace ogfx
 				EventCallback callback_onKeyPressed { nullptr };
 				EventCallback callback_onKeyReleased { nullptr };
 				EventCallback callback_onTextEntered { nullptr };
+				EventCallback callback_onFocusGained { nullptr };
+				EventCallback callback_onFocusLost { nullptr };
 				EventCallback callback_onWindowClosed { nullptr };
 				EventCallback callback_onWindowResized { nullptr };
 				EventCallback callback_onWindowFocused { nullptr };

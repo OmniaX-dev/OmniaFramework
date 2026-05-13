@@ -285,6 +285,8 @@ namespace ogfx
 				case eCallback::KeyPressed:      callback_onKeyPressed      = std::move(callback); break;
 				case eCallback::KeyReleased:     callback_onKeyReleased     = std::move(callback); break;
 				case eCallback::TextEntered:     callback_onTextEntered     = std::move(callback); break;
+				case eCallback::FocusGained:     callback_onFocusGained     = std::move(callback); break;
+				case eCallback::FocusLost:       callback_onFocusLost       = std::move(callback); break;
 				case eCallback::WindowClosed:    callback_onWindowClosed    = std::move(callback); break;
 				case eCallback::WindowResized:   callback_onWindowResized   = std::move(callback); break;
 				case eCallback::WindowFocused:   callback_onWindowFocused   = std::move(callback); break;
@@ -371,6 +373,7 @@ namespace ogfx
 
 		void Widget::__onMouseMoved(const Event& event)
 		{
+			m_mouseInside = contains(event.mouse->position_x, event.mouse->position_y);
 			if (event.isHandled() || !isMouseMovedEventEnabled()) return;
 			if (hasChildren())
 				m_widgets.onMouseMoved(event);

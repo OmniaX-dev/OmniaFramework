@@ -151,14 +151,14 @@ namespace ogfx
 				{
 					if (w->m_mouseInside)
 					{
-						w->m_mouseInside = false;
+						// w->m_mouseInside = false;
 						w->__onMouseExited(event);
 					}
 					continue;
 				}
 				if (!w->m_mouseInside)
 				{
-					w->m_mouseInside = true;
+					// w->m_mouseInside = true;
 					w->__onMouseEntered(event);
 				}
 				else
@@ -176,7 +176,7 @@ namespace ogfx
 						Widget* ww = m_widgetList[j];
 						if (ww->m_mouseInside)
 						{
-							ww->m_mouseInside = false;
+							// ww->m_mouseInside = false;
 							ww->__onMouseExited(event);
 						}
 					}
@@ -270,7 +270,10 @@ namespace ogfx
 			if (widget == nullptr) return;
 			if (!widget->isVisible()) return;
 			if (!widget->isDragAndDropEnabled()) return;
+			_DEBUG(4);
+			std::cout << widget->getTypeName() << "\n" << widget->getGlobalBounds() << "\n" << ostd::Vec2 { event.mouse->position_x, event.mouse->position_y } << "\n";
 			if (!widget->isMouseInside()) return;
+			_DEBUG(5);
 			if (Widget::s_dragAndDropData != nullptr)
 			{
 				auto& const_cast_event = const_cast<Event&>(event);
