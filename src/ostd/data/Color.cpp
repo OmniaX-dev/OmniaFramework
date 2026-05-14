@@ -97,110 +97,11 @@ namespace ostd
 
 	Color& Color::set(const String& color_string)
 	{
-		String se(color_string);
-		se.trim();
-
-		// --- Step 1: Extract optional .lighten(x) or .darken(x) suffix ---
-		enum class Modifier { None, Lighten, Darken };
-		Modifier mod = Modifier::None;
-		f32 modAmount = 0.0f;
-
+		if (!isValidColorString(color_string, this))
 		{
-			stdvec<String> matches;
-			auto positions = se.regexFind("\\.(lighten|darken)\\(\\s*([0-9]*\\.?[0-9]+)\\s*\\)\\s*$", true, &matches);
-
-			if (!positions.empty())
-			{
-				const String& whole = matches[0];
-				mod = whole.contains("lighten") ? Modifier::Lighten : Modifier::Darken;
-
-				// Extract the number between '(' and ')'
-				u32 openParen = whole.indexOf("(");
-				u32 closeParen = whole.indexOf(")");
-				String numStr = whole.new_substr(openParen + 1, closeParen);
-				numStr.trim();
-				modAmount = numStr.toFloat();
-
-				// Clamp to [0, 1]
-				if (modAmount < 0.0f) modAmount = 0.0f;
-				if (modAmount > 1.0f) modAmount = 1.0f;
-
-				// Strip the suffix from se
-				se = se.substr(0, positions[0]);
-				se.trim();
-			}
+			OX_WARN("ostd::Color::set(const String&) -> Invalid color string: %s", color_string.c_str());
+			r = 0; g = 0; b = 0; a = 255;  // match original default-on-failure
 		}
-
-		// --- Step 2: Default values ---
-		r = 0;
-		g = 0;
-		b = 0;
-		a = 255;
-
-		// --- Step 3: Normalize "#" prefix to "0x" ---
-		if (se.startsWith("#"))
-		{
-			String tmp = se.new_substr(1);
-			tmp.trim();
-			se = String("0x") + tmp;
-		}
-
-		// --- Step 4: Parse the color body ---
-		if (se.startsWith("0x"))
-		{
-			String hexPart = se.new_substr(2);
-			hexPart.trim();
-			u32 hexDigits = hexPart.len();
-
-			i64 ic = se.toInt();
-			u32 c = static_cast<u32>(ic);
-
-			if (hexDigits <= 6)
-			{
-				// RGB only — alpha defaults to 255
-				r = (c >> 16) & 0xFF;
-				g = (c >>  8) & 0xFF;
-				b = (c >>  0) & 0xFF;
-				a = 255;
-			}
-			else
-			{
-				// RGBA — 7 or 8 digits
-				r = (c >> 24) & 0xFF;
-				g = (c >> 16) & 0xFF;
-				b = (c >>  8) & 0xFF;
-				a = (c >>  0) & 0xFF;
-			}
-		}
-		else if ((se.startsWith("(") || se.startsWith("rgba(") || se.startsWith("rgb("))
-				 && se.endsWith(")") && se.contains(","))
-		{
-			se = se.substr(se.indexOf("(") + 1, se.len() - 1);
-			se.trim();
-			auto tokens = se.tokenize(",", true, false);
-			if (tokens.count() < 3 || tokens.count() > 4)
-			{
-				OX_WARN("ostd::Color::set(const String&) -> Invalid rgb string format: %s.", color_string.c_str());
-				return *this;
-			}
-			r = tokens.next().toInt();
-			g = tokens.next().toInt();
-			b = tokens.next().toInt();
-			if (tokens.hasNext())
-				a = tokens.next().toInt();
-		}
-		else
-		{
-			OX_WARN("ostd::Color::set(const String&) -> Unknown color string format: %s", color_string.c_str());
-			return *this;
-		}
-
-		// --- Step 5: Apply lighten/darken modifier ---
-		if (mod == Modifier::Lighten)
-			lighten(modAmount);
-		else if (mod == Modifier::Darken)
-			darken(modAmount);
-
 		return *this;
 	}
 
@@ -362,4 +263,105 @@ namespace ostd
 		}
 	}
 
+	bool Color::isValidColorString(const String& str, Color* out)
+	{
+		String se(str);
+		se.trim();
+		if (se.len() == 0) return false;
+
+		// --- Step 1: Extract optional .lighten(x) / .darken(x) suffix ---
+		enum class Modifier { None, Lighten, Darken };
+		Modifier mod = Modifier::None;
+		f32 modAmount = 0.0f;
+		{
+			stdvec<String> matches;
+			auto positions = se.regexFind(
+				"\\.(lighten|darken)\\(\\s*([0-9]*\\.?[0-9]+)\\s*\\)\\s*$",
+				true, &matches);
+			if (!positions.empty())
+			{
+				const String& whole = matches[0];
+				mod = whole.contains("lighten") ? Modifier::Lighten : Modifier::Darken;
+
+				const u32 openParen  = whole.indexOf("(");
+				const u32 closeParen = whole.indexOf(")");
+				String numStr = whole.new_substr(openParen + 1, closeParen);
+				numStr.trim();
+				modAmount = numStr.toFloat();
+				if (modAmount < 0.0f) modAmount = 0.0f;
+				if (modAmount > 1.0f) modAmount = 1.0f;
+
+				se = se.new_substr(0, positions[0]);
+				se.trim();
+			}
+			if (se.len() == 0) return false;
+		}
+
+		// Local working color — only written back to *out if everything validates.
+		u8 rr = 0, gg = 0, bb = 0, aa = 255;
+
+		// --- Step 2: Normalize "#" prefix to "0x" ---
+		if (se.startsWith("#"))
+			se = String("0x") + se.new_substr(1).trim();
+
+		// --- Step 3a: Hex form ---
+		if (se.toLower().startsWith("0x"))
+		{
+			if (!se.isHex()) return false;
+			const u32 digits = se.len() - 2;
+			if (digits < 1 || digits > 8) return false;
+
+			const u32 c = static_cast<u32>(se.toInt());
+			if (digits <= 6)
+			{
+				rr = (c >> 16) & 0xFF;
+				gg = (c >>  8) & 0xFF;
+				bb = (c >>  0) & 0xFF;
+				aa = 255;
+			}
+			else
+			{
+				rr = (c >> 24) & 0xFF;
+				gg = (c >> 16) & 0xFF;
+				bb = (c >>  8) & 0xFF;
+				aa = (c >>  0) & 0xFF;
+			}
+		}
+		// --- Step 3b: Functional form ---
+		else if ((se.startsWith("(") || se.startsWith("rgb(") || se.startsWith("rgba("))
+				 && se.endsWith(")") && se.contains(","))
+		{
+			String inner = se.new_substr(se.indexOf("(") + 1, se.len() - 1).trim();
+			auto tokens = inner.tokenize(",", true, false);
+			const u32 n = tokens.count();
+			if (n < 3 || n > 4) return false;
+
+			i64 vals[4] = { 0, 0, 0, 255 };
+			for (u32 i = 0; i < n; ++i)
+			{
+				String tok = tokens.next();
+				if (tok.len() == 0 || !tok.isInt()) return false;
+				const i64 v = tok.toInt();
+				if (v < 0 || v > 255) return false;
+				vals[i] = v;
+			}
+			rr = static_cast<u8>(vals[0]);
+			gg = static_cast<u8>(vals[1]);
+			bb = static_cast<u8>(vals[2]);
+			aa = static_cast<u8>(vals[3]);
+		}
+		else
+		{
+			return false;
+		}
+
+		// --- Step 4: Build the output color and apply modifier ---
+		if (out != nullptr)
+		{
+			out->set(rr, gg, bb, aa);
+			if      (mod == Modifier::Lighten) out->lighten(modAmount);
+			else if (mod == Modifier::Darken)  out->darken(modAmount);
+		}
+		return true;
+	}
 }

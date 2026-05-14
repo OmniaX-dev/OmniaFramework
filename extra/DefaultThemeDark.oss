@@ -417,4 +417,8 @@ macro set_common_values(_borderColor = $borderColor, _fontSize = 18, _showBorder
 	regionSpacing = 8
 	cursorRadius = 6
 }
+(colorButton) {
+	set_common_values()
+	set_focus_border($blueAccent)
+}
 % =========================

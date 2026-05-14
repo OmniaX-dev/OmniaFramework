@@ -361,14 +361,9 @@ namespace ogfx
 
 		void Widget::__onDragAndDrop(const Event& event)
 		{
-			if (hasChildren())
-				m_widgets.onMouseReleased(event);
-			if (!event.isHandled())
-			{
-				if (callback_onDragAndDrop)
-					callback_onDragAndDrop(event);
-				onDragAndDrop(event);
-			}
+			if (callback_onDragAndDrop)
+				callback_onDragAndDrop(event);
+			onDragAndDrop(event);
 		}
 
 		void Widget::__onMouseMoved(const Event& event)
@@ -424,6 +419,7 @@ namespace ogfx
 
 		void Widget::__onMouseDragged(const Event& event)
 		{
+			m_mouseInside = contains(event.mouse->position_x, event.mouse->position_y);
 			if (event.isHandled() || !isMouseDraggedEventEnabled()) return;
 			if (hasChildren())
 				m_widgets.onMouseDragged(event);

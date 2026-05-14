@@ -234,6 +234,7 @@ class TestWindow : public Window
 			t1.addWidget(m_text, { 400, 700 });
 			t1.addWidget(m_colBtn, { 800, 700 });
 			t1.addWidget(m_colBtn2, { 950, 700 });
+			t1.addWidget(m_colPan, { 1200, 700 });
 
 			t2.setLayout<BoxLayout>(BoxLayout::Orientation::Vertical);
 			t2.getLayout()->setSpacing(16);
@@ -347,9 +348,9 @@ class TestWindow : public Window
 			}
 			else if (signal.ID == ostd::BuiltinSignals::MouseReleased)
 			{
-				auto& mmd = cast<ogfx::MouseEventData&>(signal.userData);
-				if (mmd.button == ogfx::MouseEventData::eButton::Right)
-					showContextMenu(m_menu, { mmd.position_x, mmd.position_y });
+				// auto& mmd = cast<ogfx::MouseEventData&>(signal.userData);
+				// if (mmd.button == ogfx::MouseEventData::eButton::Right)
+				//     showContextMenu(m_menu, { mmd.position_x, mmd.position_y });
 			}
 			else if (signal.ID == ostd::BuiltinSignals::WindowResized)
 			{
@@ -398,6 +399,7 @@ class TestWindow : public Window
 		TextEdit m_text { *this };
 		ColorButton m_colBtn { *this };
 		ColorButton m_colBtn2 { *this };
+		ColorPicker m_colPan { *this };
 
 		enum MenuId : i32 { New = 1, Open, Save, SaveAs, Exit, CopyRaw, CopyFormatted };
 

@@ -12,6 +12,7 @@
 #include <ogfx/gui/widgets/Text.hpp>
 #include <ogfx/gui/widgets/Button.hpp>
 #include <ogfx/gui/widgets/ColorPicker.hpp>
+#include <ogfx/gui/ContextMenu.hpp>
 
 namespace ogfx
 {
@@ -87,7 +88,8 @@ namespace ogfx
 				void applyTheme(const ostd::Stylesheet& theme) override;
 				void onDraw(ogfx::BasicRenderer2D& gfx) override;
 				void onMouseReleased(const Event& event) override;
-				void onUpdate(void) override;
+				void onMousePressed(const Event& event) override;
+				void handleSignal(ostd::Signal& signal) override;
 
 				inline Color getColor(void) const { return m_color; }
 				void setColor(const Color& c);
@@ -111,8 +113,16 @@ namespace ogfx
 				// the widget tree clean.
 				ColorPicker* m_popup { nullptr };
 				bool m_popupOpen { false };
+				bool m_mousePressedHere { false };
 
 				std::function<void(const Color&)> callback_onColorChanged { nullptr };
+
+				enum MenuId : i32 { Copy = 1, Paste };
+				ContextMenu::Instance m_contextMenu {{
+						{ "Copy Color", MenuId::Copy },
+						{ "Paste Color", MenuId::Paste },
+					}, nullptr
+				};
 		};
 	}
 }
