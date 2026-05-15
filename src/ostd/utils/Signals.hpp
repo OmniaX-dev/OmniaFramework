@@ -29,31 +29,31 @@ namespace ostd
 {
 	struct BuiltinSignals
 	{
-		inline static constexpr u32 NoSignal 				=	0x0000;
+		inline static constexpr u32 NoSignal                 =    0x0000;
 
 		/** Builtin Signals **/
-		inline static constexpr u32 KeyPressed 			=	0x0001;
-		inline static constexpr u32 KeyReleased 			=	0x0002;
-		inline static constexpr u32 MousePressed 			=	0x0003;
-		inline static constexpr u32 MouseReleased 			=	0x0004;
-		inline static constexpr u32 MouseMoved 			=	0x0005;
-		inline static constexpr u32 MouseDragged 			=	0x0006;
-		inline static constexpr u32 TextEntered 			=	0x0007;
-		inline static constexpr u32 MouseScrolled 			=	0x0008;
+		inline static constexpr u32 KeyPressed             =    0x0001;
+		inline static constexpr u32 KeyReleased             =    0x0002;
+		inline static constexpr u32 MousePressed             =    0x0003;
+		inline static constexpr u32 MouseReleased             =    0x0004;
+		inline static constexpr u32 MouseMoved             =    0x0005;
+		inline static constexpr u32 MouseDragged             =    0x0006;
+		inline static constexpr u32 TextEntered             =    0x0007;
+		inline static constexpr u32 MouseScrolled             =    0x0008;
 
-		inline static constexpr u32 OnGuiEvent				=	0x2001;
-		inline static constexpr u32 FileDragAndDropped		=	0x2002;
-		inline static constexpr u32 TextDragAndDropped		=	0x2003;
+		inline static constexpr u32 OnGuiEvent                =    0x2001;
+		inline static constexpr u32 FileDragAndDropped        =    0x2002;
+		inline static constexpr u32 TextDragAndDropped        =    0x2003;
 
-		inline static constexpr u32 BeforeSDLShutdown		=	0x3001;
+		inline static constexpr u32 BeforeSDLShutdown        =    0x3001;
 
-		inline static constexpr u32 WindowResized 			=	0x1001;
-		inline static constexpr u32 WindowClosed 			=	0x1002;
-		inline static constexpr u32 WindowFocused 			=	0x1003;
-		inline static constexpr u32 WindowLostFocus		=	0x1004;
+		inline static constexpr u32 WindowResized             =    0x1001;
+		inline static constexpr u32 WindowClosed             =    0x1002;
+		inline static constexpr u32 WindowFocused             =    0x1003;
+		inline static constexpr u32 WindowLostFocus        =    0x1004;
 		/*********************/
 
-		inline static constexpr u32 CustomSignalBase 		=	0xFF0000;
+		inline static constexpr u32 CustomSignalBase         =    0xFF0000;
 	};
 
 	struct Signal
@@ -80,7 +80,6 @@ namespace ostd
 			inline DelegateSignal(u32 _id, BaseObject& _ud) : id(_id), ud(_ud) {  }
 		};
 		public:
-			static void init(bool allow_reinit = false);
 			static void handleDelegateSignals(void);
 			static void emitSignal(u32 signal_id, u8 prio = Signal::Priority::RealTime, BaseObject& userData = BaseObject::InvalidRef());
 			static void connect(BaseObject& object, u32 signal_id);
@@ -88,8 +87,29 @@ namespace ostd
 			inline static u32 newCustomSignal(u32 sub_id) { return BuiltinSignals::CustomSignalBase + sub_id; }
 
 		private:
+			inline static stdumap<u32, stdvec<BaseObject*>>& receivers(void)
+			{
+				static stdumap<u32, stdvec<BaseObject*>> m = [] {
+					stdumap<u32, stdvec<BaseObject*>> map;
+					map.reserve(__SIGNAL_BUFFER_START_SIZE);
+					return map;
+				}();
+				return m;
+			}
+
+			inline static stdvec<DelegateSignal>& delegateReceivers(void)
+			{
+				static stdvec<DelegateSignal> v = [] {
+					stdvec<DelegateSignal> vec;
+					vec.reserve(__DELEGATE_SIGNALS_BUFFER_START_SIZE);
+					return vec;
+				}();
+				return v;
+			}
+
+		private:
 			inline static stdumap<u32, stdvec<BaseObject*>> m_recievers;
-			inline static stdvec<DelegateSignal> m_DelegateRecievers;
+			inline static stdvec<DelegateSignal> m_delegateRecievers;
 			inline static constexpr u16 __SIGNAL_BUFFER_START_SIZE { 2048 };
 			inline static constexpr u16 __DELEGATE_SIGNALS_BUFFER_START_SIZE { 2048 };
 			inline static bool m_initialized { false };

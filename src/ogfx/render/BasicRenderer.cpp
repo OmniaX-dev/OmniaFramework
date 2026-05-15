@@ -166,7 +166,9 @@ namespace ogfx
 	{
 		if (!m_initialized || !m_fontOpen) return;
 		if (m_font != nullptr)
+		{
 			TTF_CloseFont(m_font);
+		}
 		m_font = nullptr;
 		m_fontOpen = false;
 		m_fontSize = DefaultFontSize;

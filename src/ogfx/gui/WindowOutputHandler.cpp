@@ -36,6 +36,7 @@ namespace ogfx
 		if (m_window != nullptr) return;
 		m_window = &window;
 		m_renderer.init(window);
+		m_renderer.loadDefaultMonoFont(18);
 	}
 
 	void GraphicsWindowOutputHandler::setMonospaceFont(const String& filePath)

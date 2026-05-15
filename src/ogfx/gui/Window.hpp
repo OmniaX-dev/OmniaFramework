@@ -173,6 +173,7 @@ namespace ogfx
 			ostd::ConsoleOutputHandler m_out;
 			GraphicsWindowOutputHandler m_wout;
 			const ostd::Stylesheet* m_guiTheme { nullptr };
+			bool m_refreshScreen { true };
 
 		private:
 			Color m_clearColor { 10, 10, 10, 255 };
@@ -190,7 +191,6 @@ namespace ogfx
 			bool m_visible { true };
 			bool m_blockingEvents { false };
 			bool m_resizeable { true };
-			bool m_refreshScreen { true };
 			bool m_invertHorizontalScroll { true };
 
 			f32 m_systemScale { 1.0f };

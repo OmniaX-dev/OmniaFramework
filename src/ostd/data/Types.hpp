@@ -24,6 +24,7 @@
 #include <cstdint>
 #include <vector>
 #include <unordered_map>
+#include <limits>
 #include <ostd/utils/Defines.hpp>
 
 typedef int8_t i8;

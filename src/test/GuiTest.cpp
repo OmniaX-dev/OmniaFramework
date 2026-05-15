@@ -516,7 +516,6 @@ class TestWindow : public Window
 i32 main(i32 argc, char** argv)
 {
 	ostd::Random::autoSeed();
-	ostd::initialize();
 	TestWindow window;
 	window.initialize(1200, 900, "OmniaFramework - Test Window");
 	window.setClearColor({ 0, 0, 0 });
