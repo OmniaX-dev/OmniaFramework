@@ -205,9 +205,25 @@ namespace ogfx
 			setSize({ 48, 24 });
 			setCallback(eCallback::DragAndDrop, [&](const ogfx::gui::Event& event) -> void {
 				auto data = Widget::getDragAndDropData();
-				if (data)
-					std::cout << *data << "\n";
+				if (data && data->getTypeName() == Color().getTypeName())
+					setColor(*cast<Color*>(data));
 			});
+			connectSignal(ostd::BuiltinSignals::MousePressed);
+			m_contextMenu.onActivate = [this](const ContextMenu::Entry& e) {
+				if (e.id == MenuId::Copy)
+				{
+					// TODO: Replace once I have a clipboard system
+					SDL_SetClipboardText(getColor().hexString(true, "#"));
+				}
+				else if (e.id == MenuId::Paste)
+				{
+					// TODO: Replace once I have a clipboard system
+					const String clipboardText = SDL_GetClipboardText();
+					Color tmp;
+					if (!clipboardText.empty() && Color::isValidColorString(clipboardText, &tmp))
+						setColor(tmp);
+				}
+			};
 			validate();
 			return *this;
 		}
@@ -254,15 +270,28 @@ namespace ogfx
 
 		void ColorButton::onMouseReleased(const Event& event)
 		{
+			bool mph = m_mousePressedHere;
+			m_mousePressedHere = false;
 			if (!isMouseInside()) return;
 			if (event.mouse->button != MouseEventData::eButton::Left)
 			{
-				if (event.mouse->button == MouseEventData::eButton::Right) {}
+				if (event.mouse->button == MouseEventData::eButton::Right)
+					getWindow().showContextMenu(m_contextMenu, { event.mouse->position_x, event.mouse->position_y });
 				return;
 			}
-			Widget::setDragAndDropData(m_color);
+			if (!mph) return;
 			if (m_popupOpen) close_popup();
 			else             open_popup();
+			event.handle();
+		}
+
+		void ColorButton::onMousePressed(const Event& event)
+		{
+			if (!isMouseInside()) return;
+			if (event.mouse->button != MouseEventData::eButton::Left)
+				return;
+			Widget::setDragAndDropData(m_color);
+			m_mousePressedHere = true;
 			event.handle();
 		}
 
@@ -272,7 +301,7 @@ namespace ogfx
 
 			m_popup = new ColorPicker(getWindow());
 			m_popup->setRootChild();
-			// m_popup->setTopMost(true);
+			// m_popup->setTopMost(true); // TODO: Implement
 			m_popup->setSize({ 240, 200 });
 			m_popup->setColor(m_color);
 
@@ -310,25 +339,13 @@ namespace ogfx
 			m_popupOpen = false;
 		}
 
-		void ColorButton::onUpdate(void)
+		void ColorButton::handleSignal(ostd::Signal& signal)
 		{
-			// Click-outside dismissal: while the popup is open, check whether
-			// the mouse has been pressed outside of both the popup AND this
-			// button. We piggy-back on the mouse position via the focus
-			// manager — if neither the popup nor the button has focus, close.
-			//
-			// A simpler heuristic that works well enough: if the popup is open
-			// and the user clicks somewhere that isn't inside it, the popup's
-			// own focus is lost. We watch for that here.
-			if (m_popupOpen && m_popup && !m_popup->isFocused() && !isFocused())
-			{
-				// Avoid closing on the same frame the popup opened (it hasn't
-				// had a chance to be focused yet). The popup grabs focus on
-				// its first mouse interaction, so we'll only close once the
-				// user has actually interacted with it and then clicked away.
-				// For now we leave the close-on-outside-click to the host app
-				// or to a future FocusManager::onFocusLeft signal.
-			}
+			if (!m_popupOpen) return;
+			if (signal.ID != ostd::BuiltinSignals::MousePressed) return;
+			if (isMouseInside()) return;
+			if (!m_popup->isMouseInside())
+				close_popup();
 		}
 	}
 }

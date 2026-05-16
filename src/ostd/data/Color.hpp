@@ -94,6 +94,8 @@ namespace ostd
 			static void RGBtoHSV(f32 r, f32 g, f32 b, f32& h, f32& s, f32& v);
 			static void HSVtoRGB(f32 h, f32 s, f32 v, f32& r, f32& g, f32& b);
 
+			static bool isValidColorString(const String& str, Color* out = nullptr);
+
 		public:
 			Channel r;
 			Channel g;
