@@ -7,21 +7,26 @@ set -e
 RELEASE_DIR=
 
 if [[ "$(uname)" == "Darwin" ]]; then
+	if [[ "$(uname -m)" == "arm64" ]]; then
+    	PREFIX=/opt/homebrew
+	else
+	    PREFIX=/usr/local
+	fi
     RELEASE_DIR=../bin/OmniaFramework_macos
 
     # Remove old versions
     sudo rm -rf /usr/local/include/ostd 2> /dev/null
     sudo rm -rf /usr/local/include/ogfx 2> /dev/null
-    sudo rm -f  /usr/local/lib/libostd.dylib 2> /dev/null
-    sudo rm -f  /usr/local/lib/libogfx.dylib 2> /dev/null
+    sudo rm -f  "$PREFIX/lib/libostd.dylib" 2> /dev/null
+    sudo rm -f  "$PREFIX/lib/libogfx.dylib" 2> /dev/null
 
     # Install headers
     sudo cp -r "$RELEASE_DIR/include/ostd" /usr/local/include/
     sudo cp -r "$RELEASE_DIR/include/ogfx" /usr/local/include/
 
     # Install libraries
-    sudo cp "$RELEASE_DIR/lib/libostd.dylib" /usr/local/lib/
-    sudo cp "$RELEASE_DIR/lib/libogfx.dylib" /usr/local/lib/
+    sudo cp "$RELEASE_DIR/lib/libostd.dylib" "$PREFIX/lib/"
+    sudo cp "$RELEASE_DIR/lib/libogfx.dylib" "$PREFIX/lib/"
 elif [[ "$(uname -s)" == Linux* ]]; then
 	RELEASE_DIR=../bin/OmniaFramework_linux64
 	sudo rm -rf /usr/include/ostd 2> /dev/null
