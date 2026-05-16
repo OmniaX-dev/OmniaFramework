@@ -20,14 +20,14 @@
 
 #pragma once
 
-#include <ostd/string/String.hpp>
+#include <ostd/io/Serial.hpp>
 #include <functional>
 
 namespace ostd
 {
 	class OutputHandlerBase;
 	struct Signal;
-	class BaseObject : public __i_stringeable
+	class BaseObject : public __i_stringeable, public __i_serializable
 	{
 		public: using SignalCallback = std::function<void(Signal&)>;
 		public:
@@ -60,9 +60,11 @@ namespace ostd
 			virtual inline String toString(void) const override { return getObjectHeaderString(); };
 			virtual void print(bool newLine = true, OutputHandlerBase* __destination = nullptr) const;
 
+			virtual inline Serial::Stream serialize(void) const override { return { 0 }; };
+			virtual inline bool deserialize(const Serial::Stream& data) override { return false; };
+
 			virtual inline void handleSignal(Signal& signal) {  }
 			void connectSignal(u32 signal_id);
-
 			void __handle_signal(Signal& signal);
 
 		protected:

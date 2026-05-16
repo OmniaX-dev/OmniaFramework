@@ -97,6 +97,17 @@ namespace ostd
 		static inline const u8 ADDR = 4;
 		static inline const u8 FLOAT = 4;
 		static inline const u8 DOUBLE = 8;
+
+		static inline const u8 INT8 = 1;
+		static inline const u8 UINT8 = 1;
+		static inline const u8 INT16 = 2;
+		static inline const u8 UINT16 = 2;
+		static inline const u8 INT32 = 4;
+		static inline const u8 UINT32 = 4;
+		static inline const u8 INT64 = 8;
+		static inline const u8 UINT64 = 8;
+		static inline const u8 FLOAT32 = 4;
+		static inline const u8 FLOAT64 = 8;
 	};
 
 	typedef stdvec<i8> ByteStream;
