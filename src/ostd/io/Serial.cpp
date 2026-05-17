@@ -3,189 +3,209 @@
 
 namespace ostd
 {
-	bool Serial::isValidAddress(u64 addr, u32 size)
+	bool Serial::construct(u64 size, Serial::Endianness endianness, bool preInitialize, i8 initialValue)
 	{
-		if (addr == 0) return false;
-		if (size == 0) return false;
-		if (addr > u64Range::max() - size) return false;   // u64 overflow check
-		return (addr + size - 1) < s_openStream.size();
+		m_address = 1;
+		return m_data.construct(size, endianness, preInitialize, initialValue);
 	}
 
-	Serial::ReadResult<i8> Serial::read::int8(u64 addr)
+	bool Serial::resetAddress(u64 newAddr)
 	{
-		if (!isStreamAttached()) return { 0, true };
-		managed_address_check(addr);
+		if (newAddr == 0)
+			newAddr = 1; // Managed Address should never be 0, if the intent is to reset the managed address to the start of the Stream it will be set to 1
+		if (!isValidAddress(newAddr))
+			return false;
+		m_address = newAddr;
+		return true;
+	}
+
+	bool Serial::isValidAddress(u64 addr, u32 size) const
+	{
+		if (addr == 0) return false; // addr == 0 is managed mode and should never reach this point
+		if (size == 0) return false;
+		if (addr > u64Range::max() - size) return false;   // u64 overflow check
+		return (addr + size - 1) < m_data.size();
+	}
+
+
+
+
+
+	Serial::ReadResult<i8> Serial::Reader::int8(u64 _addr)
+	{
+		if (isInvalid()) return { 0, true };
+		u64& addr = resolve_address(_addr);
 		if (!isValidAddress(addr, tTypeSize::INT8)) return { 0, true };
-		i8 val = s_openStream[addr];
-		s_addr += tTypeSize::INT8;
+		i8 val = data[addr];
+		addr += tTypeSize::INT8;
 		return { val, false };
 	}
 
-	Serial::ReadResult<u8> Serial::read::uint8(u64 addr)
+	Serial::ReadResult<u8> Serial::Reader::uint8(u64 _addr)
 	{
-		auto res = int8(addr);
+		auto res = int8(_addr);
 		return { cast<u8>(res.value), res.error };
 	}
 
-	Serial::ReadResult<i16> Serial::read::int16(u64 addr)
+	Serial::ReadResult<i16> Serial::Reader::int16(u64 _addr)
 	{
-		if (!isStreamAttached()) return { 0, true };
-		managed_address_check(addr);
+		if (isInvalid()) return { 0, true };
+		u64& addr = resolve_address(_addr);
 		if (!isValidAddress(addr, tTypeSize::INT16)) return { 0, true };
 		i16 val = 0;
 		if (isLittleEndian())
 		{
-			val = ((s_openStream[addr + 0]     ) & 0x00FFU)
-				| ((s_openStream[addr + 1] << 8) & 0xFF00U);
+			val = ((data[addr + 0]     ) & 0x00FFU)
+				| ((data[addr + 1] << 8) & 0xFF00U);
 		}
-		else if (isBigEndian())
+		else if (parent.isBigEndian())
 		{
-			val = ((s_openStream[addr + 0] <<  8) & 0xFF00U)
-				| ( s_openStream[addr + 1]        & 0x00FFU);
+			val = ((data[addr + 0] <<  8) & 0xFF00U)
+				| ( data[addr + 1]        & 0x00FFU);
 		}
 		else return { 0, true };
-		s_addr += tTypeSize::INT16;
+		addr += tTypeSize::INT16;
 		return { val, false };
 	}
 
-	Serial::ReadResult<u16> Serial::read::uint16(u64 addr)
+	Serial::ReadResult<u16> Serial::Reader::uint16(u64 _addr)
 	{
-		auto res = int16(addr);
+		auto res = int16(_addr);
 		return { cast<u16>(res.value), res.error };
 	}
 
-	Serial::ReadResult<i32> Serial::read::int32(u64 addr)
+	Serial::ReadResult<i32> Serial::Reader::int32(u64 _addr)
 	{
-		if (!isStreamAttached()) return { 0, true };
-		managed_address_check(addr);
+		if (isInvalid()) return { 0, true };
+		u64& addr = resolve_address(_addr);
 		if (!isValidAddress(addr, tTypeSize::INT32)) return { 0, true };
 		i32 val = 0;
 		if (isLittleEndian())
 		{
-			val = ((s_openStream[addr + 0]      ) & 0x000000FF)
-				| ((s_openStream[addr + 1] <<  8) & 0x0000FF00)
-				| ((s_openStream[addr + 2] << 16) & 0x00FF0000)
-				| ((s_openStream[addr + 3] << 24) & 0xFF000000);
+			val = ((data[addr + 0]      ) & 0x000000FF)
+				| ((data[addr + 1] <<  8) & 0x0000FF00)
+				| ((data[addr + 2] << 16) & 0x00FF0000)
+				| ((data[addr + 3] << 24) & 0xFF000000);
 		}
 		else if (isBigEndian())
 		{
-			val = ((s_openStream[addr + 0] << 24) & 0xFF000000U)
-				| ((s_openStream[addr + 1] << 16) & 0x00FF0000U)
-				| ((s_openStream[addr + 2] <<  8) & 0x0000FF00U)
-				| ( s_openStream[addr + 3]        & 0x000000FFU);
+			val = ((data[addr + 0] << 24) & 0xFF000000U)
+				| ((data[addr + 1] << 16) & 0x00FF0000U)
+				| ((data[addr + 2] <<  8) & 0x0000FF00U)
+				| ( data[addr + 3]        & 0x000000FFU);
 		}
 		else return { 0, true };
-		s_addr += tTypeSize::INT32;
+		addr += tTypeSize::INT32;
 		return { val, false };
 	}
 
-	Serial::ReadResult<u32> Serial::read::uint32(u64 addr)
+	Serial::ReadResult<u32> Serial::Reader::uint32(u64 _addr)
 	{
-		auto res = int32(addr);
+		auto res = int32(_addr);
 		return { cast<u32>(res.value), res.error };
 	}
 
-	Serial::ReadResult<i64> Serial::read::int64(u64 addr)
+	Serial::ReadResult<i64> Serial::Reader::int64(u64 _addr)
 	{
-		if (!isStreamAttached()) return { 0, true };
-		managed_address_check(addr);
+		if (isInvalid()) return { 0, true };
+		u64& addr = resolve_address(_addr);
 		if (!isValidAddress(addr, tTypeSize::INT64)) return { 0, true };
 		i64 val = 0;
 		if (isLittleEndian())
 		{
-			val = (      s_openStream[addr + 7]        & 0x00000000000000FFU)
-				| ((     s_openStream[addr + 6] <<  8) & 0x000000000000FF00U)
-				| ((     s_openStream[addr + 5] << 16) & 0x0000000000FF0000U)
-				| ((     s_openStream[addr + 4] << 24) & 0x00000000FF000000U)
-				| (((i64)s_openStream[addr + 3] << 32) & 0x000000FF00000000U)
-				| (((i64)s_openStream[addr + 2] << 40) & 0x0000FF0000000000U)
-				| (((i64)s_openStream[addr + 1] << 48) & 0x00FF000000000000U)
-				| (((i64)s_openStream[addr + 0] << 56) & 0xFF00000000000000U);
+			val = (      data[addr + 7]        & 0x00000000000000FFU)
+				| ((     data[addr + 6] <<  8) & 0x000000000000FF00U)
+				| ((     data[addr + 5] << 16) & 0x0000000000FF0000U)
+				| ((     data[addr + 4] << 24) & 0x00000000FF000000U)
+				| (((i64)data[addr + 3] << 32) & 0x000000FF00000000U)
+				| (((i64)data[addr + 2] << 40) & 0x0000FF0000000000U)
+				| (((i64)data[addr + 1] << 48) & 0x00FF000000000000U)
+				| (((i64)data[addr + 0] << 56) & 0xFF00000000000000U);
 		}
 		else if (isBigEndian())
 		{
-			val = (((i64)s_openStream[addr + 0] << 56) & 0xFF00000000000000U)
-				| (((i64)s_openStream[addr + 1] << 48) & 0x00FF000000000000U)
-				| (((i64)s_openStream[addr + 2] << 40) & 0x0000FF0000000000U)
-				| (((i64)s_openStream[addr + 3] << 32) & 0x000000FF00000000U)
-				| ((     s_openStream[addr + 4] << 24) & 0x00000000FF000000U)
-				| ((     s_openStream[addr + 5] << 16) & 0x0000000000FF0000U)
-				| ((     s_openStream[addr + 6] <<  8) & 0x000000000000FF00U)
-				| (      s_openStream[addr + 7]        & 0x00000000000000FFU);
+			val = (((i64)data[addr + 0] << 56) & 0xFF00000000000000U)
+				| (((i64)data[addr + 1] << 48) & 0x00FF000000000000U)
+				| (((i64)data[addr + 2] << 40) & 0x0000FF0000000000U)
+				| (((i64)data[addr + 3] << 32) & 0x000000FF00000000U)
+				| ((     data[addr + 4] << 24) & 0x00000000FF000000U)
+				| ((     data[addr + 5] << 16) & 0x0000000000FF0000U)
+				| ((     data[addr + 6] <<  8) & 0x000000000000FF00U)
+				| (      data[addr + 7]        & 0x00000000000000FFU);
 		}
 		else return { 0, true };
-		s_addr += tTypeSize::INT64;
+		addr += tTypeSize::INT64;
 		return { val, false };
 	}
 
-	Serial::ReadResult<u64> Serial::read::uint64(u64 addr)
+	Serial::ReadResult<u64> Serial::Reader::uint64(u64 _addr)
 	{
-		auto res = int64(addr);
+		auto res = int64(_addr);
 		return { cast<u64>(res.value), res.error };
 	}
 
-	Serial::ReadResult<f32> Serial::read::float32(u64 addr)
+	Serial::ReadResult<f32> Serial::Reader::float32(u64 _addr)
 	{
-		if (!isStreamAttached()) return { 0, true };
-		managed_address_check(addr);
+		if (isInvalid()) return { 0, true };
+		u64& addr = resolve_address(_addr);
 		if (!isValidAddress(addr, tTypeSize::FLOAT32)) return { 0, true };
 		__float_parser fp;
 		if (isLittleEndian())
 		{
-			fp.data[3] = s_openStream[addr + 0];
-			fp.data[2] = s_openStream[addr + 1];
-			fp.data[1] = s_openStream[addr + 2];
-			fp.data[0] = s_openStream[addr + 3];
+			fp.data[3] = data[addr + 0];
+			fp.data[2] = data[addr + 1];
+			fp.data[1] = data[addr + 2];
+			fp.data[0] = data[addr + 3];
 		}
 		else if (isBigEndian())
 		{
-			fp.data[0] = s_openStream[addr + 0];
-			fp.data[1] = s_openStream[addr + 1];
-			fp.data[2] = s_openStream[addr + 2];
-			fp.data[3] = s_openStream[addr + 3];
+			fp.data[0] = data[addr + 0];
+			fp.data[1] = data[addr + 1];
+			fp.data[2] = data[addr + 2];
+			fp.data[3] = data[addr + 3];
 		}
 		else return { 0, true };
-		s_addr += tTypeSize::FLOAT32;
+		addr += tTypeSize::FLOAT32;
 		return { fp.val, false };
 	}
 
-	Serial::ReadResult<f64> Serial::read::float64(u64 addr)
+	Serial::ReadResult<f64> Serial::Reader::float64(u64 _addr)
 	{
-		if (!isStreamAttached()) return { 0, true };
-		managed_address_check(addr);
+		if (isInvalid()) return { 0, true };
+		u64& addr = resolve_address(_addr);
 		if (!isValidAddress(addr, tTypeSize::FLOAT64)) return { 0, true };
 		__double_parser dp;
 		if (isLittleEndian())
 		{
-			dp.data[7] = s_openStream[addr++];
-			dp.data[6] = s_openStream[addr++];
-			dp.data[5] = s_openStream[addr++];
-			dp.data[4] = s_openStream[addr++];
-			dp.data[3] = s_openStream[addr++];
-			dp.data[2] = s_openStream[addr++];
-			dp.data[1] = s_openStream[addr++];
-			dp.data[0] = s_openStream[addr  ];
+			dp.data[7] = data[addr++];
+			dp.data[6] = data[addr++];
+			dp.data[5] = data[addr++];
+			dp.data[4] = data[addr++];
+			dp.data[3] = data[addr++];
+			dp.data[2] = data[addr++];
+			dp.data[1] = data[addr++];
+			dp.data[0] = data[addr  ];
 		}
 		else if (isBigEndian())
 		{
-			dp.data[0] = s_openStream[addr++];
-			dp.data[1] = s_openStream[addr++];
-			dp.data[2] = s_openStream[addr++];
-			dp.data[3] = s_openStream[addr++];
-			dp.data[4] = s_openStream[addr++];
-			dp.data[5] = s_openStream[addr++];
-			dp.data[6] = s_openStream[addr++];
-			dp.data[7] = s_openStream[addr  ];
+			dp.data[0] = data[addr++];
+			dp.data[1] = data[addr++];
+			dp.data[2] = data[addr++];
+			dp.data[3] = data[addr++];
+			dp.data[4] = data[addr++];
+			dp.data[5] = data[addr++];
+			dp.data[6] = data[addr++];
+			dp.data[7] = data[addr  ];
 		}
 		else return { 0, true };
-		s_addr += tTypeSize::FLOAT64;
+		addr += tTypeSize::FLOAT64;
 		return { dp.val, false };
 	}
 
-	bool Serial::read::stream(Stream& outStream, u64 addr, bool sizeStored, u32 size_if_not_stored)
+	bool Serial::Reader::stream(u64 _addr, Stream& outStream, bool sizeStored, u32 size_if_not_stored)
 	{
-		if (!isStreamAttached()) return false;
-		managed_address_check(addr);
+		if (isInvalid()) return false;
+		u64& addr = resolve_address(_addr);
 		if (!sizeStored && size_if_not_stored < 1) return false;
 		u32 size = size_if_not_stored;
 		if (sizeStored)
@@ -207,18 +227,18 @@ namespace ostd
 			else return false;
 		}
 		if (!isValidAddress(addr, size)) return false;
-		Serial::Stream data = { size, endianness };
-		StreamEdit edit = data.data();
-		std::copy_n(s_openStream.begin() + addr, size, edit.begin());
-		outStream = std::move(data);
-		s_addr = addr + size;
+		Serial::Stream _data = { size, endianness };
+		StreamEdit edit = _data.data();
+		std::copy_n(data.begin() + addr, size, edit.begin());
+		outStream = std::move(_data);
+		addr += size;
 		return true;
 	}
 
-	bool Serial::read::string(String& outString, u64 addr, bool sizeStored, u32 size_if_not_stored, bool null_terminated)
+	bool Serial::Reader::string(u64 _addr, String& outString, bool sizeStored, u32 size_if_not_stored, bool null_terminated)
 	{
-		if (!isStreamAttached()) return false;
-		managed_address_check(addr);
+		if (isInvalid()) return false;
+		u64& addr = resolve_address(_addr);
 		if (!null_terminated || sizeStored) // I want null_terminated to have the lowest priority
 		{
 			if (!sizeStored && size_if_not_stored < 1) return false;
@@ -233,9 +253,9 @@ namespace ostd
 			if (!isValidAddress(addr, size)) return false;
 			for (u64 i = addr; i < (addr + size); i++)
 			{
-				outString += cast<char>(s_openStream[i]);
+				outString += cast<char>(data[i]);
 			}
-			s_addr = addr + size;
+			addr += size;
 			return true;
 		}
 		else
@@ -252,12 +272,11 @@ namespace ostd
 				addr += tTypeSize::INT8;
 			}
 			outString = out;
-			s_addr = addr;
 			return true;
 		}
 	}
 
-	bool Serial::read::object(__i_serializable& outObject, u64 addr)
+	bool Serial::Reader::object(I_serializable& outObject, u64 addr)
 	{
 		Serial::Stream objData(0);
 		if (!stream(objData, addr, true, 0))
@@ -267,7 +286,7 @@ namespace ostd
 
 
 
-	bool Serial::write::int8(u64 addr, i8 value)
+	bool Serial::Writer::int8(u64 addr, i8 value)
 	{
 		if (!isStreamAttached()) return false;
 		managed_address_check(addr);
@@ -277,12 +296,12 @@ namespace ostd
 		return true;
 	}
 
-	bool Serial::write::uint8(u64 addr, u8 value)
+	bool Serial::Writer::uint8(u64 addr, u8 value)
 	{
 		return int8(addr, cast<i8>(value));
 	}
 
-	bool Serial::write::int16(u64 addr, i16 value)
+	bool Serial::Writer::int16(u64 addr, i16 value)
 	{
 		if (!isStreamAttached()) return false;
 		managed_address_check(addr);
@@ -302,12 +321,12 @@ namespace ostd
 		return true;
 	}
 
-	bool Serial::write::uint16(u64 addr, u16 value)
+	bool Serial::Writer::uint16(u64 addr, u16 value)
 	{
 		return int16(addr, cast<i16>(value));
 	}
 
-	bool Serial::write::int32(u64 addr, i32 value)
+	bool Serial::Writer::int32(u64 addr, i32 value)
 	{
 		if (!isStreamAttached()) return false;
 		managed_address_check(addr);
@@ -331,12 +350,12 @@ namespace ostd
 		return true;
 	}
 
-	bool Serial::write::uint32(u64 addr, u32 value)
+	bool Serial::Writer::uint32(u64 addr, u32 value)
 	{
 		return int32(addr, cast<i32>(value));
 	}
 
-	bool Serial::write::int64(u64 addr, i64 value)
+	bool Serial::Writer::int64(u64 addr, i64 value)
 	{
 		if (!isStreamAttached()) return false;
 		managed_address_check(addr);
@@ -368,14 +387,12 @@ namespace ostd
 		return true;
 	}
 
-	bool Serial::write::uint64(u64 addr, u64 value)
+	bool Serial::Writer::uint64(u64 addr, u64 value)
 	{
-		if (!isStreamAttached()) return false;
-		if (!isValidAddress(addr, tTypeSize::UINT64)) return false;
 		return int64(addr, cast<i64>(value));
 	}
 
-	bool Serial::write::float32(u64 addr, f32 value)
+	bool Serial::Writer::float32(u64 addr, f32 value)
 	{
 		if (!isStreamAttached()) return false;
 		managed_address_check(addr);
@@ -401,7 +418,7 @@ namespace ostd
 		return true;
 	}
 
-	bool Serial::write::float64(u64 addr, f64 value)
+	bool Serial::Writer::float64(u64 addr, f64 value)
 	{
 		if (!isStreamAttached()) return false;
 		managed_address_check(addr);
@@ -435,7 +452,7 @@ namespace ostd
 		return true;
 	}
 
-	bool Serial::write::stream(u64 addr, const Stream& value, bool storeSize)
+	bool Serial::Writer::stream(u64 addr, const Stream& value, bool storeSize)
 	{
 		if (!isStreamAttached()) return false;
 		managed_address_check(addr);
@@ -454,7 +471,7 @@ namespace ostd
 		return true;
 	}
 
-	bool Serial::write::string(u64 addr, const String& value, bool storeSize, bool null_terminated)
+	bool Serial::Writer::string(u64 addr, const String& value, bool storeSize, bool null_terminated)
 	{
 		if (!isStreamAttached()) return false;
 		managed_address_check(addr);
@@ -480,7 +497,7 @@ namespace ostd
 		return true;
 	}
 
-	bool Serial::write::object(u64 addr, const __i_serializable& value)
+	bool Serial::Writer::object(u64 addr, const I_serializable& value)
 	{
 		if (!isStreamAttached()) return false;
 		const Serial::Stream data = value.serialize();

@@ -25,7 +25,7 @@
 
 namespace ostd
 {
-	class __i_serializable;
+	class I_serializable;
 	class Serial
 	{
 		public: template<typename T> struct ReadResult { T value; bool error { false }; };
@@ -37,26 +37,13 @@ namespace ostd
 			public:
 				Stream(const Stream&) = delete;
 				Stream& operator=(const Stream&) = delete;
+				inline Stream(void) {  } // Uninitialized Stream
 				inline Stream(u64 size, Endianness endianness = Endianness::LittleEndian, bool preInitialize = false, i8 initialValue = 0) {
-					if (size < 1) return;
-					if constexpr (sizeof(size_t) < sizeof(uint64_t))
-					{
-						if (size > std::numeric_limits<size_t>::max())
-							throw "Serial::Stream size can't excede UINT32_MAX on a 32bit system.";
-					}
-					m_data = new i8[size];
-					m_size = size;
-					m_endianness = endianness;
-					if (preInitialize)
-					{
-						for (u64 i = 0; i < size; i++)
-							m_data[i] = initialValue;
-					}
+					construct(size, endianness, preInitialize, initialValue);
 				}
-				inline Stream(Stream&& other) noexcept : m_data(other.m_data), m_size(other.m_size) {
+				inline Stream(Stream&& other) noexcept : m_data(other.m_data), m_size(other.m_size), m_endianness(other.m_endianness) {
 					other.m_data = nullptr;
 					other.m_size = 0;
-					m_endianness = other.m_endianness;
 				}
 				inline Stream& operator=(Stream&& other) noexcept {
 					if (this != &other) {
@@ -73,11 +60,30 @@ namespace ostd
 					delete[] m_data;
 					m_data = nullptr;
 				}
+				inline bool construct(u64 size, Endianness endianness = Endianness::LittleEndian, bool preInitialize = false, i8 initialValue = 0) {
+					if (isValid()) return false;
+					if (size < 1) return false;
+					if constexpr (sizeof(size_t) < sizeof(uint64_t))
+					{
+						if (size > std::numeric_limits<size_t>::max())
+							throw std::runtime_error("Serial::Stream size can't excede UINT32_MAX on a 32bit system.");
+					}
+					m_data = new i8[size];
+					m_size = size;
+					m_endianness = endianness;
+					if (preInitialize)
+					{
+						for (u64 i = 0; i < size; i++)
+							m_data[i] = initialValue;
+					}
+					return true;
+				}
 				inline bool isValid(void) const { return m_size > 0 && m_data != nullptr; }
 				inline u64 size(void) const { return isValid() ? m_size : 0; }
 				inline bool isLittleEndian(void) const { return m_endianness == Endianness::LittleEndian; }
 				inline bool isBigEndian(void) const { return m_endianness == Endianness::BigEndian; }
 				inline Endianness getEndianness(void) const { return m_endianness; }
+				inline void setEndianness(Endianness endianness) { m_endianness = endianness; }
 				inline StreamEdit data() {
 					if (isValid())
 						return { m_data, cast<std::size_t>(m_size) };
@@ -94,104 +100,131 @@ namespace ostd
 				u64 m_size { 0 };
 				Endianness m_endianness { Endianness::LittleEndian };
 		};
+		private: struct Reader
+		{
+			inline Reader(Serial& _parent) : parent(_parent) { data = parent.m_data.data(); }
+
+			ReadResult<i8> int8(u64 addr);
+			inline ReadResult<i8> int8(void) { return int8(0); }
+			ReadResult<u8> uint8(u64 addr);
+			inline ReadResult<u8> uint8(void) { return uint8(0); }
+
+			ReadResult<i16> int16(u64 addr);
+			inline ReadResult<i16> int16(void) { return int16(0); }
+			ReadResult<u16> uint16(u64 addr);
+			inline ReadResult<u16> uint16(void) { return uint16(0); }
+
+			ReadResult<i32> int32(u64 addr);
+			inline ReadResult<i32> int32(void) { return int32(0); }
+			ReadResult<u32> uint32(u64 addr);
+			inline ReadResult<u32> uint32(void) { return uint32(0); }
+
+			ReadResult<i64> int64(u64 addr);
+			inline ReadResult<i64> int64(void) { return int64(0); }
+			ReadResult<u64> uint64(u64 addr);
+			inline ReadResult<u64> uint64(void) { return uint64(0); }
+
+			ReadResult<f32> float32(u64 addr);
+			inline ReadResult<f32> float32(void) { return float32(0); }
+			ReadResult<f64> float64(u64 addr);
+			inline ReadResult<f64> float64(void) { return float64(0); }
+
+			bool stream(u64 addr, Stream& outStream, bool sizeStored = true, u32 size_if_not_stored = 0);
+			inline bool stream(Stream& outStream, bool sizeStored = true, u32 size_if_not_stored = 0) { return stream(0, outStream, sizeStored, size_if_not_stored); }
+			bool string(u64 addr, String& outString, bool sizeStored = true, u32 size_if_not_stored = 0, bool null_terminated = false);
+			inline bool string(String& outString, bool sizeStored = true, u32 size_if_not_stored = 0, bool null_terminated = false) { return string(0, outString, sizeStored, size_if_not_stored, null_terminated); }
+			bool object(u64 addr, I_serializable& outObject);
+			inline bool object(I_serializable& outObject) { return object(0, outObject); }
+
+			private: // Convenience wrappers
+				inline bool isValid(void) const { return parent.isValid(); }
+				inline bool isInvalid(void) const { return parent.isInvalid(); }
+				inline bool isLittleEndian(void) const { return parent.isLittleEndian(); }
+				inline bool isBigEndian(void) const { return parent.isBigEndian(); }
+				inline u64& resolve_address(u64& addr) { return parent.resolve_address(addr); }
+				inline bool isValidAddress(u64 addr, u32 size = 1) const { return parent.isValidAddress(addr); }
+
+			private:
+				Serial& parent;
+				StreamView data;
+		};
+		private: struct Writer
+		{
+			inline Writer(Serial& _parent) : parent(_parent) { data = parent.m_data.data(); }
+
+			bool int8(u64 addr, i8 value);
+			inline bool int8(i8 value) { return int8(0, value); }
+			bool uint8(u64 addr, u8 value);
+			inline bool uint8(u8 value) { return uint8(0, value); }
+
+			bool int16(u64 addr, i16 value);
+			inline bool int16(i16 value) { return int16(0, value); }
+			bool uint16(u64 addr, u16 value);
+			inline bool uint16(u16 value) { return uint16(0, value); }
+
+			bool int32(u64 addr, i32 value);
+			inline bool int32(i32 value) { return int32(0, value); }
+			bool uint32(u64 addr, u32 value);
+			inline bool uint32(u32 value) { return uint32(0, value); }
+
+			bool int64(u64 addr, i64 value);
+			inline bool int64(i64 value) { return int64(0, value); }
+			bool uint64(u64 addr, u64 value);
+			inline bool uint64(u64 value) { return uint64(0, value); }
+
+			bool float32(u64 addr, f32 value);
+			inline bool float32(f32 value) { return float32(0, value); }
+			bool float64(u64 addr, f64 value);
+			inline bool float64(f64 value) { return float64(0, value); }
+
+			bool stream(u64 addr, const Stream& value, bool storeSize = true);
+			inline bool stream(const Stream& value, bool storeSize = true) { return stream(0, value, storeSize); }
+			bool string(u64 addr, const String& value, bool storeSize = true, bool null_terminated = false); // if sizeStored, null_terminated will be ignored
+			inline bool string(const String& value, bool storeSize = true, bool null_terminated = false) { return string(0, value, storeSize, null_terminated); }
+			bool object(u64 addr, const I_serializable& value);
+			inline bool object(const I_serializable& value) { return object(0, value); }
+
+			private: // Convenience wrappers
+				inline bool isValid(void) const { return parent.isValid(); }
+				inline bool isInvalid(void) const { return parent.isInvalid(); }
+				inline bool isLittleEndian(void) const { return parent.isLittleEndian(); }
+				inline bool isBigEndian(void) const { return parent.isBigEndian(); }
+				inline u64& resolve_address(u64& addr) { return parent.resolve_address(addr); }
+				inline bool isValidAddress(u64 addr, u32 size = 1) const { return parent.isValidAddress(addr); }
+
+			private:
+				Serial& parent;
+				StreamEdit data;
+		};
 
 		public:
-			inline static void attachStream(Stream& stream) { s_openStream = stream.data(); s_endianness = stream.getEndianness(); disableManagedAddress(); }
-			inline static void detachStrean(void) { s_openStream = {}; }
-			inline static bool setManagedAddress(u64 addr) { if (!isManagedAddressEnabled() || !isValidAddress(addr)) return false; s_addr = addr; return true; }
-			inline static bool isManagedAddressEnabled(void) { return s_managedAddress; }
-			inline static void enableManagedAddress(bool enable = true) { s_managedAddress = enable; s_addr = 0; }
-			inline static void disableManagedAddress(void) { enableManagedAddress(false); }
-			inline static bool isStreamAttached(void) { return !s_openStream.empty(); }
-			inline static bool isLittleEndian(void) { return s_endianness == Endianness::LittleEndian; }
-			inline static bool isBigEndian(void) { return s_endianness == Endianness::BigEndian; }
-			static bool isValidAddress(u64 addr, u32 size = 1);
+			inline Serial(void) : read(*this), write(*this) { }
+			inline Serial(u64 size, Endianness endianness = Endianness::LittleEndian, bool preInitialize = false, i8 initialValue = 0) : read(*this), write(*this) { construct(size, endianness, preInitialize, initialValue); }
+			bool construct(u64 size, Endianness endianness = Endianness::LittleEndian, bool preInitialize = false, i8 initialValue = 0);
+			bool resetAddress(u64 newAddr);
+			bool isValidAddress(u64 addr, u32 size = 1) const;
 
-			public: struct read
-			{
-				ReadResult<i8> int8(u64 addr = 0);
-				inline i8 int8d(u64 addr = 0, bool* outError = nullptr) { auto val = int8(addr); if (outError) *outError = val.error; return val.value; }
-				ReadResult<u8> uint8(u64 addr = 0);
-				inline u8 uint8d(u64 addr = 0, bool* outError = nullptr) { auto val = uint8(addr); if (outError) *outError = val.error; return val.value; }
-
-				ReadResult<i16> int16(u64 addr = 0);
-				inline i16 int16d(u64 addr = 0, bool* outError = nullptr) { auto val = int16(addr); if (outError) *outError = val.error; return val.value; }
-				ReadResult<u16> uint16(u64 addr = 0);
-				inline u16 uint16d(u64 addr = 0, bool* outError = nullptr) { auto val = uint16(addr); if (outError) *outError = val.error; return val.value; }
-
-				ReadResult<i32> int32(u64 addr = 0);
-				inline i32 int32d(u64 addr = 0, bool* outError = nullptr) { auto val = int32(addr); if (outError) *outError = val.error; return val.value; }
-				ReadResult<u32> uint32(u64 addr = 0);
-				inline u32 uint32d(u64 addr = 0, bool* outError = nullptr) { auto val = uint32(addr); if (outError) *outError = val.error; return val.value; }
-
-				ReadResult<i64> int64(u64 addr = 0);
-				inline i64 int64d(u64 addr = 0, bool* outError = nullptr) { auto val = int64(addr); if (outError) *outError = val.error; return val.value; }
-				ReadResult<u64> uint64(u64 addr = 0);
-				inline u64 uint64d(u64 addr = 0, bool* outError = nullptr) { auto val = uint64(addr); if (outError) *outError = val.error; return val.value; }
-
-				ReadResult<f32> float32(u64 addr = 0);
-				inline f32 float32d(u64 addr = 0, bool* outError = nullptr) { auto val = float32(addr); if (outError) *outError = val.error; return val.value; }
-				ReadResult<f64> float64(u64 addr = 0);
-				inline f64 float64d(u64 addr = 0, bool* outError = nullptr) { auto val = float64(addr); if (outError) *outError = val.error; return val.value; }
-
-				bool stream(Stream& outStream, u64 addr = 0, bool sizeStored = true, u32 size_if_not_stored = 0);
-				bool string(String& outString, u64 addr = 0, bool sizeStored = true, u32 size_if_not_stored = 0, bool null_terminated = false);
-				bool object(__i_serializable& outObject, u64 addr = 0);
-
-				private:
-					read(void) = default;
-			};
-
-			public: struct write
-			{
-				bool int8(u64 addr, i8 value);
-				inline bool int8(i8 value) { return int8(0, value); }
-				bool uint8(u64 addr, u8 value);
-				inline bool uint8(i8 value) { return uint8(0, value); }
-
-				bool int16(u64 addr, i16 value);
-				inline bool int16(i8 value) { return int16(0, value); }
-				bool uint16(u64 addr, u16 value);
-				inline bool uint16(i8 value) { return uint16(0, value); }
-
-				bool int32(u64 addr, i32 value);
-				inline bool int32(i8 value) { return int32(0, value); }
-				bool uint32(u64 addr, u32 value);
-				inline bool uint32(i8 value) { return uint32(0, value); }
-
-				bool int64(u64 addr, i64 value);
-				inline bool int64(i8 value) { return int64(0, value); }
-				bool uint64(u64 addr, u64 value);
-				inline bool uint64(i8 value) { return uint64(0, value); }
-
-				bool float32(u64 addr, f32 value);
-				inline bool float32(i8 value) { return float32(0, value); }
-				bool float64(u64 addr, f64 value);
-				inline bool float64(i8 value) { return float64(0, value); }
-
-				bool stream(u64 addr, const Stream& value, bool storeSize = true);
-				inline bool stream(const Stream& value, bool storeSize = true) { return stream(0, value, storeSize); }
-				bool string(u64 addr, const String& value, bool storeSize = true, bool null_terminated = false); // if sizeStored, null_terminated will be ignored
-				inline bool string(const String& value, bool storeSize = true, bool null_terminated = false) { return string(0, value, storeSize, null_terminated); }
-				bool object(u64 addr, const __i_serializable& value);
-				inline bool object(const __i_serializable& value) { return object(0, value); }
-
-				private:
-					write(void) = default;
-			};
+			inline bool isValid(void) const { return m_data.isValid(); }
+			inline bool isInvalid(void) const { return !isValid(); }
+			inline bool isLittleEndian(void) const { return m_data.isLittleEndian(); }
+			inline bool isBigEndian(void) const { return m_data.isBigEndian(); }
+			inline Endianness getEndianness(void) const { return m_data.getEndianness(); }
 
 		private:
-			Serial(void) = default;
-			inline static void managed_address_check(u64& addr) { if (isManagedAddressEnabled()) addr = s_addr; }
+			inline u64& resolve_address(u64& addr) { if (addr == 0) return m_address; return addr; }
+			inline bool restore_address(void) { resetAddress(m_backupAddress); return false; } // Always returns false so it can be used as false on error in return statements
 
 		private:
-			inline static StreamEdit s_openStream {  };
-			inline static Endianness s_endianness { Endianness::LittleEndian };
+			Stream m_data;
+			u64 m_address { 0 };
+			u64 m_backupAddress { 0 };
+			bool m_backupStored { false };
 
-			inline static u64 s_addr { 0 };
-			inline static bool s_managedAddress { false };
+		public:
+			Writer write;
+			Reader read;
 	};
-	class __i_serializable
+	class I_serializable
 	{
 		public:
 			virtual Serial::Stream serialize(void) const = 0;

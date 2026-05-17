@@ -27,7 +27,7 @@ namespace ostd
 {
 	class OutputHandlerBase;
 	struct Signal;
-	class BaseObject : public __i_stringeable, public __i_serializable
+	class BaseObject : public I_stringeable, public I_serializable
 	{
 		public: using SignalCallback = std::function<void(Signal&)>;
 		public:

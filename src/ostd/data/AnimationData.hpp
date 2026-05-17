@@ -25,7 +25,7 @@
 
 namespace ostd
 {
-	struct AnimationData : public ostd::__i_stringeable {
+	struct AnimationData : public ostd::I_stringeable {
 		i32 frameCount { 1 };
 		i32 stillFrame { 0 };
 		f64 fps { 60.0 };

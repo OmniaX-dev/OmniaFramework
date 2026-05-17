@@ -210,15 +210,15 @@ namespace ostd
 			ostd::cpp_string m_data;
 	};
 
-	struct __i_stringeable
+	struct I_stringeable
 	{
 		virtual String toString(void) const = 0;
-		friend std::ostream& operator<<(std::ostream& out, const __i_stringeable& val);
+		friend std::ostream& operator<<(std::ostream& out, const I_stringeable& val);
 		inline operator String() const { return toString(); }
 		inline operator std::string() const { return toString(); }
 	};
 
-	inline std::ostream& operator<<(std::ostream& out, const __i_stringeable& val)
+	inline std::ostream& operator<<(std::ostream& out, const I_stringeable& val)
 	{
 		out << val.toString();
 		return out;

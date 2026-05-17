@@ -32,7 +32,7 @@ namespace ogfx
 	{
 		class TreeView : public ScrollableWidget
 		{
-			public: class Item : public ostd::__i_stringeable
+			public: class Item : public ostd::I_stringeable
 			{
 				public:
 					inline Item(TreeView& parent) { m_treeView = &parent; }

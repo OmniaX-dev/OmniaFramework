@@ -44,7 +44,7 @@
 
 namespace ostd
 {
-	struct Vec2 : public __i_stringeable
+	struct Vec2 : public I_stringeable
 	{
 		//======================== Data ========================
 		f32 x { 0.0f };
@@ -139,7 +139,7 @@ namespace ostd
 	};
 
 	template<class T>
-	class Point : public __i_stringeable
+	class Point : public I_stringeable
 	{
 		public:
 			T x;
@@ -194,7 +194,7 @@ namespace ostd
 	typedef Point<i16> I16Point;
 	typedef Point<i8> I8Point;
 
-	struct Vec3 : public __i_stringeable
+	struct Vec3 : public I_stringeable
 	{
 		inline Vec3(f32 xx = 0, f32 yy = 0, f32 zz = 0)
 		{
@@ -216,7 +216,7 @@ namespace ostd
 		f32 z;
 	};
 
-	struct Vec4 : public __i_stringeable
+	struct Vec4 : public I_stringeable
 	{
 		inline Vec4(f32 xx = 0, f32 yy = 0, f32 zz = 0, f32 ww = 0)
 		{
@@ -240,7 +240,7 @@ namespace ostd
 		f32 w;
 	};
 
-	struct Triangle : public __i_stringeable
+	struct Triangle : public I_stringeable
 	{
 		Vec2 vA;
 		Vec2 vB;
@@ -284,7 +284,7 @@ namespace ostd
 		}
 	};
 
-	class Rectangle : public __i_stringeable
+	class Rectangle : public I_stringeable
 	{
 		public:
 			inline Rectangle(void) : x(0), y(0), w(0), h(0) {}
@@ -431,7 +431,7 @@ namespace ostd
 	};
 
 	template<class T>
-	class Rect : public __i_stringeable
+	class Rect : public I_stringeable
 	{
 		public:
 			Rect(void) = default;
@@ -457,7 +457,7 @@ namespace ostd
 	typedef Rect<i8> I8Rect;
 
 	template<class T>
-	class Line : public __i_stringeable
+	class Line : public I_stringeable
 	{
 		public:
 			Line(void) = default;
