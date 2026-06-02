@@ -52,6 +52,17 @@ namespace ogfx
 					bool m_allowNegative;
 					i32  m_maxDigits;
 			};
+			public: class HexadecimalFilter : public CharacterFilter
+			{
+				public:
+					inline HexadecimalFilter(i32 maxDigits = -1) : m_maxDigits(maxDigits) {}
+					bool isValidChar(const String& utf8, const ostd::TextBuffer& buffer) override;
+				private:
+					bool isValidHexPrefix(const String& s) const;
+					bool isHexDigit(char c) const;
+				private:
+					i32  m_maxDigits;
+			};
 			public: class DecimalFilter : public CharacterFilter
 			{
 				public:
@@ -112,6 +123,7 @@ namespace ogfx
 				inline void useCustomFilter(CharacterFilter* filter) { m_owned_filter.reset(); m_filter = filter;  }
 				inline void useDateFilter(DateFilter::eFormat format = DateFilter::eFormat::DDMMYYYY, char separator = '.') { use_filter(std::make_unique<DateFilter>(format, separator)); }
 				inline void useIntegerFilter(bool allowNegative = true, i32 maxDigits = -1) { use_filter(std::make_unique<IntegerFilter>(allowNegative, maxDigits)); }
+				inline void useHexadecimalFilter(i32 maxDigits = -1) { use_filter(std::make_unique<HexadecimalFilter>(maxDigits)); }
 				inline void useDecimalFilter(bool allowNegative = true, char separator = '.', i32 maxIntegerDigits = -1, i32 maxFractionDigits = -1) { use_filter(std::make_unique<DecimalFilter>(allowNegative, separator, maxIntegerDigits, maxFractionDigits)); }
 
 				void setText(const String& text);

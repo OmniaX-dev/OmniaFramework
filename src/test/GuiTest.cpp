@@ -225,6 +225,7 @@ class TestWindow : public Window
 				std::cout << previous.getText() << "\n";
 				std::cout << sender.getText() << "\n\n";
 			});
+			m_text.useHexadecimalFilter(4);
 			t1.addWidget(m_prog, { 30, 200 });
 			t1.addWidget(m_slide, { 30, 250 });
 			t1.addWidget(m_slideLbl, { 340, 240 });

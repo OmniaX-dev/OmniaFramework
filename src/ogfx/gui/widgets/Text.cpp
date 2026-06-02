@@ -86,6 +86,49 @@ namespace ogfx
 
 
 
+		bool TextEdit::HexadecimalFilter::isValidChar(const String& utf8, const ostd::TextBuffer& buffer)
+		{
+			// Reject anything that isn't a single ASCII byte. Multi-codepoint
+			// input (IME, emoji, accented chars) is never valid in an hex.
+			if (utf8.len() != 1) return false;
+			const char c = utf8[0];
+			if (!isHexDigit(c)) return false;
+
+			// Predict the post-insert string and validate it as a prefix.
+			const String result = predictResult(utf8, buffer);
+			return isValidHexPrefix(result);
+		}
+
+		bool TextEdit::HexadecimalFilter::isValidHexPrefix(const String& s) const
+		{
+			if (s.empty()) return true;
+			const ostd::cpp_string& bytes = s.cpp_str();
+
+			u32 i = 0;
+
+			// Everything from i onward must be digits. Count them while we're at it.
+			u32 digitCount = 0;
+			while (i < bytes.size()) {
+				if (!isHexDigit(bytes[i])) return false;
+				digitCount++;
+				i++;
+			}
+
+			if (m_maxDigits > 0 && digitCount > cast<u32>(m_maxDigits))
+				return false;
+
+			return true;
+		}
+
+		bool TextEdit::HexadecimalFilter::isHexDigit(char c) const
+		{
+			return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
+		}
+
+
+
+
+
 		bool TextEdit::DecimalFilter::isValidChar(const String& utf8, const ostd::TextBuffer& buffer)
 		{
 			if (utf8.len() != 1) return false;
