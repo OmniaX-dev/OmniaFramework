@@ -21,6 +21,7 @@
 #pragma once
 
 #include <ostd/string/String.hpp>
+// #include <ostd/io/Memory.hpp>
 #include <span>
 
 namespace ostd
@@ -307,8 +308,10 @@ namespace ostd
 		public:
 			inline Serial(void) : read(*this), write(*this) { }
 			inline Serial(u64 size, serial::Endianness endianness = serial::Endianness::LittleEndian, bool preInitialize = false, i8 initialValue = 0) : read(*this), write(*this) { construct(size, endianness, preInitialize, initialValue); }
+			Serial(StreamView copyData, serial::Endianness endianness = serial::Endianness::LittleEndian);
 			bool construct(u64 size, serial::Endianness endianness = serial::Endianness::LittleEndian, bool preInitialize = false, i8 initialValue = 0);
 			bool isValidAddress(u64 addr, u32 size = 1) const;
+			bool writeToFile(const String& filePath) const;
 
 			inline bool isValid(void) const { return m_data.isValid(); }
 			inline bool isInvalid(void) const { return !isValid(); }

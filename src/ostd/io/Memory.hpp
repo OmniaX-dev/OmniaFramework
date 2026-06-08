@@ -1,21 +1,21 @@
 /*
-    OmniaFramework - A collection of useful functionality
-    Copyright (C) 2026  OmniaX-Dev
+	OmniaFramework - A collection of useful functionality
+	Copyright (C) 2026  OmniaX-Dev
 
-    This file is part of OmniaFramework.
+	This file is part of OmniaFramework.
 
-    OmniaFramework is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	OmniaFramework is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    OmniaFramework is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	OmniaFramework is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #pragma once
@@ -32,11 +32,11 @@ namespace ostd
 	class Memory
 	{
 		public:
-			static void printByteStream(const ByteStream& data, StreamIndex start, u8 line_len, u16 n_rows, OutputHandlerBase& out, i32 addrHighlight = -1, u32 highlightRange = 1, const String& title = "");
-			static bool saveByteStreamToFile(const ByteStream& stream, const String& filePath);
+			static void printByteStream(std::span<const i8> data, StreamIndex start, u8 line_len, u16 n_rows, OutputHandlerBase& out, i32 addrHighlight = -1, u32 highlightRange = 1, const String& title = "");
+			static bool saveByteStreamToFile(std::span<const i8> stream, const String& filePath);
 			static bool loadByteStreamFromFile(const String& filePath, ByteStream& outStream);
 			static ByteStream stringToByteStream(const String& data);
-			static String byteStreamToString(const ByteStream& data);
+			static String byteStreamToString(std::span<const i8> data);
 
 			//Array helpers
 			template<typename T>

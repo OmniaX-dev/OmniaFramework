@@ -1,21 +1,21 @@
 /*
-    OmniaFramework - A collection of useful functionality
-    Copyright (C) 2026  OmniaX-Dev
+	OmniaFramework - A collection of useful functionality
+	Copyright (C) 2026  OmniaX-Dev
 
-    This file is part of OmniaFramework.
+	This file is part of OmniaFramework.
 
-    OmniaFramework is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	OmniaFramework is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    OmniaFramework is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	OmniaFramework is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with OmniaFramework.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "Memory.hpp"
@@ -23,7 +23,7 @@
 
 namespace ostd
 {
-	void Memory::printByteStream(const ByteStream& data, StreamIndex start, u8 line_len, u16 n_rows, OutputHandlerBase& out, i32 addrHighlight, u32 highlightRange, const String& title)
+	void Memory::printByteStream(std::span<const i8> data, StreamIndex start, u8 line_len, u16 n_rows, OutputHandlerBase& out, i32 addrHighlight, u32 highlightRange, const String& title)
 	{
 		StreamIndex end = start + (n_rows * line_len);
 		if (end > data.size()) end = data.size();
@@ -89,13 +89,13 @@ namespace ostd
 		out.nl().fg(ConsoleColors::BrightBlue).p(String::duplicateChar('=', linew)).nl().reset();
 	}
 
-	bool Memory::saveByteStreamToFile(const ByteStream& stream, const String& filePath)
+	bool Memory::saveByteStreamToFile(std::span<const i8> stream, const String& filePath)
 	{
 		std::ofstream writeFile;
 		writeFile.open(filePath.cpp_str(), std::ios::out | std::ios::binary);
-		writeFile.write((char*)(&stream[0]), stream.size());
+		writeFile.write((char*)(stream.data()), stream.size());
 		writeFile.close();
-		return true;
+		return writeFile.good();
 	}
 
 	bool Memory::loadByteStreamFromFile(const String& filePath, ByteStream& outStream)
@@ -117,7 +117,7 @@ namespace ostd
 		return bstream;
 	}
 
-	String Memory::byteStreamToString(const ByteStream& data)
+	String Memory::byteStreamToString(std::span<const i8> data)
 	{
 		String out_string = "";
 		for (i64 i = 0; i < data.size(); i++)

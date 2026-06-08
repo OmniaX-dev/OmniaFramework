@@ -1,4 +1,5 @@
 #include "Serial.hpp"
+#include "Memory.hpp"
 
 namespace ostd
 {
@@ -41,6 +42,14 @@ namespace ostd
 
 
 
+	Serial::Serial(StreamView copyData, serial::Endianness endianness) : read(*this), write(*this)
+	{
+		if (construct(copyData.size(), endianness, false) && isValid())
+		{
+			std::ranges::copy(copyData, m_data.data().begin());
+		}
+	}
+
 	bool Serial::construct(u64 size, serial::Endianness endianness, bool preInitialize, i8 initialValue)
 	{
 		if (m_data.isValid()) return false;
@@ -61,6 +70,12 @@ namespace ostd
 		if (size == 0) return false;
 		if (addr > u64Range::max() - size) return false;   // u64 overflow check
 		return (addr + size - 1) < m_data.size();
+	}
+
+	bool Serial::writeToFile(const String& filePath) const
+	{
+		if (!isValid()) return false;
+		return Memory::saveByteStreamToFile(m_data.data(), filePath);
 	}
 
 
