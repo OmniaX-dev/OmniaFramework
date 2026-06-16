@@ -139,6 +139,7 @@ namespace ostd
 			inline void invalidate(void) { m_valid = false; }
 			inline bool isValid(void) const { return m_valid; }
 			inline bool isStopped(void) const { return m_stopped; }
+			inline bool isUncapped(void) const { return m_uncapped; }
 
 		private:
 			TimePoint m_prevTime;
@@ -149,6 +150,7 @@ namespace ostd
 			f64 m_accumulator { 0.0 };
 			bool m_valid { false };
 			bool m_stopped { false };
+			bool m_uncapped { false };
 	};
 
 	struct GameClock

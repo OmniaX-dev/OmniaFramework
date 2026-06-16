@@ -599,12 +599,15 @@ namespace ostd
 
 	StepTimer& StepTimer::create(f64 updatesPerSecond, StepTimer::Callback callback, bool stopped)
 	{
+		if (updatesPerSecond == 0.0)
+			updatesPerSecond = -1.0;
 		m_targetDt = 1.0 / updatesPerSecond;
 		m_callback = std::move(callback);
 		m_prevTime = Clock::now();
 		m_accumulator = 0.0;
 		m_stopped = stopped;
 		m_valid = true;
+		m_uncapped = (updatesPerSecond <= 0.0);
 		return *this;
 	}
 
@@ -616,6 +619,11 @@ namespace ostd
 			m_stopped = true;
 			if (m_stopCallback)
 				m_stopCallback();
+			return;
+		}
+		if (m_uncapped)   // set when updatesPerSecond <= 0, say
+		{
+			m_callback(1.0); //TODO: Calculate dt for uncapped, and replace the hardcoded 1.0
 			return;
 		}
 
