@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "math/Geometry.hpp"
+#include <ostd/math/Geometry.hpp>
 #include <ogfx/gui/widgets/Widget.hpp>
 
 namespace ogfx
