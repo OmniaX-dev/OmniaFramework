@@ -7,3 +7,45 @@ FOR ([age == 20] OR [year <= 1998]) AND 					# FOR conditions should support all
 CROSS test_table_2 MATCH  									# Possible values: MATCH (default, implicit), LEFT, RIGHT, FULL
 IF test_table.id == test_table_2.user_id 					# Debating if this should support only equality, or more complex conditions, maybe even matching FOR conditions
 ORDER age, year DESC; 										# Possible values: ASC (default, implicit), DESC
+
+
+
+
+
+
+
+
+I start by scanning a character: if that character is a letter 
+or an underscore, I go into keyword/identifier mode, and accumulate until I encounter 
+anything that is not a letter, number, underscore or dot, then check to see if 
+it's a keyword, otherwise it's an identifier (since performance is quite 
+critical in this particular context, I am thinking of fast-tracking directly to 
+identifier by setting a bool flag if either: I am starting or ending 
+with an underscore, or I encounter a dot or a number ...I am going to allow 
+for keyword check if the underscore is found inside, because I might want to 
+have that in the future) ...if a dot is on the end, I error.
+
+If the initial character is a double quote, I go into string literal mode and 
+accumulate until a non-escaped double quote (inclusive). If I find a 
+new line or the end of the query before that, I error.
+
+If the initial character is a number, I go into number literal mode and accumulate 
+until I find something that is not a number or a dot. If more than 
+one dot is found, I error. (here I could polish a bit, removing leading zeros if no 
+dot is present and adding a trailing zero if the dot is the last 
+character ...again, is this the job of the lexer? ...maybe not, but maybe it is worth 
+sending cleaner data to the parser, if the fix is this simple 
+....I'll wait to hear what you think)
+
+If the initial character is any of: =, <, >, !, I check the next character and do 
+the operator-logic you described, and if that doesn't apply then I'll 
+put the single character as a symbol (not used now, but more robust for the future...
+though I wonder if I should have the parser error on it or error 
+directly in the lexer instead of putting it into a symbol)
+
+If the initial character is any of the current symbol list: ( ) [ ] { } , * ; I put 
+it as a symbol
+
+If the initial character is anything else, I error
+
+when I reach the end, I emit an EndOfInput token
