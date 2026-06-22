@@ -1,0 +1,9 @@
+GET UNIQUE name AS "Name", age, country, children 			# * can be used to get all columns; UNIQUE is optional
+IN test_table
+FOR ([age == 20] OR [year <= 1998]) AND 					# FOR conditions should support all regular comparison operators (==, !=, <, <=, >, >=) when applicable
+	([name == "Alberto"] OR [name MATCHES "regex"]) AND
+	[country IN {"Spain", "Italy", "Germany"}] AND
+	NOT [children BETWEEN 2,4 INCL]  						# Possible values: INCL (default, implicit), EXCL, INCL_L, INCL_R
+CROSS test_table_2 MATCH  									# Possible values: MATCH (default, implicit), LEFT, RIGHT, FULL
+IF test_table.id == test_table_2.user_id 					# Debating if this should support only equality, or more complex conditions, maybe even matching FOR conditions
+ORDER age, year DESC; 										# Possible values: ASC (default, implicit), DESC
