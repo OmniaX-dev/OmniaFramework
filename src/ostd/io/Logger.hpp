@@ -54,7 +54,9 @@ namespace ostd
 #define OX_LOG_TRACE_ENABLED 1
 
 #ifdef  OX_RELEASE_BUILD
+	#undef OX_LOG_DEBUG_ENABLED
 	#define OX_LOG_DEBUG_ENABLED 0
+	#undef OX_LOG_TRACE_ENABLED
 	#define OX_LOG_TRACE_ENABLED 0
 #endif
 
