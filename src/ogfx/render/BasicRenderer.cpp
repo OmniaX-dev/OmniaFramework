@@ -1262,7 +1262,10 @@ namespace ogfx
 			flushBatch();
 		m_texture = tmpTex;
 		if (m_vertexCount + vertCount >= MaxVertices || m_indexCount + indexCount >= MaxIndices)
+		{
 			flushBatch();
+			m_texture = tmpTex;
+		}
 
 		SDL_FColor col = COLOR_CAST(color);
 
