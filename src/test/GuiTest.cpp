@@ -287,7 +287,8 @@ class TestWindow : public Window
 				u64 views = ostd::Random::getui64(0, 100000);
 				f64 price = ostd::Random::getf64(0.99, 999.99);
 				f64 rating = ostd::Random::getf64(0.0, 5.0);
-				m_details.addRow({ name, category, quantity, views, price, rating });
+				ostd::Color col = (ostd::Random::getf32() > 0.8f ? Colors::DarkRed : Colors::Transparent);
+				m_details.addRow({ name, category, quantity, views, price, rating }, col);
 			}
 
 			m_details.setSelectionChangedCallback([&](stdvec<DetailList::Row*>& selection) -> void {

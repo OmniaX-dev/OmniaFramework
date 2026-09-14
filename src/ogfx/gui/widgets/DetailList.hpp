@@ -62,6 +62,9 @@ namespace ogfx
 					inline Row(DetailList& owner) : m_owner(&owner) {  }
 					inline bool isValid(void) const { return m_owner != nullptr && !m_cells.empty(); }
 					inline bool isSelected(void) const { return m_selected; }
+					// Colors::Transparent (the default) means "use the theme's textColor for this row".
+					inline Color getTextColor(void) const { return m_textColor; }
+					inline void setTextColor(const Color& color) { m_textColor = color; }
 					Cell getCell(u32 col) const;
 					String getString(u32 col) const;
 					i64 getI64(u32 col) const;
@@ -77,6 +80,7 @@ namespace ogfx
 					DetailList* m_owner { nullptr };
 					stdvec<Cell> m_cells;
 					bool m_selected { false };
+					Color m_textColor { Colors::Transparent };
 
 					friend class DetailList;
 			};
@@ -100,7 +104,7 @@ namespace ogfx
 				inline Column& getColumn(u32 index) { return m_columns[index]; }
 				inline const Column& getColumn(u32 index) const { return m_columns[index]; }
 
-				Row& addRow(const stdvec<Cell>& values);
+				Row& addRow(const stdvec<Cell>& values, const Color& textColor = Colors::Transparent);
 				bool removeRow(Row& row);
 				bool removeRow(u32 displayIndex);
 				void clearRows(void);

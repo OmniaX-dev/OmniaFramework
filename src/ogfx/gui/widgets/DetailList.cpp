@@ -228,7 +228,8 @@ namespace ogfx
 				}
 				else
 				{
-					textColor = getTextColor();
+					Color rowColor = row.getTextColor();
+					textColor = (rowColor == Colors::Transparent) ? getTextColor() : rowColor;
 					if (isAlternatingBackgroundEnabled())
 						gfx.fillRect(lineRect, (i % 2 == 0) ? getBackgroundColor() : getBackgroundColor2());
 				}
@@ -560,7 +561,7 @@ namespace ogfx
 			return index;
 		}
 
-		DetailList::Row& DetailList::addRow(const stdvec<Cell>& values)
+		DetailList::Row& DetailList::addRow(const stdvec<Cell>& values, const Color& textColor)
 		{
 			if (values.size() != m_columns.size())
 			{
@@ -577,6 +578,7 @@ namespace ogfx
 			}
 			auto row = std::make_unique<Row>(*this);
 			row->m_cells = values;
+			row->m_textColor = textColor;
 			Row* ptr = row.get();
 			m_rows.push_back(std::move(row));
 			m_displayOrder.push_back(ptr);
