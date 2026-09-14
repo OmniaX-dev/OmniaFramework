@@ -144,6 +144,7 @@ namespace ogfx
 				void draw_cell_text(ogfx::BasicRenderer2D& gfx, const String& text, const Rectangle& cellBounds, eAlign align, const Color& color);
 				String truncate_text(ogfx::BasicRenderer2D& gfx, const String& text, f32 maxWidth) const;
 				f32 row_height(void) const;
+				f32 get_last_column_stretch(void) const;
 
 			private:
 				Row m_invalidRow { *this };

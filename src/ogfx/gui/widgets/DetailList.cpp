@@ -171,6 +171,17 @@ namespace ogfx
 			return (f32)getFontSize() + m_cellPadding.top() + m_cellPadding.bottom();
 		}
 
+		f32 DetailList::get_last_column_stretch(void) const
+		{
+			if (m_columns.empty())
+				return 0.0f;
+			f32 totalWidth = 0.0f;
+			for (auto& c : m_columns)
+				totalWidth += c.width;
+			const f32 available = getContentBounds().w - getVScrollbarSize();
+			return (totalWidth < available) ? (available - totalWidth) : 0.0f;
+		}
+
 		void DetailList::onDraw(ogfx::BasicRenderer2D& gfx)
 		{
 			ensure_sorted();
@@ -193,6 +204,7 @@ namespace ogfx
 			const f32 visibleH = getContentBounds().h;
 			const f32 visibleEnd = scrollY + visibleH;
 			const f32 contentW = std::max(getContentExtents().w, getContentBounds().w);
+			const f32 lastColumnStretch = get_last_column_stretch();
 
 			i32 startIdx = (rowH > 0) ? (i32)std::max(0.0f, std::floor(scrollY / rowH)) : 0;
 			f32 y = (f32)startIdx * rowH;
@@ -225,11 +237,12 @@ namespace ogfx
 				for (u32 c = 0; c < m_columns.size(); c++)
 				{
 					const auto& col = m_columns[c];
-					Rectangle cellBounds { cx, lineRect.y, col.width, rowH };
+					const f32 colWidth = col.width + ((c + 1 == m_columns.size()) ? lastColumnStretch : 0.0f);
+					Rectangle cellBounds { cx, lineRect.y, colWidth, rowH };
 					draw_cell_text(gfx, row.cellToString(c), cellBounds, col.align, textColor);
 					if (isShowColumnSeparatorsEnabled() && c + 1 < m_columns.size())
-						gfx.drawLine({ Vec2 { cx + col.width, lineRect.y }, Vec2 { cx + col.width, lineRect.y + rowH } }, getSeparatorLineColor(), 1);
-					cx += col.width;
+						gfx.drawLine({ Vec2 { cx + colWidth, lineRect.y }, Vec2 { cx + colWidth, lineRect.y + rowH } }, getSeparatorLineColor(), 1);
+					cx += colWidth;
 				}
 
 				if (isShowSeparatorLineEnabled())
@@ -308,11 +321,14 @@ namespace ogfx
 			const Rectangle headerBar { gpos, { getw(), m_headerHeight } };
 			gfx.outlinedRect(headerBar, m_headerBgColor, m_headerBorderColor, m_headerBorderWidth, false, false, true, false);
 
+			const f32 lastColumnStretch = get_last_column_stretch();
 			m_columnHeaderBoundsList.clear();
 			f32 x = gpos.x + getScrollOffset().x;
-			for (auto& col : m_columns)
+			for (u32 c = 0; c < m_columns.size(); c++)
 			{
-				Rectangle cellBounds { x, gpos.y, col.width, m_headerHeight };
+				auto& col = m_columns[c];
+				const f32 colWidth = col.width + ((c + 1 == m_columns.size()) ? lastColumnStretch : 0.0f);
+				Rectangle cellBounds { x, gpos.y, colWidth, m_headerHeight };
 				m_columnHeaderBoundsList.push_back(cellBounds);
 
 				const bool showArrow = col.sortOrder != eSortOrder::None;
@@ -326,9 +342,9 @@ namespace ogfx
 					draw_sort_arrow(gfx, cellBounds, col.sortOrder);
 
 				if (isShowColumnSeparatorsEnabled())
-					gfx.drawLine({ Vec2 { x + col.width, gpos.y }, Vec2 { x + col.width, gpos.y + m_headerHeight } }, m_headerBorderColor, m_headerBorderWidth);
+					gfx.drawLine({ Vec2 { x + colWidth, gpos.y }, Vec2 { x + colWidth, gpos.y + m_headerHeight } }, m_headerBorderColor, m_headerBorderWidth);
 
-				x += col.width;
+				x += colWidth;
 			}
 		}
 
