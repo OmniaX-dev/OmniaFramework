@@ -105,6 +105,7 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Slider.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/ComboBox.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/TreeView.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/DetailList.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Text.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/ColorPicker.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/ColorPickerSkins.cpp

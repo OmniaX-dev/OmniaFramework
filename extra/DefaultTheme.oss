@@ -330,3 +330,34 @@ const $accentColorDark = #6B0A1DFF
 		tint = $accentColorDark
 	}
 }
+
+
+
+% ====== DetailList ======
+(detailList) {
+	borderColor = #666666FF
+	fontSize = 16
+	showBorder = true
+	backgroundColor = #AAAAAAFF
+	backgroundColor2 = #999999FF
+	showAlternatingBackground = true
+	textColor = $textColor
+	cellPadding = rect(6, 4, 6, 4)
+	selectionColor = $accentColor
+	selectionTextColor = #FFFFFFFF
+	separatorLineColor = #666666FF
+	showSeparatorLine = true
+	showColumnSeparators = true
+
+	(header) {
+		height = 28.0
+		backgroundColor = #888888FF
+		textColor = $textColor
+		borderColor = #666666FF
+		borderWidth = 1
+		sortArrowColor = $accentColorDark
+		sortArrowSize = 5.0
+		sortArrowPadding = 8.0
+	}
+}
+% ========================

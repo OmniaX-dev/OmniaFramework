@@ -267,6 +267,42 @@ class TestWindow : public Window
 			}
 			t2.addWidget(*footer);
 
+			// t3: DetailList comprehensive example.
+			static const stdvec<String> detailCategories = { "Electronics", "FurnitureFurnitureFurnitureFurnitureFurniture", "Groceries", "Toys", "Books", "Clothing" };
+
+			m_details.setSize(820, 560);
+			m_details.addColumn("Name", DetailList::eColumnType::String, 220);
+			m_details.addColumn("Category", DetailList::eColumnType::String, 140, DetailList::eAlign::Center);
+			m_details.addColumn("QuantityQuantityQuantityQuantityQuantity", DetailList::eColumnType::I64, 90);
+			m_details.addColumn("Views", DetailList::eColumnType::U64, 100);
+			m_details.addColumn("Price", DetailList::eColumnType::F64, 100, 2);
+			m_details.addColumn("Rating", DetailList::eColumnType::F64, 90, 1);
+
+			const i32 detailRowCount = 40;
+			for (i32 i = 0; i < detailRowCount; i++)
+			{
+				String name = String("Item ").add(i + 1);
+				String category = detailCategories[ostd::Random::getui32(0, (u32)detailCategories.size() - 1)];
+				i64 quantity = ostd::Random::geti64(-50, 500);
+				u64 views = ostd::Random::getui64(0, 100000);
+				f64 price = ostd::Random::getf64(0.99, 999.99);
+				f64 rating = ostd::Random::getf64(0.0, 5.0);
+				m_details.addRow({ name, category, quantity, views, price, rating });
+			}
+
+			m_details.setSelectionChangedCallback([&](stdvec<DetailList::Row*>& selection) -> void {
+				if (selection.empty())
+					return;
+				auto& row = *selection[0];
+				std::cout << "[DetailList] Selected: " << row.getString(0).c_str() << " (" << row.getString(1).c_str() << ")\n";
+			});
+			m_details.setColumnSortedCallback([&](DetailList& sender, u32 columnIndex, DetailList::eSortOrder order) -> void {
+				String dir = (order == DetailList::eSortOrder::Ascending) ? "ascending" : (order == DetailList::eSortOrder::Descending ? "descending" : "none");
+				std::cout << "[DetailList] Sorted by \"" << sender.getColumn(columnIndex).name.c_str() << "\": " << dir.c_str() << "\n";
+			});
+
+			t3.addWidget(m_details, { 30, 30 });
+
 			m_panel3.addWidget(m_label4);
 
 			m_panel1.addWidget(m_label2);
@@ -393,6 +429,7 @@ class TestWindow : public Window
 		Slider m_slide { *this };
 		Label m_slideLbl { *this };
 		TreeView m_list { *this };
+		DetailList m_details { *this };
 		Label m_drawCallsLbl { *this };
 		Label m_cacheHitsLbl { *this };
 		Label m_cacheMissesLbl { *this };

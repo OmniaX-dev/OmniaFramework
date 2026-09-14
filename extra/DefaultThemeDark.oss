@@ -391,6 +391,36 @@ macro set_common_values(_borderColor = $borderColor, _fontSize = 18, _showBorder
 
 
 
+% ====== DetailList ======
+(detailList) {
+	set_common_values($borderColor, 16, true)
+	backgroundColor = $darkColor
+	backgroundColor2 = $darkColor.lighten(0.06)
+	showAlternatingBackground = true
+	textColor = $textColor
+	cellPadding = rect(6, 4, 6, 4)
+	selectionColor = $accentColor
+	selectionTextColor = color_white
+	separatorLineColor = $borderColor
+	showSeparatorLine = true
+	showColumnSeparators = true
+	set_focus_border($blueAccent)
+
+	(header) {
+		height = 28.0
+		backgroundColor = $borderColor
+		textColor = $textColor
+		borderColor = $accentColorDark
+		borderWidth = 1
+		sortArrowColor = $accentColorLight
+		sortArrowSize = 5.0
+		sortArrowPadding = 8.0
+	}
+}
+% ========================
+
+
+
 % ====== TextEdit ======
 (textEdit) {
 	set_common_values()
