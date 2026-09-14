@@ -50,10 +50,12 @@ namespace ogfx
 				String      name      { "" };
 				eColumnType type      { eColumnType::String };
 				f32         width     { 120 };
+				f32         minWidth  { 24 };
 				eAlign      align     { eAlign::Left };
 				u8          precision { 2 };     // only used when type == F64
 				eSortOrder  sortOrder { eSortOrder::None };
 				bool        sortable  { true };
+				bool        resizable { true };  // whether the edge to its right can be drag-resized
 			};
 
 			public: class Row
@@ -96,6 +98,9 @@ namespace ogfx
 				void afterDraw(ogfx::BasicRenderer2D& gfx) override;
 				void onMousePressed(const Event& event) override;
 				void onMouseReleased(const Event& event) override;
+				void onMouseMoved(const Event& event) override;
+				void onMouseDragged(const Event& event) override;
+				void onMouseExited(const Event& event) override;
 				Rectangle getContentExtents(void) const override;
 
 				u32 addColumn(const String& name, eColumnType type, f32 width = 120, eAlign align = eAlign::Default);
@@ -136,6 +141,12 @@ namespace ogfx
 				OSTD_PARAM_GETSET(f32, HeaderSortArrowSize, m_headerArrowSize);
 				OSTD_PARAM_GETSET(f32, HeaderSortArrowPadding, m_headerArrowPadding);
 
+			private: struct ResizeHandle
+			{
+				Rectangle bounds;
+				u32 columnIndex;
+			};
+
 			private:
 				static bool cell_matches_type(const Cell& value, eColumnType type);
 				static i32 compare_cells(const Cell& a, const Cell& b, eColumnType type);
@@ -149,8 +160,12 @@ namespace ogfx
 				String truncate_text(ogfx::BasicRenderer2D& gfx, const String& text, f32 maxWidth) const;
 				f32 row_height(void) const;
 				f32 get_last_column_stretch(void) const;
+				i32 hit_test_resize_handle(const Vec2& pos) const;
+				void set_resize_cursor(bool active);
 
 			private:
+				inline static constexpr f32 ResizeHandleWidth = 6.0f;
+
 				Row m_invalidRow { *this };
 				stdvec<Column> m_columns;
 				std::deque<std::unique_ptr<Row>> m_rows;         // insertion order, stable Row identity
@@ -163,8 +178,14 @@ namespace ogfx
 				ColumnSortedCallback     callback_onColumnSorted { nullptr };
 
 				mutable stdvec<Rectangle> m_columnHeaderBoundsList;
+				mutable stdvec<ResizeHandle> m_columnResizeHandles;
 				mutable Rectangle m_cachedExtents { 0, 0, 0, 0 };
 				mutable bool m_extentsDirty { true };
+
+				i32 m_resizingColumnIndex { -1 };
+				f32 m_resizeStartMouseX { 0 };
+				f32 m_resizeStartColumnWidth { 0 };
+				bool m_resizeCursorActive { false };
 
 				f32 m_headerHeight { 28 };
 				Color m_headerBgColor { 60, 60, 60 };

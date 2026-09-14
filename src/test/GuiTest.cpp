@@ -40,6 +40,7 @@ class TestWindow : public Window
 		inline TestWindow(void) {  }
 		inline void onInitialize(void) override
 		{
+			// m_gfx.loadDefaultMonoFont();
 			ogfx::AnimationData ad;
 			ad.frameCount = 36;
 			ad.fps = 60;

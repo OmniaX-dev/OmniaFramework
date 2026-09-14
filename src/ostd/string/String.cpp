@@ -174,6 +174,8 @@ namespace ostd
 		if (len() > length)
 		{
 			i32 tr_len = truncate_indicator.len();
+			if (tr_len == length)
+				return set(truncate_indicator);
 			substr(0, length - tr_len);
 			return add(truncate_indicator);
 		}

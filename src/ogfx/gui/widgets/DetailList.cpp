@@ -20,6 +20,7 @@
 
 #include "DetailList.hpp"
 #include "../../render/BasicRenderer.hpp"
+#include "../Window.hpp"
 #include "../../../ostd/io/Memory.hpp"
 #include "../../../ostd/io/Logger.hpp"
 #include <algorithm>
@@ -279,7 +280,13 @@ namespace ogfx
 
 		String DetailList::truncate_text(ogfx::BasicRenderer2D& gfx, const String& text, f32 maxWidth) const
 		{
-			static const String truncateIndicator = "... ";
+			static const String truncateIndicator = "...";
+			// getStringDimensions(PerCharacter) measures glyphs by their *advance* (cursor step),
+			// but drawString paints each glyph at its actual bitmap *size*, which for the trailing
+			// glyph of a run can be wider than its advance. Shrinking the budget by a small margin
+			// keeps that last glyph from visually creeping past maxWidth (e.g. into the sort arrow).
+			static constexpr f32 TrailingGlyphSafetyMargin = 2.0f;
+			maxWidth -= TrailingGlyphSafetyMargin;
 			if (maxWidth <= 0.0f)
 				return "";
 
@@ -324,6 +331,7 @@ namespace ogfx
 
 			const f32 lastColumnStretch = get_last_column_stretch();
 			m_columnHeaderBoundsList.clear();
+			m_columnResizeHandles.clear();
 			f32 x = gpos.x + getScrollOffset().x;
 			for (u32 c = 0; c < m_columns.size(); c++)
 			{
@@ -331,6 +339,13 @@ namespace ogfx
 				const f32 colWidth = col.width + ((c + 1 == m_columns.size()) ? lastColumnStretch : 0.0f);
 				Rectangle cellBounds { x, gpos.y, colWidth, m_headerHeight };
 				m_columnHeaderBoundsList.push_back(cellBounds);
+
+				// The last column has no edge to drag (it auto-stretches to fill leftover width instead).
+				if (col.resizable && c + 1 < m_columns.size())
+				{
+					Rectangle handleBounds { (x + colWidth) - (ResizeHandleWidth * 0.5f), gpos.y, ResizeHandleWidth, m_headerHeight };
+					m_columnResizeHandles.push_back({ handleBounds, c });
+				}
 
 				const bool showArrow = col.sortOrder != eSortOrder::None;
 				const f32 padL = m_cellPadding.left();
@@ -379,12 +394,26 @@ namespace ogfx
 				return;
 			if (isMouseInsideAnyScrollbar())
 				return;
+
+			const Vec2 pos { event.mouse->position_x, event.mouse->position_y };
+
+			i32 handleColumn = hit_test_resize_handle(pos);
+			if (handleColumn >= 0)
+			{
+				m_resizingColumnIndex = handleColumn;
+				m_resizeStartMouseX = pos.x;
+				m_resizeStartColumnWidth = m_columns[handleColumn].width;
+				set_resize_cursor(true);
+				event.handle();
+				return;
+			}
+
 			const Rectangle headerBar { getGlobalPosition(), { getw(), m_headerHeight } };
-			if (!headerBar.contains({ event.mouse->position_x, event.mouse->position_y }, true))
+			if (!headerBar.contains(pos, true))
 				return;
 			for (u32 i = 0; i < m_columnHeaderBoundsList.size(); i++)
 			{
-				if (m_columnHeaderBoundsList[i].contains({ event.mouse->position_x, event.mouse->position_y }))
+				if (m_columnHeaderBoundsList[i].contains(pos))
 				{
 					cycle_sort_column(i);
 					event.handle();
@@ -395,6 +424,15 @@ namespace ogfx
 
 		void DetailList::onMouseReleased(const Event& event)
 		{
+			if (m_resizingColumnIndex >= 0)
+			{
+				m_resizingColumnIndex = -1;
+				const Vec2 pos { event.mouse->position_x, event.mouse->position_y };
+				set_resize_cursor(hit_test_resize_handle(pos) >= 0);
+				event.handle();
+				return;
+			}
+
 			if (!isMouseInside())
 				return;
 			if (event.mouse->button != ogfx::MouseEventData::eButton::Left)
@@ -423,6 +461,48 @@ namespace ogfx
 			if (!wasSelected && callback_onSelectionChanged)
 				callback_onSelectionChanged(m_selectedList);
 			event.handle();
+		}
+
+		void DetailList::onMouseMoved(const Event& event)
+		{
+			const Vec2 pos { event.mouse->position_x, event.mouse->position_y };
+			set_resize_cursor(hit_test_resize_handle(pos) >= 0);
+		}
+
+		void DetailList::onMouseDragged(const Event& event)
+		{
+			if (m_resizingColumnIndex < 0)
+				return;
+			const f32 delta = event.mouse->position_x - m_resizeStartMouseX;
+			auto& col = m_columns[(u32)m_resizingColumnIndex];
+			col.width = std::max(m_resizeStartColumnWidth + delta, col.minWidth);
+			m_extentsDirty = true;
+			event.handle();
+		}
+
+		void DetailList::onMouseExited(const Event& event)
+		{
+			if (m_resizingColumnIndex >= 0)
+				return; // keep the resize cursor while a drag is in progress, even past the widget edge
+			set_resize_cursor(false);
+		}
+
+		i32 DetailList::hit_test_resize_handle(const Vec2& pos) const
+		{
+			for (auto& h : m_columnResizeHandles)
+			{
+				if (h.bounds.contains(pos))
+					return (i32)h.columnIndex;
+			}
+			return -1;
+		}
+
+		void DetailList::set_resize_cursor(bool active)
+		{
+			if (active == m_resizeCursorActive)
+				return;
+			getWindow().setCursor(active ? ogfx::WindowCore::eCursor::EW_Resize : ogfx::WindowCore::eCursor::Default);
+			m_resizeCursorActive = active;
 		}
 
 		void DetailList::cycle_sort_column(u32 columnIndex)
@@ -546,7 +626,7 @@ namespace ogfx
 			Column c;
 			c.name = name;
 			c.type = type;
-			c.width = std::max(width, 24.0f);
+			c.width = std::max(width, c.minWidth);
 			c.align = (align == eAlign::Default) ? ((type == eColumnType::String) ? eAlign::Left : eAlign::Right) : align;
 			m_columns.push_back(c);
 			m_extentsDirty = true;
