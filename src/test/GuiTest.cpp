@@ -214,6 +214,7 @@ class TestWindow : public Window
 			auto& t1 = m_tabs.addTab("Tab1");
 			auto& t2 = m_tabs.addTab("Tab2 Test");
 			auto& t3 = m_tabs.addTab("Long Tab Test");
+			t3.setLayout<FillLayout>();
 
 			t1.addWidget(m_check1, { 30, 30 });
 			auto& rb1 = m_radioGroup.addButton(t1, "Radio this out!", { 30, 80 });

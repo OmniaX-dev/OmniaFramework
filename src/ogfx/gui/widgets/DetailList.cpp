@@ -303,7 +303,7 @@ namespace ogfx
 			if (totalWidth <= maxWidth)
 				return text;
 
-			const f32 indicatorWidth = gfx.getStringDimensions(truncateIndicator, getFontSize()).x;
+			static const f32 indicatorWidth = gfx.getStringDimensions(truncateIndicator, getFontSize()).x;
 			const f32 budget = maxWidth - indicatorWidth;
 			if (budget <= 0.0f)
 				return "";
@@ -320,7 +320,7 @@ namespace ogfx
 			if (charsThatFit == 0)
 				return "";
 
-			return text.new_fixedLength(charsThatFit + truncateIndicator.len(), ' ', truncateIndicator);
+			return text.new_fixedLength(charsThatFit + truncateIndicator.len() - 1, ' ', truncateIndicator);
 		}
 
 		void DetailList::draw_header(ogfx::BasicRenderer2D& gfx)
@@ -390,12 +390,17 @@ namespace ogfx
 
 		void DetailList::onMousePressed(const Event& event)
 		{
+			const Vec2 pos { event.mouse->position_x, event.mouse->position_y };
+			const Rectangle headerBar { getGlobalPosition(), { getw(), m_headerHeight } };
+			// Recorded regardless of the guards below: whatever this press turns out to do (or not
+			// do), a release belonging to the same click must never fall through to row-selection
+			// once the press itself landed on the header strip.
+			m_pressOnHeader = headerBar.contains(pos, true);
+
 			if (event.mouse->button != ogfx::MouseEventData::eButton::Left)
 				return;
 			if (isMouseInsideAnyScrollbar())
 				return;
-
-			const Vec2 pos { event.mouse->position_x, event.mouse->position_y };
 
 			i32 handleColumn = hit_test_resize_handle(pos);
 			if (handleColumn >= 0)
@@ -408,8 +413,7 @@ namespace ogfx
 				return;
 			}
 
-			const Rectangle headerBar { getGlobalPosition(), { getw(), m_headerHeight } };
-			if (!headerBar.contains(pos, true))
+			if (!m_pressOnHeader)
 				return;
 			for (u32 i = 0; i < m_columnHeaderBoundsList.size(); i++)
 			{
@@ -432,6 +436,11 @@ namespace ogfx
 				event.handle();
 				return;
 			}
+
+			const bool pressWasOnHeader = m_pressOnHeader;
+			m_pressOnHeader = false;
+			if (pressWasOnHeader)
+				return; // this click started on the header - never select a row for it
 
 			if (!isMouseInside())
 				return;

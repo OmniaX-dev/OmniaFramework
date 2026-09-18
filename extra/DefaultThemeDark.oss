@@ -84,6 +84,7 @@ macro set_common_values(_borderColor = $borderColor, _fontSize = 18, _showBorder
 	}
 }
 (@panel_tab panel) {
+	padding = rect(0, 0, 0, 0)
 }
 % ======================
 
@@ -405,6 +406,7 @@ macro set_common_values(_borderColor = $borderColor, _fontSize = 18, _showBorder
 	showSeparatorLine = true
 	showColumnSeparators = true
 	set_focus_border($blueAccent)
+	padding = rect(0, 0, 0, 0)
 
 	(header) {
 		height = 28.0

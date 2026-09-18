@@ -186,6 +186,7 @@ namespace ogfx
 				f32 m_resizeStartMouseX { 0 };
 				f32 m_resizeStartColumnWidth { 0 };
 				bool m_resizeCursorActive { false };
+				bool m_pressOnHeader { false };  // true if the in-progress click's press landed on the header strip
 
 				f32 m_headerHeight { 28 };
 				Color m_headerBgColor { 60, 60, 60 };
