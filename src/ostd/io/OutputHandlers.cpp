@@ -2,10 +2,12 @@
 #include <iostream>
 #include "Logger.hpp"
 #include "IOHandlers.hpp"
+#include "FileSystem.hpp"
 #include "../vendor/TermColor.hpp"
 #include "../data/BaseObject.hpp"
 #include "../string/TextStyleParser.hpp"
 #include "../string/String.hpp"
+#include "../utils/Time.hpp"
 #include "io/Console.hpp"
 
 namespace ostd
@@ -284,6 +286,131 @@ namespace ostd
 		IPoint size;
 		BasicConsole::getConsoleSize(size.x, size.y);
 		return size;
+	}
+
+
+
+	bool LogFileOutputHandler::openFile(const String& filePath)
+	{
+		String path = filePath;
+		if (!path.contains('/') && !path.contains('\\'))
+			path = String("./") + path;
+
+		FileSystem::ePathStatus status = FileSystem::getPathStatus(path);
+		if (status != FileSystem::ePathStatus::ExistingFile && status != FileSystem::ePathStatus::ValidNewPath)
+		{
+			OX_ERROR("LogFileOutputHandler: invalid log file path: '%s'", path.c_str());
+			m_fileOpen = false;
+			return false;
+		}
+		m_filePath = path;
+		m_fileOpen = true;
+		return true;
+	}
+
+	OutputHandlerBase& LogFileOutputHandler::pChar(char c)
+	{
+		m_buffer.addChar(c);
+		return *this;
+	}
+
+	OutputHandlerBase& LogFileOutputHandler::pObject(const BaseObject& bo)
+	{
+		m_buffer.add(bo.toString());
+		return *this;
+	}
+
+	OutputHandlerBase& LogFileOutputHandler::p(const String& se)
+	{
+		m_buffer.add(se);
+		return *this;
+	}
+
+	OutputHandlerBase& LogFileOutputHandler::p(u8 i)
+	{
+		m_buffer.add(i);
+		return *this;
+	}
+
+	OutputHandlerBase& LogFileOutputHandler::p(i8 i)
+	{
+		m_buffer.add(i);
+		return *this;
+	}
+
+	OutputHandlerBase& LogFileOutputHandler::p(u16 i)
+	{
+		m_buffer.add(i);
+		return *this;
+	}
+
+	OutputHandlerBase& LogFileOutputHandler::p(i16 i)
+	{
+		m_buffer.add(i);
+		return *this;
+	}
+
+	OutputHandlerBase& LogFileOutputHandler::p(u32 i)
+	{
+		m_buffer.add(i);
+		return *this;
+	}
+
+	OutputHandlerBase& LogFileOutputHandler::p(i32 i)
+	{
+		m_buffer.add(i);
+		return *this;
+	}
+
+	OutputHandlerBase& LogFileOutputHandler::p(u64 i)
+	{
+		m_buffer.add(i);
+		return *this;
+	}
+
+	OutputHandlerBase& LogFileOutputHandler::p(i64 i)
+	{
+		m_buffer.add(i);
+		return *this;
+	}
+
+	OutputHandlerBase& LogFileOutputHandler::p(f32 f, u8 precision)
+	{
+		m_buffer.add(f, precision);
+		return *this;
+	}
+
+	OutputHandlerBase& LogFileOutputHandler::p(f64 f, u8 precision)
+	{
+		m_buffer.add(f, precision);
+		return *this;
+	}
+
+	OutputHandlerBase& LogFileOutputHandler::tab(void)
+	{
+		m_buffer.add("\t");
+		return *this;
+	}
+
+	OutputHandlerBase& LogFileOutputHandler::flush(void)
+	{
+		if (!m_fileOpen)
+			return *this;
+
+		LocalTime time;
+		String line;
+		line.add("[").add(time.getFullString(true, true, false, false, true)).add("]  ->  ").add(m_buffer);
+
+		FileSystem::writeTextFile(m_filePath, { line }, false);
+
+		m_buffer.clr();
+		return *this;
+	}
+
+	OutputHandlerBase& LogFileOutputHandler::clear(void)
+	{
+		m_buffer.clr();
+		return *this;
 	}
 
 }

@@ -126,6 +126,7 @@ list(APPEND TEST_SOURCE_FILES
 	# ${CMAKE_CURRENT_LIST_DIR}/src/test/GraphicsWindowTest.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/test/GuiTest.cpp
 	# ${CMAKE_CURRENT_LIST_DIR}/src/test/TextBufferUnitTest.cpp
+	# ${CMAKE_CURRENT_LIST_DIR}/src/test/LogFileOutputHandlerTest.cpp
 )
 #-----------------------------------------------------------------------------------------
 

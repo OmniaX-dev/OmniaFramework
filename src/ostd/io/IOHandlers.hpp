@@ -227,4 +227,34 @@ namespace ostd
 			void getConsoleSize(i32& outColumns, i32& outRows) override;
 			IPoint getConsoleSize(void) override;
 	};
+
+	class LogFileOutputHandler : public OutputHandlerBase
+	{
+		public:
+			bool openFile(const String& filePath);
+
+			OutputHandlerBase& pChar(char c) override;
+			OutputHandlerBase& pObject(const BaseObject& bo) override;
+
+			OutputHandlerBase& p(const String& se) override;
+			OutputHandlerBase& p(u8 i) override;
+			OutputHandlerBase& p(i8 i) override;
+			OutputHandlerBase& p(u16 i) override;
+			OutputHandlerBase& p(i16 i) override;
+			OutputHandlerBase& p(u32 i) override;
+			OutputHandlerBase& p(i32 i) override;
+			OutputHandlerBase& p(u64 i) override;
+			OutputHandlerBase& p(i64 i) override;
+			OutputHandlerBase& p(f32 f, u8 precision = 0) override;
+			OutputHandlerBase& p(f64 f, u8 precision = 0) override;
+
+			OutputHandlerBase& tab(void) override;
+			OutputHandlerBase& flush(void) override;
+			OutputHandlerBase& clear(void) override;
+
+		private:
+			String m_filePath;
+			String m_buffer;
+			bool m_fileOpen { false };
+	};
 }
