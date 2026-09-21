@@ -526,15 +526,34 @@ namespace ogfx
 				case eSortOrder::Ascending: next = eSortOrder::Descending; break;
 				default:                    next = eSortOrder::None;       break;
 			}
+			setSort(columnIndex, next, true);
+		}
+
+		bool DetailList::setSort(u32 columnIndex, eSortOrder order, bool notify)
+		{
+			if (columnIndex >= m_columns.size() || !m_columns[columnIndex].sortable)
+				return false;
+			// Asking a column that isn't the active sort column to become unsorted is a no-op.
+			if (order == eSortOrder::None && (i32)columnIndex != m_sortColumnIndex)
+				return true;
+
 			// Single-column sort (Explorer semantics): every other column resets to None.
 			for (auto& c : m_columns)
 				c.sortOrder = eSortOrder::None;
-			m_columns[columnIndex].sortOrder = next;
-			m_sortColumnIndex = (next == eSortOrder::None) ? -1 : (i32)columnIndex;
+			m_columns[columnIndex].sortOrder = order;
+			m_sortColumnIndex = (order == eSortOrder::None) ? -1 : (i32)columnIndex;
 			m_sortDirty = true;
 
-			if (callback_onColumnSorted)
-				callback_onColumnSorted(*this, columnIndex, next);
+			if (notify && callback_onColumnSorted)
+				callback_onColumnSorted(*this, columnIndex, order);
+			return true;
+		}
+
+		void DetailList::clearSort(bool notify)
+		{
+			if (m_sortColumnIndex < 0)
+				return;
+			setSort((u32)m_sortColumnIndex, eSortOrder::None, notify);
 		}
 
 		bool DetailList::cell_matches_type(const Cell& value, eColumnType type)

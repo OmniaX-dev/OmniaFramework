@@ -279,6 +279,7 @@ class TestWindow : public Window
 			m_details.addColumn("Views", DetailList::eColumnType::U64, 100);
 			m_details.addColumn("Price", DetailList::eColumnType::F64, 100, 2);
 			m_details.addColumn("Rating", DetailList::eColumnType::F64, 90, 1);
+			m_details.setSort(4, DetailList::eSortOrder::Descending); // start sorted by Price, highest first
 
 			const i32 detailRowCount = 40;
 			for (i32 i = 0; i < detailRowCount; i++)

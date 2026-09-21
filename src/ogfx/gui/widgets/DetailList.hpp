@@ -118,6 +118,12 @@ namespace ogfx
 
 				inline stdvec<Row*>& getSelection(void) { return m_selectedList; }
 				inline i32 getSortColumnIndex(void) const { return m_sortColumnIndex; }
+				// Programmatic sorting (same effect as clicking the header). Can be called before any
+				// rows exist; the order is applied as rows are added. Returns false if the column index
+				// is invalid or the column is not sortable. The column-sorted callback only fires when
+				// notify is true. Passing eSortOrder::None on the active sort column clears the sort.
+				bool setSort(u32 columnIndex, eSortOrder order, bool notify = false);
+				void clearSort(bool notify = false);
 				inline void setSelectionChangedCallback(SelectionChangedCallback cb) { callback_onSelectionChanged = std::move(cb); }
 				inline void setColumnSortedCallback(ColumnSortedCallback cb) { callback_onColumnSorted = std::move(cb); }
 
