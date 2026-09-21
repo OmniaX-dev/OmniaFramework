@@ -137,6 +137,8 @@ namespace ogfx
 				inline char getCharacterMask(void) const { return m_charMask; }
 				inline void clearCharacterMask(void) { m_charMask = '\0'; }
 				inline bool hasCharacterMask(void) const { return std::isprint(m_charMask); }
+				inline void selectAll(void) { m_buffer.selectAll(); }
+				inline void clearSelection(void) { m_buffer.clearSelection(); }
 				OSTD_BOOL_PARAM_GETSET_E(CursorBlink, m_cursorBlink);
 				OSTD_BOOL_PARAM_GETSET_E(CopyOnMask, m_copyOnMask);
 				OSTD_PARAM_GETSET(f32, CursorWidth, m_cursorWidth);
