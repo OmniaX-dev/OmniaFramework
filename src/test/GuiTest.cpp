@@ -214,6 +214,7 @@ class TestWindow : public Window
 			auto& t1 = m_tabs.addTab("Tab1");
 			auto& t2 = m_tabs.addTab("Tab2 Test");
 			auto& t3 = m_tabs.addTab("Long Tab Test");
+			auto& t4 = m_tabs.addTab("Line Graph");
 			t3.setLayout<FillLayout>();
 
 			t1.addWidget(m_check1, { 30, 30 });
@@ -306,6 +307,36 @@ class TestWindow : public Window
 			});
 
 			t3.addWidget(m_details, { 30, 30 });
+
+			// t4: LineGraph comprehensive example - a finance-style "income vs. spending" chart.
+			static const stdvec<String> monthNames = {
+				"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+			};
+			stdvec<std::pair<String, f64>> months;
+			for (i32 i = 0; i < (i32)monthNames.size(); i++)
+				months.push_back({ monthNames[i], (f64)i });
+
+			m_graph.setSize(1020, 560);
+			// X axis ticks are explicit (one per month); Y axis is left empty so the widget
+			// autoscales from the plotted data and generates its own "nice" gridlines.
+			m_graph.setup(months, {});
+			m_graph.setXAxisTitle("Month");
+			m_graph.setYAxisTitle("Amount ($)");
+
+			stdvec<f64> xdata, income, spending;
+			f64 runningIncome = 2800.0, runningSpending = 2100.0;
+			for (i32 i = 0; i < (i32)monthNames.size(); i++)
+			{
+				xdata.push_back((f64)i);
+				runningIncome += ostd::Random::getf64(-150.0, 300.0);
+				runningSpending += ostd::Random::getf64(-100.0, 250.0);
+				income.push_back(runningIncome);
+				spending.push_back(runningSpending);
+			}
+			m_graph.plot(xdata, income, "Income");
+			m_graph.plot(xdata, spending, "Spending");
+
+			t4.addWidget(m_graph, { 30, 30 });
 
 			m_panel3.addWidget(m_label4);
 
@@ -434,6 +465,7 @@ class TestWindow : public Window
 		Label m_slideLbl { *this };
 		TreeView m_list { *this };
 		DetailList m_details { *this };
+		LineGraph m_graph { *this };
 		Label m_drawCallsLbl { *this };
 		Label m_cacheHitsLbl { *this };
 		Label m_cacheMissesLbl { *this };

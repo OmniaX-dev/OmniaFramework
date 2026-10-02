@@ -361,3 +361,36 @@ const $accentColorDark = #6B0A1DFF
 	}
 }
 % ========================
+
+
+
+% ====== LineGraph ======
+(lineGraph) {
+	borderColor = #666666FF
+	fontSize = 16
+	showBorder = true
+	backgroundColor = #AAAAAAFF
+	plotBackgroundColor = #999999FF
+	gridColor = #888888FF
+	showGrid = true
+	axisLineColor = #333333FF
+	axisLabelColor = $textColor
+	axisTitleColor = $accentColorDark
+	pointRadius = 3.0
+	lineThickness = 2
+	showLegend = true
+
+	(legend) {
+		backgroundColor = rgba(230, 230, 230, 220)
+		textColor = $textColor
+		hoverTextColor = $accentColorDark
+		borderColor = #666666FF
+	}
+
+	(hover) {
+		crosshairColor = $accentColorDark
+		labelBackgroundColor = rgba(230, 230, 230, 230)
+		labelTextColor = $accentColorDark
+	}
+}
+% ========================

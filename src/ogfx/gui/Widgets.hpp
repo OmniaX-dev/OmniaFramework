@@ -31,6 +31,7 @@
 #include <ogfx/gui/widgets/ComboBox.hpp>
 #include <ogfx/gui/widgets/TreeView.hpp>
 #include <ogfx/gui/widgets/DetailList.hpp>
+#include <ogfx/gui/widgets/LineGraph.hpp>
 #include <ogfx/gui/widgets/Text.hpp>
 
 namespace ogfx

@@ -47,7 +47,7 @@ namespace ogfx
 		{
 			Default = 0,
 			Text,
-			Wait,
+			Wait,	
 			Crosshair,
 			Progress,
 			NWSE_Resize,
