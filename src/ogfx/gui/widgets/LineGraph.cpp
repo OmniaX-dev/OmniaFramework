@@ -78,11 +78,16 @@ namespace ogfx
 			m_yAxisDirty = true;
 		}
 
-		u32 LineGraph::plot(const stdvec<f64>& xdata, const stdvec<f64>& ydata, const String& name, const Color& color, bool showPoints)
+		u32 LineGraph::plot(const stdvec<f64>& xdata, const stdvec<f64>& ydata, const String& name, const Color& color, bool showPoints, const stdvec<ostd::BaseObject*>& userData)
 		{
 			if (xdata.size() != ydata.size())
 			{
 				OX_WARN("LineGraph: plot() xdata/ydata size mismatch (%d vs %d).", (i32)xdata.size(), (i32)ydata.size());
+				return (u32)-1;
+			}
+			if (!userData.empty() && userData.size() != xdata.size())
+			{
+				OX_WARN("LineGraph: plot() userData size (%d) must be empty or match xdata/ydata size (%d).", (i32)userData.size(), (i32)xdata.size());
 				return (u32)-1;
 			}
 			Color requestedColor = color;  // Color::operator== isn't const-qualified, so copy before comparing
@@ -92,6 +97,7 @@ namespace ogfx
 			s.showPoints = showPoints;
 			s.xdata = xdata;
 			s.ydata = ydata;
+			s.userData = userData;
 			m_series.push_back(std::move(s));
 			m_xAxisDirty = true;
 			m_yAxisDirty = true;
@@ -660,6 +666,15 @@ namespace ogfx
 
 			const f64 xv = s.xdata[(u32)m_hoverPointIndex];
 			const f64 yv = s.ydata[(u32)m_hoverPointIndex];
+
+			if (callback_onHover)
+			{
+				ostd::BaseObject* ud = ((u32)m_hoverPointIndex < s.userData.size()) ? s.userData[(u32)m_hoverPointIndex] : nullptr;
+				ostd::BaseObject& udRef = ud ? *ud : ostd::BaseObject::InvalidRef();
+				if (callback_onHover(xv, yv, udRef))
+					return;
+			}
+
 			const Vec2 p { value_to_x(xv), value_to_y(yv) };
 
 			gfx.drawLine({ Vec2 { p.x, m_plotArea.y }, Vec2 { p.x, m_plotArea.y + m_plotArea.h } }, m_crosshairColor, 1);

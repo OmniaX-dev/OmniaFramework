@@ -21,7 +21,9 @@
 #pragma once
 
 #include <ogfx/gui/widgets/Widget.hpp>
+#include <ostd/data/BaseObject.hpp>
 #include <utility>
+#include <functional>
 
 namespace ogfx
 {
@@ -49,6 +51,9 @@ namespace ogfx
 				bool        visible    { true };  // toggled by clicking this series's legend entry
 				stdvec<f64> xdata;
 				stdvec<f64> ydata;
+				// Parallel to xdata/ydata (one entry per point) if non-empty; passed to the hover
+				// callback. Not owned - LineGraph never deletes these.
+				stdvec<ostd::BaseObject*> userData;
 
 				inline bool isValid(void) const { return !xdata.empty() && xdata.size() == ydata.size(); }
 			};
@@ -71,9 +76,12 @@ namespace ogfx
 				inline void setYAxisTitle(const String& title) { m_yAxisTitle = title; }
 
 				// Adds a new series on top of the current axis setup and returns its index.
-				// Colors::Transparent (the default) auto-assigns the next palette color.
-				// Rejects (returns (u32)-1, logs a warning) if xdata/ydata sizes differ.
-				u32 plot(const stdvec<f64>& xdata, const stdvec<f64>& ydata, const String& name = "", const Color& color = Colors::Transparent, bool showPoints = true);
+				// Colors::Transparent (the default) auto-assigns the next palette color. userData, if
+				// non-empty, must match xdata/ydata in size - one entry per point, passed to the hover
+				// callback (see setHoverCallback()); pass {} (the default) to omit it.
+				// Rejects (returns (u32)-1, logs a warning) if xdata/ydata sizes differ, or userData is
+				// non-empty and doesn't match them.
+				u32 plot(const stdvec<f64>& xdata, const stdvec<f64>& ydata, const String& name = "", const Color& color = Colors::Transparent, bool showPoints = true, const stdvec<ostd::BaseObject*>& userData = {});
 				bool removeSeries(u32 index);
 				bool removeSeries(const String& name);
 				void clearSeries(void);
@@ -83,6 +91,14 @@ namespace ogfx
 				// Forces the autoscaled axis/ticks to recompute, for callers who mutated a Series's
 				// xdata/ydata in place via getSeries() rather than through plot().
 				inline void refreshAutoScale(void) { m_xAxisDirty = true; m_yAxisDirty = true; }
+
+				// Runs instead of the default hover tooltip rendering when set. userData is the
+				// hovered point's entry from its series (ostd::BaseObject::InvalidRef() if that entry
+				// is null, or if the series has no userData at all). Return true to fully replace the
+				// default rendering, or false to let it still run (e.g. to draw something additional
+				// alongside it rather than instead of it).
+				using HoverCallback = std::function<bool(f64 x, f64 y, ostd::BaseObject& userData)>;
+				inline void setHoverCallback(HoverCallback callback) { callback_onHover = std::move(callback); }
 
 				OSTD_PARAM_GETSET(Color, PlotBackgroundColor, m_plotBgColor);
 				OSTD_PARAM_GETSET(Color, GridColor, m_gridColor);
@@ -136,6 +152,7 @@ namespace ogfx
 
 				stdvec<Series> m_series;
 				Series m_invalidSeries;
+				HoverCallback callback_onHover { nullptr };
 				u32 m_nextPaletteIndex { 0 };
 
 				mutable Rectangle m_plotArea { 0, 0, 0, 0 };                // cached by the last draw, reused for hit-testing
