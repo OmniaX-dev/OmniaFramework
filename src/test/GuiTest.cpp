@@ -309,6 +309,19 @@ class TestWindow : public Window
 			t3.addWidget(m_details, { 30, 30 });
 
 			// t4: LineGraph comprehensive example - a finance-style "income vs. spending" chart.
+
+			struct TestUserData : public ostd::BaseObject
+			{
+				TestUserData(void) {
+					setTypeName("TestUserData");
+					validate();
+				}
+
+				String seriesName { "" };
+				String dataName { "" };
+				String date { "" };
+			};
+
 			static const stdvec<String> monthNames = {
 				"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 			};
@@ -322,18 +335,51 @@ class TestWindow : public Window
 			m_graph.setup(months, {});
 			m_graph.setXAxisTitle("Month");
 			m_graph.setYAxisTitle("Amount ($)");
+			m_graph.setHoverCallback([this](ogfx::BasicRenderer2D& gfx, f64 xdata, f64 ydata, ostd::BaseObject& userData, const ostd::Vec2& topLeft, ostd::Vec2& outSize) -> bool {
+				if (userData.isInvalid())
+					return false;
+				i32 fs = 20;
+				auto& ud = cast<TestUserData&>(userData);
+				f32 w = 0;
 
+				ostd::String tmp = ud.dataName;
+				if (f32 d = gfx.getStringDimensions(tmp).x; d > w)
+					w = d;
+				gfx.drawString(tmp, topLeft + ostd::Vec2 { 0, 25 }, Colors::Red, fs);
+
+				tmp = ostd::String("").add(ydata, 2);
+				if (f32 d = gfx.getStringDimensions(tmp).x; d > w)
+					w = d;gfx.drawString(tmp, topLeft + ostd::Vec2 { 0, 50 }, Colors::Purple, fs);
+
+				tmp = ud.date;
+				if (f32 d = gfx.getStringDimensions(tmp).x; d > w)
+					w = d;
+				gfx.drawString(tmp, topLeft + ostd::Vec2 { 0, 75 }, Colors::Yellow, fs);
+
+				outSize = { w, 100 };
+				gfx.drawHCenteredString(ud.seriesName, { topLeft, outSize }, Colors::Blue);
+
+				return true;
+			});
+
+			stdvec<ostd::BaseObject*> userData;
 			stdvec<f64> xdata, income, spending;
 			f64 runningIncome = 2800.0, runningSpending = 2100.0;
 			for (i32 i = 0; i < (i32)monthNames.size(); i++)
 			{
+				userData.push_back(nullptr);
 				xdata.push_back((f64)i);
 				runningIncome += ostd::Random::getf64(-150.0, 300.0);
 				runningSpending += ostd::Random::getf64(-100.0, 250.0);
 				income.push_back(runningIncome);
 				spending.push_back(runningSpending);
 			}
-			m_graph.plot(xdata, income, "Income");
+			static TestUserData ud;
+			ud.dataName = "TestData";
+			ud.date = "2026-10-06";
+			ud.seriesName = "Income";
+			userData[5] = &ud;
+			m_graph.plot(xdata, income, "Income", Colors::Transparent, true, userData);
 			m_graph.plot(xdata, spending, "Spending");
 
 			t4.addWidget(m_graph, { 30, 30 });

@@ -97,7 +97,17 @@ namespace ogfx
 				// is null, or if the series has no userData at all). Return true to fully replace the
 				// default rendering, or false to let it still run (e.g. to draw something additional
 				// alongside it rather than instead of it).
-				using HoverCallback = std::function<bool(f64 x, f64 y, ostd::BaseObject& userData)>;
+				//
+				// The widget still owns the tooltip's background box and its positioning (including
+				// flipping to the other side of the point to stay inside the plot area) - topLeft is
+				// where the callback should draw its content, and it must report the content's size
+				// through outSize so the box can be sized to fit it. Because that size has to be known
+				// before the box (and therefore topLeft) can be finalized, but is only known by actually
+				// calling the callback, it is invoked twice per hovered frame: once "invisibly" (behind
+				// a zero-area clip, so nothing it draws is seen) purely to read outSize, and once for
+				// real at the final topLeft. Keep it a pure function of (x, y, userData) - no side
+				// effects - since it won't always visibly run when called.
+				using HoverCallback = std::function<bool(ogfx::BasicRenderer2D& gfx, f64 xdata, f64 ydata, ostd::BaseObject& userData, const Vec2& topLeft, Vec2& outSize)>;
 				inline void setHoverCallback(HoverCallback callback) { callback_onHover = std::move(callback); }
 
 				OSTD_PARAM_GETSET(Color, PlotBackgroundColor, m_plotBgColor);
@@ -139,6 +149,10 @@ namespace ogfx
 				void draw_legend(ogfx::BasicRenderer2D& gfx);
 				u32 pick_legend_corner(const Rectangle (&candidates)[4]) const;
 				void draw_hover(ogfx::BasicRenderer2D& gfx);
+				// Positions and draws the tooltip's background box for the given content size
+				// (flipping to the other side of point if it would overflow the plot area), and
+				// returns where the content itself should be drawn.
+				Vec2 draw_hover_box(ogfx::BasicRenderer2D& gfx, const Vec2& point, const Vec2& contentSize) const;
 				bool find_nearest_point(const Vec2& localPos, u32& outSeries, u32& outPoint) const;
 
 			private:

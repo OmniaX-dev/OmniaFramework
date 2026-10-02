@@ -656,6 +656,19 @@ namespace ogfx
 			event.handle();
 		}
 
+		Vec2 LineGraph::draw_hover_box(ogfx::BasicRenderer2D& gfx, const Vec2& point, const Vec2& contentSize) const
+		{
+			const f32 pad = 6.0f;
+			Rectangle box { point.x + 10.0f, point.y - contentSize.y - pad * 2.0f - 4.0f, contentSize.x + pad * 2.0f, contentSize.y + pad * 2.0f };
+			if (box.x + box.w > m_plotArea.x + m_plotArea.w)
+				box.x = point.x - box.w - 10.0f;
+			if (box.y < m_plotArea.y)
+				box.y = point.y + 10.0f;
+
+			gfx.outlinedRect(box, m_hoverBgColor, m_crosshairColor, 1);
+			return { box.x + pad, box.y + pad };
+		}
+
 		void LineGraph::draw_hover(ogfx::BasicRenderer2D& gfx)
 		{
 			if (m_hoverSeriesIndex < 0 || m_hoverPointIndex < 0 || (u32)m_hoverSeriesIndex >= m_series.size())
@@ -666,19 +679,33 @@ namespace ogfx
 
 			const f64 xv = s.xdata[(u32)m_hoverPointIndex];
 			const f64 yv = s.ydata[(u32)m_hoverPointIndex];
+			const Vec2 p { value_to_x(xv), value_to_y(yv) };
+
+			gfx.drawLine({ Vec2 { p.x, m_plotArea.y }, Vec2 { p.x, m_plotArea.y + m_plotArea.h } }, m_crosshairColor, 1);
+			gfx.outlinedCircle(p, m_pointRadius + 2.0f, s.color, m_hoverCircleColor, 1);
 
 			if (callback_onHover)
 			{
 				ostd::BaseObject* ud = ((u32)m_hoverPointIndex < s.userData.size()) ? s.userData[(u32)m_hoverPointIndex] : nullptr;
 				ostd::BaseObject& udRef = ud ? *ud : ostd::BaseObject::InvalidRef();
-				if (callback_onHover(xv, yv, udRef))
+
+				// The callback measures (via outSize) and draws in the same call, but the box has to
+				// be drawn *behind* the content, so its size must be known first. Run the callback
+				// once behind a zero-area clip - whatever it draws during this call is invisible,
+				// regardless of where it tries to draw - purely to read back outSize.
+				Vec2 outSize { 0, 0 };
+				gfx.pushClippingRect({ 0, 0, 0, 0 }, true);
+				bool handled = callback_onHover(gfx, xv, yv, udRef, Vec2 { 0, 0 }, outSize);
+				gfx.popClippingRect();
+
+				if (handled)
+				{
+					Vec2 contentTopLeft = draw_hover_box(gfx, p, outSize);
+					Vec2 unused { 0, 0 };
+					callback_onHover(gfx, xv, yv, udRef, contentTopLeft, unused);
 					return;
+				}
 			}
-
-			const Vec2 p { value_to_x(xv), value_to_y(yv) };
-
-			gfx.drawLine({ Vec2 { p.x, m_plotArea.y }, Vec2 { p.x, m_plotArea.y + m_plotArea.h } }, m_crosshairColor, 1);
-			gfx.outlinedCircle(p, m_pointRadius + 2.0f, s.color, m_hoverCircleColor, 1);
 
 			String text = "";
 			if (!s.name.empty())
@@ -686,15 +713,8 @@ namespace ogfx
 			text.add("(").add(xv, 2).add(", ").add(yv, 2).add(")");
 
 			Vec2 dims = gfx.getStringDimensions(text, getFontSize());
-			const f32 pad = 6.0f;
-			Rectangle box { p.x + 10.0f, p.y - dims.y - pad * 2.0f - 4.0f, dims.x + pad * 2.0f, dims.y + pad * 2.0f };
-			if (box.x + box.w > m_plotArea.x + m_plotArea.w)
-				box.x = p.x - box.w - 10.0f;
-			if (box.y < m_plotArea.y)
-				box.y = p.y + 10.0f;
-
-			gfx.outlinedRect(box, m_hoverBgColor, m_crosshairColor, 1);
-			gfx.drawString(text, { box.x + pad, box.y + pad }, m_hoverTextColor, getFontSize());
+			Vec2 contentTopLeft = draw_hover_box(gfx, p, dims);
+			gfx.drawString(text, contentTopLeft, m_hoverTextColor, getFontSize());
 		}
 	}
 }
