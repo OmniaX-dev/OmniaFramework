@@ -371,7 +371,8 @@ namespace ogfx
 			// The plot area is a sub-region of the widget (it excludes the axis-label margins), so
 			// this clip is doing real work - unlike a clip against the widget's own full bounds,
 			// which WidgetManager already applies for free when drawing this widget as a child.
-			gfx.pushClippingRect(m_plotArea + /* Accounting for the border */ ostd::Rectangle { 1.0f, 1.0f, -2.0f, -2.0f }, true);
+			gfx.pushClippingRect(m_plotArea, true);
+			// gfx.pushClippingRect(m_plotArea + /* Accounting for the border */ ostd::Rectangle { 1.0f, 1.0f, -2.0f, -2.0f }, true);
 			draw_series(gfx);
 			gfx.popClippingRect();
 

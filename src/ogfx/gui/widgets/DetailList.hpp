@@ -22,6 +22,7 @@
 
 #include <ogfx/gui/widgets/Widget.hpp>
 #include <ogfx/gui/widgets/Scrollbar.hpp>
+#include <ostd/utils/Date.hpp>
 #include <deque>
 #include <memory>
 #include <variant>
@@ -35,27 +36,29 @@ namespace ogfx
 		// non-scrolling header row whose columns can be clicked to cycle sort direction.
 		class DetailList : public ScrollableWidget
 		{
-			public: enum class eColumnType : u8 { String = 0, I64, U64, F64 };
+			public: enum class eColumnType : u8 { String = 0, I64, U64, F64, Date };
 			public: enum class eSortOrder  : u8 { None = 0, Ascending, Descending };
-			// Default resolves to Left for String columns, Right for numeric ones (addColumn()).
+			// Default resolves to Left for String/Date columns, Right for numeric ones (addColumn()).
 			public: enum class eAlign      : u8 { Left = 0, Center, Right, Default };
 
 			// A cell can only ever hold the type declared for its column. Note: since this is a
 			// std::variant of multiple numeric alternatives, a bare numeric literal (e.g. 30) is
 			// ambiguous - pass exactly-typed values, e.g. (i64)30, (u64)5, 3.14 (matches f64).
-			public: using Cell = std::variant<String, i64, u64, f64>;
+			public: using Cell = std::variant<String, i64, u64, f64, ostd::Date>;
 
 			public: struct Column
 			{
-				String      name      { "" };
-				eColumnType type      { eColumnType::String };
-				f32         width     { 120 };
-				f32         minWidth  { 24 };
-				eAlign      align     { eAlign::Left };
-				u8          precision { 2 };     // only used when type == F64
-				eSortOrder  sortOrder { eSortOrder::None };
-				bool        sortable  { true };
-				bool        resizable { true };  // whether the edge to its right can be drag-resized
+				String      name       { "" };
+				eColumnType type       { eColumnType::String };
+				f32         width      { 120 };
+				f32         minWidth   { 24 };
+				eAlign      align      { eAlign::Left };
+				u8          precision  { 2 };             // only used when type == F64
+				String      dateFormat { "DD.MM.YYYY" };  // only used when type == Date; see ostd::Date
+				eSortOrder  sortOrder  { eSortOrder::None };
+				bool        sortable   { true };
+				bool        resizable  { true };  // whether the edge to its right can be drag-resized
+				bool        visible    { true };  // hidden columns take up no header/row space and can't be sorted-by-click
 			};
 
 			public: class Row
@@ -72,6 +75,7 @@ namespace ogfx
 					i64 getI64(u32 col) const;
 					u64 getU64(u32 col) const;
 					f64 getF64(u32 col) const;
+					ostd::Date getDate(u32 col) const;
 					bool setCell(u32 col, const Cell& value);
 					String cellToString(u32 col) const;
 
@@ -105,6 +109,8 @@ namespace ogfx
 
 				u32 addColumn(const String& name, eColumnType type, f32 width = 120, eAlign align = eAlign::Default);
 				u32 addColumn(const String& name, eColumnType type, f32 width, u8 decimalPrecision, eAlign align = eAlign::Default);
+				// For type == Date; dateFormat is an ostd::Date format string (e.g. "YYYY-MM-DD").
+				u32 addColumn(const String& name, eColumnType type, f32 width, const String& dateFormat, eAlign align = eAlign::Default);
 				inline u32 getColumnCount(void) const { return (u32)m_columns.size(); }
 				inline Column& getColumn(u32 index) { return m_columns[index]; }
 				inline const Column& getColumn(u32 index) const { return m_columns[index]; }
@@ -153,6 +159,12 @@ namespace ogfx
 				u32 columnIndex;
 			};
 
+			private: struct ColumnBounds
+			{
+				Rectangle bounds;
+				u32 columnIndex;
+			};
+
 			private:
 				static bool cell_matches_type(const Cell& value, eColumnType type);
 				static i32 compare_cells(const Cell& a, const Cell& b, eColumnType type);
@@ -166,6 +178,7 @@ namespace ogfx
 				String truncate_text(ogfx::BasicRenderer2D& gfx, const String& text, f32 maxWidth) const;
 				f32 row_height(void) const;
 				f32 get_last_column_stretch(void) const;
+				stdvec<u32> visible_column_indices(void) const;
 				i32 hit_test_resize_handle(const Vec2& pos) const;
 				void set_resize_cursor(bool active);
 
@@ -183,10 +196,8 @@ namespace ogfx
 				SelectionChangedCallback callback_onSelectionChanged { nullptr };
 				ColumnSortedCallback     callback_onColumnSorted { nullptr };
 
-				mutable stdvec<Rectangle> m_columnHeaderBoundsList;
+				mutable stdvec<ColumnBounds> m_columnHeaderBoundsList;
 				mutable stdvec<ResizeHandle> m_columnResizeHandles;
-				mutable Rectangle m_cachedExtents { 0, 0, 0, 0 };
-				mutable bool m_extentsDirty { true };
 
 				i32 m_resizingColumnIndex { -1 };
 				f32 m_resizeStartMouseX { 0 };

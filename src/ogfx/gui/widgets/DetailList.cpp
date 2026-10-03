@@ -77,6 +77,16 @@ namespace ogfx
 			return 0.0;
 		}
 
+		ostd::Date DetailList::Row::getDate(u32 col) const
+		{
+			if (col < m_cells.size())
+			{
+				if (auto p = std::get_if<ostd::Date>(&m_cells[col]))
+					return *p;
+			}
+			return ostd::Date();
+		}
+
 		bool DetailList::Row::setCell(u32 col, const Cell& value)
 		{
 			if (m_owner == nullptr || col >= m_owner->m_columns.size() || col >= m_cells.size())
@@ -103,6 +113,7 @@ namespace ogfx
 				case eColumnType::I64:    return String("").add(std::get<i64>(m_cells[col]));
 				case eColumnType::U64:    return String("").add(std::get<u64>(m_cells[col]));
 				case eColumnType::F64:    return String("").add(std::get<f64>(m_cells[col]), c.precision);
+				case eColumnType::Date:   return std::get<ostd::Date>(m_cells[col]).new_format(c.dateFormat).toString();
 			}
 			return "";
 		}
@@ -178,9 +189,24 @@ namespace ogfx
 				return 0.0f;
 			f32 totalWidth = 0.0f;
 			for (auto& c : m_columns)
-				totalWidth += c.width;
+			{
+				if (c.visible)
+					totalWidth += c.width;
+			}
 			const f32 available = getContentBounds().w - getVScrollbarSize();
 			return (totalWidth < available) ? (available - totalWidth) : 0.0f;
+		}
+
+		stdvec<u32> DetailList::visible_column_indices(void) const
+		{
+			stdvec<u32> result;
+			result.reserve(m_columns.size());
+			for (u32 i = 0; i < m_columns.size(); i++)
+			{
+				if (m_columns[i].visible)
+					result.push_back(i);
+			}
+			return result;
 		}
 
 		void DetailList::onDraw(ogfx::BasicRenderer2D& gfx)
@@ -206,6 +232,7 @@ namespace ogfx
 			const f32 visibleEnd = scrollY + visibleH;
 			const f32 contentW = std::max(getContentExtents().w, getContentBounds().w);
 			const f32 lastColumnStretch = get_last_column_stretch();
+			const auto visible = visible_column_indices();
 
 			i32 startIdx = (rowH > 0) ? (i32)std::max(0.0f, std::floor(scrollY / rowH)) : 0;
 			f32 y = (f32)startIdx * rowH;
@@ -236,13 +263,14 @@ namespace ogfx
 				}
 
 				f32 cx = lineRect.x;
-				for (u32 c = 0; c < m_columns.size(); c++)
+				for (u32 vi = 0; vi < visible.size(); vi++)
 				{
+					const u32 c = visible[vi];
 					const auto& col = m_columns[c];
-					const f32 colWidth = col.width + ((c + 1 == m_columns.size()) ? lastColumnStretch : 0.0f);
+					const f32 colWidth = col.width + ((vi + 1 == visible.size()) ? lastColumnStretch : 0.0f);
 					Rectangle cellBounds { cx, lineRect.y, colWidth, rowH };
 					draw_cell_text(gfx, row.cellToString(c), cellBounds, col.align, textColor);
-					if (isShowColumnSeparatorsEnabled() && c + 1 < m_columns.size())
+					if (isShowColumnSeparatorsEnabled() && vi + 1 < visible.size())
 						gfx.drawLine({ Vec2 { cx + colWidth, lineRect.y }, Vec2 { cx + colWidth, lineRect.y + rowH } }, getSeparatorLineColor(), 1);
 					cx += colWidth;
 				}
@@ -330,18 +358,22 @@ namespace ogfx
 			gfx.outlinedRect(headerBar, m_headerBgColor, m_headerBorderColor, m_headerBorderWidth, false, false, true, false);
 
 			const f32 lastColumnStretch = get_last_column_stretch();
+			const auto visible = visible_column_indices();
 			m_columnHeaderBoundsList.clear();
 			m_columnResizeHandles.clear();
 			f32 x = gpos.x + getScrollOffset().x;
-			for (u32 c = 0; c < m_columns.size(); c++)
+			for (u32 vi = 0; vi < visible.size(); vi++)
 			{
+				const u32 c = visible[vi];
 				auto& col = m_columns[c];
-				const f32 colWidth = col.width + ((c + 1 == m_columns.size()) ? lastColumnStretch : 0.0f);
+				const f32 colWidth = col.width + ((vi + 1 == visible.size()) ? lastColumnStretch : 0.0f);
 				Rectangle cellBounds { x, gpos.y, colWidth, m_headerHeight };
-				m_columnHeaderBoundsList.push_back(cellBounds);
+				m_columnHeaderBoundsList.push_back({ cellBounds, c });
 
-				// The last column has no edge to drag (it auto-stretches to fill leftover width instead).
-				if (col.resizable && c + 1 < m_columns.size())
+				// The last visible column has no edge to drag (it auto-stretches to fill leftover
+				// width instead); a hidden column that used to be last never gets a handle either,
+				// since it's skipped by visible_column_indices() entirely.
+				if (col.resizable && vi + 1 < visible.size())
 				{
 					Rectangle handleBounds { (x + colWidth) - (ResizeHandleWidth * 0.5f), gpos.y, ResizeHandleWidth, m_headerHeight };
 					m_columnResizeHandles.push_back({ handleBounds, c });
@@ -417,9 +449,9 @@ namespace ogfx
 				return;
 			for (u32 i = 0; i < m_columnHeaderBoundsList.size(); i++)
 			{
-				if (m_columnHeaderBoundsList[i].contains(pos))
+				if (m_columnHeaderBoundsList[i].bounds.contains(pos))
 				{
-					cycle_sort_column(i);
+					cycle_sort_column(m_columnHeaderBoundsList[i].columnIndex);
 					event.handle();
 					break;
 				}
@@ -485,7 +517,6 @@ namespace ogfx
 			const f32 delta = event.mouse->position_x - m_resizeStartMouseX;
 			auto& col = m_columns[(u32)m_resizingColumnIndex];
 			col.width = std::max(m_resizeStartColumnWidth + delta, col.minWidth);
-			m_extentsDirty = true;
 			event.handle();
 		}
 
@@ -564,6 +595,7 @@ namespace ogfx
 				case eColumnType::I64:    return std::holds_alternative<i64>(value);
 				case eColumnType::U64:    return std::holds_alternative<u64>(value);
 				case eColumnType::F64:    return std::holds_alternative<f64>(value);
+				case eColumnType::Date:   return std::holds_alternative<ostd::Date>(value);
 			}
 			return false;
 		}
@@ -593,6 +625,12 @@ namespace ogfx
 				case eColumnType::F64:
 				{
 					f64 va = std::get<f64>(a), vb = std::get<f64>(b);
+					return (va < vb) ? -1 : (vb < va ? 1 : 0);
+				}
+				case eColumnType::Date:
+				{
+					const ostd::Date& va = std::get<ostd::Date>(a);
+					const ostd::Date& vb = std::get<ostd::Date>(b);
 					return (va < vb) ? -1 : (vb < va ? 1 : 0);
 				}
 			}
@@ -633,15 +671,18 @@ namespace ogfx
 
 		Rectangle DetailList::getContentExtents(void) const
 		{
-			if (!m_extentsDirty)
-				return m_cachedExtents;
+			// Deliberately uncached: Column::width/visible are plain public fields that can be
+			// mutated directly via getColumn(), with no hook to invalidate a cache. The computation
+			// itself is cheap (O(columns), not O(rows)) so recomputing every call is the simplest
+			// way to stay correct.
 			f32 totalW = 0;
 			for (auto& c : m_columns)
-				totalW += c.width;
+			{
+				if (c.visible)
+					totalW += c.width;
+			}
 			f32 totalH = row_height() * (f32)m_rows.size();
-			m_cachedExtents = { 0, 0, totalW, totalH };
-			m_extentsDirty = false;
-			return m_cachedExtents;
+			return { 0, 0, totalW, totalH };
 		}
 
 		u32 DetailList::addColumn(const String& name, eColumnType type, f32 width, eAlign align)
@@ -655,9 +696,9 @@ namespace ogfx
 			c.name = name;
 			c.type = type;
 			c.width = std::max(width, c.minWidth);
-			c.align = (align == eAlign::Default) ? ((type == eColumnType::String) ? eAlign::Left : eAlign::Right) : align;
+			const bool textLike = (type == eColumnType::String || type == eColumnType::Date);
+			c.align = (align == eAlign::Default) ? (textLike ? eAlign::Left : eAlign::Right) : align;
 			m_columns.push_back(c);
-			m_extentsDirty = true;
 			return (u32)m_columns.size() - 1;
 		}
 
@@ -666,6 +707,14 @@ namespace ogfx
 			u32 index = addColumn(name, type, width, align);
 			if (index < m_columns.size())
 				m_columns[index].precision = decimalPrecision;
+			return index;
+		}
+
+		u32 DetailList::addColumn(const String& name, eColumnType type, f32 width, const String& dateFormat, eAlign align)
+		{
+			u32 index = addColumn(name, type, width, align);
+			if (index < m_columns.size())
+				m_columns[index].dateFormat = dateFormat;
 			return index;
 		}
 
@@ -691,7 +740,6 @@ namespace ogfx
 			m_rows.push_back(std::move(row));
 			m_displayOrder.push_back(ptr);
 			m_sortDirty = true;
-			m_extentsDirty = true;
 			return *ptr;
 		}
 
@@ -703,7 +751,6 @@ namespace ogfx
 			STDVEC_REMOVE(m_selectedList, &row);
 			STDVEC_REMOVE(m_displayOrder, &row);
 			m_rows.erase(it);
-			m_extentsDirty = true;
 			return true;
 		}
 
@@ -720,7 +767,6 @@ namespace ogfx
 			m_rows.clear();
 			m_displayOrder.clear();
 			m_selectedList.clear();
-			m_extentsDirty = true;
 			m_sortDirty = false;
 		}
 

@@ -61,6 +61,29 @@ namespace ostd
 			Date(i32 year, u32 month, u32 day, u32 hour = 0, u32 minute = 0, u32 second = 0);
 			static inline Date now(void) { return Date(); }
 
+			// RightInclusive/LeftExclusive are the same value named from either end ((min, max]),
+			// likewise LeftInclusive/RightExclusive ([min, max)).
+			enum class eRangeType : u8
+			{
+				Inclusive = 0,
+				Exclusive = 1,
+				RightInclusive = 2, LeftExclusive = 2,
+				LeftInclusive = 3,  RightExclusive = 3,
+			};
+
+			// Every Date from min to max (swapped if given in the wrong order), one per step, each
+			// already truncated to and displaying in dest_fmt. The step is calendar-aware and taken
+			// from the *finest* field dest_fmt's tokens actually include - "DD.MM.YYYY" steps by
+			// day, "MM.YYYY" by calendar month (28-31 days, correctly), "YYYY" by calendar year
+			// (365/366 days), "HH:Min:SS"-style formats by hour/minute/second. A format with no
+			// recognized token at all (pure literal text) falls back to daily.
+			// type controls whether the min-bucket and/or max-bucket are included, same convention
+			// as a mathematical interval. Pre-seeding every period in a report range (so e.g. a
+			// LineGraph x-axis doesn't skip months with no data) is the motivating use case:
+			//   for (auto& bucket : Date::range(start, end, "MM.YYYY"))
+			//       plotData[bucket] = 0.0;   // then merge in the real totals afterward
+			static stdvec<Date> range(const Date& min, const Date& max, const String& dest_fmt, eRangeType type = eRangeType::Inclusive);
+
 			String toString(void) const override;
 			inline String get(void) const { return toString(); }
 
@@ -69,6 +92,17 @@ namespace ostd
 			Date& format(const String& fmt);
 			Date new_format(const String& fmt) const;
 			inline String getFormat(void) const { return m_format; }
+
+			// Collapses to whatever precision the *current* format actually shows: any field the
+			// format doesn't include a token for (day, hour, minute, second, even year/month) is
+			// reset to its default (day/month 1, year 1970, time 00:00:00) rather than left as-is.
+			// Comparisons stay instant-based always (see the class comment) - this is the tool for
+			// when you deliberately want two dates that merely *display* the same to also compare
+			// equal, e.g. grouping transactions by month: format("MM.YYYY") then truncateToFormat()
+			// before using the Date as a std::map/std::set key, so two September 2026 entries on
+			// different days land in the same bucket instead of staying distinct keys.
+			Date& truncateToFormat(void);
+			Date new_truncateToFormat(void) const;
 
 			// Parses against the current format (see the class comment on failure behavior).
 			Date& operator=(const String& dateString);
@@ -134,9 +168,15 @@ namespace ostd
 			static bool is_leap_year(i32 y);
 			static u32 days_in_month(i32 y, u32 m);
 
+			// Used by range() to derive its step size from dest_fmt's finest field.
+			enum class eGranularity : u8 { Second, Minute, Hour, Day, Month, Year };
+			static i32 granularity_rank(FormatPart::eType t);
+			static void truncate_to_granularity(eGranularity g, u32& mo, u32& d, u32& h, u32& mi, u32& s);
+
 			void compile_format(const String& fmt);
 			bool try_parse(const String& input);
 			void decompose(i32& outY, u32& outMonth, u32& outDay, u32& outHour, u32& outMinute, u32& outSecond) const;
+			i64 truncated_epoch_seconds(void) const;
 			// Parses other against the current format; returns false ("not comparable") if it
 			// doesn't parse, else true with outCmp set to -1/0/1 same as the usual three-way compare.
 			bool compare_with_string(const String& other, i32& outCmp) const;

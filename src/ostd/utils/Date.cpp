@@ -21,6 +21,8 @@
 #include "Date.hpp"
 #include <ostd/io/Logger.hpp>
 #include <ctime>
+#include <algorithm>
+#include <utility>
 
 namespace ostd
 {
@@ -300,6 +302,59 @@ namespace ostd
 		return copy;
 	}
 
+	i64 Date::truncated_epoch_seconds(void) const
+	{
+		i32 y; u32 mo, d, h, mi, s;
+		decompose(y, mo, d, h, mi, s);
+
+		bool hasYear = false, hasMonth = false, hasDay = false, hasHour = false, hasMinute = false, hasSecond = false;
+		for (auto& part : m_compiledFormat)
+		{
+			switch (part.type)
+			{
+				case FormatPart::eType::Year4:
+				case FormatPart::eType::Year2:      hasYear = true; break;
+				case FormatPart::eType::Month:      hasMonth = true; break;
+				case FormatPart::eType::Day:        hasDay = true; break;
+				case FormatPart::eType::HourPadded:
+				case FormatPart::eType::Hour:       hasHour = true; break;
+				case FormatPart::eType::MinutePadded:
+				case FormatPart::eType::Minute:     hasMinute = true; break;
+				case FormatPart::eType::SecondPadded:
+				case FormatPart::eType::Second:     hasSecond = true; break;
+				default: break;
+			}
+		}
+
+		if (!hasYear)   y = 1970;
+		if (!hasMonth)  mo = 1;
+		if (!hasDay)    d = 1;
+		if (!hasHour)   h = 0;
+		if (!hasMinute) mi = 0;
+		if (!hasSecond) s = 0;
+
+		// days_from_civil/the sum below give the *displayed* value these (possibly zeroed) fields
+		// represent; subtracting the offset back out undoes the +offset decompose() applies, so
+		// re-decomposing the result reproduces exactly these fields again.
+		const i64 dispTarget = days_from_civil(y, mo, d) * 86400LL + (i64)h * 3600LL + (i64)mi * 60LL + (i64)s;
+		return dispTarget - (i64)m_utcOffsetMinutes * 60LL;
+	}
+
+	Date& Date::truncateToFormat(void)
+	{
+		m_epochSeconds = truncated_epoch_seconds();
+		m_valid = true;
+		return *this;
+	}
+
+	Date Date::new_truncateToFormat(void) const
+	{
+		Date copy = *this;
+		copy.m_epochSeconds = truncated_epoch_seconds();
+		copy.m_valid = true;
+		return copy;
+	}
+
 	Date& Date::operator=(const String& dateString)
 	{
 		if (!try_parse(dateString))
@@ -335,4 +390,130 @@ namespace ostd
 	u32 Date::getHour(void) const { i32 y; u32 mo, d, h, mi, s; decompose(y, mo, d, h, mi, s); return h; }
 	u32 Date::getMinute(void) const { i32 y; u32 mo, d, h, mi, s; decompose(y, mo, d, h, mi, s); return mi; }
 	u32 Date::getSecond(void) const { i32 y; u32 mo, d, h, mi, s; decompose(y, mo, d, h, mi, s); return s; }
+
+	// Lower rank = finer. Literal parts (and anything not listed) don't count.
+	i32 Date::granularity_rank(FormatPart::eType t)
+	{
+		switch (t)
+		{
+			case FormatPart::eType::SecondPadded:
+			case FormatPart::eType::Second:      return 0;
+			case FormatPart::eType::MinutePadded:
+			case FormatPart::eType::Minute:      return 1;
+			case FormatPart::eType::HourPadded:
+			case FormatPart::eType::Hour:        return 2;
+			case FormatPart::eType::Day:         return 3;
+			case FormatPart::eType::Month:       return 4;
+			case FormatPart::eType::Year4:
+			case FormatPart::eType::Year2:       return 5;
+			default:                             return 99;
+		}
+	}
+
+	// Resets every field *finer* than granularity (granularity's own field, and anything coarser,
+	// is left alone), mirroring truncateToFormat()'s per-field defaults (day/month -> 1, time ->
+	// 00:00:00). E.g. for Month: day/hour/minute/second reset, month and year untouched.
+	void Date::truncate_to_granularity(eGranularity g, u32& mo, u32& d, u32& h, u32& mi, u32& s)
+	{
+		if (g > eGranularity::Month)  mo = 1;
+		if (g > eGranularity::Day)    d = 1;
+		if (g > eGranularity::Hour)   h = 0;
+		if (g > eGranularity::Minute) mi = 0;
+		if (g > eGranularity::Second) s = 0;
+	}
+
+	stdvec<Date> Date::range(const Date& minIn, const Date& maxIn, const String& dest_fmt, eRangeType type)
+	{
+		stdvec<Date> result;
+
+		Date lo = minIn, hi = maxIn;
+		if (hi < lo)
+			std::swap(lo, hi);
+
+		Date probe;
+		probe.compile_format(dest_fmt);
+
+		i32 bestRank = 99;
+		for (auto& part : probe.m_compiledFormat)
+			bestRank = std::min(bestRank, granularity_rank(part.type));
+
+		eGranularity granularity;
+		switch (bestRank)
+		{
+			case 0: granularity = eGranularity::Second; break;
+			case 1: granularity = eGranularity::Minute; break;
+			case 2: granularity = eGranularity::Hour;   break;
+			case 3: granularity = eGranularity::Day;    break;
+			case 4: granularity = eGranularity::Month;  break;
+			case 5: granularity = eGranularity::Year;   break;
+			default:
+				OX_WARN("ostd::Date::range(): format \"%s\" has no recognized date/time token; defaulting to daily steps.", dest_fmt.c_str());
+				granularity = eGranularity::Day;
+				break;
+		}
+
+		i32 loY, hiY; u32 loMo, loD, loH, loMi, loS, hiMo, hiD, hiH, hiMi, hiS;
+		lo.decompose(loY, loMo, loD, loH, loMi, loS);
+		hi.decompose(hiY, hiMo, hiD, hiH, hiMi, hiS);
+		truncate_to_granularity(granularity, loMo, loD, loH, loMi, loS);
+		truncate_to_granularity(granularity, hiMo, hiD, hiH, hiMi, hiS);
+
+		static constexpr i32 kMaxIterations = 1000000;  // guard against a huge range at a fine step
+		i32 steps = 0;
+		bool truncatedForSafety = false;
+
+		if (granularity == eGranularity::Year)
+		{
+			for (i32 y = loY; y <= hiY; y++)
+			{
+				if (++steps > kMaxIterations) { truncatedForSafety = true; break; }
+				Date bucket(y, 1, 1);
+				bucket.format(dest_fmt);
+				result.push_back(bucket);
+			}
+		}
+		else if (granularity == eGranularity::Month)
+		{
+			const i64 startVal = (i64)loY * 12 + (i64)(loMo - 1);
+			const i64 endVal = (i64)hiY * 12 + (i64)(hiMo - 1);
+			for (i64 v = startVal; v <= endVal; v++)
+			{
+				if (++steps > kMaxIterations) { truncatedForSafety = true; break; }
+				Date bucket((i32)(v / 12), (u32)(v % 12) + 1, 1);
+				bucket.format(dest_fmt);
+				result.push_back(bucket);
+			}
+		}
+		else  // Day/Hour/Minute/Second: fixed-duration steps, safe to do in raw epoch-seconds space
+		{
+			const i64 stepSeconds = (granularity == eGranularity::Second) ? 1
+				: (granularity == eGranularity::Minute) ? 60
+				: (granularity == eGranularity::Hour) ? 3600
+				: 86400;
+			const i64 startEpoch = days_from_civil(loY, loMo, loD) * 86400LL + (i64)loH * 3600LL + (i64)loMi * 60LL + (i64)loS;
+			const i64 endEpoch = days_from_civil(hiY, hiMo, hiD) * 86400LL + (i64)hiH * 3600LL + (i64)hiMi * 60LL + (i64)hiS;
+			for (i64 e = startEpoch; e <= endEpoch; e += stepSeconds)
+			{
+				if (++steps > kMaxIterations) { truncatedForSafety = true; break; }
+				i64 days = e / 86400;
+				i64 secOfDay = e % 86400;
+				if (secOfDay < 0) { secOfDay += 86400; days -= 1; }
+				i32 by; u32 bmo, bd;
+				civil_from_days(days, by, bmo, bd);
+				Date bucket(by, bmo, bd, (u32)(secOfDay / 3600), (u32)((secOfDay % 3600) / 60), (u32)(secOfDay % 60));
+				bucket.format(dest_fmt);
+				result.push_back(bucket);
+			}
+		}
+
+		if (truncatedForSafety)
+			OX_WARN("ostd::Date::range(): exceeded %d steps; returning a truncated result. Check min/max/format.", kMaxIterations);
+
+		if (!result.empty() && (type == eRangeType::Exclusive || type == eRangeType::RightInclusive))
+			result.erase(result.begin());
+		if (!result.empty() && (type == eRangeType::Exclusive || type == eRangeType::LeftInclusive))
+			result.pop_back();
+
+		return result;
+	}
 }
