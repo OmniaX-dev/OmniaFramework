@@ -26,6 +26,62 @@
 #define COLOR_CAST(ostd_color) std::bit_cast<SDL_FColor>(ostd_color.getNormalizedColor())
 #define QUAD_INDICES_ARR { 0, 1, 2, 2, 3, 0 }
 
+namespace
+{
+	// Width, in pixels, of the alpha-faded band generated around a flat-colored shape's outer
+	// edge (see collect_silhouette_fringe below) - this is what turns a hard-edged quad/fan into
+	// something that reads as anti-aliased without needing MSAA on the render target.
+	constexpr f32 AA_FRINGE_WIDTH = 1.0f;
+
+	struct FringeEdge
+	{
+		ostd::Vec2 ea, eb; // extruded (faded-to-transparent) copies of verts[a]/verts[b]
+		u32 a, b;          // original indices, reused at full alpha
+	};
+
+	// Finds the silhouette (outer boundary) edges of an arbitrary triangle soup - any edge that
+	// isn't shared by two triangles winding it in opposite directions - and returns, for each,
+	// the pair of extruded points that fade its outward side to transparent. This works for a
+	// simple quad as much as it does for the multi-triangle fans used for rounded caps/circles,
+	// since it never assumes a fixed shape, and is robust to mixed triangle winding within the
+	// same call (the outward direction is derived per-triangle from its own signed area).
+	void collect_silhouette_fringe(const ostd::Vec2* verts, u32 vertCount, const u32* inds, u32 indexCount, f32 width, stdvec<FringeEdge>& out)
+	{
+		const u32 triCount = indexCount / 3;
+		stdvec<std::pair<u32, u32>> edges;
+		edges.reserve(indexCount);
+		for (u32 t = 0; t < triCount; t++)
+		{
+			u32 i0 = inds[t * 3 + 0], i1 = inds[t * 3 + 1], i2 = inds[t * 3 + 2];
+			edges.push_back({ i0, i1 });
+			edges.push_back({ i1, i2 });
+			edges.push_back({ i2, i0 });
+		}
+		for (u32 t = 0; t < triCount; t++)
+		{
+			u32 tri[3] = { inds[t * 3 + 0], inds[t * 3 + 1], inds[t * 3 + 2] };
+			const ostd::Vec2& p0 = verts[tri[0]];
+			const ostd::Vec2& p1 = verts[tri[1]];
+			const ostd::Vec2& p2 = verts[tri[2]];
+			const f32 sign = ((p1 - p0).cross(p2 - p0) >= 0.0f) ? 1.0f : -1.0f;
+			for (i32 e = 0; e < 3; e++)
+			{
+				u32 a = tri[e], b = tri[(e + 1) % 3];
+				bool shared = false;
+				for (auto& edge : edges)
+				{
+					if (edge.first == b && edge.second == a) { shared = true; break; }
+				}
+				if (shared)
+					continue;
+				const ostd::Vec2 dir = (verts[b] - verts[a]).normalize();
+				const ostd::Vec2 n = ostd::Vec2 { dir.y, -dir.x } * sign;
+				out.push_back({ verts[a] + n * width, verts[b] + n * width, a, b });
+			}
+		}
+	}
+}
+
 namespace ogfx
 {
 	// ===================================================== SIGNAL HANDLER =====================================================
@@ -1257,11 +1313,20 @@ namespace ogfx
 			return;
 		}
 		use_null_tex = use_null_tex || !texCoords;
+
+		// A textured draw's edges are already defined by the texture's own alpha, so the fringe
+		// only applies to flat-color fills (see collect_silhouette_fringe for why/how).
+		stdvec<FringeEdge> fringe;
+		if (use_null_tex)
+			collect_silhouette_fringe(verts, vertCount, inds, indexCount, AA_FRINGE_WIDTH, fringe);
+		const i32 fringeVertCount = (i32)fringe.size() * 2;
+		const i32 fringeIndexCount = (i32)fringe.size() * 6;
+
 		auto tmpTex = (use_null_tex ? m_lastUsedGlyphAtlasTex : texture);
 		if (tmpTex != m_texture)
 			flushBatch();
 		m_texture = tmpTex;
-		if (m_vertexCount + vertCount >= MaxVertices || m_indexCount + indexCount >= MaxIndices)
+		if (m_vertexCount + vertCount + fringeVertCount >= MaxVertices || m_indexCount + indexCount + fringeIndexCount >= MaxIndices)
 		{
 			flushBatch();
 			m_texture = tmpTex;
@@ -1286,6 +1351,31 @@ namespace ogfx
 		}
 		for (i32 i = 0; i < indexCount; i++)
 			m_indices[m_indexCount++] = base + inds[i];
+
+		if (!fringe.empty())
+		{
+			SDL_FColor fadedCol = col;
+			fadedCol.a = 0.0f;
+			i32 fringeBase = m_vertexCount;
+			for (u32 i = 0; i < fringe.size(); i++)
+			{
+				m_vertices[m_vertexCount++] = { { fringe[i].ea.x, fringe[i].ea.y }, fadedCol, { whiteUV.x, whiteUV.y } };
+				m_vertices[m_vertexCount++] = { { fringe[i].eb.x, fringe[i].eb.y }, fadedCol, { whiteUV.x, whiteUV.y } };
+			}
+			for (u32 i = 0; i < fringe.size(); i++)
+			{
+				u32 a  = (u32)base + fringe[i].a;
+				u32 b  = (u32)base + fringe[i].b;
+				u32 ea = (u32)fringeBase + i * 2 + 0;
+				u32 eb = (u32)fringeBase + i * 2 + 1;
+				m_indices[m_indexCount++] = a;
+				m_indices[m_indexCount++] = b;
+				m_indices[m_indexCount++] = eb;
+				m_indices[m_indexCount++] = a;
+				m_indices[m_indexCount++] = eb;
+				m_indices[m_indexCount++] = ea;
+			}
+		}
 	}
 
 	void BasicRenderer2D::print_ttf_error(const String& funcName)
