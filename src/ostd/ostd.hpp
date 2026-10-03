@@ -44,5 +44,6 @@
 #include <ostd/string/String.hpp>
 #include <ostd/string/TextStyleParser.hpp>
 
+#include <ostd/utils/Date.hpp>
 #include <ostd/utils/Signals.hpp>
 #include <ostd/utils/Time.hpp>

@@ -73,6 +73,7 @@ list(APPEND OSTD_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/string/TextBuffer.cpp
 
 	# utils
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/Date.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/Logic.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/Hash.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/PathFinder.cpp
