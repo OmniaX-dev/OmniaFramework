@@ -43,22 +43,25 @@ namespace ogfx
 		if (m_currentAtlasCount <= 0)
 			return {};
 
+		// Decode once into codepoints - a byte-by-byte walk of a UTF-8 string (str.begin()/end()
+		// iterate raw bytes, not codepoints) would split any multi-byte character's bytes apart
+		// and feed each one to the decoder as if it were a complete sequence on its own.
+		const auto cps = str.getUTF8Codepoints();
+
 		// Pass 1: ensure all glyphs are rasterized (map may rehash here)
-		for (auto& c : str)
+		for (u32 cp : cps)
 		{
 			const GlyphInfo* dummy;
-			if (!rasterize_glyph(String("").addChar(c), font, fontSize, &dummy))
+			if (!rasterize_glyph(String::utf8::encode(cp), font, fontSize, &dummy))
 				return {};
 		}
 
 		// Pass 2: collect stable pointers (no more insertions, no rehash risk)
 		stdvec<const GlyphInfo*> glyphs;
-		glyphs.reserve(str.len());
-		for (auto& c : str)
+		glyphs.reserve(cps.size());
+		for (u32 cp : cps)
 		{
-			auto cps = String("").addChar(c).getUTF8Codepoints();
-			if (cps.size() != 1) return {};
-			GlyphKey key { cps[0], u64(font), fontSize };
+			GlyphKey key { cp, u64(font), fontSize };
 			glyphs.push_back(&m_uvs[key]);
 		}
 		return glyphs;
