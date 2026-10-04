@@ -4,7 +4,7 @@
 #include "IOHandlers.hpp"
 #include "FileSystem.hpp"
 #include "../vendor/TermColor.hpp"
-#include "../data/BaseObject.hpp"
+#include "../data/Object.hpp"
 #include "../string/TextStyleParser.hpp"
 #include "../string/String.hpp"
 #include "../utils/Time.hpp"
@@ -114,7 +114,7 @@ namespace ostd
 		return *this;
 	}
 
-	OutputHandlerBase& ConsoleOutputHandler::pObject(const BaseObject& bo)
+	OutputHandlerBase& ConsoleOutputHandler::pObject(const legacy::BaseObject& bo)
 	{
 		std::cout << bo;
 		return *this;
@@ -314,7 +314,7 @@ namespace ostd
 		return *this;
 	}
 
-	OutputHandlerBase& LogFileOutputHandler::pObject(const BaseObject& bo)
+	OutputHandlerBase& LogFileOutputHandler::pObject(const legacy::BaseObject& bo)
 	{
 		m_buffer.add(bo.toString());
 		return *this;

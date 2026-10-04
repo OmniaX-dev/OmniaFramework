@@ -21,13 +21,13 @@
 #pragma once
 
 #include <ostd/data/Types.hpp>
-#include <ostd/data/BaseObject.hpp>
+#include <ostd/data/Object.hpp>
 #include <ostd/string/String.hpp>
 #include <ostd/math/Geometry.hpp>
 
 namespace ostd
 {
-	class Color : public BaseObject
+	class Color : public legacy::BaseObject
 	{
 		public: struct FloatCol
 		{
@@ -108,7 +108,7 @@ namespace ostd
 
 		public:
 	};
-	class ColorGradient : public BaseObject
+	class ColorGradient : public legacy::BaseObject
 	{
 		public:
 			inline ColorGradient(void) {  }

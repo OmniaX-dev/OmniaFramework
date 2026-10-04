@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include <ostd/data/BaseObject.hpp>
+#include <ostd/data/Object.hpp>
 #include <ostd/data/Types.hpp>
 
 #define ERROR_DATA() String(CPP_STR(__LINE__)), String(__FILE__)
@@ -35,14 +35,14 @@ namespace ostd
 		inline static constexpr u8 Fatal = 0x03;
 	};
 
-	class RuntimeError : public BaseObject
+	class RuntimeError : public legacy::BaseObject
 	{
 		public:
 			inline RuntimeError(void) { invalidate(); }
 			inline RuntimeError(u8 group, u64 code, u8 level, const String& msg) { create(group, code, level, msg); }
 			RuntimeError& create(u8 group, u64 code, u8 level, const String& msg);
 
-			void fire(const String& extraMessage = "", OutputHandlerBase* outputHandler = nullptr, BaseObject& userData = BaseObject::InvalidRef(), i32 _line_num = 0, const String& _file_name = "");
+			void fire(const String& extraMessage = "", OutputHandlerBase* outputHandler = nullptr, legacy::BaseObject& userData = legacy::BaseObject::InvalidRef(), i32 _line_num = 0, const String& _file_name = "");
 
 		private:
 			u8 m_errGroup { 0x00 };

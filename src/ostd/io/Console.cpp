@@ -251,7 +251,7 @@ OutputHandlerBase& InteractiveConsole::pStyled(TextStyleBuilder::IRichStringBase
 	return *this;
 }
 
-OutputHandlerBase& InteractiveConsole::pObject(const BaseObject& bo)
+OutputHandlerBase& InteractiveConsole::pObject(const legacy::BaseObject& bo)
 {
 	std::cout << bo;
 	return *this;

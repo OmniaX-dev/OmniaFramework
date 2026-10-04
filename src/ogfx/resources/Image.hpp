@@ -20,14 +20,14 @@
 
 #pragma once
 
-#include <ostd/data/BaseObject.hpp>
+#include <ostd/data/Object.hpp>
 #include <ogfx/utils/SDLInclude.hpp>
 #include <ostd/math/Geometry.hpp>
 
 namespace ogfx
 {
 	class BasicRenderer2D;
-	class Image : public ostd::BaseObject
+	class Image : public ostd::legacy::BaseObject
 	{
 		public:
 			inline Image(void) { invalidate(); }

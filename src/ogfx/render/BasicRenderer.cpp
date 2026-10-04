@@ -88,14 +88,14 @@ namespace ogfx
 	BasicRenderer2D::SignalHandler::SignalHandler(BasicRenderer2D& parent) : m_parent(parent)
 	{
 		enableSignals();
-		connectSignal(ostd::BuiltinSignals::BeforeSDLShutdown);
+		connectSignal(ostd::legacy::BuiltinSignals::BeforeSDLShutdown);
 		setTypeName("ostd::GraphicsWindowOutputHandler::SignalHandler");
 		validate();
 	}
 
-	void BasicRenderer2D::SignalHandler::handleSignal(ostd::Signal& signal)
+	void BasicRenderer2D::SignalHandler::handleSignal(ostd::legacy::Signal& signal)
 	{
-		if (signal.ID == ostd::BuiltinSignals::BeforeSDLShutdown)
+		if (signal.ID == ostd::legacy::BuiltinSignals::BeforeSDLShutdown)
 		{
 			m_parent.closeFont();
 		}

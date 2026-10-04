@@ -29,7 +29,7 @@
 namespace ogfx
 {
 	class WindowCore;
-	class PixelRenderer : public ostd::BaseObject
+	class PixelRenderer : public ostd::legacy::BaseObject
 	{
 		public: class TextRenderer
 		{
@@ -84,7 +84,7 @@ namespace ogfx
 			inline PixelRenderer(void) { invalidate(); }
 			~PixelRenderer(void);
 			void initialize(WindowCore& parent);
-			void handleSignal(ostd::Signal& signal) override;
+			void handleSignal(ostd::legacy::Signal& signal) override;
 			void updateBuffer(void);
 			void displayBuffer(void);
 			inline u32* getScreenPixels(void) { return m_pixels; }

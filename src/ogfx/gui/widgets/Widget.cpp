@@ -28,7 +28,7 @@ namespace ogfx
 {
 	namespace gui
 	{
-		ostd::BaseObject* Widget::s_dragAndDropData { nullptr };
+		ostd::legacy::BaseObject* Widget::s_dragAndDropData { nullptr };
 		bool Widget::s_hasDragAndDropData { false };
 
 		Widget::Widget(const Rectangle& bounds, Window& window) : Rectangle(bounds), m_widgets(window, *this)

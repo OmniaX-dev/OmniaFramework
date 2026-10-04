@@ -2,7 +2,7 @@
 #-----------------------------------------------------------------------------------------
 set(PROJ_NAME omnia-framework)
 set(MAJOR_VER 0)
-set(MINOR_VER 3)
+set(MINOR_VER 4)
 #-----------------------------------------------------------------------------------------
 
 #Setup
@@ -43,7 +43,7 @@ list(APPEND OSTD_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/vendor/midifile/Options.cpp
 
 	# data
-	${CMAKE_CURRENT_LIST_DIR}/src/ostd/data/BaseObject.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ostd/data/Object.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/data/Color.cpp
 
 	# io
@@ -129,6 +129,7 @@ list(APPEND TEST_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/test/GuiTest.cpp
 	# ${CMAKE_CURRENT_LIST_DIR}/src/test/TextBufferUnitTest.cpp
 	# ${CMAKE_CURRENT_LIST_DIR}/src/test/LogFileOutputHandlerTest.cpp
+	# ${CMAKE_CURRENT_LIST_DIR}/src/test/ObjectSignalExamples.cpp
 )
 #-----------------------------------------------------------------------------------------
 

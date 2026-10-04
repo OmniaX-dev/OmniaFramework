@@ -65,7 +65,7 @@ namespace ostd
 			OutputHandlerBase& pStyled(const String& styled) override;
 			OutputHandlerBase& pStyled(const TextStyleParser::tStyledString& styled) override;
 			OutputHandlerBase& pStyled(TextStyleBuilder::IRichStringBase& styled) override;
-			OutputHandlerBase& pObject(const BaseObject& bo) override;
+			OutputHandlerBase& pObject(const legacy::BaseObject& bo) override;
 
 			OutputHandlerBase& p(const String& se) override;
 			OutputHandlerBase& p(u8 i) override;

@@ -144,14 +144,14 @@ namespace ogfx
 		m_windowHeight = parent.getWindowHeight();
 		setTypeName("ogfx::PixelRenderer");
 		enableSignals();
-		connectSignal(ostd::BuiltinSignals::WindowResized);
+		connectSignal(ostd::legacy::BuiltinSignals::WindowResized);
 		validate();
 	}
 
-	void PixelRenderer::handleSignal(ostd::Signal& signal)
+	void PixelRenderer::handleSignal(ostd::legacy::Signal& signal)
 	{
 		if (isInvalid()) return;
-		if (signal.ID == ostd::BuiltinSignals::WindowResized)
+		if (signal.ID == ostd::legacy::BuiltinSignals::WindowResized)
 		{
 			m_pixels = ostd::Memory::resizeArray<u32>(m_pixels, m_parent->getWindowWidth() * m_parent->getWindowHeight());
 			SDL_DestroyTexture(m_texture);

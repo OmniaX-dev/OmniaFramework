@@ -9,38 +9,38 @@ namespace ostd
 	{
 		set();
 		setTypeName("ostd::Color");
-		BaseObject::setValid(true);
+		legacy::BaseObject::setValid(true);
 	}
 
 	Color::Color(u8 rgb_single_value, u8 alpha) : r(*this), g(*this), b(*this), a(*this)
 	{
 		set(rgb_single_value, alpha);
 		setTypeName("ostd::Color");
-		BaseObject::setValid(true);
+		legacy::BaseObject::setValid(true);
 	}
 
 	Color::Color(u8 _r, u8 _g, u8 _b, u8 alpha) : r(*this), g(*this), b(*this), a(*this)
 	{
 		set(_r, _g, _b, alpha);
 		setTypeName("ostd::Color");
-		BaseObject::setValid(true);
+		legacy::BaseObject::setValid(true);
 	}
 
 	Color::Color(const String& color_string) : r(*this), g(*this), b(*this), a(*this)
 	{
 		set(color_string);
 		setTypeName("ostd::Color");
-		BaseObject::setValid(true);
+		legacy::BaseObject::setValid(true);
 	}
 
 	Color::Color(const FloatCol& normalized_color) : r(*this), g(*this), b(*this), a(*this)
 	{
 		set(normalized_color);
 		setTypeName("ostd::Color");
-		BaseObject::setValid(true);
+		legacy::BaseObject::setValid(true);
 	}
 
-	Color::Color(const Color& copy) : BaseObject(copy), r(*this), g(*this), b(*this), a(*this)
+	Color::Color(const Color& copy) : legacy::BaseObject(copy), r(*this), g(*this), b(*this), a(*this)
 	{
 		r = cast<u8>(copy.r);
 		g = cast<u8>(copy.g);
@@ -60,7 +60,7 @@ namespace ostd
 
 	Color& Color::operator=(const Color& copy)
 	{
-		BaseObject::operator=(copy);
+		legacy::BaseObject::operator=(copy);
 		r = cast<u8>(copy.r);
 		g = cast<u8>(copy.g);
 		b = cast<u8>(copy.b);

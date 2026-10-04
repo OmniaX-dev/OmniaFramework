@@ -310,7 +310,7 @@ class TestWindow : public Window
 
 			// t4: LineGraph comprehensive example - a finance-style "income vs. spending" chart.
 
-			struct TestUserData : public ostd::BaseObject
+			struct TestUserData : public ostd::legacy::BaseObject
 			{
 				TestUserData(void) {
 					setTypeName("TestUserData");
@@ -335,7 +335,7 @@ class TestWindow : public Window
 			m_graph.setup(months, {});
 			m_graph.setXAxisTitle("Month");
 			m_graph.setYAxisTitle("Amount ($)");
-			m_graph.setHoverCallback([this](ogfx::BasicRenderer2D& gfx, f64 xdata, f64 ydata, ostd::BaseObject& userData, const ostd::Vec2& topLeft, ostd::Vec2& outSize) -> bool {
+			m_graph.setHoverCallback([this](ogfx::BasicRenderer2D& gfx, f64 xdata, f64 ydata, ostd::legacy::BaseObject& userData, const ostd::Vec2& topLeft, ostd::Vec2& outSize) -> bool {
 				if (userData.isInvalid())
 					return false;
 				i32 fs = 20;
@@ -362,7 +362,7 @@ class TestWindow : public Window
 				return true;
 			});
 
-			stdvec<ostd::BaseObject*> userData;
+			stdvec<ostd::legacy::BaseObject*> userData;
 			stdvec<f64> xdata, income, spending;
 			f64 runningIncome = 2800.0, runningSpending = 2100.0;
 			for (i32 i = 0; i < (i32)monthNames.size(); i++)
@@ -456,21 +456,21 @@ class TestWindow : public Window
 						.addMenu("Help", helpMenu);
 		}
 
-		inline void onSignal(ostd::Signal& signal) override
+		inline void onSignal(ostd::legacy::Signal& signal) override
 		{
-			if (signal.ID == ostd::BuiltinSignals::KeyReleased)
+			if (signal.ID == ostd::legacy::BuiltinSignals::KeyReleased)
 			{
 				auto& evtData = (ogfx::KeyEventData&)signal.userData;
 				if (evtData.keyCode == ogfx::KeyCode::Escape)
 					close();
 			}
-			else if (signal.ID == ostd::BuiltinSignals::MouseReleased)
+			else if (signal.ID == ostd::legacy::BuiltinSignals::MouseReleased)
 			{
 				// auto& mmd = cast<ogfx::MouseEventData&>(signal.userData);
 				// if (mmd.button == ogfx::MouseEventData::eButton::Right)
 				//     showContextMenu(m_menu, { mmd.position_x, mmd.position_y });
 			}
-			else if (signal.ID == ostd::BuiltinSignals::WindowResized)
+			else if (signal.ID == ostd::legacy::BuiltinSignals::WindowResized)
 			{
 				auto& wrd = cast<ogfx::WindowResizedData&>(signal.userData);
 				m_tabs.setSize(cast<f32>(getWindowWidth()), cast<f32>(getWindowHeight() - getMenuBar().geth() - getToolBar().geth() - getStatusBar().geth()));

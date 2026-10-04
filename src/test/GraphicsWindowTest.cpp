@@ -32,9 +32,9 @@ class Window : public ogfx::GraphicsWindow
 			m_gfx.init(*this);
 		 }
 
-		inline void handleSignal(ostd::Signal& signal) override
+		inline void handleSignal(ostd::legacy::Signal& signal) override
 		{
-			if (signal.ID == ostd::BuiltinSignals::KeyReleased)
+			if (signal.ID == ostd::legacy::BuiltinSignals::KeyReleased)
 			{
 				auto& evtData = (ogfx::KeyEventData&)signal.userData;
 				if (evtData.keyCode == ogfx::KeyCode::Escape)

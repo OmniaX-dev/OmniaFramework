@@ -32,15 +32,15 @@ namespace ostd
 		f32 length;
 	};
 
-	class Spline : public BaseObject
+	class Spline : public legacy::BaseObject
 	{
 		public:
-			using EventHandlerCallback = std::function<void(Signal&)>;
+			using EventHandlerCallback = std::function<void(legacy::Signal&)>;
 			using DrawCallback = std::function<void(f32 resolution, f32 lineWidth, f32 controlPointSize)>;
 
 		public:
 			Spline(void);
-			void handleSignal(Signal& signal) override;
+			void handleSignal(legacy::Signal& signal) override;
 			tSplineNode getPoint(f32 t);
 			tSplineNode getGradient(f32 t);
 			f32 updateSegmentLength(i32 node);

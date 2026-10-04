@@ -22,12 +22,12 @@
 
 #include <filesystem>
 
-#include <ostd/data/BaseObject.hpp>
+#include <ostd/data/Object.hpp>
 #include <ostd/data/Types.hpp>
 
 namespace ostd
 {
-	class TextFileBuffer : public BaseObject
+	class TextFileBuffer : public legacy::BaseObject
 	{
 		public:
 			inline TextFileBuffer(void) { invalidate(); setTypeName("ostd::TextFileBuffer"); }

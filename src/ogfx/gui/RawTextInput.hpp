@@ -29,13 +29,13 @@ namespace ogfx
 	{
 		class RawTextInput : public Rectangle
 		{
-			public: class EventListener : public ostd::BaseObject
+			public: class EventListener : public ostd::legacy::BaseObject
 			{
 				public: enum class eEventType { None = 0, TextEntered, KeyPressed, KeyReleased };
 				public:
 					EventListener(RawTextInput& _parent);
-					virtual void handleSignal(ostd::Signal& signal) override;
-					inline virtual void onSignalHandled(ostd::Signal& signal) {  }
+					virtual void handleSignal(ostd::legacy::Signal& signal) override;
+					inline virtual void onSignalHandled(ostd::legacy::Signal& signal) {  }
 					inline RawTextInput& getParent(void) { return parent; }
 
 				private:
@@ -92,10 +92,10 @@ namespace ogfx
 				};
 			};
 			public: enum eActionEventType { None = 0, Enter, Tab };
-			public: class ActionEventData : public ostd::BaseObject
+			public: class ActionEventData : public ostd::legacy::BaseObject
 			{
 				public:
-					inline ActionEventData(RawTextInput& _sender, const String& _senderName, eActionEventType _eventType, ostd::BaseObject& _userData) :
+					inline ActionEventData(RawTextInput& _sender, const String& _senderName, eActionEventType _eventType, ostd::legacy::BaseObject& _userData) :
 																																								sender(_sender),
 																																								senderName(_senderName),
 																																								eventType(_eventType),
@@ -109,7 +109,7 @@ namespace ogfx
 					RawTextInput& sender;
 					String senderName { "" };
 					eActionEventType eventType { eActionEventType::None };
-					ostd::BaseObject& userData { ostd::BaseObject::InvalidRef() };
+					ostd::legacy::BaseObject& userData { ostd::legacy::BaseObject::InvalidRef() };
 			};
 
 			public:
@@ -165,13 +165,13 @@ namespace ogfx
 				bool m_mouseInside { false };
 
 			public:
-				inline static const u32 actionEventSignalID { ostd::SignalHandler::newCustomSignal(11400) };
+				inline static const u32 actionEventSignalID { ostd::legacy::SignalHandler::newCustomSignal(11400) };
 		};
 		class RawTextInputEventListener : public RawTextInput::EventListener
 		{
 			public:
 				inline RawTextInputEventListener(ogfx::gui::RawTextInput& _parent, ogfx::WindowCore& _window) : ogfx::gui::RawTextInput::EventListener::EventListener(_parent), window(_window) {  }
-				void onSignalHandled(ostd::Signal& signal) override;
+				void onSignalHandled(ostd::legacy::Signal& signal) override;
 
 			public:
 				ogfx::WindowCore& window;

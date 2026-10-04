@@ -22,7 +22,7 @@
 
 #include <ogfx/gui/Events.hpp>
 #include <ogfx/gui/WidgetManager.hpp>
-#include <ostd/data/BaseObject.hpp>
+#include <ostd/data/Object.hpp>
 #include <ostd/math/Geometry.hpp>
 #include <ostd/io/Stylesheet.hpp>
 #include <ostd/utils/Defines.hpp>
@@ -37,7 +37,7 @@ namespace ogfx
 	namespace gui
 	{
 		class Window;
-		class Widget : public ostd::BaseObject, public Rectangle
+		class Widget : public ostd::legacy::BaseObject, public Rectangle
 		{
 			private: struct ThemeOverride
 			{
@@ -160,9 +160,9 @@ namespace ogfx
 
 
 				// ================================= GETSET =================================
-				inline static void setDragAndDropData(ostd::BaseObject& data) { s_dragAndDropData = &data; s_hasDragAndDropData = true; }
+				inline static void setDragAndDropData(ostd::legacy::BaseObject& data) { s_dragAndDropData = &data; s_hasDragAndDropData = true; }
 				inline static void clearDragAndDropData(void) { s_dragAndDropData = nullptr; }
-				inline static ostd::BaseObject* getDragAndDropData(void) { return s_dragAndDropData; }
+				inline static ostd::legacy::BaseObject* getDragAndDropData(void) { return s_dragAndDropData; }
 				inline i32 getTabIndex(void) const { return m_tabIndex; }
 				inline Window& getWindow(void) { return *m_window; }
 				inline Widget* getParent(void) { return m_parent; }
@@ -198,7 +198,7 @@ namespace ogfx
 				inline bool hasChildren(void) const { return m_allowChildren && m_widgets.widgetCount() > 0; }
 				inline bool isRootChild(void) const { return m_rootChild; }
 				inline void setRootChild(void) { m_rootChild = true; }
-				inline virtual bool isInvalid(void) const override { return ostd::BaseObject::isInvalid() || (m_parent == nullptr && !m_rootChild); }
+				inline virtual bool isInvalid(void) const override { return ostd::legacy::BaseObject::isInvalid() || (m_parent == nullptr && !m_rootChild); }
 				OSTD_BOOL_PARAM_GETSET_E(Focus, m_allowFocus);
 				OSTD_BOOL_PARAM_GETSET_E(StopEvents, m_stopEvents);
 				OSTD_BOOL_PARAM_GETSET_E(DragAndDrop, m_acceptDragAndDrop);
@@ -323,7 +323,7 @@ namespace ogfx
 
 
 				// ====== STATIC ======
-				static ostd::BaseObject* s_dragAndDropData;
+				static ostd::legacy::BaseObject* s_dragAndDropData;
 				static bool s_hasDragAndDropData;
 				friend class WidgetManager;
 				friend class FocusManager;

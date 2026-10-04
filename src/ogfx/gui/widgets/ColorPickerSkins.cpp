@@ -208,7 +208,7 @@ namespace ogfx
 				if (data && data->getTypeName() == Color().getTypeName())
 					setColor(*cast<Color*>(data));
 			});
-			connectSignal(ostd::BuiltinSignals::MousePressed);
+			connectSignal(ostd::legacy::BuiltinSignals::MousePressed);
 			m_contextMenu.onActivate = [this](const ContextMenu::Entry& e) {
 				if (e.id == MenuId::Copy)
 				{
@@ -339,10 +339,10 @@ namespace ogfx
 			m_popupOpen = false;
 		}
 
-		void ColorButton::handleSignal(ostd::Signal& signal)
+		void ColorButton::handleSignal(ostd::legacy::Signal& signal)
 		{
 			if (!m_popupOpen) return;
-			if (signal.ID != ostd::BuiltinSignals::MousePressed) return;
+			if (signal.ID != ostd::legacy::BuiltinSignals::MousePressed) return;
 			if (isMouseInside()) return;
 			if (!m_popup->isMouseInside())
 				close_popup();

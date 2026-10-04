@@ -29,20 +29,20 @@ namespace ogfx
 	{
 		RawTextInput::EventListener::EventListener(RawTextInput& _parent) : parent(_parent)
 		{
-			connectSignal(ostd::BuiltinSignals::KeyPressed);
-			connectSignal(ostd::BuiltinSignals::KeyReleased);
-			connectSignal(ostd::BuiltinSignals::TextEntered);
-			connectSignal(ostd::BuiltinSignals::MouseDragged);
-			connectSignal(ostd::BuiltinSignals::MouseMoved);
-			connectSignal(ostd::BuiltinSignals::MousePressed);
-			connectSignal(ostd::BuiltinSignals::MouseReleased);
-			connectSignal(ostd::BuiltinSignals::OnGuiEvent);
-			connectSignal(ostd::BuiltinSignals::WindowResized);
+			connectSignal(ostd::legacy::BuiltinSignals::KeyPressed);
+			connectSignal(ostd::legacy::BuiltinSignals::KeyReleased);
+			connectSignal(ostd::legacy::BuiltinSignals::TextEntered);
+			connectSignal(ostd::legacy::BuiltinSignals::MouseDragged);
+			connectSignal(ostd::legacy::BuiltinSignals::MouseMoved);
+			connectSignal(ostd::legacy::BuiltinSignals::MousePressed);
+			connectSignal(ostd::legacy::BuiltinSignals::MouseReleased);
+			connectSignal(ostd::legacy::BuiltinSignals::OnGuiEvent);
+			connectSignal(ostd::legacy::BuiltinSignals::WindowResized);
 		}
 
-		void RawTextInput::EventListener::handleSignal(ostd::Signal& signal)
+		void RawTextInput::EventListener::handleSignal(ostd::legacy::Signal& signal)
 		{
-			if (signal.ID == ostd::BuiltinSignals::TextEntered)
+			if (signal.ID == ostd::legacy::BuiltinSignals::TextEntered)
 			{
 				if (m_lastEvent != eEventType::TextEntered)
 				{
@@ -76,7 +76,7 @@ namespace ogfx
 					parent.m_cursorState = true;
 				}
 			}
-			else if (signal.ID == ostd::BuiltinSignals::KeyPressed)
+			else if (signal.ID == ostd::legacy::BuiltinSignals::KeyPressed)
 			{
 				if (m_lastEvent != eEventType::KeyPressed)
 				{
@@ -132,18 +132,18 @@ namespace ogfx
 				{
 					parent.m_keyRepeatCounter.start();
 					parent.m_lastKeyCode = data.keyCode;
-					ActionEventData aed(parent, parent.getName(), eActionEventType::Enter, ostd::BaseObject::InvalidRef());
-					ostd::SignalHandler::emitSignal(RawTextInput::actionEventSignalID, ostd::Signal::Priority::RealTime, aed);
+					ActionEventData aed(parent, parent.getName(), eActionEventType::Enter, ostd::legacy::BaseObject::InvalidRef());
+					ostd::legacy::SignalHandler::emitSignal(RawTextInput::actionEventSignalID, ostd::legacy::Signal::Priority::RealTime, aed);
 				}
 				else if (data.keyCode == KeyCode::Tab)
 				{
 					parent.m_keyRepeatCounter.start();
 					parent.m_lastKeyCode = data.keyCode;
-					ActionEventData aed(parent, parent.getName(), eActionEventType::Tab, ostd::BaseObject::InvalidRef());
-					ostd::SignalHandler::emitSignal(RawTextInput::actionEventSignalID, ostd::Signal::Priority::RealTime, aed);
+					ActionEventData aed(parent, parent.getName(), eActionEventType::Tab, ostd::legacy::BaseObject::InvalidRef());
+					ostd::legacy::SignalHandler::emitSignal(RawTextInput::actionEventSignalID, ostd::legacy::Signal::Priority::RealTime, aed);
 				}
 			}
-			else if (signal.ID == ostd::BuiltinSignals::MouseMoved)
+			else if (signal.ID == ostd::legacy::BuiltinSignals::MouseMoved)
 			{
 				auto& data = (ogfx::MouseEventData&)signal.userData;
 				if (parent.contains((f32)data.position_x, (f32)data.position_y))
@@ -151,7 +151,7 @@ namespace ogfx
 				else
 					parent.m_mouseInside = false;
 			}
-			else if (signal.ID == ostd::BuiltinSignals::MousePressed)
+			else if (signal.ID == ostd::legacy::BuiltinSignals::MousePressed)
 			{
 				auto& data = (ogfx::MouseEventData&)signal.userData;
 				if (data.button == ogfx::MouseEventData::eButton::Left && parent.m_gfx != nullptr && parent.m_mouseInside)
@@ -285,9 +285,9 @@ namespace ogfx
 
 
 
-		void RawTextInputEventListener::onSignalHandled(ostd::Signal& signal)
+		void RawTextInputEventListener::onSignalHandled(ostd::legacy::Signal& signal)
 		{
-			if (signal.ID == ostd::BuiltinSignals::MouseMoved)
+			if (signal.ID == ostd::legacy::BuiltinSignals::MouseMoved)
 			{
 				auto& data = (ogfx::MouseEventData&)signal.userData;
 				if (getParent().isMouseInside())

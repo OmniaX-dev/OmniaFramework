@@ -1,0 +1,93 @@
+#include "Object.hpp"
+#include "../utils/Signals.hpp"
+#include "../io/IOHandlers.hpp"
+
+namespace ostd
+{
+	namespace legacy
+	{
+		BaseObject BaseObject::s_invalid_obj { false };
+
+		BaseObject::BaseObject(const BaseObject& copy)
+		{
+			m_uid = copy.m_uid;
+			m_oid = BaseObject::s_next_oid++;
+			m_valid = copy.m_valid;
+			m_typeName = copy.m_typeName;
+			m_signalsEnabled = copy.m_signalsEnabled;
+		}
+
+		BaseObject& BaseObject::operator=(const BaseObject& copy)
+		{
+			m_uid = copy.m_uid;
+			m_oid = BaseObject::s_next_oid++;
+			m_valid = copy.m_valid;
+			m_typeName = copy.m_typeName;
+			m_signalsEnabled = copy.m_signalsEnabled;
+			return *this;
+		}
+
+		void BaseObject::print(bool newLine, OutputHandlerBase* __destination) const
+		{
+			if (__destination == nullptr)
+				std::cout << toString() << (newLine ? "\n" : "");
+			else
+			{
+				__destination->p(toString());
+				if (newLine) __destination->nl();
+			}
+		}
+
+		String BaseObject::getObjectHeaderString(void) const
+		{
+			return getTypeName().add("->uid=").add(getID()).add("/oid=").add(getCompareOID()).add("/valid=").add(STR_BOOL(isValid()));
+		}
+
+		void BaseObject::connectSignal(u32 signal_id)
+		{
+			SignalHandler::connect(*this, signal_id);
+		}
+
+		void BaseObject::__handle_signal(Signal& signal)
+		{
+			if (m_signalsEnabled)
+			{
+				handleSignal(signal);
+				if (callback_signal)
+					callback_signal(signal);
+			}
+		}
+	}
+
+	Object::~Object(void)
+	{
+		SignalHandler::disconnectAll(*this);
+	}
+
+	const Object& Object::Invalid(void)
+	{
+		static const Object sentinel(false);
+		return sentinel;
+	}
+
+	String Object::getObjectHeaderString(void) const
+	{
+		return String(getTypeName()).add("->id=").add(getID()).add("/valid=").add(STR_BOOL(isValid()));
+	}
+
+	void Object::print(bool newLine, OutputHandlerBase* __destination) const
+	{
+		if (__destination == nullptr)
+			std::cout << toString() << (newLine ? "\n" : "");
+		else
+		{
+			__destination->p(toString());
+			if (newLine) __destination->nl();
+		}
+	}
+
+	void Object::connectSignal(u32 signal_id, SignalCallback cb)
+	{
+		SignalHandler::connect(*this, signal_id, std::move(cb));
+	}
+}

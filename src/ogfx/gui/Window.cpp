@@ -117,20 +117,20 @@ namespace ogfx
 		validate();
 		setSize(m_windowWidth, m_windowHeight);
 
-		connectSignal(ostd::BuiltinSignals::KeyPressed);
-		connectSignal(ostd::BuiltinSignals::KeyReleased);
-		connectSignal(ostd::BuiltinSignals::TextEntered);
-		connectSignal(ostd::BuiltinSignals::MousePressed);
-		connectSignal(ostd::BuiltinSignals::MouseReleased);
-		connectSignal(ostd::BuiltinSignals::MouseMoved);
-		connectSignal(ostd::BuiltinSignals::MouseScrolled);
-		connectSignal(ostd::BuiltinSignals::OnGuiEvent);
-		connectSignal(ostd::BuiltinSignals::WindowClosed);
-		connectSignal(ostd::BuiltinSignals::WindowResized);
-		connectSignal(ostd::BuiltinSignals::WindowFocused);
-		connectSignal(ostd::BuiltinSignals::WindowLostFocus);
-		connectSignal(ostd::BuiltinSignals::FileDragAndDropped);
-		connectSignal(ostd::BuiltinSignals::TextDragAndDropped);
+		connectSignal(ostd::legacy::BuiltinSignals::KeyPressed);
+		connectSignal(ostd::legacy::BuiltinSignals::KeyReleased);
+		connectSignal(ostd::legacy::BuiltinSignals::TextEntered);
+		connectSignal(ostd::legacy::BuiltinSignals::MousePressed);
+		connectSignal(ostd::legacy::BuiltinSignals::MouseReleased);
+		connectSignal(ostd::legacy::BuiltinSignals::MouseMoved);
+		connectSignal(ostd::legacy::BuiltinSignals::MouseScrolled);
+		connectSignal(ostd::legacy::BuiltinSignals::OnGuiEvent);
+		connectSignal(ostd::legacy::BuiltinSignals::WindowClosed);
+		connectSignal(ostd::legacy::BuiltinSignals::WindowResized);
+		connectSignal(ostd::legacy::BuiltinSignals::WindowFocused);
+		connectSignal(ostd::legacy::BuiltinSignals::WindowLostFocus);
+		connectSignal(ostd::legacy::BuiltinSignals::FileDragAndDropped);
+		connectSignal(ostd::legacy::BuiltinSignals::TextDragAndDropped);
 
 		setCursor(eCursor::Default);
 
@@ -148,14 +148,14 @@ namespace ogfx
 	{
 		__on_window_close();
 		m_running = false;
-		ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::WindowClosed, ostd::Signal::Priority::Normal, *this);
+		ostd::legacy::SignalHandler::emitSignal(ostd::legacy::BuiltinSignals::WindowClosed, ostd::legacy::Signal::Priority::Normal, *this);
 	}
 
 	void WindowCore::setSize(i32 width, i32 height)
 	{
 		if (!isInitialized()) return;
 		SDL_SetWindowSize(m_window, width, height);
-		ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::WindowResized, ostd::Signal::Priority::RealTime);
+		ostd::legacy::SignalHandler::emitSignal(ostd::legacy::BuiltinSignals::WindowResized, ostd::legacy::Signal::Priority::RealTime);
 	}
 
 	void WindowCore::setTitle(const String& title)
@@ -350,7 +350,7 @@ namespace ogfx
 		SDL_PushEvent(&e);
 	}
 
-	void WindowCore::handleSignal(ostd::Signal& signal)
+	void WindowCore::handleSignal(ostd::legacy::Signal& signal)
 	{
 		__on_signal(signal);
 	}
@@ -520,7 +520,7 @@ namespace ogfx
 	void WindowCore::after_render(void)
 	{
 		SDL_RenderPresent(m_renderer);
-		ostd::SignalHandler::handleDelegateSignals();
+		ostd::legacy::SignalHandler::handleDelegateSignals();
 	}
 
 	void WindowCore::__handle_event(SDL_Event& event)
@@ -551,21 +551,21 @@ namespace ogfx
 		{
 			DropEventData ded(*this, DropEventData::eDropType::File);
 			ded.textOrFilePath = event.drop.data;
-			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::FileDragAndDropped, ostd::Signal::Priority::RealTime, ded);
+			ostd::legacy::SignalHandler::emitSignal(ostd::legacy::BuiltinSignals::FileDragAndDropped, ostd::legacy::Signal::Priority::RealTime, ded);
 		}
 		else if (event.type == SDL_EVENT_DROP_TEXT)
 		{
 			DropEventData ded(*this, DropEventData::eDropType::Text);
 			ded.textOrFilePath = event.drop.data;
-			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::FileDragAndDropped, ostd::Signal::Priority::RealTime, ded);
+			ostd::legacy::SignalHandler::emitSignal(ostd::legacy::BuiltinSignals::FileDragAndDropped, ostd::legacy::Signal::Priority::RealTime, ded);
 		}
 		else if (event.type == SDL_EVENT_WINDOW_FOCUS_GAINED)
 		{
-			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::WindowFocused, ostd::Signal::Priority::RealTime, *this);
+			ostd::legacy::SignalHandler::emitSignal(ostd::legacy::BuiltinSignals::WindowFocused, ostd::legacy::Signal::Priority::RealTime, *this);
 		}
 		else if (event.type == SDL_EVENT_WINDOW_FOCUS_LOST)
 		{
-			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::WindowLostFocus, ostd::Signal::Priority::RealTime, *this);
+			ostd::legacy::SignalHandler::emitSignal(ostd::legacy::BuiltinSignals::WindowLostFocus, ostd::legacy::Signal::Priority::RealTime, *this);
 		}
 		else if (event.type == SDL_EVENT_WINDOW_RESIZED)
 		{
@@ -573,13 +573,13 @@ namespace ogfx
 			SDL_GetWindowSize(m_window, &m_windowWidth, &m_windowHeight);
 			wrd.new_width = m_windowWidth;
 			wrd.new_height = m_windowHeight;
-			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::WindowResized, ostd::Signal::Priority::RealTime, wrd);
+			ostd::legacy::SignalHandler::emitSignal(ostd::legacy::BuiltinSignals::WindowResized, ostd::legacy::Signal::Priority::RealTime, wrd);
 		}
 		else if (event.type == SDL_EVENT_MOUSE_MOTION)
 		{
 			MouseEventData mmd = get_mouse_state(event);
 			m_mousePosition = { mmd.position_x, mmd.position_y };
-			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::MouseMoved, ostd::Signal::Priority::RealTime, mmd);
+			ostd::legacy::SignalHandler::emitSignal(ostd::legacy::BuiltinSignals::MouseMoved, ostd::legacy::Signal::Priority::RealTime, mmd);
 		}
 		else if (event.type == SDL_EVENT_MOUSE_WHEEL)
 		{
@@ -614,32 +614,32 @@ namespace ogfx
 				mmd.scrollAmount = { 0.0f, 0.0f };
 			}
 
-			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::MouseScrolled, ostd::Signal::Priority::RealTime, mmd);
+			ostd::legacy::SignalHandler::emitSignal(ostd::legacy::BuiltinSignals::MouseScrolled, ostd::legacy::Signal::Priority::RealTime, mmd);
 		}
 		else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
 		{
 			MouseEventData mmd = get_mouse_state(event);
-			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::MousePressed, ostd::Signal::Priority::RealTime, mmd);
+			ostd::legacy::SignalHandler::emitSignal(ostd::legacy::BuiltinSignals::MousePressed, ostd::legacy::Signal::Priority::RealTime, mmd);
 		}
 		else if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
 		{
 			MouseEventData mmd = get_mouse_state(event);
-			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::MouseReleased, ostd::Signal::Priority::RealTime, mmd);
+			ostd::legacy::SignalHandler::emitSignal(ostd::legacy::BuiltinSignals::MouseReleased, ostd::legacy::Signal::Priority::RealTime, mmd);
 		}
 		else if (event.type == SDL_EVENT_TEXT_INPUT)
 		{
 			KeyEventData ked(*this, 0, event.text.text, KeyEventData::eKeyEvent::Text, l_keymod_status(event.key.mod));
-			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::TextEntered, ostd::Signal::Priority::RealTime, ked);
+			ostd::legacy::SignalHandler::emitSignal(ostd::legacy::BuiltinSignals::TextEntered, ostd::legacy::Signal::Priority::RealTime, ked);
 		}
 		else if (event.type == SDL_EVENT_KEY_DOWN)
 		{
 			KeyEventData ked(*this, (i32)event.key.key, "", KeyEventData::eKeyEvent::Pressed, l_keymod_status(event.key.mod));
-			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::KeyPressed, ostd::Signal::Priority::RealTime, ked);
+			ostd::legacy::SignalHandler::emitSignal(ostd::legacy::BuiltinSignals::KeyPressed, ostd::legacy::Signal::Priority::RealTime, ked);
 		}
 		else if (event.type == SDL_EVENT_KEY_UP)
 		{
 			KeyEventData ked(*this, (i32)event.key.key, "", KeyEventData::eKeyEvent::Released, l_keymod_status(event.key.mod));
-			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::KeyReleased, ostd::Signal::Priority::RealTime, ked);
+			ostd::legacy::SignalHandler::emitSignal(ostd::legacy::BuiltinSignals::KeyReleased, ostd::legacy::Signal::Priority::RealTime, ked);
 		}
 		__on_event(event);
 	}
@@ -793,7 +793,7 @@ namespace ogfx
 		m_fpsUpdateTimer.update();
 	}
 
-	void GraphicsWindow::__on_signal(ostd::Signal& signal)
+	void GraphicsWindow::__on_signal(ostd::legacy::Signal& signal)
 	{
 		onSignal(signal);
 	}
@@ -909,67 +909,67 @@ namespace ogfx
 			}
 		}
 
-		void Window::__on_signal(ostd::Signal& signal)
+		void Window::__on_signal(ostd::legacy::Signal& signal)
 		{
 			Event evt(*this);
-			evt.__original_signal_id = ostd::BuiltinSignals::NoSignal;
-			if (signal.ID == ostd::BuiltinSignals::WindowClosed)
+			evt.__original_signal_id = ostd::legacy::BuiltinSignals::NoSignal;
+			if (signal.ID == ostd::legacy::BuiltinSignals::WindowClosed)
 			{
-				evt.__original_signal_id = ostd::BuiltinSignals::WindowClosed;
+				evt.__original_signal_id = ostd::legacy::BuiltinSignals::WindowClosed;
 				m_rootWidget.__onWindowClosed(evt);
 				m_toolbar.__onWindowClosed(evt);
 				m_statusbar.__onWindowClosed(evt);
 			}
-			else if (signal.ID == ostd::BuiltinSignals::WindowFocused)
+			else if (signal.ID == ostd::legacy::BuiltinSignals::WindowFocused)
 			{
-				evt.__original_signal_id = ostd::BuiltinSignals::WindowFocused;
+				evt.__original_signal_id = ostd::legacy::BuiltinSignals::WindowFocused;
 				m_rootWidget.__onWindowFocused(evt);
 				m_toolbar.__onWindowFocused(evt);
 				m_statusbar.__onWindowFocused(evt);
 			}
-			else if (signal.ID == ostd::BuiltinSignals::WindowLostFocus)
+			else if (signal.ID == ostd::legacy::BuiltinSignals::WindowLostFocus)
 			{
 				if (m_cmenu.isVisible())
 					m_cmenu.hide();
-				evt.__original_signal_id = ostd::BuiltinSignals::WindowLostFocus;
+				evt.__original_signal_id = ostd::legacy::BuiltinSignals::WindowLostFocus;
 				m_rootWidget.__onWindowFocusLost(evt);
 				m_toolbar.__onWindowFocusLost(evt);
 				m_statusbar.__onWindowFocusLost(evt);
 			}
-			else if (signal.ID == ostd::BuiltinSignals::FileDragAndDropped)
+			else if (signal.ID == ostd::legacy::BuiltinSignals::FileDragAndDropped)
 			{
 				// auto& ud = (ogfx::DropEventData&)signal.userData;
 				// evt.drop.dropType = ud.dropType;
 				// evt.drop.userObject = ud.userObject;
 				// evt.drop.textOrFilePath = ud.textOrFilePath;
-				// evt.__original_signal_id = ostd::BuiltinSignals::FileDragAndDropped;
+				// evt.__original_signal_id = ostd::legacy::BuiltinSignals::FileDragAndDropped;
 				// m_rootWidget.__onMouseReleased(evt);
 			}
-			else if (signal.ID == ostd::BuiltinSignals::TextDragAndDropped)
+			else if (signal.ID == ostd::legacy::BuiltinSignals::TextDragAndDropped)
 			{
 				// auto& ud = (ogfx::DropEventData&)signal.userData;
 				// evt.drop.dropType = ud.dropType;
 				// evt.drop.userObject = ud.userObject;
 				// evt.drop.textOrFilePath = ud.textOrFilePath;
-				// evt.__original_signal_id = ostd::BuiltinSignals::TextDragAndDropped;
+				// evt.__original_signal_id = ostd::legacy::BuiltinSignals::TextDragAndDropped;
 				// m_rootWidget.__onMouseReleased(evt);
 			}
-			else if (signal.ID == ostd::BuiltinSignals::WindowResized)
+			else if (signal.ID == ostd::legacy::BuiltinSignals::WindowResized)
 			{
 				if (m_cmenu.isVisible())
 					m_cmenu.hide();
 				evt.windowResized = &(ogfx::WindowResizedData&)signal.userData;
-				evt.__original_signal_id = ostd::BuiltinSignals::WindowResized;
+				evt.__original_signal_id = ostd::legacy::BuiltinSignals::WindowResized;
 				if (m_menubar.isVisible())
 					m_menubar.onWindowResized(evt);
 				m_toolbar.__onWindowResized(evt);
 				m_statusbar.__onWindowResized(evt);
 				m_rootWidget.__onWindowResized(evt);
 			}
-			else if (signal.ID == ostd::BuiltinSignals::MouseMoved)
+			else if (signal.ID == ostd::legacy::BuiltinSignals::MouseMoved)
 			{
 				evt.mouse = &(ogfx::MouseEventData&)signal.userData;
-				evt.__original_signal_id = ostd::BuiltinSignals::MouseMoved;
+				evt.__original_signal_id = ostd::legacy::BuiltinSignals::MouseMoved;
 				if (m_menubar.isVisible())
 					m_menubar.onMouseMoved(evt);
 				if (m_cmenu.isVisible())
@@ -978,20 +978,20 @@ namespace ogfx
 				m_statusbar.__onMouseMoved(evt);
 				m_rootWidget.__onMouseMoved(evt);
 			}
-			else if (signal.ID == ostd::BuiltinSignals::MouseScrolled)
+			else if (signal.ID == ostd::legacy::BuiltinSignals::MouseScrolled)
 			{
 				evt.mouse = &(ogfx::MouseEventData&)signal.userData;
-				evt.__original_signal_id = ostd::BuiltinSignals::MouseScrolled;
+				evt.__original_signal_id = ostd::legacy::BuiltinSignals::MouseScrolled;
 				if (m_cmenu.isVisible())
 					m_cmenu.onMouseScrolled(evt);
 				m_toolbar.__onMouseScrolled(evt);
 				m_statusbar.__onMouseScrolled(evt);
 				m_rootWidget.__onMouseScrolled(evt);
 			}
-			else if (signal.ID == ostd::BuiltinSignals::MousePressed)
+			else if (signal.ID == ostd::legacy::BuiltinSignals::MousePressed)
 			{
 				evt.mouse = &(ogfx::MouseEventData&)signal.userData;
-				evt.__original_signal_id = ostd::BuiltinSignals::MousePressed;
+				evt.__original_signal_id = ostd::legacy::BuiltinSignals::MousePressed;
 				if (m_cmenu.isVisible())
 					m_cmenu.onMousePressed(evt);
 				if (m_menubar.isVisible())
@@ -1000,30 +1000,30 @@ namespace ogfx
 				m_statusbar.__onMousePressed(evt);
 				m_rootWidget.__onMousePressed(evt);
 			}
-			else if (signal.ID == ostd::BuiltinSignals::MouseReleased)
+			else if (signal.ID == ostd::legacy::BuiltinSignals::MouseReleased)
 			{
 				evt.mouse = &(ogfx::MouseEventData&)signal.userData;
-				evt.__original_signal_id = ostd::BuiltinSignals::MouseReleased;
+				evt.__original_signal_id = ostd::legacy::BuiltinSignals::MouseReleased;
 				if (m_cmenu.isVisible())
 					m_cmenu.onMouseReleased(evt);
 				m_toolbar.__onMouseReleased(evt);
 				m_statusbar.__onMouseReleased(evt);
 				m_rootWidget.__onMouseReleased(evt);
 			}
-			else if (signal.ID == ostd::BuiltinSignals::KeyPressed)
+			else if (signal.ID == ostd::legacy::BuiltinSignals::KeyPressed)
 			{
 				evt.keyboard = &(ogfx::KeyEventData&)signal.userData;
-				evt.__original_signal_id = ostd::BuiltinSignals::KeyPressed;
+				evt.__original_signal_id = ostd::legacy::BuiltinSignals::KeyPressed;
 				m_toolbar.__onKeyPressed(evt);
 				m_statusbar.__onKeyPressed(evt);
 				auto focused = m_focusManager.getFocused();
 				if (focused)
 					focused->__onKeyPressed(evt);
 			}
-			else if (signal.ID == ostd::BuiltinSignals::KeyReleased)
+			else if (signal.ID == ostd::legacy::BuiltinSignals::KeyReleased)
 			{
 				evt.keyboard = &(ogfx::KeyEventData&)signal.userData;
-				evt.__original_signal_id = ostd::BuiltinSignals::KeyReleased;
+				evt.__original_signal_id = ostd::legacy::BuiltinSignals::KeyReleased;
 				m_focusManager.onKeyReleased(evt);
 				m_toolbar.__onKeyReleased(evt);
 				m_statusbar.__onKeyReleased(evt);
@@ -1033,10 +1033,10 @@ namespace ogfx
 				if (evt.keyboard->keyCode == KeyCode::Escape)
 					close();
 			}
-			else if (signal.ID == ostd::BuiltinSignals::TextEntered)
+			else if (signal.ID == ostd::legacy::BuiltinSignals::TextEntered)
 			{
 				evt.keyboard = &(ogfx::KeyEventData&)signal.userData;
-				evt.__original_signal_id = ostd::BuiltinSignals::TextEntered;
+				evt.__original_signal_id = ostd::legacy::BuiltinSignals::TextEntered;
 				m_toolbar.__onTextEntered(evt);
 				m_statusbar.__onTextEntered(evt);
 				auto focused = m_focusManager.getFocused();

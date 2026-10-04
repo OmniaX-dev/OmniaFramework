@@ -22,7 +22,7 @@
 
 #include <ostd/utils/Defines.hpp>
 
-#include <ostd/data/BaseObject.hpp>
+#include <ostd/data/Object.hpp>
 #include <ostd/data/Bitfields.hpp>
 #include <ostd/data/Color.hpp>
 #include <ostd/data/Types.hpp>

@@ -21,12 +21,12 @@
 #pragma once
 
 #include <memory>
-#include <ostd/data/BaseObject.hpp>
+#include <ostd/data/Object.hpp>
 #include <ostd/math/Geometry.hpp>
 
 namespace ostd
 {
-	class QuadTree : public BaseObject
+	class QuadTree : public legacy::BaseObject
 	{
 		public: struct tElement
 		{

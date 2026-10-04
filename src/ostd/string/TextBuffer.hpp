@@ -22,7 +22,7 @@
 
 #include <functional>
 #include <deque>
-#include <ostd/data/BaseObject.hpp>
+#include <ostd/data/Object.hpp>
 #include <ostd/string/String.hpp>
 #include <ostd/math/Geometry.hpp>
 
@@ -53,7 +53,7 @@ namespace ostd
 	 *     fires after the change callback, so observers can scroll the
 	 *     view to follow the cursor *after* layout has been updated).
 	 */
-	class TextBuffer : public BaseObject
+	class TextBuffer : public legacy::BaseObject
 	{
 		public: using ChangeCallback = std::function<void(const TextBuffer&)>;
 
@@ -176,7 +176,7 @@ namespace ostd
 			inline u32 undoStackSize(void) const { return cast<u32>(m_undoStack.size()); }
 			inline u32 redoStackSize(void) const { return cast<u32>(m_redoStack.size()); }
 
-			// ==================== BaseObject hooks ====================
+			// ==================== legacy::BaseObject hooks ====================
 			String toString(void) const override;
 
 		private:

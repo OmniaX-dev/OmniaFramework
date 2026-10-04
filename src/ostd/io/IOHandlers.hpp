@@ -32,7 +32,7 @@ namespace ogfx
 
 namespace ostd
 {
-	class BaseObject;
+	namespace legacy { class BaseObject; }
 	class ConsoleColors
 	{
 		public: struct tConsoleColor {
@@ -147,7 +147,7 @@ namespace ostd
 			inline virtual OutputHandlerBase& pStyled(const String& styled) { return *this; }
 			inline virtual OutputHandlerBase& pStyled(const TextStyleParser::tStyledString& styled) { return *this; }
 			inline virtual OutputHandlerBase& pStyled(TextStyleBuilder::IRichStringBase& styled) { return *this; }
-			inline virtual OutputHandlerBase& pObject(const BaseObject& bo) { return *this; }
+			inline virtual OutputHandlerBase& pObject(const legacy::BaseObject& bo) { return *this; }
 
 			inline virtual OutputHandlerBase& p(const String& se) { return *this; }
 			inline virtual OutputHandlerBase& p(u8 i) { return *this; }
@@ -195,7 +195,7 @@ namespace ostd
 			OutputHandlerBase& pStyled(const String& styled) override;
 			OutputHandlerBase& pStyled(const TextStyleParser::tStyledString& styled) override;
 			OutputHandlerBase& pStyled(TextStyleBuilder::IRichStringBase& styled) override;
-			OutputHandlerBase& pObject(const BaseObject& bo) override;
+			OutputHandlerBase& pObject(const legacy::BaseObject& bo) override;
 
 			OutputHandlerBase& p(const String& se) override;
 			OutputHandlerBase& p(u8 i) override;
@@ -234,7 +234,7 @@ namespace ostd
 			bool openFile(const String& filePath);
 
 			OutputHandlerBase& pChar(char c) override;
-			OutputHandlerBase& pObject(const BaseObject& bo) override;
+			OutputHandlerBase& pObject(const legacy::BaseObject& bo) override;
 
 			OutputHandlerBase& p(const String& se) override;
 			OutputHandlerBase& p(u8 i) override;

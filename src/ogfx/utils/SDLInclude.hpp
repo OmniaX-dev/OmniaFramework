@@ -68,7 +68,7 @@ namespace ogfx
 
 			static inline void shutdown_sdl(void)
 			{
-				ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::BeforeSDLShutdown, ostd:: Signal::Priority::RealTime);
+				ostd::legacy::SignalHandler::emitSignal(ostd::legacy::BuiltinSignals::BeforeSDLShutdown, ostd::legacy::Signal::Priority::RealTime);
 				TTF_Quit();
 				SDL_Quit();
 			}
