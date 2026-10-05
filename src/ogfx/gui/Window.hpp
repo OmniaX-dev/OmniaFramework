@@ -31,6 +31,7 @@
 #include <ogfx/gui/WindowOutputHandler.hpp>
 #include <ogfx/gui/ContextMenu.hpp>
 #include <ogfx/gui/MenuBar.hpp>
+#include <ogfx/gui/menu/NativeMenu.hpp>
 #include <ogfx/gui/ToolBar.hpp>
 #include <ogfx/gui/FocusManager.hpp>
 
@@ -122,6 +123,7 @@ namespace ogfx
 
 			inline BasicRenderer2D& getGFX(void) { return m_gfx; }
 			inline bool isInitialized(void) const { return m_initialized; }
+			inline SDL_Window* getSDLWindow(void) const { return m_window; }
 			inline bool isRunning(void) const { return m_running; }
 			inline bool isVisible(void) const { return m_visible; }
 			inline bool isResizeable(void) const { return m_resizeable; }
@@ -288,6 +290,19 @@ namespace ogfx
 				inline void showStatusBar(bool show = true) { m_statusbar.setVisible(show); }
 				inline FocusManager& getFocusManager(void) { return m_focusManager; }
 
+				// Mirrors the in-widget MenuBar into the desktop's native global menu (Plasma's
+				// panel on Linux, the system menu bar on macOS) when one is available, hiding the
+				// in-widget bar in the process. A no-op (returns false, nothing changes) on any
+				// platform/session without that support - the in-widget MenuBar then keeps
+				// working exactly as it always has. Safe to call again to retry (e.g. a Plasma
+				// session reconnects).
+				bool enableNativeMenuBar(bool enable = true);
+				inline bool isNativeMenuBarActive(void) const { return m_nativeMenu.isActive(); }
+				// Forces an immediate push to the active native backend - only needed after
+				// mutating an Entry you already hold in place (e.g. flipping .checked); ordinary
+				// addMenu()/clearMenus() calls are already picked up automatically each frame.
+				inline void refreshNativeMenu(void) { if (m_nativeMenu.isActive()) { m_nativeMenu.setMenu(m_menubar.buildNativeTree()); m_nativeMenuLastPushedGeneration = m_menubar.getGeneration(); } }
+
 				inline virtual void onInitialize(void) {  }
 				inline virtual void onDestroy(void) {  }
 				inline virtual void onClose(void) {  }
@@ -319,6 +334,9 @@ namespace ogfx
 				MenuBar m_menubar { *this };
 				ToolBar m_toolbar { *this };
 				ToolBar m_statusbar { *this, true };
+				NativeMenu m_nativeMenu { *this };
+				u64 m_nativeMenuLastPushedGeneration { (u64)-1 }; // mismatched on purpose - forces a push the first time
+				bool m_menuBarVisibleBeforeNative { false };
 
 				friend class RootWidget;
 				friend class FocusManager;

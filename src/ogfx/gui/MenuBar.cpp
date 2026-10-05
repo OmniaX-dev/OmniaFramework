@@ -37,6 +37,7 @@ namespace ogfx
 		{
 			m_slots.push_back({ label, instance, {} });
 			recompute_layout();
+			m_generation++;
 			return *this;
 		}
 
@@ -49,6 +50,16 @@ namespace ogfx
 		{
 			close_menu();
 			m_slots.clear();
+			m_generation++;
+		}
+
+		stdvec<MenuBar::Menu> MenuBar::buildNativeTree(void) const
+		{
+			stdvec<Menu> out;
+			out.reserve(m_slots.size());
+			for (auto& slot : m_slots)
+				out.push_back({ slot.label, slot.instance });
+			return out;
 		}
 
 		void MenuBar::onWindowResized(const Event& event)

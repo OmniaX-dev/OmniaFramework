@@ -42,6 +42,15 @@ namespace ogfx
 				MenuBar& addMenu(const String& label, const ContextMenu::Instance& instance);
 				MenuBar& addMenu(const Menu& menu);
 				void clearMenus(void);
+				// Snapshot of the current top-level menus, for mirroring into a native global
+				// menu backend (see NativeMenu.hpp) - label + the Instance exactly as added, so
+				// its onActivate callback is preserved intact.
+				stdvec<Menu> buildNativeTree(void) const;
+				// Bumped by addMenu()/clearMenus() - lets Window cheaply detect "did the menu
+				// structure change since I last pushed it to the native backend" without a
+				// dedicated change signal. Doesn't change on in-place Entry mutations (e.g.
+				// flipping .checked on an Entry you already hold) - see Window::refreshNativeMenu().
+				inline u64 getGeneration(void) const { return m_generation; }
 
 				void onWindowResized(const Event& event);
 				void applyTheme(const ostd::Stylesheet& theme);
@@ -86,6 +95,7 @@ namespace ogfx
 				i32 m_hoveredIndex { -1 };
 				bool m_active { false };
 				bool m_visible { false };
+				u64 m_generation { 0 };
 
 				f32 m_height { 26 };
 				Rectangle m_itemPadding { 12, 0, 12, 0 };  // x = left, y = top, w = right, h = bottom

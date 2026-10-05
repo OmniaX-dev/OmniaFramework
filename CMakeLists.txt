@@ -89,6 +89,7 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/WidgetManager.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/ContextMenu.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/MenuBar.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/menu/NativeMenu.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/ToolBar.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/Layout.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/FocusManager.cpp
@@ -124,6 +125,49 @@ list(APPEND OGFX_SOURCE_FILES
 	# utils
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/utils/Animation.cpp
 )
+if (APPLE)
+	# Objective-C++ bridge for the native macOS global menu backend (NativeMenu.hpp) - compiled
+	# with ARC so CocoaMenuBackend.mm can use modern Cocoa ownership without manual retain/release.
+	list(APPEND OGFX_SOURCE_FILES
+		${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/menu/macos/CocoaMenuBackend.mm
+	)
+	set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/menu/macos/CocoaMenuBackend.mm PROPERTIES COMPILE_FLAGS "-fobjc-arc")
+endif ()
+if (UNIX AND NOT APPLE)
+	# Native Plasma global-menu backend (NativeMenu.hpp): DBusMenu over raw libdbus-1, associated
+	# with the window via the X11 AppMenu registrar or (Wayland) KWin's org_kde_kwin_appmenu
+	# protocol extension - see src/ogfx/gui/menu/linux/.
+	list(APPEND OGFX_SOURCE_FILES
+		${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/menu/NativeWindowHandle.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/menu/linux/DBusMenuServer.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/menu/linux/X11AppMenuRegistrar.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/menu/linux/WaylandAppMenuBinder.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/menu/linux/PlasmaMenuBackend.cpp
+	)
+
+	# appmenu.xml (vendored from Qt6's wayland protocols, LGPL-2.1-or-later, matching its own
+	# license header - standard practice for Wayland protocol consumers) -> client bindings,
+	# generated at build time into the binary dir rather than committing generated code.
+	set(APPMENU_PROTOCOL_XML ${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/menu/linux/protocols/appmenu.xml)
+	set(APPMENU_GENERATED_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
+	set(APPMENU_GENERATED_HEADER ${APPMENU_GENERATED_DIR}/appmenu-client-protocol.h)
+	set(APPMENU_GENERATED_CODE ${APPMENU_GENERATED_DIR}/appmenu-client-protocol.c)
+	find_program(WAYLAND_SCANNER_EXECUTABLE wayland-scanner REQUIRED)
+	file(MAKE_DIRECTORY ${APPMENU_GENERATED_DIR})
+	add_custom_command(
+		OUTPUT ${APPMENU_GENERATED_HEADER}
+		COMMAND ${WAYLAND_SCANNER_EXECUTABLE} client-header ${APPMENU_PROTOCOL_XML} ${APPMENU_GENERATED_HEADER}
+		DEPENDS ${APPMENU_PROTOCOL_XML}
+	)
+	add_custom_command(
+		OUTPUT ${APPMENU_GENERATED_CODE}
+		COMMAND ${WAYLAND_SCANNER_EXECUTABLE} private-code ${APPMENU_PROTOCOL_XML} ${APPMENU_GENERATED_CODE}
+		DEPENDS ${APPMENU_PROTOCOL_XML}
+	)
+	list(APPEND OGFX_SOURCE_FILES ${APPMENU_GENERATED_CODE} ${APPMENU_GENERATED_HEADER})
+	set_source_files_properties(${APPMENU_GENERATED_HEADER} PROPERTIES GENERATED TRUE)
+	set_source_files_properties(${APPMENU_GENERATED_CODE} PROPERTIES GENERATED TRUE)
+endif ()
 list(APPEND TEST_SOURCE_FILES
 	# ${CMAKE_CURRENT_LIST_DIR}/src/test/GraphicsWindowTest.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/test/GuiTest.cpp
@@ -210,10 +254,19 @@ if (APPLE)
 					${SDL3_IMAGE_LIBRARIES}
 					${SDL3_TTF_LIBRARIES}
 	)
+	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC "-framework Cocoa")
 elseif (UNIX)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,'$ORIGIN',-rpath,/usr/lib,-rpath,/usr/local/lib")
 	target_link_libraries(${OMNIA_STD_LIB} PUBLIC tinfo boost_regex)
 	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC xcb xcb-randr)
 	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC SDL3 SDL3_ttf SDL3_image)
+
+	# dbus-1's headers live under a versioned subdirectory (#include <dbus/dbus.h> needs both
+	# of these) - pkg-config is only used to resolve that non-obvious include path; linked by
+	# plain name below like everything else in this branch.
+	find_package(PkgConfig REQUIRED)
+	pkg_check_modules(DBUS REQUIRED dbus-1)
+	target_include_directories(${OMNIA_GFX_LIB} PUBLIC ${DBUS_INCLUDE_DIRS} ${APPMENU_GENERATED_DIR})
+	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC dbus-1 wayland-client)
 endif ()
 #-----------------------------------------------------------------------------------------

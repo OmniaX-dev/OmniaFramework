@@ -155,6 +155,7 @@ namespace ogfx
 				if (idx >= 0)
 				{
 					Entry& e = (*m_panels[i].entries)[idx];
+					if (!e.enabled) { event.handle(); return; } // absorb the click; disabled entries never activate or open
 					if (e.submenus.empty())
 					{
 						if (m_data.onActivate && e.id >= 0)
@@ -247,7 +248,7 @@ namespace ogfx
 			if (hitEntry >= 0)
 			{
 				Entry& e = (*m_panels[hitPanel].entries)[hitEntry];
-				bool hasChildren = e.submenus.size() > 0;
+				bool hasChildren = e.submenus.size() > 0 && e.enabled;
 				bool alreadyOpen = (m_panels[hitPanel].openedSubmenuIndex == hitEntry) && ((i32)m_panels.size() - 1 > hitPanel);
 
 				if (hasChildren && !alreadyOpen)
@@ -411,6 +412,8 @@ namespace ogfx
 			if (!panelRect.contains(mousePos, true)) return -1;
 			for (i32 i = 0; i < (i32)panel.entries->size(); ++i)
 			{
+				if ((*panel.entries)[i].isSeparator)
+					continue; // dead space for mouse purposes - never hovered, hit, or activated
 				if (entry_rect(panel, i).contains(mousePos, true))
 					return i;
 			}
@@ -435,8 +438,19 @@ namespace ogfx
 				Vec2 entryPos = panel.position + Vec2 { m_padding.x, y + m_padding.y };
 				Rectangle rect = { entryPos - Vec2 { m_padding.x, 0 }, panel.size.x, panel.entryHeight };
 
-				bool highlighted = (panel.hoveredIndex == i)
-								|| (panel.openedSubmenuIndex == i);
+				if (entry.isSeparator)
+				{
+					f32 lineY = rect.y + (rect.h * 0.5f);
+					gfx.drawLine({ { rect.x + m_padding.x, lineY }, { rect.x + rect.w - m_padding.x, lineY } }, getSeparatorLineColor(), 1);
+					y += panel.entryHeight;
+					i++;
+					continue;
+				}
+
+				bool highlighted = entry.enabled && ((panel.hoveredIndex == i) || (panel.openedSubmenuIndex == i));
+				Color textColor = getTextColor();
+				if (!entry.enabled)
+					textColor.a = (u8)(textColor.a * 0.4f);
 
 				if (highlighted)
 				{
@@ -450,7 +464,17 @@ namespace ogfx
 				else
 				{
 					gfx.drawRect(rect, getSeparatorLineColor(), 1, false, false, i != entries.size() , false);
-					gfx.drawVCenteredString(entry.text, { entryPos, panel.size.x, panel.entryHeight }, getTextColor(), getFontSize());
+					gfx.drawVCenteredString(entry.text, { entryPos, panel.size.x, panel.entryHeight }, textColor, getFontSize());
+				}
+				if (entry.checkable)
+				{
+					const f32 boxSize = panel.entryHeight * 0.4f;
+					Rectangle box { rect.x + 6, rect.y + (rect.h - boxSize) * 0.5f, boxSize, boxSize };
+					Color indicatorColor = highlighted ? getSelectionTextColor() : textColor;
+					if (entry.checked)
+						gfx.fillRect(box, indicatorColor);
+					else
+						gfx.outlinedRect(box, Colors::Transparent, indicatorColor, 1);
 				}
 				if (entry.submenus.size() > 0)
 				{

@@ -32,9 +32,16 @@ namespace ogfx
 			{
 				inline Entry(const String& t, i32 id = -1, const stdvec<Entry>& sub = {}) { text = t; this->id = id; submenus = sub; }
 				inline Entry(const String& t, const stdvec<Entry>& sub) { text = t; id = -1; submenus = sub; }
+				// Convenience for a non-activatable divider row: Entry::separator().
+				inline static Entry separator(void) { Entry e(""); e.isSeparator = true; return e; }
 				String text { "" };
 				i32 id { -1 };
 				stdvec<Entry> submenus;
+				// All additive and defaulted - existing Entry(...) call sites are unaffected.
+				bool enabled { true };
+				bool isSeparator { false };
+				bool checkable { false };
+				bool checked { false };
 
 				private:
 					Vec2 size;

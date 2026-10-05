@@ -64,6 +64,7 @@ class TestWindow : public Window
 			showMenuBar();
 			showToolBar();
 			showStatusBar();
+			enableNativeMenuBar();
 
 			ogfx::AnimationData iconsAD;
 			iconsAD.frameCount = 1;

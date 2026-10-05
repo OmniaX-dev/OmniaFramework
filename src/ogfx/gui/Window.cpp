@@ -828,6 +828,27 @@ namespace ogfx
 			m_rootWidget.removeWidget(widget);
 		}
 
+		bool Window::enableNativeMenuBar(bool enable)
+		{
+			if (!enable)
+			{
+				if (m_nativeMenu.isActive())
+				{
+					m_nativeMenu.disable();
+					showMenuBar(m_menuBarVisibleBeforeNative);
+				}
+				return false;
+			}
+			if (m_nativeMenu.isActive())
+				return true; // already on
+			m_menuBarVisibleBeforeNative = isMenuBarVisible();
+			if (!m_nativeMenu.enable())
+				return false; // nothing available - in-widget MenuBar keeps working as-is
+			showMenuBar(false);
+			refreshNativeMenu();
+			return true;
+		}
+
 		void Window::setTheme(const ostd::Stylesheet& theme)
 		{
 			m_guiTheme = &theme;
@@ -1055,6 +1076,18 @@ namespace ogfx
 			m_cmenu.update();
 			if (m_menubar.isVisible())
 				m_menubar.update();
+			// Runs regardless of m_menubar's own visibility, since enabling the native menu
+			// hides the in-widget bar (see enableNativeMenuBar()) but the native side still
+			// needs to stay in sync with MenuBar's data.
+			if (m_nativeMenu.isActive())
+			{
+				m_nativeMenu.update();
+				if (m_menubar.getGeneration() != m_nativeMenuLastPushedGeneration)
+				{
+					m_nativeMenu.setMenu(m_menubar.buildNativeTree());
+					m_nativeMenuLastPushedGeneration = m_menubar.getGeneration();
+				}
+			}
 			onUpdate(delta);
 		}
 
