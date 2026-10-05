@@ -23,6 +23,7 @@
 #ifndef __APPLE__
 #include <bits/stdc++.h>
 #endif
+#include <stack>
 
 namespace ostd
 {
