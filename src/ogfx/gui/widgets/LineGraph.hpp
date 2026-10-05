@@ -53,7 +53,7 @@ namespace ogfx
 				stdvec<f64> ydata;
 				// Parallel to xdata/ydata (one entry per point) if non-empty; passed to the hover
 				// callback. Not owned - LineGraph never deletes these.
-				stdvec<ostd::legacy::BaseObject*> userData;
+				stdvec<ostd::Object*> userData;
 
 				inline bool isValid(void) const { return !xdata.empty() && xdata.size() == ydata.size(); }
 			};
@@ -81,7 +81,7 @@ namespace ogfx
 				// callback (see setHoverCallback()); pass {} (the default) to omit it.
 				// Rejects (returns (u32)-1, logs a warning) if xdata/ydata sizes differ, or userData is
 				// non-empty and doesn't match them.
-				u32 plot(const stdvec<f64>& xdata, const stdvec<f64>& ydata, const String& name = "", const Color& color = Colors::Transparent, bool showPoints = true, const stdvec<ostd::legacy::BaseObject*>& userData = {});
+				u32 plot(const stdvec<f64>& xdata, const stdvec<f64>& ydata, const String& name = "", const Color& color = Colors::Transparent, bool showPoints = true, const stdvec<ostd::Object*>& userData = {});
 				bool removeSeries(u32 index);
 				bool removeSeries(const String& name);
 				void clearSeries(void);
@@ -107,7 +107,7 @@ namespace ogfx
 				// a zero-area clip, so nothing it draws is seen) purely to read outSize, and once for
 				// real at the final topLeft. Keep it a pure function of (x, y, userData) - no side
 				// effects - since it won't always visibly run when called.
-				using HoverCallback = std::function<bool(ogfx::BasicRenderer2D& gfx, f64 xdata, f64 ydata, ostd::legacy::BaseObject& userData, const Vec2& topLeft, Vec2& outSize)>;
+				using HoverCallback = std::function<bool(ogfx::BasicRenderer2D& gfx, f64 xdata, f64 ydata, const ostd::Object& userData, const Vec2& topLeft, Vec2& outSize)>;
 				inline void setHoverCallback(HoverCallback callback) { callback_onHover = std::move(callback); }
 
 				OSTD_PARAM_GETSET(Color, PlotBackgroundColor, m_plotBgColor);

@@ -70,7 +70,7 @@ namespace ogfx
 			GraphicsWindowOutputHandler& pStyled(const String& styled) override;
 			GraphicsWindowOutputHandler& pStyled(const ostd::TextStyleParser::tStyledString& styled) override;
 			GraphicsWindowOutputHandler& pStyled(ostd::TextStyleBuilder::IRichStringBase& styled) override;
-			GraphicsWindowOutputHandler& pObject(const ostd::legacy::BaseObject& bo) override;
+			GraphicsWindowOutputHandler& pObject(const ostd::Object& bo) override;
 
 			GraphicsWindowOutputHandler& p(const String& se) override;
 			GraphicsWindowOutputHandler& p(u8 i) override;

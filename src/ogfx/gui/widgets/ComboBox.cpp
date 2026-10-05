@@ -33,8 +33,8 @@ namespace ogfx
 			disableChildren();
 			disableFocus();
 			setStylesheetCategoryName("combo");
-			connectSignal(ostd::legacy::BuiltinSignals::MouseReleased);
-			connectSignal(ostd::legacy::BuiltinSignals::MouseMoved);
+			connectSignal(ostd::BuiltinSignals::MouseReleased);
+			connectSignal(ostd::BuiltinSignals::MouseMoved);
 			validate();
 			return *this;
 		}
@@ -119,13 +119,15 @@ namespace ogfx
 			}
 		}
 
-		void ComboBox::handleSignal(ostd::legacy::Signal& signal) // This is to get the global events, in order to bypass
+		void ComboBox::handleSignal(ostd::Signal& signal) // This is to get the global events, in order to bypass
 														  // the fact that some components like MenuBar call
 														  // event.handle() at the very beginning of the event chain
 		{
-			if (signal.ID == ostd::legacy::BuiltinSignals::MouseReleased)
+			if (signal.ID == ostd::BuiltinSignals::MouseReleased)
 			{
-				auto& med = cast<MouseEventData&>(signal.userData);
+				if (!signal.userData)
+					return;
+				auto& med = cast<MouseEventData&>(*signal.userData);
 				if (contains(med.position_x, med.position_y))
 					return;
 				if (!m_dropDownShown)
@@ -134,9 +136,11 @@ namespace ogfx
 				reloadTheme();
 				m_dropDownShown = false;
 			}
-			else if (signal.ID == ostd::legacy::BuiltinSignals::MouseMoved)
+			else if (signal.ID == ostd::BuiltinSignals::MouseMoved)
 			{
-				auto& med = cast<MouseEventData&>(signal.userData);
+				if (!signal.userData)
+					return;
+				auto& med = cast<MouseEventData&>(*signal.userData);
 				if (contains(med.position_x, med.position_y))
 					return;
 				setThemeQualifier("hover", false);

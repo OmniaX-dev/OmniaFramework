@@ -27,7 +27,7 @@
 
 namespace ostd
 {
-	class TextFileBuffer : public legacy::BaseObject
+	class TextFileBuffer : public Object
 	{
 		public:
 			inline TextFileBuffer(void) { invalidate(); setTypeName("ostd::TextFileBuffer"); }

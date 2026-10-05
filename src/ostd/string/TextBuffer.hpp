@@ -53,7 +53,7 @@ namespace ostd
 	 *     fires after the change callback, so observers can scroll the
 	 *     view to follow the cursor *after* layout has been updated).
 	 */
-	class TextBuffer : public legacy::BaseObject
+	class TextBuffer : public Object
 	{
 		public: using ChangeCallback = std::function<void(const TextBuffer&)>;
 
@@ -176,7 +176,7 @@ namespace ostd
 			inline u32 undoStackSize(void) const { return cast<u32>(m_undoStack.size()); }
 			inline u32 redoStackSize(void) const { return cast<u32>(m_redoStack.size()); }
 
-			// ==================== legacy::BaseObject hooks ====================
+			// ==================== Object hooks ====================
 			String toString(void) const override;
 
 		private:
@@ -197,7 +197,7 @@ namespace ostd
 			};
 
 			void replace_range(u32 start_byte, u32 end_byte, const String& with,
-			                   EditKind kind = EditKind::Generic);
+							   EditKind kind = EditKind::Generic);
 			void move_cursor_to(u32 byte_offset, bool extend);
 
 			// Helpers

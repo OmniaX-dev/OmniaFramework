@@ -31,7 +31,7 @@ namespace ogfx
 	{
 		class Widget;
 	}
-	class WindowResizedData : public ostd::legacy::BaseObject
+	class WindowResizedData : public ostd::Object
 	{
 		public:
 			inline WindowResizedData(WindowCore& parent, i32 _oldx, i32 _oldy, i32 _newx, i32 _newy) : parentWindow(parent), old_width(_oldx), old_height(_oldy), new_width(_newx), new_height(_newy)
@@ -47,7 +47,7 @@ namespace ogfx
 			i32 old_height;
 			WindowCore& parentWindow;
 	};
-	class MouseEventData : public ostd::legacy::BaseObject
+	class MouseEventData : public ostd::Object
 	{
 		public: enum class eButton { None = 0, Left, Middle, Right };
 		public: enum class eScrollDirection { None = 0, Up, Down, Left, Right };
@@ -67,7 +67,7 @@ namespace ogfx
 			gui::Widget* mousePressedOnWidget { nullptr };
 			WindowCore& parentWindow;
 	};
-	class KeyEventData : public ostd::legacy::BaseObject
+	class KeyEventData : public ostd::Object
 	{
 		public: struct KeyModifiers
 		{
@@ -141,7 +141,7 @@ namespace ogfx
 			KeyModifiers modifiers;
 			WindowCore& parentWindow;
 	};
-	class DropEventData : public ostd::legacy::BaseObject
+	class DropEventData : public ostd::Object
 	{
 		public: enum class eDropType { None = 0, File, Text, InApp };
 		public:
@@ -155,7 +155,7 @@ namespace ogfx
 			eDropType dropType;
 			WindowCore& parentWindow;
 			String textOrFilePath { "" };
-			ostd::legacy::BaseObject* userObject { nullptr };
+			ostd::Object* userObject { nullptr };
 	};
 	namespace gui
 	{

@@ -26,7 +26,7 @@
 
 namespace ostd
 {
-	class QuadTree : public legacy::BaseObject
+	class QuadTree : public Object
 	{
 		public: struct tElement
 		{

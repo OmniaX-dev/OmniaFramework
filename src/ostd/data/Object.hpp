@@ -103,10 +103,10 @@ namespace ostd
 	//    including copy/move construction, which each get a FRESH id - and never changes via
 	//    either assignment operator. If you need a separate, user-settable "external" id, add it
 	//    in your derived class; the base stays minimal on purpose.
-	//  - getTypeName() stores a `const char*`, not a full String. Every real usage in this
-	//    codebase passes a string literal (e.g. setTypeName("MyType")), so this avoids an
-	//    allocation and shrinks the object for free. The pointer must outlive the Object (string
-	//    literals already do).
+	//  - setTypeName()/getTypeName() use ostd::String, same as legacy - Object owns its own copy,
+	//    so there's no lifetime requirement on what you pass in (a literal, a temporary, anything).
+	//    Typical type names are short enough that String's small-string optimization keeps this
+	//    allocation-free in practice anyway.
 	//  - No stored signal callback. Connecting with a callback (see SignalHandler::connect) keeps
 	//    that callback in the signal system's own connection record instead of inside every
 	//    Object - the only thing Object itself carries for signals is the virtual handleSignal()
@@ -121,11 +121,11 @@ namespace ostd
 		public:
 			inline Object(void) : m_id(s_next_id++) {  }
 			inline Object(const Object& copy) : m_valid(copy.isValid()), m_signalsEnabled(copy.signalsEnabled()), m_id(s_next_id++), m_typeName(copy.m_typeName) {  }
-			inline Object(Object&& move) noexcept : m_valid(move.isValid()), m_signalsEnabled(move.signalsEnabled()), m_id(s_next_id++), m_typeName(move.m_typeName) { move.invalidate(); }
+			inline Object(Object&& move) noexcept : m_valid(move.isValid()), m_signalsEnabled(move.signalsEnabled()), m_id(s_next_id++), m_typeName(std::move(move.m_typeName)) { move.invalidate(); }
 			virtual ~Object(void);
 
 			inline Object& operator=(const Object& copy) { m_valid.store(copy.isValid()); m_signalsEnabled.store(copy.signalsEnabled()); m_typeName = copy.m_typeName; return *this; }
-			inline Object& operator=(Object&& move) noexcept { m_valid.store(move.isValid()); m_signalsEnabled.store(move.signalsEnabled()); m_typeName = move.m_typeName; move.invalidate(); return *this; }
+			inline Object& operator=(Object&& move) noexcept { m_valid.store(move.isValid()); m_signalsEnabled.store(move.signalsEnabled()); m_typeName = std::move(move.m_typeName); move.invalidate(); return *this; }
 
 			inline bool operator==(const Object& other) const { return m_id == other.m_id; }
 			inline bool operator!=(const Object& other) const { return m_id != other.m_id; }
@@ -141,9 +141,8 @@ namespace ostd
 			inline bool signalsEnabled(void) const { return m_signalsEnabled.load(std::memory_order_relaxed); }
 			inline void enableSignals(bool e = true) { m_signalsEnabled.store(e, std::memory_order_relaxed); }
 
-			// Must be a string literal (or otherwise outlive this Object) - see the class comment.
-			inline void setTypeName(const char* tn) { m_typeName = tn; }
-			inline const char* getTypeName(void) const { return m_typeName ? m_typeName : ""; }
+			inline void setTypeName(const String& tn) { m_typeName = tn; }
+			inline String getTypeName(void) const { return m_typeName; }
 			String getObjectHeaderString(void) const;
 
 			// A permanently-invalid, immutable, shared sentinel - safe to read from any thread
@@ -173,7 +172,7 @@ namespace ostd
 			std::atomic<bool> m_valid { true };
 			std::atomic<bool> m_signalsEnabled { true };
 			const u64 m_id;
-			const char* m_typeName { nullptr };
+			String m_typeName { "" };
 
 			inline static std::atomic<u64> s_next_id { 1024 };
 	};

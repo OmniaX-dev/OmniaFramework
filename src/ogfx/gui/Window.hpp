@@ -36,7 +36,7 @@
 
 namespace ogfx
 {
-	class WindowCore : public ostd::legacy::BaseObject
+	class WindowCore : public ostd::Object
 	{
 		public: struct FileDialogFilter
 		{
@@ -108,7 +108,7 @@ namespace ogfx
 			void setIcon(const String& iconFilePath);
 			void setBlockingEventsRefreshFPS(u32 fps);
 			void requestRedraw(void);
-			void handleSignal(ostd::legacy::Signal& signal) override;
+			void handleSignal(ostd::Signal& signal) override;
 			stdvec<String> showOpenFileDialog(const FileDialogFilterList& filterList, bool multiselect, const String& defaultPath = "") const;
 			stdvec<String> showOpenFolderDialog(bool multiselect, const String& defaultPath = "") const;
 			String showSaveFileDialog(const FileDialogFilterList& filterList, const String& defaultPath = "") const;
@@ -156,7 +156,7 @@ namespace ogfx
 			inline virtual void __on_window_init(i32 width, i32 height, const String& title) {  }
 			inline virtual void __on_window_destroy(void) {  }
 			inline virtual void __on_window_close(void) {  }
-			inline virtual void __on_signal(ostd::legacy::Signal& signal) {  }
+			inline virtual void __on_signal(ostd::Signal& signal) {  }
 			inline virtual void __on_update(f64 delta) {  }
 			inline virtual void __on_fixed_update(void) {  }
 			inline virtual void __main_loop(void) = 0;
@@ -244,7 +244,7 @@ namespace ogfx
 			inline virtual void onDestroy(void) {  }
 			inline virtual void onClose(void) { }
 			inline virtual void onSDLEvent(SDL_Event& event) { }
-			inline virtual void onSignal(ostd::legacy::Signal& signal) {  }
+			inline virtual void onSignal(ostd::Signal& signal) {  }
 
 			inline i32 getFPS(void) const { return m_fps; }
 
@@ -254,7 +254,7 @@ namespace ogfx
 			void __on_window_destroy(void) override;
 			void __on_window_close(void) override;
 			void __main_loop(void) override;
-			void __on_signal(ostd::legacy::Signal& signal) override;
+			void __on_signal(ostd::Signal& signal) override;
 
 		private:
 			i32 m_fps { 0 };
@@ -295,7 +295,7 @@ namespace ogfx
 				inline virtual void onRedraw(BasicRenderer2D& gfx) {  }
 				inline virtual void onUpdate(f64 delta) {  }
 				inline virtual void onFixedUpdate(void) {  }
-				inline virtual void onSignal(ostd::legacy::Signal& signal) {  }
+				inline virtual void onSignal(ostd::Signal& signal) {  }
 
 			protected:
 				void __on_window_init(i32 width, i32 height, const String& title) override;
@@ -303,7 +303,7 @@ namespace ogfx
 				void __on_window_destroy(void) override;
 				void __on_window_close(void) override;
 				void __main_loop(void) override;
-				void __on_signal(ostd::legacy::Signal& signal) override;
+				void __on_signal(ostd::Signal& signal) override;
 				void __on_update(f64 delta) override;
 				void __on_fixed_update(void) override;
 

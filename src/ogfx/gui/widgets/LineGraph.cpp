@@ -78,7 +78,7 @@ namespace ogfx
 			m_yAxisDirty = true;
 		}
 
-		u32 LineGraph::plot(const stdvec<f64>& xdata, const stdvec<f64>& ydata, const String& name, const Color& color, bool showPoints, const stdvec<ostd::legacy::BaseObject*>& userData)
+		u32 LineGraph::plot(const stdvec<f64>& xdata, const stdvec<f64>& ydata, const String& name, const Color& color, bool showPoints, const stdvec<ostd::Object*>& userData)
 		{
 			if (xdata.size() != ydata.size())
 			{
@@ -687,8 +687,8 @@ namespace ogfx
 
 			if (callback_onHover)
 			{
-				ostd::legacy::BaseObject* ud = ((u32)m_hoverPointIndex < s.userData.size()) ? s.userData[(u32)m_hoverPointIndex] : nullptr;
-				ostd::legacy::BaseObject& udRef = ud ? *ud : ostd::legacy::BaseObject::InvalidRef();
+				ostd::Object* ud = ((u32)m_hoverPointIndex < s.userData.size()) ? s.userData[(u32)m_hoverPointIndex] : nullptr;
+				const ostd::Object& udRef = ud ? *ud : ostd::Object::Invalid();
 
 				// The callback measures (via outSize) and draws in the same call, but the box has to
 				// be drawn *behind* the content, so its size must be known first. Run the callback

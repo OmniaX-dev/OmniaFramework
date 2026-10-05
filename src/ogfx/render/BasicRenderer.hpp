@@ -46,11 +46,11 @@ namespace ogfx
 			inline static constexpr i32 NoFont = 9;
 			inline static constexpr i32 FailedToOpenFontByteStrean = 10;
 		};
-		private: class SignalHandler : public ostd::legacy::BaseObject
+		private: class SignalHandler : public ostd::Object
 		{
 			public:
 				SignalHandler(BasicRenderer2D& parent);
-				void handleSignal(ostd::legacy::Signal& signal) override;
+				void handleSignal(ostd::Signal& signal) override;
 
 			private:
 				BasicRenderer2D& m_parent;

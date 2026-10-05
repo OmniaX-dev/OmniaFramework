@@ -6,7 +6,7 @@ namespace ostd
 	{
 	}
 
-	void Spline::handleSignal(legacy::Signal& signal)
+	void Spline::handleSignal(Signal& signal)
 	{
 		// if (!isEditable()) return;
 		// if (isUsingCustomEventHandler() && m_eventHandlerCallback)
@@ -14,7 +14,7 @@ namespace ostd
 		// 	m_eventHandlerCallback(signal);
 		// 	return;
 		// }
-		// if (signal.ID == legacy::BuiltinSignals::MousePressed)
+		// if (signal.ID == BuiltinSignals::MousePressed)
 		// {
 		// 	ogfx::MouseEventData& evt = cast<ogfx::MouseEventData&>(signal.userData);
 		// 	for (auto& node : m_points)
@@ -26,13 +26,13 @@ namespace ostd
 		// 		}
 		// 	}
 		// }
-		// else if (signal.ID == legacy::BuiltinSignals::MouseReleased)
+		// else if (signal.ID == BuiltinSignals::MouseReleased)
 		// {
 		// 	if (m_selectedNode != nullptr)
 		// 		updateTotalLength();
 		// 	m_selectedNode = nullptr;
 		// }
-		// else if (signal.ID == legacy::BuiltinSignals::MouseMoved)
+		// else if (signal.ID == BuiltinSignals::MouseMoved)
 		// {
 		// 	ogfx::MouseEventData& evt = cast<ogfx::MouseEventData&>(signal.userData);
 		// 	if (m_selectedNode != nullptr)
@@ -140,9 +140,9 @@ namespace ostd
 	void Spline::connectSignals(void)
 	{
 		if (m_signalsConnected) return;
-		connectSignal(legacy::BuiltinSignals::MouseMoved);
-		connectSignal(legacy::BuiltinSignals::MousePressed);
-		connectSignal(legacy::BuiltinSignals::MouseReleased);
+		connectSignal(BuiltinSignals::MouseMoved);
+		connectSignal(BuiltinSignals::MousePressed);
+		connectSignal(BuiltinSignals::MouseReleased);
 		m_signalsConnected = true;
 	}
 

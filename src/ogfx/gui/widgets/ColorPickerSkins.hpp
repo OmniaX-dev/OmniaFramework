@@ -89,7 +89,7 @@ namespace ogfx
 				void onDraw(ogfx::BasicRenderer2D& gfx) override;
 				void onMouseReleased(const Event& event) override;
 				void onMousePressed(const Event& event) override;
-				void handleSignal(ostd::legacy::Signal& signal) override;
+				void handleSignal(ostd::Signal& signal) override;
 
 				inline Color getColor(void) const { return m_color; }
 				void setColor(const Color& c);

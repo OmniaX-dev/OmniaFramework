@@ -250,7 +250,7 @@ namespace ogfx
 		return *this;
 	}
 
-	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::pObject(const legacy::BaseObject& bo)
+	GraphicsWindowOutputHandler& GraphicsWindowOutputHandler::pObject(const Object& bo)
 	{
 		__print_string(bo.toString());
 		return *this;

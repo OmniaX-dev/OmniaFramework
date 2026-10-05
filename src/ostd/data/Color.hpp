@@ -27,7 +27,7 @@
 
 namespace ostd
 {
-	class Color : public legacy::BaseObject
+	class Color : public Object
 	{
 		public: struct FloatCol
 		{
@@ -108,7 +108,7 @@ namespace ostd
 
 		public:
 	};
-	class ColorGradient : public legacy::BaseObject
+	class ColorGradient : public Object
 	{
 		public:
 			inline ColorGradient(void) {  }

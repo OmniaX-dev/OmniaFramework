@@ -72,7 +72,7 @@ namespace ostd
 
 	String Object::getObjectHeaderString(void) const
 	{
-		return String(getTypeName()).add("->id=").add(getID()).add("/valid=").add(STR_BOOL(isValid()));
+		return getTypeName().add("->id=").add(getID()).add("/valid=").add(STR_BOOL(isValid()));
 	}
 
 	void Object::print(bool newLine, OutputHandlerBase* __destination) const

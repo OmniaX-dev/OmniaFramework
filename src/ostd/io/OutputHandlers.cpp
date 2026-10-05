@@ -114,7 +114,7 @@ namespace ostd
 		return *this;
 	}
 
-	OutputHandlerBase& ConsoleOutputHandler::pObject(const legacy::BaseObject& bo)
+	OutputHandlerBase& ConsoleOutputHandler::pObject(const Object& bo)
 	{
 		std::cout << bo;
 		return *this;
@@ -314,7 +314,7 @@ namespace ostd
 		return *this;
 	}
 
-	OutputHandlerBase& LogFileOutputHandler::pObject(const legacy::BaseObject& bo)
+	OutputHandlerBase& LogFileOutputHandler::pObject(const Object& bo)
 	{
 		m_buffer.add(bo.toString());
 		return *this;

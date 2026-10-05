@@ -40,7 +40,7 @@ namespace ogfx
 				void applyTheme(const ostd::Stylesheet& theme) override;
 				void onDraw(ogfx::BasicRenderer2D& gfx) override;
 				void onMouseReleased(const Event& event) override;
-				void handleSignal(ostd::legacy::Signal& signal) override;
+				void handleSignal(ostd::Signal& signal) override;
 				inline ContextMenu::Entry getSelectedEntry(void) const { return m_selectedEntry; }
 
 				OSTD_PARAM_GETSET(Color, TriangleIndicatorColor, m_triangleColor);

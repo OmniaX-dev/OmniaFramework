@@ -15,7 +15,7 @@ namespace ostd
 		return *this;
 	}
 
-	void RuntimeError::fire(const String& extraMessage, OutputHandlerBase* outputHandler, legacy::BaseObject& userData, i32 _line_num, const String& _file_name)
+	void RuntimeError::fire(const String& extraMessage, OutputHandlerBase* outputHandler, const Object& userData, i32 _line_num, const String& _file_name)
 	{
 		if (isInvalid() || m_errGroup == 0x0 || m_errLevel == tErrorLevel::NoError || m_errCode == 0x0) return;
 		String errorMessage = m_message + "\n";

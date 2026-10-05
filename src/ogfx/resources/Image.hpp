@@ -27,7 +27,7 @@
 namespace ogfx
 {
 	class BasicRenderer2D;
-	class Image : public ostd::legacy::BaseObject
+	class Image : public ostd::Object
 	{
 		public:
 			inline Image(void) { invalidate(); }
