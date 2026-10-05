@@ -215,7 +215,12 @@ namespace ogfx
 				return;
 			const f32 extra_offset = 5;
 			m_tabScrollOffset += (event.mouse->scrollAmount.y * -40.0f);
-			m_tabScrollOffset = std::clamp(m_tabScrollOffset, -extra_offset, m_totalTabWidth - getw() + extra_offset);
+			// When the tabs don't fill the bar, m_totalTabWidth - getw() is negative and can push
+			// the upper bound below -extra_offset, violating std::clamp's lo <= hi precondition.
+			// There's nothing to scroll in that case, so the upper bound collapses to match the
+			// lower one instead.
+			const f32 maxScroll = std::max(m_totalTabWidth - getw() + extra_offset, -extra_offset);
+			m_tabScrollOffset = std::clamp(m_tabScrollOffset, -extra_offset, maxScroll);
 		}
 
 		void TabPanel::onDraw(ogfx::BasicRenderer2D& gfx)

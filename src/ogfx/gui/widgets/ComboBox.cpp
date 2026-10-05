@@ -86,9 +86,9 @@ namespace ogfx
 
 		void ComboBox::onDraw(ogfx::BasicRenderer2D& gfx)
 		{
-			gfx.outlinedRect(*this, getBackgroundColor(), getBorderColor(), getBorderWidth());
-
 			auto bounds = getGlobalBounds();
+			gfx.outlinedRect(bounds, getBackgroundColor(), getBorderColor(), getBorderWidth());
+
 			gfx.drawCenteredString(m_selectedEntryText, bounds - Rectangle { 0, 0, geth(), 0 }, getTextColor(), getFontSize());
 
 			// Triangle Indicator
