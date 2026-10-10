@@ -86,6 +86,16 @@ namespace ogfx
 				// which is exactly the kind of pair that can be set inconsistently with itself
 				// and was part of what made the Godot version fragile under parameter changes.
 				OSTD_PARAM_GETSET(f32, LookaheadSeconds, m_lookaheadSeconds);
+				// Extra silence added on top of whatever lead-in is already needed for the
+				// earliest note to start fully offscreen (see PianoRoll::recompute_total_duration())
+				// - so the first note doesn't start falling the instant play() is pressed, but only
+				// after it's had a moment to actually appear from offscreen first.
+				OSTD_PARAM_GETSET(f32, ExtraOffscreenSeconds, m_extraOffscreenSeconds);
+
+				// A released key fades back to its normal color over this many seconds instead of
+				// switching instantly. useKeyFade = false (or a duration of 0) disables it outright.
+				OSTD_BOOL_PARAM_GETSET_E(UseKeyFade, m_useKeyFade);
+				OSTD_PARAM_GETSET(f32, KeyFadeDurationSeconds, m_keyFadeDurationSeconds);
 
 				bool saveToJson(const String& path) const;
 				bool loadFromJson(const String& path);
@@ -130,6 +140,9 @@ namespace ogfx
 				f32 m_fallingNoteRadiusWhite { 5 };
 				f32 m_fallingNoteRadiusBlack { 5 };
 				f32 m_lookaheadSeconds { 4.5f };
+				f32 m_extraOffscreenSeconds { 1.0f };
+				bool m_useKeyFade { true };
+				f32 m_keyFadeDurationSeconds { 0.2f };
 		};
 	}
 }

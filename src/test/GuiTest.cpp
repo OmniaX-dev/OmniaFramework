@@ -458,6 +458,8 @@ class TestWindow : public Window
 				m_pianoPlayBtn.setText("Play");
 			});
 			m_pianoRoll.connectSignal(ostd::BuiltinSignals::KeyPressed, [this](ostd::Signal& sig) -> void {
+				if (!sig.userData)
+					return;
 				auto& ked = cast<ogfx::KeyEventData&>(*sig.userData);
 				if (ked.keyCode == ogfx::KeyCode::Space)
 				{

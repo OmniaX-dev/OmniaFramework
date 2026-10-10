@@ -80,10 +80,13 @@ namespace ogfx
 			f.set_double("style.dimensions.fallingNoteRadiusWhite", m_fallingNoteRadiusWhite);
 			f.set_double("style.dimensions.fallingNoteRadiusBlack", m_fallingNoteRadiusBlack);
 			f.set_double("style.dimensions.lookaheadSeconds", m_lookaheadSeconds);
+			f.set_double("style.dimensions.extraOffscreenSeconds", m_extraOffscreenSeconds);
+			f.set_double("style.dimensions.keyFadeDurationSeconds", m_keyFadeDurationSeconds);
 
 			f.set_bool("style.usePerNoteColors", m_usePerNoteColors);
 			f.set_bool("style.useFilledNotes", m_useFilledNotes);
 			f.set_bool("style.useNoteColorOnPressedKey", m_useNoteColorOnPressedKey);
+			f.set_bool("style.useKeyFade", m_useKeyFade);
 
 			f.set_color("style.colors.fallingWhiteNote", m_fallingWhiteNoteColor);
 			f.set_color("style.colors.fallingBlackNote", m_fallingBlackNoteColor);
@@ -121,10 +124,13 @@ namespace ogfx
 			m_fallingNoteRadiusWhite = f.get_float("style.dimensions.fallingNoteRadiusWhite");
 			m_fallingNoteRadiusBlack = f.get_float("style.dimensions.fallingNoteRadiusBlack");
 			m_lookaheadSeconds = f.get_float("style.dimensions.lookaheadSeconds");
+			m_extraOffscreenSeconds = f.get_float("style.dimensions.extraOffscreenSeconds");
+			m_keyFadeDurationSeconds = f.get_float("style.dimensions.keyFadeDurationSeconds");
 
 			m_usePerNoteColors = f.get_bool("style.usePerNoteColors");
 			m_useFilledNotes = f.get_bool("style.useFilledNotes");
 			m_useNoteColorOnPressedKey = f.get_bool("style.useNoteColorOnPressedKey");
+			m_useKeyFade = f.get_bool("style.useKeyFade");
 
 			m_fallingWhiteNoteColor = f.get_color("style.colors.fallingWhiteNote");
 			m_fallingBlackNoteColor = f.get_color("style.colors.fallingBlackNote");

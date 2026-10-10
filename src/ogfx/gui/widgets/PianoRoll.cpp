@@ -4,16 +4,34 @@
 #include <ostd/io/Json.hpp>
 #include <filesystem>
 #include <algorithm>
+#include <cmath>
 
 namespace ogfx
 {
 	namespace gui
 	{
+		namespace
+		{
+			inline u8 lerpChannel(u8 a, u8 b, f32 t) { return (u8)std::round(a + ((f32)b - (f32)a) * t); }
+
+			// Same approach as PianoRollStyle.cpp's own lerpColor() (its gradient tier) - kept as
+			// its own small copy here rather than a shared utility, since that's all either side
+			// needs it for.
+			Color lerpColor(const Color& a, const Color& b, f32 t)
+			{
+				Color a2 = a, b2 = b; // Color's channel accessors aren't const-qualified
+				return Color(lerpChannel(a2.r, b2.r, t), lerpChannel(a2.g, b2.g, t), lerpChannel(a2.b, b2.b, t), lerpChannel(a2.a, b2.a, t));
+			}
+		}
+
 		PianoRoll& PianoRoll::create(void)
 		{
 			setSize(800, 320);
 			m_pressedKeyColor.assign(128, Colors::Transparent);
 			m_keyPressed.assign(128, false);
+			m_keyFading.assign(128, false);
+			m_keyReleaseTime.assign(128, 0.0);
+			m_keyReleaseColor.assign(128, Colors::Transparent);
 			m_updateClock.startCount(ostd::eTimeUnits::Milliseconds);
 			setStylesheetCategoryName("pianoRoll");
 			validate();
@@ -135,8 +153,10 @@ namespace ogfx
 
 			// Lead-in silence so the earliest note starts fully offscreen instead of popping in
 			// already partway down - only needed if the content itself doesn't already have at
-			// least lookaheadSeconds of silence before the first note.
-			m_startPadSeconds = anyNotes ? std::max(0.0, (f64)m_style.getLookaheadSeconds() - earliestStart) : 0.0;
+			// least lookaheadSeconds of silence before the first note. extraOffscreenSeconds is
+			// added unconditionally on top, so the first note doesn't start falling the instant
+			// play() is pressed - it gets a moment to actually appear from offscreen first.
+			m_startPadSeconds = anyNotes ? std::max(0.0, (f64)m_style.getLookaheadSeconds() - earliestStart) + (f64)m_style.getExtraOffscreenSeconds() : 0.0;
 			m_totalDurationSeconds = m_startPadSeconds + d;
 
 			// Only reset the playhead to the (new) start if nothing has actually played yet this
@@ -145,6 +165,12 @@ namespace ogfx
 			if (!m_midiStartFired && !m_playing)
 			{
 				m_fallbackClockSeconds = -m_startPadSeconds;
+				// Must match m_fallbackClockSeconds, or onUpdate()'s very first tick sees a stale
+				// prevRaw (left over from construction/a previous session, e.g. 0.0) instead of
+				// the correct -m_startPadSeconds - for a note starting at/near raw time 0 with a
+				// small pad, that stale prevRaw can already be >= the note's startTime, so the
+				// strict "startTime > prevNow" NoteOn edge never fires for it.
+				m_lastUpdateSeconds = -m_startPadSeconds;
 				m_audioStarted = false;
 				if (hasAudio())
 				{
@@ -174,6 +200,15 @@ namespace ogfx
 
 		void PianoRoll::pause(void)
 		{
+			// Sync the fallback clock to wherever the audio clock actually was - once the device
+			// starts actually driving things, m_fallbackClockSeconds is left frozen at whatever it
+			// was at that crossing (see onUpdate()); play()'s own "resume directly" branch reads
+			// m_fallbackClockSeconds, so without this it would always resume from that stale
+			// frozen value - a backward jump on every single pause/play, which also means
+			// update_active_notes() sees a backward (non-forward) jump and skips its own edge
+			// detection, leaving stale "ghost" pressed keys and rebuilding m_activeNotes around
+			// the wrong (far earlier) position.
+			m_fallbackClockSeconds = getCurrentTimeSeconds() - m_startPadSeconds;
 			m_playing = false;
 			if (hasAudio())
 				m_audioPlayer->pause();
@@ -313,6 +348,7 @@ namespace ogfx
 						if (note.pitch >= 0 && note.pitch < 128)
 						{
 							m_keyPressed[(size_t)note.pitch] = true;
+							m_keyFading[(size_t)note.pitch] = false; // re-pressed - cancel any in-progress release fade
 							Color vc = voice.color;
 							bool hasVoiceColor = !(vc == Colors::Transparent);
 							m_pressedKeyColor[(size_t)note.pitch] = m_style.resolveNoteColor(note.pitch, hasVoiceColor ? &voice.color : nullptr);
@@ -322,7 +358,17 @@ namespace ogfx
 					if (note.endTime > prevNow && note.endTime <= now)
 					{
 						if (note.pitch >= 0 && note.pitch < 128)
+						{
+							// Starts the release fade from whatever color was actually being shown
+							// (which depends on useNoteColorOnPressedKey), not an unconditional one.
+							bool isBlack = ostd::MidiParser::getNoteInfo(note.pitch).isBlackKey();
+							m_keyReleaseColor[(size_t)note.pitch] = m_style.isUseNoteColorOnPressedKeyEnabled()
+								? m_pressedKeyColor[(size_t)note.pitch]
+								: (isBlack ? m_style.getBlackKeyPressedColor() : m_style.getWhiteKeyPressedColor());
+							m_keyReleaseTime[(size_t)note.pitch] = note.endTime;
+							m_keyFading[(size_t)note.pitch] = true;
 							m_keyPressed[(size_t)note.pitch] = false;
+						}
 						emit_note_signal(NoteOffSignal, note, vi);
 					}
 				}
@@ -332,6 +378,10 @@ namespace ogfx
 		void PianoRoll::recompute_pressed_keys(f64 now)
 		{
 			std::fill(m_keyPressed.begin(), m_keyPressed.end(), false);
+			// A seek/voice change is a discontinuous jump with no meaningful "time since release"
+			// to animate a fade across - settle instantly instead (either pressed, or plain
+			// normal color, never mid-fade).
+			std::fill(m_keyFading.begin(), m_keyFading.end(), false);
 			for (auto& voice : m_voices)
 			{
 				if (!voice.visible)
@@ -423,6 +473,28 @@ namespace ogfx
 			gfx.popClippingRect();
 		}
 
+		Color PianoRoll::resolve_key_color(i32 pitch, bool isBlack, f64 now) const
+		{
+			if (m_keyPressed[(size_t)pitch])
+			{
+				return m_style.isUseNoteColorOnPressedKeyEnabled()
+					? m_pressedKeyColor[(size_t)pitch]
+					: (isBlack ? m_style.getBlackKeyPressedColor() : m_style.getWhiteKeyPressedColor());
+			}
+			Color normal = isBlack ? m_style.getBlackKeyColor() : m_style.getWhiteKeyColor();
+			if (m_style.isUseKeyFadeEnabled() && m_keyFading[(size_t)pitch])
+			{
+				f32 duration = m_style.getKeyFadeDurationSeconds();
+				if (duration > 0.0f)
+				{
+					f32 t = (f32)((now - m_keyReleaseTime[(size_t)pitch]) / (f64)duration);
+					if (t < 1.0f)
+						return lerpColor(m_keyReleaseColor[(size_t)pitch], normal, std::clamp(t, 0.0f, 1.0f));
+				}
+			}
+			return normal;
+		}
+
 		void PianoRoll::draw_keyboard(BasicRenderer2D& gfx, const Rectangle& bounds, f32 scale)
 		{
 			f32 whiteW = m_style.getWhiteKeyWidth() * scale;
@@ -432,6 +504,9 @@ namespace ogfx
 			f32 keyboardTop = bounds.y + bounds.h - whiteH;
 			f32 blackRadius = blackW * 0.3f;
 			Rectangle blackRadii { 0, 0, blackRadius, blackRadius }; // rounded bottom-right/bottom-left only
+			// Raw time, same convention as draw_falling_notes() - m_keyReleaseTime is stamped in
+			// raw time too (see update_active_notes()).
+			f64 now = getCurrentTimeSeconds() - m_startPadSeconds;
 
 			for (i32 k = 0; k < 88; k++)
 			{
@@ -439,10 +514,7 @@ namespace ogfx
 				if (ostd::MidiParser::getNoteInfo(pitch).isBlackKey())
 					continue;
 				f32 x = key_x_position(pitch, scale);
-				Color col = m_keyPressed[(size_t)pitch]
-					? (m_style.isUseNoteColorOnPressedKeyEnabled() ? m_pressedKeyColor[(size_t)pitch] : m_style.getWhiteKeyPressedColor())
-					: m_style.getWhiteKeyColor();
-				gfx.fillRect({ bounds.x + x, keyboardTop, whiteW, whiteH }, col);
+				gfx.fillRect({ bounds.x + x, keyboardTop, whiteW, whiteH }, resolve_key_color(pitch, false, now));
 			}
 			for (i32 k = 0; k < 88; k++)
 			{
@@ -450,10 +522,7 @@ namespace ogfx
 				if (!ostd::MidiParser::getNoteInfo(pitch).isBlackKey())
 					continue;
 				f32 x = key_x_position(pitch, scale);
-				Color col = m_keyPressed[(size_t)pitch]
-					? (m_style.isUseNoteColorOnPressedKeyEnabled() ? m_pressedKeyColor[(size_t)pitch] : m_style.getBlackKeyPressedColor())
-					: m_style.getBlackKeyColor();
-				gfx.fillRoundRect({ bounds.x + x, keyboardTop, blackW, blackH }, col, blackRadii);
+				gfx.fillRoundRect({ bounds.x + x, keyboardTop, blackW, blackH }, resolve_key_color(pitch, true, now), blackRadii);
 			}
 			gfx.drawLine({ { bounds.x, keyboardTop }, { bounds.x + bounds.w, keyboardTop } }, m_style.getKeyboardLineColor(), 2);
 		}

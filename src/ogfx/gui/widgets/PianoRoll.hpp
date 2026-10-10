@@ -100,6 +100,16 @@ namespace ogfx
 				// might want to build on top (a custom overlay, an external keyboard display, ...).
 				inline bool isKeyPressed(i32 pitch) const { return pitch >= 0 && pitch < 128 && m_keyPressed[(size_t)pitch]; }
 
+				// What color MIDI pitch (0-127) is actually drawn with right now - pressed, mid
+				// release-fade, or its plain key color - the same thing draw_keyboard() uses,
+				// exposed for the same reason as isKeyPressed() (mirroring the keyboard elsewhere).
+				inline Color getKeyDisplayColor(i32 pitch) const
+				{
+					if (pitch < 0 || pitch >= 128)
+						return Colors::Transparent;
+					return resolve_key_color(pitch, ostd::MidiParser::getNoteInfo(pitch).isBlackKey(), getCurrentTimeSeconds() - m_startPadSeconds);
+				}
+
 				// The full 88-key keyboard's natural ("design") pixel width at the style's own key
 				// dimensions, unscaled - i.e. what you'd get if the widget were exactly this wide.
 				// The widget itself can be set to any width via setSize(); the keyboard (and key
@@ -171,6 +181,9 @@ namespace ogfx
 				void draw_keyboard(BasicRenderer2D& gfx, const Rectangle& bounds, f32 scale);
 				void draw_falling_notes(BasicRenderer2D& gfx, const Rectangle& bounds, f32 scale);
 				f32 key_x_position(i32 midiPitch, f32 scale) const; // relative to the widget's left edge
+				// What color a key should actually be drawn right now - pressed, mid-release-fade,
+				// or its plain normal color, in that priority order.
+				Color resolve_key_color(i32 pitch, bool isBlack, f64 now) const;
 				void emit_note_signal(u32 signalId, const ostd::MidiParser::NoteEvent& note, u32 voiceIndex);
 
 			private:
@@ -203,6 +216,13 @@ namespace ogfx
 				// Per-pitch key-pressed state for keyboard highlighting - index by MIDI pitch directly.
 				stdvec<bool> m_keyPressed;       // index = MIDI pitch
 				stdvec<Color> m_pressedKeyColor; // index = MIDI pitch; meaningful only where m_keyPressed is true
+				// Pressed-key release fade (style.isUseKeyFadeEnabled()/getKeyFadeDurationSeconds())
+				// - set at the moment a key releases (see update_active_notes()), read back at draw
+				// time in draw_keyboard(). A seek/voice change (recompute_pressed_keys()) clears
+				// these outright instead of trying to animate across a discontinuous jump.
+				stdvec<bool> m_keyFading;         // index = MIDI pitch; a fade-out is in progress
+				stdvec<f64> m_keyReleaseTime;     // raw time of release; meaningful only where m_keyFading is true
+				stdvec<Color> m_keyReleaseColor;  // color shown right before release; meaningful only where m_keyFading is true
 		};
 	}
 }
