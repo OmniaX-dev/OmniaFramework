@@ -81,6 +81,11 @@ list(APPEND OSTD_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/Signals.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ostd/utils/Time.cpp
 )
+list(APPEND OSND_SOURCE_FILES
+	${CMAKE_CURRENT_LIST_DIR}/src/osnd/vendor/dr_mp3_impl.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/osnd/audio/AudioClip.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/osnd/audio/AudioPlayer.cpp
+)
 list(APPEND OGFX_SOURCE_FILES
 	# gui
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/RawTextInput.cpp
@@ -109,6 +114,8 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/TreeView.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/DetailList.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/LineGraph.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/PianoRollStyle.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/PianoRoll.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Text.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/ColorPicker.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/ColorPickerSkins.cpp
@@ -180,15 +187,19 @@ list(APPEND TEST_SOURCE_FILES
 #Targets
 #-----------------------------------------------------------------------------------------
 set(OMNIA_STD_LIB ostd)
+set(OMNIA_SND_LIB osnd)
 set(OMNIA_GFX_LIB ogfx)
 set(TEST_TARGET ostd_test)
 add_library(${OMNIA_STD_LIB} SHARED ${OSTD_SOURCE_FILES})
+add_library(${OMNIA_SND_LIB} SHARED ${OSND_SOURCE_FILES})
 add_library(${OMNIA_GFX_LIB} SHARED ${OGFX_SOURCE_FILES})
 add_executable(${TEST_TARGET} ${TEST_SOURCE_FILES})
 
 target_compile_definitions(${OMNIA_STD_LIB} PUBLIC BUILD_CONFIG="${CMAKE_BUILD_TYPE}" BUILD_NR=${BUILD_NUMBER} MAJ_V=${MAJOR_VER} MIN_V=${MINOR_VER} VERSION_STR="${MAJOR_VER}.${MINOR_VER}.${BUILD_NUMBER}")
+target_compile_definitions(${OMNIA_SND_LIB} PUBLIC BUILD_CONFIG="${CMAKE_BUILD_TYPE}" BUILD_NR=${BUILD_NUMBER} MAJ_V=${MAJOR_VER} MIN_V=${MINOR_VER} VERSION_STR="${MAJOR_VER}.${MINOR_VER}.${BUILD_NUMBER}")
 target_compile_definitions(${OMNIA_GFX_LIB} PUBLIC BUILD_CONFIG="${CMAKE_BUILD_TYPE}" BUILD_NR=${BUILD_NUMBER} MAJ_V=${MAJOR_VER} MIN_V=${MINOR_VER} VERSION_STR="${MAJOR_VER}.${MINOR_VER}.${BUILD_NUMBER}")
 target_include_directories(${OMNIA_STD_LIB} PUBLIC ${INCLUDE_DIRS})
+target_include_directories(${OMNIA_SND_LIB} PUBLIC ${INCLUDE_DIRS})
 target_include_directories(${OMNIA_GFX_LIB} PUBLIC ${INCLUDE_DIRS})
 target_include_directories(${TEST_TARGET} PUBLIC ${INCLUDE_DIRS})
 
@@ -225,9 +236,12 @@ if (WIN32)
 	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC mingw32)
 	target_link_libraries(${OMNIA_STD_LIB} PUBLIC mingw32)
 	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC SDL3 SDL3_ttf SDL3_image)
+	target_link_libraries(${OMNIA_SND_LIB} PUBLIC SDL3)
 endif (WIN32)
 
+target_link_libraries(${OMNIA_SND_LIB} PUBLIC ${OMNIA_STD_LIB})
 target_link_libraries(${OMNIA_GFX_LIB} PUBLIC ${OMNIA_STD_LIB})
+target_link_libraries(${OMNIA_GFX_LIB} PUBLIC ${OMNIA_SND_LIB})
 target_link_libraries(${TEST_TARGET} PUBLIC ${OMNIA_STD_LIB})
 target_link_libraries(${TEST_TARGET} PUBLIC ${OMNIA_GFX_LIB})
 
@@ -244,22 +258,26 @@ if (APPLE)
 					${SDL3_IMAGE_INCLUDE_DIRS}
 					${SDL3_TTF_INCLUDE_DIRS}
 	)
+	target_include_directories(${OMNIA_SND_LIB} PUBLIC ${SDL3_INCLUDE_DIRS})
 	target_link_directories(${OMNIA_GFX_LIB} PUBLIC
 					${SDL3_LIBRARY_DIRS}
 					${SDL3_IMAGE_LIBRARY_DIRS}
 					${SDL3_TTF_LIBRARY_DIRS}
 	)
+	target_link_directories(${OMNIA_SND_LIB} PUBLIC ${SDL3_LIBRARY_DIRS})
 	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC
 					${SDL3_LIBRARIES}
 					${SDL3_IMAGE_LIBRARIES}
 					${SDL3_TTF_LIBRARIES}
 	)
+	target_link_libraries(${OMNIA_SND_LIB} PUBLIC ${SDL3_LIBRARIES})
 	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC "-framework Cocoa")
 elseif (UNIX)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,'$ORIGIN',-rpath,/usr/lib,-rpath,/usr/local/lib")
 	target_link_libraries(${OMNIA_STD_LIB} PUBLIC tinfo boost_regex)
 	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC xcb xcb-randr)
 	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC SDL3 SDL3_ttf SDL3_image)
+	target_link_libraries(${OMNIA_SND_LIB} PUBLIC SDL3)
 
 	# dbus-1's headers live under a versioned subdirectory (#include <dbus/dbus.h> needs both
 	# of these) - pkg-config is only used to resolve that non-obvious include path; linked by

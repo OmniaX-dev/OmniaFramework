@@ -15,9 +15,10 @@ namespace ostd
 	    if (!midi.read(filePath))
 	        throw std::runtime_error("Failed to read MIDI file: " + filePath.cpp_str());
 
-	    // Check track count
-	    if (midi.getTrackCount() != 1)
-	        throw std::runtime_error("Expected exactly 1 track, but found " + std::to_string(midi.getTrackCount()));
+	    // Merge multi-track files into a single track (a no-op if the file already has only
+	    // one) - every event keeps its original channel, so multi-track files exported by a
+	    // real DAW (the common case) are no longer rejected outright.
+	    midi.joinTracks();
 
 	    // Prepare time analysis and note pairing
 	    midi.doTimeAnalysis();

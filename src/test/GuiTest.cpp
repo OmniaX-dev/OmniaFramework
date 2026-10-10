@@ -216,6 +216,7 @@ class TestWindow : public Window
 			auto& t2 = m_tabs.addTab("Tab2 Test");
 			auto& t3 = m_tabs.addTab("Long Tab Test");
 			auto& t4 = m_tabs.addTab("Line Graph");
+			auto& t5 = m_tabs.addTab("Piano Roll");
 			t3.setLayout<FillLayout>();
 
 			t1.addWidget(m_check1, { 30, 30 });
@@ -385,6 +386,102 @@ class TestWindow : public Window
 
 			t4.addWidget(m_graph, { 30, 30 });
 
+			// An arbitrary size, deliberately NOT getKeyboardWidth() - the style's own preferred
+			// sizes (now Godot-matched) stay the "I know what I like" reference, and the widget
+			// scales that whole layout to fit whatever size it's actually given (here, smaller -
+			// scale ends up well under 1).
+			m_pianoRoll.setSize(1100, 620);
+			// A splash of the 3-tier note-coloring system: the 88-key rainbow gradient (lowest
+			// priority tier - falls back to whenever a note has no per-voice or per-pitch-class
+			// color of its own, which is every note here since neither is configured).
+			m_pianoRoll.getStyle().setPerKeyGradient(PianoRollStyle::rainbowGradientStops());
+			if (m_pianoRoll.loadVoice("./notes.mid", Colors::Transparent, "Piano") == (u32)-1)
+				out().fg("red").p("[PianoRoll] Failed to load ./notes.mid").reset().nl();
+			if (!m_pianoRoll.loadAudio("./audio.mp3"))
+				out().fg("red").p("[PianoRoll] Failed to load ./audio.mp3").reset().nl();
+
+			m_pianoPlayBtn.setSize(100, 36);
+			m_pianoPlayBtn.setText("Play");
+			m_pianoPlayBtn.setCallback(Widget::eCallback::ActionPerformed, [this](const Event&) -> void {
+				if (m_pianoRoll.isPlaying())
+				{
+					m_pianoRoll.pause();
+					m_pianoPlayBtn.setText("Play");
+				}
+				else
+				{
+					m_pianoRoll.play();
+					m_pianoPlayBtn.setText("Pause");
+				}
+			});
+
+			m_pianoSeekSlider.setSize(400, 36);
+			m_pianoSeekSlider.setMinValue(0.0f);
+			m_pianoSeekSlider.setMaxValue(1.0f);
+			m_pianoSeekSlider.setStep(0.0f); // continuous drag, full precision - see Slider::snap_to_step
+			m_pianoSeekSlider.setValueChangedCallback([this](f32 oldValue, f32 newValue) -> void {
+				// The slider itself is continuous, but seeking to a brand new raw float on
+				// every pixel of mouse movement would spam AudioPlayer with a reseek (each one
+				// clears the audio stream) far more often than is useful - round the actual
+				// target to a sensible time resolution instead.
+				constexpr f64 seekResolutionSeconds = 0.05;
+				f64 target = (f64)newValue * m_pianoRoll.getTotalDurationSeconds();
+				target = std::round(target / seekResolutionSeconds) * seekResolutionSeconds;
+				m_pianoRoll.seekSeconds(target);
+			});
+
+			m_pianoTimeLbl.setText("0:00 / 0:00");
+			m_pianoLastNoteLbl.setText("Last note: -");
+
+			m_pianoVolumeLbl.setText("Volume:");
+			m_pianoVolumeSlider.setSize(150, 36);
+			m_pianoVolumeSlider.setMinValue(0.0f);
+			m_pianoVolumeSlider.setMaxValue(1.0f);
+			m_pianoVolumeSlider.setStep(0.0f);
+			m_pianoVolumeSlider.setValueQuiet(1.0f);
+			m_pianoVolumeSlider.setValueChangedCallback([this](f32, f32 newValue) -> void {
+				m_pianoRoll.setVolume(newValue);
+			});
+
+			// NoteOn/NoteOff/MidiStart/MidiEnd in action - MidiStart/MidiEnd are rare enough to
+			// log to the console directly; NoteOn instead just updates a label (hundreds of
+			// console lines per playthrough would be more noise than demo).
+			ostd::SignalHandler::connect(*this, PianoRoll::NoteOnSignal, [this](ostd::Signal& signal) -> void {
+				if (auto* data = dynamic_cast<PianoRollNoteEventData*>(signal.userData))
+					m_pianoLastNoteLbl.setText(String("Last note: ").add(data->noteInfo.name).add(data->noteInfo.octave));
+			});
+			ostd::SignalHandler::connect(*this, PianoRoll::MidiStartSignal, [this](ostd::Signal&) -> void {
+				out().fg("green").p("[PianoRoll] MidiStart").reset().nl();
+			});
+			ostd::SignalHandler::connect(*this, PianoRoll::MidiEndSignal, [this](ostd::Signal&) -> void {
+				out().fg("yellow").p("[PianoRoll] MidiEnd").reset().nl();
+				m_pianoPlayBtn.setText("Play");
+			});
+			m_pianoRoll.connectSignal(ostd::BuiltinSignals::KeyPressed, [this](ostd::Signal& sig) -> void {
+				auto& ked = cast<ogfx::KeyEventData&>(*sig.userData);
+				if (ked.keyCode == ogfx::KeyCode::Space)
+				{
+					if (m_pianoRoll.isPlaying())
+					{
+						m_pianoRoll.pause();
+						m_pianoPlayBtn.setText("Play");
+					}
+					else
+					{
+						m_pianoRoll.play();
+						m_pianoPlayBtn.setText("Pause");
+					}
+				}
+			});
+
+			t5.addWidget(m_pianoRoll, { 0, 0 });
+			t5.addWidget(m_pianoPlayBtn, { 20, 660 });
+			t5.addWidget(m_pianoSeekSlider, { 140, 654 });
+			t5.addWidget(m_pianoTimeLbl, { 560, 638 });
+			t5.addWidget(m_pianoLastNoteLbl, { 750, 638 });
+			t5.addWidget(m_pianoVolumeLbl, { 950, 638 });
+			t5.addWidget(m_pianoVolumeSlider, { 1050, 654 });
+
 			m_panel3.addWidget(m_label4);
 
 			m_panel1.addWidget(m_label2);
@@ -479,7 +576,7 @@ class TestWindow : public Window
 				m_tabs.setSize(cast<f32>(getWindowWidth()), cast<f32>(getWindowHeight() - getMenuBar().geth() - getToolBar().geth() - getStatusBar().geth()));
 				m_tabs.setPosition(0, -1);
 				m_tabs.refreshCurrentTab();
-
+				m_pianoRoll.setw(cast<f32>(getWindowWidth()));
 			}
 		}
 
@@ -493,6 +590,16 @@ class TestWindow : public Window
 
 		void onFixedUpdate(void) override
 		{
+		}
+
+		void onUpdate(f64 delta) override
+		{
+			m_pianoTimeLbl.setText(ostd::Time::secondsToFormattedString((i32)m_pianoRoll.getCurrentTimeSeconds())
+				.add(" / ").add(ostd::Time::secondsToFormattedString((i32)m_pianoRoll.getTotalDurationSeconds())));
+			// setValueQuiet(), not setValue() - this must never go through the slider's normal
+			// value-changed callback (which seeks), or dragging the position 60 times a second
+			// off of playback would spam AudioPlayer with a reseek every frame.
+			m_pianoSeekSlider.setValueQuiet(m_pianoRoll.getCurrentTimeNormalized());
 		}
 
 	private:
@@ -515,6 +622,13 @@ class TestWindow : public Window
 		TreeView m_list { *this };
 		DetailList m_details { *this };
 		LineGraph m_graph { *this };
+		PianoRoll m_pianoRoll { *this };
+		Button m_pianoPlayBtn { *this };
+		Slider m_pianoSeekSlider { *this };
+		Label m_pianoTimeLbl { *this };
+		Label m_pianoLastNoteLbl { *this };
+		Label m_pianoVolumeLbl { *this };
+		Slider m_pianoVolumeSlider { *this };
 		Label m_drawCallsLbl { *this };
 		Label m_cacheHitsLbl { *this };
 		Label m_cacheMissesLbl { *this };
@@ -642,7 +756,7 @@ i32 main(i32 argc, char** argv)
 {
 	ostd::Random::autoSeed();
 	TestWindow window;
-	window.initialize(1200, 900, "OmniaFramework - Test Window");
+	window.initialize(1400, 900, "OmniaFramework - Test Window");
 	window.setClearColor({ 0, 0, 0 });
 	window.setPosition({ 50, 50 });
 	// window.setWindowState(ogfx::gui::Window::eWindowState::Maximized);

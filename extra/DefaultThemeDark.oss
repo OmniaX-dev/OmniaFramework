@@ -487,3 +487,13 @@ macro set_common_values(_borderColor = $borderColor, _fontSize = 18, _showBorder
 	set_focus_border($blueAccent)
 }
 % =========================
+
+
+
+% ====== PianoRoll ======
+(pianoRoll) {
+	set_common_values()
+	padding = rect(0, 0, 0, 0)
+	margin = rect(0, 0, 0, 0)
+}
+% =======================

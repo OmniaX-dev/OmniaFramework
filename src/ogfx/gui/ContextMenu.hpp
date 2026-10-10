@@ -189,7 +189,7 @@ namespace ogfx
 				Color m_submenuIndicatorColor { "#111111FF" };
 				Color m_borderColor { "#400000FF" };
 				bool m_useSelectionGradient { true };
-				ColorGradient m_selectionGradient { { "#C21135FF", "#820B23FF" }, { 1.0f } };
+				ColorGradient m_selectionGradient { { Color("#C21135FF"), Color("#820B23FF") }, { 1.0f } };
 				bool m_animateOpen { true };
 				u64 m_animationDelayMS  { 300 };
 

@@ -21,6 +21,7 @@
 #pragma once
 
 #include <ogfx/gui/widgets/Widget.hpp>
+#include <algorithm>
 
 namespace ogfx
 {
@@ -38,6 +39,13 @@ namespace ogfx
 				void onDraw(ogfx::BasicRenderer2D& gfx) override;
 				inline f32 getValue(void) const { return m_value; }
 				inline void setValueChangedCallback(std::function<void(f32 oldValue, f32 newValue)> callback) { callback_onValueChanged = std::move(callback); }
+				// Updates the handle/track position only - unlike dragging or scrolling, this never
+				// invokes the value-changed callback. For programmatic sync (mirroring some other
+				// source of truth, e.g. a media player's playback position every frame) where
+				// re-triggering the callback's own effect on every call would be redundant at best
+				// (if it just re-applies the same state) or actively harmful (if, like a seek, it's
+				// expensive or disruptive to repeat 60 times a second).
+				inline void setValueQuiet(f32 val) { m_value = snap_to_step(std::clamp(val, m_min, m_max)); }
 
 				void enableVertical(bool enable = true);
 				inline bool isVertical(void) const { return m_vertical; }

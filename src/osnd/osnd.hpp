@@ -20,26 +20,10 @@
 
 #pragma once
 
-#include <ogfx/gui/widgets/Containers.hpp>
-#include <ogfx/gui/widgets/Label.hpp>
-#include <ogfx/gui/widgets/CheckBox.hpp>
-#include <ogfx/gui/widgets/Scrollbar.hpp>
-#include <ogfx/gui/widgets/Button.hpp>
-#include <ogfx/gui/widgets/RadioButton.hpp>
-#include <ogfx/gui/widgets/ProgressBar.hpp>
-#include <ogfx/gui/widgets/Slider.hpp>
-#include <ogfx/gui/widgets/ComboBox.hpp>
-#include <ogfx/gui/widgets/TreeView.hpp>
-#include <ogfx/gui/widgets/DetailList.hpp>
-#include <ogfx/gui/widgets/LineGraph.hpp>
-#include <ogfx/gui/widgets/Text.hpp>
-#include <ogfx/gui/widgets/PianoRollStyle.hpp>
-#include <ogfx/gui/widgets/PianoRoll.hpp>
+// osnd - a small, deliberately minimal audio module (sibling to ostd/ogfx). Today it's just
+// what PianoRoll needs: decode a whole audio file to PCM (WAV via SDL3, MP3 via vendored
+// dr_mp3) and play it back with sample-accurate seeking. Meant to grow in place as new needs
+// come up (e.g. another decoder, streaming for very large files) rather than being redesigned.
 
-namespace ogfx
-{
-	namespace gui
-	{
-		using ListView = TreeView;
-	}
-}
+#include <osnd/audio/AudioClip.hpp>
+#include <osnd/audio/AudioPlayer.hpp>
