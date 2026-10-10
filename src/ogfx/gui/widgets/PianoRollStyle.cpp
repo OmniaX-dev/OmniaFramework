@@ -148,7 +148,11 @@ namespace ogfx
 				m_perNoteColorsEnabled[i] = f.get_bool(String(base).add(".use"));
 			}
 
-			m_perKeyColors = f.get_color_array("style.colors.perKey");
+			// setPerKeyGradient(), not a direct assignment - any number of stops (not just
+			// exactly 0 or 88) is meant to work here, interpolated across the full 88 keys the
+			// same way the C++-side API does (an empty array still correctly clears the tier -
+			// see setPerKeyGradient()'s own early-out).
+			setPerKeyGradient(f.get_color_array("style.colors.perKey"));
 			return true;
 		}
 	}

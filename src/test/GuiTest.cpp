@@ -394,7 +394,7 @@ class TestWindow : public Window
 			// A splash of the 3-tier note-coloring system: the 88-key rainbow gradient (lowest
 			// priority tier - falls back to whenever a note has no per-voice or per-pitch-class
 			// color of its own, which is every note here since neither is configured).
-			m_pianoRoll.getStyle().setPerKeyGradient(PianoRollStyle::rainbowGradientStops());
+			m_pianoRoll.getStyle().loadFromJson("DefaultPianoRollStyle.json");
 			if (m_pianoRoll.loadVoice("./notes.mid", Colors::Transparent, "Piano") == (u32)-1)
 				out().fg("red").p("[PianoRoll] Failed to load ./notes.mid").reset().nl();
 			if (!m_pianoRoll.loadAudio("./audio.mp3"))

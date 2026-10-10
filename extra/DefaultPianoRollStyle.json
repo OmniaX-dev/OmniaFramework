@@ -1,0 +1,83 @@
+{
+    "style": {
+        "colors": {
+            "background": "#141414FF",
+            "blackKey": "#222222FF",
+            "blackKeyPressed": "#14145AFF",
+            "fallingBlackNote": "#00324BFF",
+            "fallingWhiteNote": "#146EAAFF",
+            "keyboardLine": "#A00A0AFF",
+            "perKey": [],
+            "perNote": {
+                "A": {
+                    "color": "#000000FF",
+                    "use": false
+                },
+                "A#": {
+                    "color": "#000000FF",
+                    "use": false
+                },
+                "B": {
+                    "color": "#000000FF",
+                    "use": false
+                },
+                "C": {
+                    "color": "#000000FF",
+                    "use": false
+                },
+                "C#": {
+                    "color": "#000000FF",
+                    "use": false
+                },
+                "D": {
+                    "color": "#000000FF",
+                    "use": false
+                },
+                "D#": {
+                    "color": "#000000FF",
+                    "use": false
+                },
+                "E": {
+                    "color": "#000000FF",
+                    "use": false
+                },
+                "F": {
+                    "color": "#000000FF",
+                    "use": false
+                },
+                "F#": {
+                    "color": "#000000FF",
+                    "use": false
+                },
+                "G": {
+                    "color": "#000000FF",
+                    "use": false
+                },
+                "G#": {
+                    "color": "#000000FF",
+                    "use": false
+                }
+            },
+            "whiteKey": "#BBBBBBFF",
+            "whiteKeyPressed": "#7878D2FF"
+        },
+        "dimensions": {
+            "blackKeyGap": 0.0,
+            "blackKeyHeightMultiplier": 8.0,
+            "blackKeyOffset": 0.0,
+            "blackKeyWidth": 22.0,
+            "extraOffscreenSeconds": 1.0,
+            "fallingNoteRadiusBlack": 5.0,
+            "fallingNoteRadiusWhite": 5.0,
+            "keyFadeDurationSeconds": 0.20000000298023224,
+            "lookaheadSeconds": 4.5,
+            "whiteKeyGap": 4.0,
+            "whiteKeyHeightMultiplier": 7.0,
+            "whiteKeyWidth": 40.0
+        },
+        "useFilledNotes": true,
+        "useKeyFade": true,
+        "useNoteColorOnPressedKey": true,
+        "usePerNoteColors": false
+    }
+}

@@ -313,16 +313,14 @@ namespace ostd
 		// ----- Color -------------------------------------------------
 		template<> struct Setter<Color>
 		{
+		    // "#RRGGBBAA", matching Setter<stdvec<Color>> below and what Getter<Color> above
+		    // already preferred reading - a plain integer array was the only thing this one
+		    // actually wrote, out of sync with both of those.
 		    static bool exec_impl(const std::string& p, json& root, const Color& value)
 		    {
 		        try
 				{
-		            json arr = json::array();
-		            arr.push_back(cast<u8>(value.r));
-		            arr.push_back(cast<u8>(value.g));
-		            arr.push_back(cast<u8>(value.b));
-		            if (value.a != 255) arr.push_back(cast<u8>(value.a));
-		            root[p] = arr;
+		            root[p] = value.hexString(true, "#").cpp_str();
 		            return true;
 		        } catch (...) { return false; }
 		    }
