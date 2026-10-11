@@ -73,6 +73,14 @@ namespace ogfx
 				inline PianoRollStyle& getStyle(void) { return m_style; }
 				inline const PianoRollStyle& getStyle(void) const { return m_style; }
 				inline void setStyle(const PianoRollStyle& style) { m_style = style; }
+				// Convenience forwarding to getStyle() - the music key determines how both note-
+				// name label options (PianoRollStyle's ShowNoteNamesOnFallingNotes/OnKeys) spell
+				// each pitch, e.g. GbMajor spells pitch class 11 as "Cb" rather than "B". The
+				// state itself lives in the style (so it saves/loads with everything else);
+				// this just saves a ".getStyle()" for what's otherwise an ordinary playback-
+				// adjacent setting.
+				inline void setMusicKey(ostd::MidiParser::eMusicKey key) { m_style.setMusicKey(key); }
+				inline ostd::MidiParser::eMusicKey getMusicKey(void) const { return m_style.getMusicKey(); }
 
 				// --- voices ---
 				// Parses midiFilePath via ostd::MidiParser and adds it as a new voice. color ==
@@ -184,6 +192,10 @@ namespace ogfx
 				// What color a key should actually be drawn right now - pressed, mid-release-fade,
 				// or its plain normal color, in that priority order.
 				Color resolve_key_color(i32 pitch, bool isBlack, f64 now) const;
+				// Shared by the falling-note and keyboard-key note-name labels - centered
+				// horizontally, anchored a small margin above bounds' own bottom edge (so it sits
+				// inside the note/key it's labeling, not below it).
+				void draw_bottom_centered_label(BasicRenderer2D& gfx, const String& text, const Rectangle& bounds, const Color& color, f32 fontSize, f32 scale);
 				void emit_note_signal(u32 signalId, const ostd::MidiParser::NoteEvent& note, u32 voiceIndex);
 
 			private:

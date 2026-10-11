@@ -97,6 +97,26 @@ namespace ogfx
 				OSTD_BOOL_PARAM_GETSET_E(UseKeyFade, m_useKeyFade);
 				OSTD_PARAM_GETSET(f32, KeyFadeDurationSeconds, m_keyFadeDurationSeconds);
 
+				// --- music key - determines note-name spelling for both label options below ---
+				OSTD_PARAM_GETSET(ostd::MidiParser::eMusicKey, MusicKey, m_musicKey);
+				// Note name (no octave) for a MIDI pitch (or an already-reduced 0-11 pitch class
+				// - either works, see getNoteNameForKey()), spelled correctly for the current
+				// music key.
+				inline String getNoteName(i32 midiPitch) const { return ostd::MidiParser::getNoteNameForKey(midiPitch, m_musicKey); }
+
+				// --- note-name labels drawn inside each falling note, bottom-centered ---
+				OSTD_BOOL_PARAM_GETSET_E(ShowNoteNamesOnFallingNotes, m_showNoteNamesOnFallingNotes);
+				OSTD_PARAM_GETSET(Color, FallingNoteNameColorWhite, m_fallingNoteNameColorWhite);
+				OSTD_PARAM_GETSET(Color, FallingNoteNameColorBlack, m_fallingNoteNameColorBlack);
+				OSTD_PARAM_GETSET(f32, FallingNoteNameFontSize, m_fallingNoteNameFontSize);
+
+				// --- note-name labels drawn at the bottom of each keyboard key - a separate
+				// option from the falling-note one above, same pattern ---
+				OSTD_BOOL_PARAM_GETSET_E(ShowNoteNamesOnKeys, m_showNoteNamesOnKeys);
+				OSTD_PARAM_GETSET(Color, KeyNoteNameColorWhite, m_keyNoteNameColorWhite);
+				OSTD_PARAM_GETSET(Color, KeyNoteNameColorBlack, m_keyNoteNameColorBlack);
+				OSTD_PARAM_GETSET(f32, KeyNoteNameFontSize, m_keyNoteNameFontSize);
+
 				bool saveToJson(const String& path) const;
 				bool loadFromJson(const String& path);
 
@@ -143,6 +163,21 @@ namespace ogfx
 				f32 m_extraOffscreenSeconds { 1.0f };
 				bool m_useKeyFade { true };
 				f32 m_keyFadeDurationSeconds { 0.2f };
+
+				ostd::MidiParser::eMusicKey m_musicKey { ostd::MidiParser::eMusicKey::CMajor };
+
+				bool m_showNoteNamesOnFallingNotes { false };
+				Color m_fallingNoteNameColorWhite { "#FFFFFFFF" };
+				Color m_fallingNoteNameColorBlack { "#FFFFFFFF" };
+				f32 m_fallingNoteNameFontSize { 14 };
+
+				bool m_showNoteNamesOnKeys { false };
+				// Dark text on white keys, light text on black keys - the same convention real
+				// note-naming keyboard stickers use, for the same reason (contrast against each
+				// key's own default background color).
+				Color m_keyNoteNameColorWhite { "#000000FF" };
+				Color m_keyNoteNameColorBlack { "#FFFFFFFF" };
+				f32 m_keyNoteNameFontSize { 16 };
 		};
 	}
 }

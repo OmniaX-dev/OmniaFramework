@@ -495,6 +495,16 @@ namespace ogfx
 			return normal;
 		}
 
+		void PianoRoll::draw_bottom_centered_label(BasicRenderer2D& gfx, const String& text, const Rectangle& bounds, const Color& color, f32 fontSize, f32 scale)
+		{
+			i32 scaledFontSize = (i32)std::round(std::max(1.0f, fontSize * scale));
+			Vec2 dims = gfx.getStringDimensions(text, scaledFontSize);
+			f32 margin = 3.0f * scale;
+			f32 x = bounds.x + (bounds.w - dims.x) * 0.5f;
+			f32 y = bounds.y + bounds.h - margin - dims.y;
+			gfx.drawString(text, { x, y }, color, scaledFontSize);
+		}
+
 		void PianoRoll::draw_keyboard(BasicRenderer2D& gfx, const Rectangle& bounds, f32 scale)
 		{
 			f32 whiteW = m_style.getWhiteKeyWidth() * scale;
@@ -508,13 +518,17 @@ namespace ogfx
 			// raw time too (see update_active_notes()).
 			f64 now = getCurrentTimeSeconds() - m_startPadSeconds;
 
+			bool showKeyNames = m_style.isShowNoteNamesOnKeysEnabled();
 			for (i32 k = 0; k < 88; k++)
 			{
 				i32 pitch = 21 + k;
 				if (ostd::MidiParser::getNoteInfo(pitch).isBlackKey())
 					continue;
 				f32 x = key_x_position(pitch, scale);
-				gfx.fillRect({ bounds.x + x, keyboardTop, whiteW, whiteH }, resolve_key_color(pitch, false, now));
+				Rectangle keyRect { bounds.x + x, keyboardTop, whiteW, whiteH };
+				gfx.fillRect(keyRect, resolve_key_color(pitch, false, now));
+				if (showKeyNames)
+					draw_bottom_centered_label(gfx, m_style.getNoteName(pitch), keyRect, m_style.getKeyNoteNameColorWhite(), m_style.getKeyNoteNameFontSize(), scale);
 			}
 			for (i32 k = 0; k < 88; k++)
 			{
@@ -522,7 +536,10 @@ namespace ogfx
 				if (!ostd::MidiParser::getNoteInfo(pitch).isBlackKey())
 					continue;
 				f32 x = key_x_position(pitch, scale);
-				gfx.fillRoundRect({ bounds.x + x, keyboardTop, blackW, blackH }, resolve_key_color(pitch, true, now), blackRadii);
+				Rectangle keyRect { bounds.x + x, keyboardTop, blackW, blackH };
+				gfx.fillRoundRect(keyRect, resolve_key_color(pitch, true, now), blackRadii);
+				if (showKeyNames)
+					draw_bottom_centered_label(gfx, m_style.getNoteName(pitch), keyRect, m_style.getKeyNoteNameColorBlack(), m_style.getKeyNoteNameFontSize(), scale);
 			}
 			gfx.drawLine({ { bounds.x, keyboardTop }, { bounds.x + bounds.w, keyboardTop } }, m_style.getKeyboardLineColor(), 2);
 		}
@@ -564,6 +581,12 @@ namespace ogfx
 					gfx.fillRoundRect(rect, col, radius);
 				else
 					gfx.outlinedRoundRect(rect, Colors::Transparent, col, radius, 2);
+
+				if (m_style.isShowNoteNamesOnFallingNotesEnabled())
+				{
+					Color nameColor = isBlack ? m_style.getFallingNoteNameColorBlack() : m_style.getFallingNoteNameColorWhite();
+					draw_bottom_centered_label(gfx, m_style.getNoteName(note.pitch), rect, nameColor, m_style.getFallingNoteNameFontSize(), scale);
+				}
 			}
 			gfx.popClippingRect();
 		}

@@ -82,11 +82,22 @@ namespace ogfx
 			f.set_double("style.dimensions.lookaheadSeconds", m_lookaheadSeconds);
 			f.set_double("style.dimensions.extraOffscreenSeconds", m_extraOffscreenSeconds);
 			f.set_double("style.dimensions.keyFadeDurationSeconds", m_keyFadeDurationSeconds);
+			f.set_double("style.noteNames.falling.fontSize", m_fallingNoteNameFontSize);
+			f.set_double("style.noteNames.keys.fontSize", m_keyNoteNameFontSize);
+
+			f.set_int("style.musicKey", (i32)m_musicKey);
 
 			f.set_bool("style.usePerNoteColors", m_usePerNoteColors);
 			f.set_bool("style.useFilledNotes", m_useFilledNotes);
 			f.set_bool("style.useNoteColorOnPressedKey", m_useNoteColorOnPressedKey);
 			f.set_bool("style.useKeyFade", m_useKeyFade);
+			f.set_bool("style.noteNames.falling.show", m_showNoteNamesOnFallingNotes);
+			f.set_bool("style.noteNames.keys.show", m_showNoteNamesOnKeys);
+
+			f.set_color("style.noteNames.falling.colorWhite", m_fallingNoteNameColorWhite);
+			f.set_color("style.noteNames.falling.colorBlack", m_fallingNoteNameColorBlack);
+			f.set_color("style.noteNames.keys.colorWhite", m_keyNoteNameColorWhite);
+			f.set_color("style.noteNames.keys.colorBlack", m_keyNoteNameColorBlack);
 
 			f.set_color("style.colors.fallingWhiteNote", m_fallingWhiteNoteColor);
 			f.set_color("style.colors.fallingBlackNote", m_fallingBlackNoteColor);
@@ -126,11 +137,22 @@ namespace ogfx
 			m_lookaheadSeconds = f.get_float("style.dimensions.lookaheadSeconds");
 			m_extraOffscreenSeconds = f.get_float("style.dimensions.extraOffscreenSeconds");
 			m_keyFadeDurationSeconds = f.get_float("style.dimensions.keyFadeDurationSeconds");
+			m_fallingNoteNameFontSize = f.get_float("style.noteNames.falling.fontSize");
+			m_keyNoteNameFontSize = f.get_float("style.noteNames.keys.fontSize");
+
+			m_musicKey = (ostd::MidiParser::eMusicKey)f.get_int("style.musicKey");
 
 			m_usePerNoteColors = f.get_bool("style.usePerNoteColors");
 			m_useFilledNotes = f.get_bool("style.useFilledNotes");
 			m_useNoteColorOnPressedKey = f.get_bool("style.useNoteColorOnPressedKey");
 			m_useKeyFade = f.get_bool("style.useKeyFade");
+			m_showNoteNamesOnFallingNotes = f.get_bool("style.noteNames.falling.show");
+			m_showNoteNamesOnKeys = f.get_bool("style.noteNames.keys.show");
+
+			m_fallingNoteNameColorWhite = f.get_color("style.noteNames.falling.colorWhite");
+			m_fallingNoteNameColorBlack = f.get_color("style.noteNames.falling.colorBlack");
+			m_keyNoteNameColorWhite = f.get_color("style.noteNames.keys.colorWhite");
+			m_keyNoteNameColorBlack = f.get_color("style.noteNames.keys.colorBlack");
 
 			m_fallingWhiteNoteColor = f.get_color("style.colors.fallingWhiteNote");
 			m_fallingBlackNoteColor = f.get_color("style.colors.fallingBlackNote");

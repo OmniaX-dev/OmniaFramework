@@ -395,6 +395,12 @@ class TestWindow : public Window
 			// priority tier - falls back to whenever a note has no per-voice or per-pitch-class
 			// color of its own, which is every note here since neither is configured).
 			m_pianoRoll.getStyle().loadFromJson("DefaultPianoRollStyle.json");
+			// Note-name labels default to off in the style (DefaultPianoRollStyle.json reflects
+			// that) - turning them on here, plus a non-trivial music key, to actually exercise
+			// the enharmonic spelling (Gb major spells pitch class 11 as "Cb", not "B").
+			m_pianoRoll.getStyle().enableShowNoteNamesOnFallingNotes(true);
+			m_pianoRoll.getStyle().enableShowNoteNamesOnKeys(true);
+			m_pianoRoll.setMusicKey(ostd::MidiParser::eMusicKey::GbMajor);
 			if (m_pianoRoll.loadVoice("./notes.mid", Colors::Transparent, "Piano") == (u32)-1)
 				out().fg("red").p("[PianoRoll] Failed to load ./notes.mid").reset().nl();
 			if (!m_pianoRoll.loadAudio("./audio.mp3"))

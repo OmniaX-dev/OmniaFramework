@@ -96,10 +96,30 @@ namespace ostd
 	            static inline bool isBlackKey(i32 noteInOctave) { return !NoteInfo::isWhiteKey(noteInOctave); }
 		};
 
+		// Major key signatures (circle of fifths) - what getNoteNameForKey() spells a pitch
+		// class as depends on this, e.g. pitch class 11 (B/Cb) is "B" in CMajor but "Cb" in
+		// GbMajor, since Gb major's key signature already uses Cb as a scale degree. Covers all
+		// 15 conventional major key names, including the three enharmonic pairs that are the
+		// same pitches but spelled differently depending on which side of the circle you
+		// approach from (FSharpMajor/GbMajor, CSharpMajor/DbMajor, BMajor/CbMajor).
+		public: enum class eMusicKey
+		{
+			CMajor, GMajor, DMajor, AMajor, EMajor, BMajor, FSharpMajor, CSharpMajor,
+			FMajor, BbMajor, EbMajor, AbMajor, DbMajor, GbMajor, CbMajor
+		};
+
 	    public:
 			// Parses a single-track MIDI file and returns a vector of NoteEvents
 	        static stdvec<NoteEvent> parseFile(const String& filePath);
 			// Convert MIDI pitch to NoteInfo
 			static NoteInfo getNoteInfo(i32 midiPitch);
+			// Note name (no octave) for a pitch class (0-11, C=0, any other i32 is normalized
+			// into range) spelled correctly for the given major key - unlike NoteInfo::name
+			// (always the plain always-sharp C-major-style spelling), this picks the actual
+			// diatonic spelling for the key's 7 scale degrees, falls back to the plain natural
+			// letter for a scale degree's own un-altered pitch (the standard convention, e.g.
+			// G major's natural F, not "E#"), and only resorts to a generic sharp/flat-of-the-
+			// neighbor spelling for a pitch that's genuinely outside the key altogether.
+			static String getNoteNameForKey(i32 noteInOctave, eMusicKey key);
 	};
 }
