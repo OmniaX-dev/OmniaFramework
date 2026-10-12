@@ -3,12 +3,22 @@
 #include <stdexcept>
 #include <string>
 #include <array>
+#include <cmath>
 #include "../vendor/midifile/MidiFile.h"
 
 namespace ostd
 {
 	//TODO: Errors
 	stdvec<MidiParser::NoteEvent> MidiParser::parseFile(const String& filePath)
+	{
+	    stdvec<NoteEvent> notes;
+	    i32 ticksPerQuarterNote = 0;
+	    stdvec<TempoEvent> tempoMap;
+	    parseFileEx(filePath, notes, ticksPerQuarterNote, tempoMap);
+	    return notes;
+	}
+
+	bool MidiParser::parseFileEx(const String& filePath, stdvec<NoteEvent>& outNotes, i32& outTicksPerQuarterNote, stdvec<TempoEvent>& outTempoMap)
 	{
 	    smf::MidiFile midi;
 
@@ -24,12 +34,22 @@ namespace ostd
 	    midi.doTimeAnalysis();
 	    midi.linkNotePairs();
 
-	    stdvec<NoteEvent> notes;
-	    notes.reserve(256);
+	    outNotes.clear();
+	    outNotes.reserve(256);
+	    outTicksPerQuarterNote = midi.getTicksPerQuarterNote();
+	    outTempoMap.clear();
 
 	    for (i32 e = 0; e < midi[0].size(); ++e)
 		{
 	        auto& ev = midi[0][e];
+	        if (ev.isTempo())
+	        {
+	            TempoEvent tempo;
+	            tempo.tick = ev.tick;
+	            tempo.microsecondsPerQuarter = (f64)ev.getTempoMicroseconds();
+	            outTempoMap.push_back(tempo);
+	            continue;
+	        }
 	        if (ev.isNoteOn())
 			{
 	            NoteEvent note;
@@ -39,16 +59,42 @@ namespace ostd
 	            note.endTime   = note.startTime + note.duration;
 	            note.velocity  = ev.getVelocity();
 	            note.channel   = ev.getChannel();
+	            note.startTick = ev.tick;
+	            smf::MidiEvent* offEvent = ev.getLinkedEvent();
+	            if (offEvent != nullptr)
+	            {
+	                note.endTick     = offEvent->tick;
+	                note.offVelocity = offEvent->getVelocity();
+	            }
+	            else
+	            {
+	                // No paired note-off found (malformed/truncated file) - fall back to the
+	                // already-computed seconds-based duration converted back to ticks, rather
+	                // than leaving endTick at 0 (which would make the note zero/negative length).
+	                f64 ticksPerSecond = outTicksPerQuarterNote > 0 && !outTempoMap.empty()
+	                    ? (f64)outTicksPerQuarterNote / (outTempoMap.back().microsecondsPerQuarter / 1000000.0)
+	                    : (f64)outTicksPerQuarterNote / (500000.0 / 1000000.0); // default 120 BPM
+	                note.endTick = note.startTick + (i32)std::round(note.duration * ticksPerSecond);
+	                note.offVelocity = 0;
+	            }
 	            note.rightHand = false;
 	            note.last	   = false;
 	            note.first	   = false;
-	            notes.push_back(note);
+	            outNotes.push_back(note);
 	        }
+	    }
+
+	    if (outTempoMap.empty())
+	    {
+	        TempoEvent defaultTempo;
+	        defaultTempo.tick = 0;
+	        defaultTempo.microsecondsPerQuarter = 500000.0; // 120 BPM, smf::MidiFile's own default
+	        outTempoMap.push_back(defaultTempo);
 	    }
 
 	    NoteEvent* notePtr = nullptr;
 	    f64 noteTime = 0.0;
-	    for (auto& note : notes)
+	    for (auto& note : outNotes)
 	    {
 	    	if (note.endTime > noteTime)
 		    {
@@ -61,7 +107,7 @@ namespace ostd
 
 	    notePtr = nullptr;
 	    noteTime = 999999.0;
-	    for (auto& note : notes)
+	    for (auto& note : outNotes)
 	    {
 	       	if (note.startTime < noteTime)
 		    {
@@ -72,7 +118,31 @@ namespace ostd
 	    if (notePtr != nullptr)
 	    	notePtr->first = true;
 
-	    return notes;
+	    return true;
+	}
+
+	bool MidiParser::writeFile(const String& filePath, const stdvec<NoteEvent>& notes, i32 ticksPerQuarterNote, const stdvec<TempoEvent>& tempoMap)
+	{
+	    smf::MidiFile midi;
+	    // A fresh smf::MidiFile already has one (empty) track at index 0 - no addTrack() needed.
+	    midi.setTicksPerQuarterNote(ticksPerQuarterNote > 0 ? ticksPerQuarterNote : 480);
+
+	    for (auto& tempo : tempoMap)
+	    {
+	        smf::MidiEvent tempoEvent;
+	        tempoEvent.tick = tempo.tick;
+	        tempoEvent.setTempoMicroseconds((i32)std::round(tempo.microsecondsPerQuarter));
+	        midi.addEvent(0, tempoEvent);
+	    }
+
+	    for (auto& note : notes)
+	    {
+	        midi.addNoteOn(0, note.startTick, note.channel, note.pitch, note.velocity);
+	        midi.addNoteOff(0, note.endTick, note.channel, note.pitch, note.offVelocity);
+	    }
+
+	    midi.sortTracks();
+	    return midi.write(filePath.cpp_str());
 	}
 
 	MidiParser::NoteInfo MidiParser::getNoteInfo(i32 midiPitch)
@@ -106,7 +176,11 @@ namespace ostd
 	    static const i32 flatOrder[7]  = {  1,   4,   0,   3,   6,   2,   5  }; // B,E,A,D,G,C,F
 
 	    struct KeyDef { i32 direction; i32 count; }; // direction: +1 sharp, -1 flat, 0 = CMajor (neither)
-	    static const KeyDef keyDefs[15] = {
+	    static const KeyDef keyDefs[30] = {
+	        // majors
+	        {  0, 0 }, { 1, 1 }, { 1, 2 }, { 1, 3 }, { 1, 4 }, { 1, 5 }, { 1, 6 }, { 1, 7 },
+	        { -1, 1 }, { -1, 2 }, { -1, 3 }, { -1, 4 }, { -1, 5 }, { -1, 6 }, { -1, 7 },
+	        // relative minors - identical signatures to the majors above, same order
 	        {  0, 0 }, { 1, 1 }, { 1, 2 }, { 1, 3 }, { 1, 4 }, { 1, 5 }, { 1, 6 }, { 1, 7 },
 	        { -1, 1 }, { -1, 2 }, { -1, 3 }, { -1, 4 }, { -1, 5 }, { -1, 6 }, { -1, 7 }
 	    };

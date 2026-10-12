@@ -35,6 +35,13 @@ namespace ostd
 	            f64 duration             { 0.0 };        // Duration in seconds
 	            i32 velocity            { 0 };          // Attack velocity (1-127)
 	            i32 channel             { 0 };          // MIDI channel (0-15)
+	            // Exact source-file tick position and note-off velocity, alongside the derived
+	            // (tempo-dependent, and so potentially lossy under round-tripping) seconds-based
+	            // fields above - what writeFile() uses to reconstruct byte-exact note events,
+	            // rather than re-deriving ticks from startTime/endTime and a tempo map.
+	            i32 startTick            { 0 };
+	            i32 endTick              { 0 };
+	            i32 offVelocity          { 0 };          // Release velocity (0-127, usually 0)
 
 	            bool hit { false };
 	            bool rightHand { false };
@@ -96,21 +103,48 @@ namespace ostd
 	            static inline bool isBlackKey(i32 noteInOctave) { return !NoteInfo::isWhiteKey(noteInOctave); }
 		};
 
-		// Major key signatures (circle of fifths) - what getNoteNameForKey() spells a pitch
-		// class as depends on this, e.g. pitch class 11 (B/Cb) is "B" in CMajor but "Cb" in
-		// GbMajor, since Gb major's key signature already uses Cb as a scale degree. Covers all
-		// 15 conventional major key names, including the three enharmonic pairs that are the
-		// same pitches but spelled differently depending on which side of the circle you
-		// approach from (FSharpMajor/GbMajor, CSharpMajor/DbMajor, BMajor/CbMajor).
+		// Major and (natural) minor key signatures (circle of fifths) - what
+		// getNoteNameForKey() spells a pitch class as depends on this, e.g. pitch class 11
+		// (B/Cb) is "B" in CMajor but "Cb" in GbMajor, since Gb major's key signature already
+		// uses Cb as a scale degree. Covers all 15 conventional major key names (including the
+		// three enharmonic pairs spelled differently depending on which side of the circle you
+		// approach from: FSharpMajor/GbMajor, CSharpMajor/DbMajor, BMajor/CbMajor) plus their
+		// 15 relative minors, which share the exact same key signature (same accidentals) as
+		// their relative major - e.g. AMinor spells exactly like CMajor, EMinor like GMajor.
 		public: enum class eMusicKey
 		{
 			CMajor, GMajor, DMajor, AMajor, EMajor, BMajor, FSharpMajor, CSharpMajor,
-			FMajor, BbMajor, EbMajor, AbMajor, DbMajor, GbMajor, CbMajor
+			FMajor, BbMajor, EbMajor, AbMajor, DbMajor, GbMajor, CbMajor,
+			AMinor, EMinor, BMinor, FSharpMinor, CSharpMinor, GSharpMinor, DSharpMinor, ASharpMinor,
+			DMinor, GMinor, CMinor, FMinor, BbMinor, EbMinor, AbMinor
+		};
+
+		// A tempo change, in the same absolute-tick terms as NoteEvent::startTick - what
+		// writeFile() needs to reproduce a source file's tempo map exactly, rather than
+		// assuming a single constant tempo throughout.
+		public: class TempoEvent
+		{
+			public:
+				i32 tick                    { 0 };
+				f64 microsecondsPerQuarter   { 500000.0 }; // 120 BPM
 		};
 
 	    public:
-			// Parses a single-track MIDI file and returns a vector of NoteEvents
+			// Parses a single-track MIDI file and returns a vector of NoteEvents. A thin
+			// wrapper over parseFileEx() that discards the tick/tempo-map data - kept as the
+			// simple, original entry point every existing caller already uses.
 	        static stdvec<NoteEvent> parseFile(const String& filePath);
+			// Same parse, plus the exact tick-resolution data parseFile() discards (each
+			// NoteEvent's startTick/endTick/offVelocity are populated either way - this just
+			// additionally returns the file's own ticksPerQuarterNote and full tempo map,
+			// needed to write a new file back out with writeFile() and have it play back
+			// identically, not just contain the same notes).
+			static bool parseFileEx(const String& filePath, stdvec<NoteEvent>& outNotes, i32& outTicksPerQuarterNote, stdvec<TempoEvent>& outTempoMap);
+			// Writes notes (with their startTick/endTick/channel/velocity/offVelocity) back out
+			// as a new, single-track Standard MIDI File, reproducing ticksPerQuarterNote and
+			// tempoMap exactly - the counterpart to parseFileEx(), e.g. for exporting a subset
+			// of a file's notes (a selection) as its own playable .mid file.
+			static bool writeFile(const String& filePath, const stdvec<NoteEvent>& notes, i32 ticksPerQuarterNote, const stdvec<TempoEvent>& tempoMap);
 			// Convert MIDI pitch to NoteInfo
 			static NoteInfo getNoteInfo(i32 midiPitch);
 			// Note name (no octave) for a pitch class (0-11, C=0, any other i32 is normalized

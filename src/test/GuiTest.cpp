@@ -25,6 +25,7 @@
 #include <ostd/utils/Async.hpp>
 
 #include <ogfx/gui/widgets/ColorPickerSkins.hpp>
+#include "PianoRollEditor.hpp"
 
 ogfx::gui::Window::FileDialogFilterList filters  = {
 	{ "Image files", { "png", "jpg", "jpeg", "bmp" } },
@@ -217,6 +218,7 @@ class TestWindow : public Window
 			auto& t3 = m_tabs.addTab("Long Tab Test");
 			auto& t4 = m_tabs.addTab("Line Graph");
 			auto& t5 = m_tabs.addTab("Piano Roll");
+			auto& t6 = m_tabs.addTab("Piano Roll Editor");
 			t3.setLayout<FillLayout>();
 
 			t1.addWidget(m_check1, { 30, 30 });
@@ -400,9 +402,11 @@ class TestWindow : public Window
 			// the enharmonic spelling (Gb major spells pitch class 11 as "Cb", not "B").
 			m_pianoRoll.getStyle().enableShowNoteNamesOnFallingNotes(true);
 			m_pianoRoll.getStyle().enableShowNoteNamesOnKeys(true);
-			m_pianoRoll.setMusicKey(ostd::MidiParser::eMusicKey::GbMajor);
-			if (m_pianoRoll.loadVoice("./notes.mid", Colors::Transparent, "Piano") == (u32)-1)
-				out().fg("red").p("[PianoRoll] Failed to load ./notes.mid").reset().nl();
+			// m_pianoRoll.setMusicKey(ostd::MidiParser::eMusicKey::);
+			if (m_pianoRoll.loadVoice("./Chopin Nocturne No. 20 in C#m - Left Hand.mid", Colors::Blue, "LH") == (u32)-1)
+				out().fg("red").p("[PianoRoll] Failed to load ./nChopin Nocturne No. 20 in C#m - Left Hand.mid").reset().nl();
+			if (m_pianoRoll.loadVoice("./Chopin Nocturne No. 20 in C#m - Right Hand.mid", Colors::Green, "RH") == (u32)-1)
+				out().fg("red").p("[PianoRoll] Failed to load ./Chopin Nocturne No. 20 in C#m - Right Hand.mid").reset().nl();
 			if (!m_pianoRoll.loadAudio("./audio.mp3"))
 				out().fg("red").p("[PianoRoll] Failed to load ./audio.mp3").reset().nl();
 
@@ -489,6 +493,34 @@ class TestWindow : public Window
 			t5.addWidget(m_pianoLastNoteLbl, { 750, 638 });
 			t5.addWidget(m_pianoVolumeLbl, { 950, 638 });
 			t5.addWidget(m_pianoVolumeSlider, { 1050, 654 });
+
+			// A minimal smoke-test for PianoRollEditor (src/test/PianoRollEditor.hpp) - a
+			// one-off, non-Omnia tool built on PianoRoll, so there's deliberately no style/
+			// gradient setup here, just enough to click/drag/keybind against real rendering.
+			// Every keybind is at its default (I/X/Ctrl+X/Ctrl+Z/Ctrl+Y/Space/Ctrl+S/Ctrl+Shift+S,
+			// number row for slots) - see the widget's own header for the full list.
+			// loadFromFile's "false" loads additively, on top of DefaultThemeDark.oss rather
+			// than replacing it - PianoRollEditor's own themeable properties (category
+			// "pianoRollEditor") live in this separate file since it isn't part of Omnia.
+			m_theme.loadFromFile("./PianoRollEditorTheme.oss", false, getDefaultStylesheetVariableList());
+			m_pianoRollEditor.setSize(1100, 620);
+			m_pianoRollEditor.enableFocus();
+			m_pianoRollEditor.getStyle().loadFromJson("DefaultPianoRollStyle.json");
+			// Note-name labels default to off in the style (DefaultPianoRollStyle.json reflects
+			// that) - turning them on here, plus a non-trivial music key, to actually exercise
+			// the enharmonic spelling (Gb major spells pitch class 11 as "Cb", not "B").
+			m_pianoRollEditor.getStyle().enableShowNoteNamesOnFallingNotes(true);
+			m_pianoRollEditor.getStyle().enableShowNoteNamesOnKeys(true);
+			if (!m_pianoRollEditor.loadProject("./Chopin Nocturne No. 20 in C#m.pianoproj"))
+				out().fg("red").p("[PianoRollEditor] Failed to load project").reset().nl();
+			// if (m_pianoRollEditor.loadVoice("./notes.mid", Colors::Transparent, "Piano") == (u32)-1)
+			//     out().fg("red").p("[PianoRollEditor] Failed to load ./notes.mid").reset().nl();
+			// if (!m_pianoRollEditor.loadAudio("./audio.mp3"))
+			//     out().fg("red").p("[PianoRollEditor] Failed to load ./audio.mp3").reset().nl();
+			m_editorStatusLbl.setText("Selected: 0 notes");
+
+			t6.addWidget(m_pianoRollEditor, { 0, 0 });
+			t6.addWidget(m_editorStatusLbl, { 20, 660 });
 
 			m_panel3.addWidget(m_label4);
 
@@ -608,6 +640,7 @@ class TestWindow : public Window
 			// value-changed callback (which seeks), or dragging the position 60 times a second
 			// off of playback would spam AudioPlayer with a reseek every frame.
 			m_pianoSeekSlider.setValueQuiet(m_pianoRoll.getCurrentTimeNormalized());
+			m_editorStatusLbl.setText(String("Selected: ").add((i32)m_pianoRollEditor.getSelectionCount()).add(" notes"));
 		}
 
 	private:
@@ -637,6 +670,8 @@ class TestWindow : public Window
 		Label m_pianoLastNoteLbl { *this };
 		Label m_pianoVolumeLbl { *this };
 		Slider m_pianoVolumeSlider { *this };
+		PianoRollEditor m_pianoRollEditor { *this };
+		Label m_editorStatusLbl { *this };
 		Label m_drawCallsLbl { *this };
 		Label m_cacheHitsLbl { *this };
 		Label m_cacheMissesLbl { *this };

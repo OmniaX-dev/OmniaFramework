@@ -65,7 +65,10 @@ namespace ogfx
 			public:
 				inline PianoRoll(Window& window) : Widget({ 0, 0, 0, 0 }, window) { create(); }
 				PianoRoll& create(void);
-				void applyTheme(const ostd::Stylesheet& theme) override;
+				// Explicitly virtual (not just inheriting Widget::applyTheme's virtual-ness
+				// implicitly) so a subclass's own override reads unambiguously as one - see
+				// PianoRollEditor's.
+				virtual void applyTheme(const ostd::Stylesheet& theme) override;
 				void onDraw(BasicRenderer2D& gfx) override;
 				void onUpdate(void) override;
 
@@ -87,9 +90,12 @@ namespace ogfx
 				// Colors::Transparent (the default) lets PianoRollStyle's per-note/per-key tiers
 				// decide the color instead of forcing a flat per-voice one. Returns (u32)-1 and
 				// logs a warning if the file can't be parsed.
-				u32 loadVoice(const String& midiFilePath, const Color& color = Colors::Transparent, const String& name = "");
-				bool removeVoice(u32 index);
-				void clearVoices(void);
+				// virtual so a subclass (e.g. one adding per-note selection) can keep its own
+				// parallel per-voice bookkeeping in sync without duplicating voice management -
+				// behavior/signature for every existing caller is unchanged either way.
+				virtual u32 loadVoice(const String& midiFilePath, const Color& color = Colors::Transparent, const String& name = "");
+				virtual bool removeVoice(u32 index);
+				virtual void clearVoices(void);
 				inline u32 getVoiceCount(void) const { return (u32)m_voices.size(); }
 				Voice& getVoice(u32 index);
 				const Voice& getVoice(u32 index) const;
@@ -99,8 +105,11 @@ namespace ogfx
 				// --- audio ---
 				// WAV or MP3, picked by extension (see osnd::AudioClip::load). Without an audio
 				// file loaded, playback still works, timed off an internal clock instead.
-				bool loadAudio(const String& audioFilePath);
-				void clearAudio(void);
+				// virtual for the same reason as loadVoice()/removeVoice()/clearVoices() - lets a
+				// subclass track its own bookkeeping (e.g. remembering the loaded path) without
+				// duplicating audio loading itself.
+				virtual bool loadAudio(const String& audioFilePath);
+				virtual void clearAudio(void);
 				inline bool hasAudio(void) const { return m_audioPlayer && m_audioPlayer->isLoaded(); }
 
 				// Whether MIDI pitch (0-127) is currently highlighted on the keyboard - the same
@@ -115,7 +124,7 @@ namespace ogfx
 				{
 					if (pitch < 0 || pitch >= 128)
 						return Colors::Transparent;
-					return resolve_key_color(pitch, ostd::MidiParser::getNoteInfo(pitch).isBlackKey(), getCurrentTimeSeconds() - m_startPadSeconds);
+					return resolve_key_color(pitch, ostd::MidiParser::getNoteInfo(pitch).isBlackKey(), get_raw_time());
 				}
 
 				// The full 88-key keyboard's natural ("design") pixel width at the style's own key
@@ -126,6 +135,36 @@ namespace ogfx
 				// given, the same way the Godot reference scales a fixed preferred layout to fit
 				// its canvas. Useful for picking a size that renders at exactly 1:1 (scale == 1).
 				f32 getKeyboardWidth(void) const;
+
+			protected:
+				// Reused by anything subclassing PianoRoll to add its own per-note overlay (e.g.
+				// a selection highlight) without re-deriving PianoRoll's own layout/timing math -
+				// if that math ever changes here, a subclass using these picks up the change for
+				// free instead of silently drifting out of sync.
+				f32 key_x_position(i32 midiPitch, f32 scale) const; // relative to the widget's left edge
+				// bounds.w / getKeyboardWidth() - the same scale onDraw() computes for its own
+				// draw_keyboard()/draw_falling_notes() calls.
+				inline f32 compute_scale(const Rectangle& bounds) const
+				{
+					f32 naturalWidth = getKeyboardWidth();
+					return naturalWidth > 0.0f ? bounds.w / naturalWidth : 1.0f;
+				}
+				// getCurrentTimeSeconds() - m_startPadSeconds - the same "raw" (file-native,
+				// pre-roll-pad-adjusted) clock update_active_notes()/draw_falling_notes()/
+				// draw_keyboard() compare note.startTime/endTime against internally.
+				inline f64 get_raw_time(void) const { return getCurrentTimeSeconds() - m_startPadSeconds; }
+				// Whether note.startTime/endTime puts it inside the current fall-area window
+				// right now - the same check update_active_notes() uses to populate m_activeNotes.
+				inline bool is_note_in_fall_window(const ostd::MidiParser::NoteEvent& note) const
+				{
+					f64 now = get_raw_time();
+					f64 lookahead = (f64)m_style.getLookaheadSeconds();
+					return now >= note.startTime - lookahead && now <= note.endTime;
+				}
+				// The exact falling-note rectangle draw_falling_notes() draws `note` at, in the
+				// same bounds/scale terms onDraw() already computes - the single source of truth
+				// for both drawing the falling note and anything hit-testing or highlighting it.
+				Rectangle compute_falling_note_rect(const ostd::MidiParser::NoteEvent& note, bool isBlackKey, const Rectangle& bounds, f32 scale) const;
 
 			private:
 				// hasAudio() only means "a file decoded successfully" - it can be true with no
@@ -188,7 +227,6 @@ namespace ogfx
 				// including the style's own preferred ones - are preserved rather than distorted.
 				void draw_keyboard(BasicRenderer2D& gfx, const Rectangle& bounds, f32 scale);
 				void draw_falling_notes(BasicRenderer2D& gfx, const Rectangle& bounds, f32 scale);
-				f32 key_x_position(i32 midiPitch, f32 scale) const; // relative to the widget's left edge
 				// What color a key should actually be drawn right now - pressed, mid-release-fade,
 				// or its plain normal color, in that priority order.
 				Color resolve_key_color(i32 pitch, bool isBlack, f64 now) const;

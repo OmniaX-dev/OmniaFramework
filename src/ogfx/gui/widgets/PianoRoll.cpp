@@ -451,6 +451,26 @@ namespace ogfx
 			return key_x_position(108, 1.0f) + m_style.getWhiteKeyWidth(); // 108 = C8, the highest (white) key
 		}
 
+		Rectangle PianoRoll::compute_falling_note_rect(const ostd::MidiParser::NoteEvent& note, bool isBlackKey, const Rectangle& bounds, f32 scale) const
+		{
+			f32 whiteH = m_style.getWhiteKeyWidth() * scale * m_style.getWhiteKeyHeightMultiplier();
+			f32 keyboardTop = bounds.y + bounds.h - whiteH;
+			f32 fallAreaHeight = bounds.h - whiteH;
+			f32 lookahead = std::max(0.01f, m_style.getLookaheadSeconds());
+			f32 pxPerSecond = fallAreaHeight / lookahead;
+			f64 now = get_raw_time();
+
+			f32 noteHeight = (f32)note.duration * pxPerSecond;
+			f32 bottomY = keyboardTop - (f32)(note.startTime - now) * pxPerSecond;
+			f32 topY = bottomY - noteHeight;
+
+			f32 gap = (isBlackKey ? m_style.getBlackKeyGap() : m_style.getWhiteKeyGap()) * scale;
+			f32 w = (isBlackKey ? m_style.getBlackKeyWidth() : m_style.getWhiteKeyWidth()) * scale - gap;
+			f32 x = key_x_position(note.pitch, scale) + gap * 0.5f;
+
+			return { bounds.x + x, topY, w, noteHeight };
+		}
+
 		void PianoRoll::onDraw(BasicRenderer2D& gfx)
 		{
 			Rectangle bounds = getGlobalBounds();
@@ -460,8 +480,7 @@ namespace ogfx
 			// requiring it to be set to getKeyboardWidth() - so a style's own preferred sizes stay
 			// the single source of truth for proportions, and the widget's actual size (which a
 			// layout/scroll container may well be the one deciding) drives everything else.
-			f32 naturalWidth = getKeyboardWidth();
-			f32 scale = naturalWidth > 0.0f ? bounds.w / naturalWidth : 1.0f;
+			f32 scale = compute_scale(bounds);
 			// Clips keys/notes that don't fit within whatever height the widget was actually given
 			// instead of letting them bleed past the widget's own bounds into whatever is drawn
 			// next. additive=true intersects with whatever clip an ancestor (e.g. a scrolled
@@ -516,7 +535,7 @@ namespace ogfx
 			Rectangle blackRadii { 0, 0, blackRadius, blackRadius }; // rounded bottom-right/bottom-left only
 			// Raw time, same convention as draw_falling_notes() - m_keyReleaseTime is stamped in
 			// raw time too (see update_active_notes()).
-			f64 now = getCurrentTimeSeconds() - m_startPadSeconds;
+			f64 now = get_raw_time();
 
 			bool showKeyNames = m_style.isShowNoteNamesOnKeysEnabled();
 			for (i32 k = 0; k < 88; k++)
@@ -547,14 +566,7 @@ namespace ogfx
 		void PianoRoll::draw_falling_notes(BasicRenderer2D& gfx, const Rectangle& bounds, f32 scale)
 		{
 			f32 whiteH = m_style.getWhiteKeyWidth() * scale * m_style.getWhiteKeyHeightMultiplier();
-			f32 keyboardTop = bounds.y + bounds.h - whiteH;
 			f32 fallAreaHeight = bounds.h - whiteH;
-			f32 lookahead = std::max(0.01f, m_style.getLookaheadSeconds());
-			f32 pxPerSecond = fallAreaHeight / lookahead;
-			// Raw time, not the public (pad-shifted) getCurrentTimeSeconds() - note.startTime is
-			// in the same raw clock, which is what makes a note sit fully offscreen until raw
-			// catches up to startTime - lookahead (see m_startPadSeconds).
-			f64 now = getCurrentTimeSeconds() - m_startPadSeconds;
 
 			gfx.pushClippingRect({ bounds.x, bounds.y, bounds.w, fallAreaHeight }, true); // additive - see onDraw()
 			for (auto& active : m_activeNotes)
@@ -562,21 +574,13 @@ namespace ogfx
 				auto& note = *active.note;
 				auto& voice = m_voices[active.voiceIndex];
 				bool isBlack = ostd::MidiParser::getNoteInfo(note.pitch).isBlackKey();
-
-				f32 noteHeight = (f32)note.duration * pxPerSecond;
-				f32 bottomY = keyboardTop - (f32)(note.startTime - now) * pxPerSecond;
-				f32 topY = bottomY - noteHeight;
-
-				f32 gap = (isBlack ? m_style.getBlackKeyGap() : m_style.getWhiteKeyGap()) * scale;
-				f32 w = (isBlack ? m_style.getBlackKeyWidth() : m_style.getWhiteKeyWidth()) * scale - gap;
-				f32 x = key_x_position(note.pitch, scale) + gap * 0.5f;
+				Rectangle rect = compute_falling_note_rect(note, isBlack, bounds, scale);
 
 				Color vc = voice.color;
 				bool hasVoiceColor = !(vc == Colors::Transparent);
 				Color col = m_style.resolveNoteColor(note.pitch, hasVoiceColor ? &voice.color : nullptr);
 				f32 radius = (isBlack ? m_style.getFallingNoteRadiusBlack() : m_style.getFallingNoteRadiusWhite()) * scale;
 
-				Rectangle rect { bounds.x + x, topY, w, noteHeight };
 				if (m_style.isUseFilledNotesEnabled())
 					gfx.fillRoundRect(rect, col, radius);
 				else

@@ -1,0 +1,21 @@
+% ================== PianoRollEditorTheme.oss ==================
+% PianoRollEditor (src/test/PianoRollEditor.hpp) is a one-off tool, not part of Omnia, so its
+% themeable properties live in their own file rather than inside DefaultTheme.oss - loaded
+% additively (clearCurrentRules=false) on top of whatever base theme is already active.
+
+(pianoRollEditor) {
+	% ======= Base Widget properties =======
+	borderColor = #2040BBFF
+	borderWidth = 1
+	showBorder = true
+	focusBorderColor = #2FB000FF
+	showFocusBorder = true
+	focusBorderWidth = 1
+	% ======================================
+
+	selectionHighlightColor = #FFD700C0
+	boxSelectColor = #4AA3FFA0
+	scrollSpeedMultiplier = 1.0
+	selectionBorderWidth = 3.0
+}
+% ================================================================
