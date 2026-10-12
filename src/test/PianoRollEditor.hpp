@@ -22,6 +22,25 @@
 using namespace ogfx;
 using namespace ogfx::gui;
 
+// Signal payload for PianoRollEditor::NoteHoverSignal - fired once when the mouse enters a
+// note (not on every move event while still inside it), carrying everything a listener would
+// plausibly need without re-deriving it, including which saved slots (0-9) currently contain
+// this exact note.
+class PianoRollEditorNoteHoverData : public ostd::Object
+{
+	public:
+		inline PianoRollEditorNoteHoverData(void) { setTypeName("PianoRollEditorNoteHoverData"); validate(); }
+		u32 voiceIndex { 0 };
+		u32 noteIndex { 0 };
+		i32 pitch { 0 };
+		i32 velocity { 0 };
+		i32 channel { 0 };
+		f64 startTime { 0.0 };
+		f64 endTime { 0.0 };
+		ostd::MidiParser::NoteInfo noteInfo;
+		stdvec<u32> slots; // which of the 10 saved slots currently contain this note
+};
+
 class PianoRollEditor : public ogfx::gui::PianoRoll
 {
 	public:
@@ -67,6 +86,24 @@ class PianoRollEditor : public ogfx::gui::PianoRoll
 		// into slot 0 first.
 		void recallSlot(u32 slot);
 		inline bool isSlotOccupied(u32 slot) const { return slot < m_slots.size() && m_slotOccupied[slot]; }
+		u32 getSlotNoteCount(u32 slot) const;
+		bool isNoteInSlot(u32 slot, u32 voiceIndex, u32 noteIndex) const;
+		// Named externally - the widget has no UI of its own to name them from, so this is
+		// pure data storage (empty by default; no built-in "Slot N" fallback text, since
+		// display formatting belongs to whatever UI is built around this).
+		void setSlotName(u32 slot, const String& name);
+		String getSlotName(u32 slot) const;
+		// Per-slot highlight color (see resolve_active_highlight_color()'s use of these) -
+		// configurable per slot via the theme (slot0Color..slot9Color) with sensible built-in
+		// defaults; setSlotColor() overrides a slot's color at runtime independent of the theme.
+		void setSlotColor(u32 slot, const Color& color);
+		Color getSlotColor(u32 slot) const;
+
+		// --- undo/redo/selection introspection (for a UI with no in-widget state of its own) ---
+		inline bool canUndo(void) const { return !m_undoStack.empty(); }
+		inline bool canRedo(void) const { return !m_redoStack.empty(); }
+		// Every currently-selected (voiceIndex, noteIndex) pair.
+		stdvec<std::pair<u32, u32>> getSelectedNotes(void) const;
 
 		// --- export ---
 		// Writes every currently-selected note (preserving exact tick/velocity/channel data)
@@ -89,6 +126,30 @@ class PianoRollEditor : public ogfx::gui::PianoRoll
 		bool saveProjectAs(const String& path);
 		bool loadProject(const String& path);
 		inline const String& getCurrentProjectPath(void) const { return m_currentProjectPath; }
+		inline const String& getSourceMidiPath(void) const { return m_sourceMidiPath; }
+		inline const String& getAudioPath(void) const { return m_audioPath; }
+		inline i32 getTicksPerQuarterNote(void) const { return m_ticksPerQuarterNote; }
+
+		// --- focus mode ---
+		// While active, every note that's neither selected, hovered (see NoteHoverSignal), nor
+		// (while dragging) inside the live box-select preview is dimmed to focusModeAlpha.
+		inline void toggleFocusMode(void) { m_focusModeActive = !m_focusModeActive; }
+		inline void setFocusModeActive(bool active) { m_focusModeActive = active; }
+		inline bool isFocusModeActive(void) const { return m_focusModeActive; }
+		OSTD_PARAM_GETSET(f32, FocusModeAlpha, m_focusModeAlpha); // 0..1, default 0.4, themeable ("focusModeAlpha")
+
+		// --- live interaction state (for a UI with no in-widget state of its own) ---
+		inline bool isBoxSelecting(void) const { return m_boxSelecting; }
+		inline bool isBoxSelectSubtracting(void) const { return m_boxSelectSubtract; }
+		Rectangle getBoxSelectionRect(void) const; // the live drag rect; an empty Rectangle if not box-selecting
+		inline bool isHoveringNote(void) const { return m_hoveredVoiceIndex != (u32)-1; }
+		inline std::pair<u32, u32> getHoveredNote(void) const { return { m_hoveredVoiceIndex, m_hoveredNoteIndex }; }
+		inline bool isScrollAnimating(void) const { return m_scrollAnimating; }
+		inline f64 getScrollTargetSeconds(void) const { return m_scrollTargetSeconds; }
+
+		// Fired once when the mouse enters a note (not repeatedly while it stays inside one) -
+		// see PianoRollEditorNoteHoverData.
+		inline static const u32 NoteHoverSignal { ostd::SignalHandler::newCustomSignal(12100) };
 
 		// --- keybinds - every binding here is independently remappable and can be disabled
 		// outright (enabled=false); Ctrl/Shift themselves are fixed, not remappable. ---
@@ -103,6 +164,7 @@ class PianoRollEditor : public ogfx::gui::PianoRoll
 		Keybind saveAsKey          { ogfx::KeyCode::S };     // + primary + shift
 		std::array<Keybind, 10> recallSlotKey; // index 0-9, default Num0-Num9, set in create_default_keybinds()
 		std::array<Keybind, 9>  saveSlotKey;   // index 0-8 -> slot 1-9, default Num1-Num9 + primary
+		Keybind focusModeKey { ogfx::KeyCode::F };
 
 		// --- style (themeable - see applyTheme(); category "pianoRollEditor") ---
 		OSTD_PARAM_GETSET(Color, SelectionHighlightColor, m_selectionHighlightColor);
@@ -130,6 +192,8 @@ class PianoRollEditor : public ogfx::gui::PianoRoll
 		void onMouseDragged(const Event& event) override;
 		void onMouseReleased(const Event& event) override;
 		void onMouseScrolled(const Event& event) override;
+		void onMouseMoved(const Event& event) override;  // hover tracking + NoteHoverSignal
+		void onMouseExited(const Event& event) override; // clears hover state
 		void onKeyPressed(const Event& event) override;
 		// MouseEventData carries no modifier-key state of its own, so Shift's live state (used
 		// by every mouse-driven selection action) is tracked here from whichever key events
@@ -147,12 +211,27 @@ class PianoRollEditor : public ogfx::gui::PianoRoll
 		bool selection_is_empty(const stdvec<stdvec<bool>>& sel) const;
 
 		bool export_notes(const stdvec<stdvec<bool>>& selection, const String& path);
+		// Which of the 10 slots currently equal the active selection exactly (by content) -
+		// the active-selection highlight uses the first match's color, falling back to
+		// selectionHighlightColor() if none match. Mirrors the same "does this selection
+		// already exist in a slot" comparison recallSlot() uses.
+		Color resolve_active_highlight_color(void) const;
+		stdvec<u32> slots_containing(u32 voiceIndex, u32 noteIndex) const;
+		void fire_hover_signal(u32 voiceIndex, u32 noteIndex);
 
 	private:
 		stdvec<stdvec<bool>> m_selected; // [voiceIndex][noteIndex]
 
 		std::array<stdvec<stdvec<bool>>, 10> m_slots;
 		std::array<bool, 10> m_slotOccupied { false, false, false, false, false, false, false, false, false, false };
+		std::array<String, 10> m_slotNames; // empty by default - see setSlotName()
+		// Sensible, visually-distinct defaults; setSlotColor()/the theme (slot0Color..
+		// slot9Color) can override any of them. Slot 0 (the auto-backup slot) gets a neutral
+		// gray since it's not a deliberate "voice", unlike 1-9.
+		std::array<Color, 10> m_slotColors {
+			Color("#888888C0"), Color("#E53935C0"), Color("#1E88E5C0"), Color("#43A047C0"), Color("#FB8C00C0"),
+			Color("#8E24AAC0"), Color("#00ACC1C0"), Color("#D81B60C0"), Color("#AFB42BC0"), Color("#6D4C41C0")
+		};
 
 		static constexpr size_t kMaxUndoHistory = 100;
 		stdvec<stdvec<stdvec<bool>>> m_undoStack, m_redoStack;
@@ -162,6 +241,13 @@ class PianoRollEditor : public ogfx::gui::PianoRoll
 		Vec2 m_boxSelectCurrent { 0, 0 }; // live drag position - onDraw() renders the box between this and m_boxSelectStart
 		bool m_boxSelectSubtract { false };
 		bool m_shiftHeld { false };
+
+		bool m_focusModeActive { false };
+		f32 m_focusModeAlpha { 0.4f };
+
+		// (u32)-1 for both = not currently hovering any note.
+		u32 m_hoveredVoiceIndex { (u32)-1 };
+		u32 m_hoveredNoteIndex { (u32)-1 };
 
 		// Scrolling accumulates into a target instead of seeking straight to it, then
 		// onUpdate() eases toward that target a little each frame - a smoother glide instead

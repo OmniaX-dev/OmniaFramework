@@ -11,7 +11,10 @@
 namespace
 {
 	constexpr u32 kProjectMagic = 0x314A5250; // "PRJ1" as a little-endian u32
-	constexpr u32 kProjectVersion = 1;
+	// Bumped for the slot-name/music-key additions - this format isn't meant to stay stable
+	// across the widget's own active development (it's a one-off tool, not a public format),
+	// so a mismatch just fails the load cleanly rather than attempting migration.
+	constexpr u32 kProjectVersion = 2;
 
 	// Hand-rolled append/read over a plain ostd::ByteStream (stdvec<i8>), using the low-level
 	// to_bytes()/from_bytes() packing utilities directly - ostd::Serial's own Writer/Reader
@@ -97,6 +100,9 @@ void PianoRollEditor::applyTheme(const ostd::Stylesheet& theme)
 	setBoxSelectColor(getThemeValue<Color>(theme, "boxSelectColor", getBoxSelectColor()));
 	setScrollSpeedMultiplier(getThemeValue<f32>(theme, "scrollSpeedMultiplier", getScrollSpeedMultiplier()));
 	setSelectionBorderWidth(getThemeValue<f32>(theme, "selectionBorderWidth", getSelectionBorderWidth()));
+	setFocusModeAlpha(getThemeValue<f32>(theme, "focusModeAlpha", getFocusModeAlpha()));
+	for (u32 i = 0; i < 10; i++)
+		m_slotColors[i] = getThemeValue<Color>(theme, String("slot").add((i32)i).add("Color"), m_slotColors[i]);
 }
 
 void PianoRollEditor::create_default_keybinds(void)
@@ -261,6 +267,98 @@ void PianoRollEditor::saveSlot(u32 slot)
 	m_slotOccupied[slot] = true;
 }
 
+u32 PianoRollEditor::getSlotNoteCount(u32 slot) const
+{
+	if (slot >= m_slots.size())
+		return 0;
+	u32 count = 0;
+	for (auto& v : m_slots[slot])
+		for (bool b : v)
+			if (b) count++;
+	return count;
+}
+
+bool PianoRollEditor::isNoteInSlot(u32 slot, u32 voiceIndex, u32 noteIndex) const
+{
+	if (slot >= m_slots.size() || voiceIndex >= m_slots[slot].size() || noteIndex >= m_slots[slot][voiceIndex].size())
+		return false;
+	return m_slots[slot][voiceIndex][noteIndex];
+}
+
+void PianoRollEditor::setSlotName(u32 slot, const String& name)
+{
+	if (slot < m_slotNames.size())
+		m_slotNames[slot] = name;
+}
+
+String PianoRollEditor::getSlotName(u32 slot) const
+{
+	return slot < m_slotNames.size() ? m_slotNames[slot] : String("");
+}
+
+void PianoRollEditor::setSlotColor(u32 slot, const Color& color)
+{
+	if (slot < m_slotColors.size())
+		m_slotColors[slot] = color;
+}
+
+Color PianoRollEditor::getSlotColor(u32 slot) const
+{
+	return slot < m_slotColors.size() ? m_slotColors[slot] : m_selectionHighlightColor;
+}
+
+stdvec<std::pair<u32, u32>> PianoRollEditor::getSelectedNotes(void) const
+{
+	stdvec<std::pair<u32, u32>> result;
+	for (u32 v = 0; v < m_selected.size(); v++)
+		for (u32 n = 0; n < m_selected[v].size(); n++)
+			if (m_selected[v][n])
+				result.push_back({ v, n });
+	return result;
+}
+
+Rectangle PianoRollEditor::getBoxSelectionRect(void) const
+{
+	if (!m_boxSelecting)
+		return {};
+	f32 left = std::min(m_boxSelectStart.x, m_boxSelectCurrent.x);
+	f32 top = std::min(m_boxSelectStart.y, m_boxSelectCurrent.y);
+	return { left, top, std::abs(m_boxSelectCurrent.x - m_boxSelectStart.x), std::abs(m_boxSelectCurrent.y - m_boxSelectStart.y) };
+}
+
+Color PianoRollEditor::resolve_active_highlight_color(void) const
+{
+	for (u32 s = 0; s < 10; s++)
+		if (m_slotOccupied[s] && selection_equals(m_selected, m_slots[s]))
+			return m_slotColors[s];
+	return m_selectionHighlightColor;
+}
+
+stdvec<u32> PianoRollEditor::slots_containing(u32 voiceIndex, u32 noteIndex) const
+{
+	stdvec<u32> result;
+	for (u32 s = 0; s < 10; s++)
+		if (isNoteInSlot(s, voiceIndex, noteIndex))
+			result.push_back(s);
+	return result;
+}
+
+void PianoRollEditor::fire_hover_signal(u32 voiceIndex, u32 noteIndex)
+{
+	auto& note = getVoice(voiceIndex).notes[noteIndex];
+	PianoRollEditorNoteHoverData data;
+	data.voiceIndex = voiceIndex;
+	data.noteIndex = noteIndex;
+	data.pitch = note.pitch;
+	data.velocity = note.velocity;
+	data.channel = note.channel;
+	data.startTime = note.startTime;
+	data.endTime = note.endTime;
+	data.noteInfo = ostd::MidiParser::getNoteInfo(note.pitch);
+	data.slots = slots_containing(voiceIndex, noteIndex);
+	ostd::SignalHandler::emitSignal(NoteHoverSignal, ostd::Signal::Priority::RealTime, &data);
+}
+
 void PianoRollEditor::recallSlot(u32 slot)
 {
 	if (slot > 9)
@@ -356,7 +454,9 @@ bool PianoRollEditor::saveProjectAs(const String& path)
 	{
 		append_scalar<u8>(buf, m_slotOccupied[slot] ? 1 : 0);
 		write_selection(buf, m_slots[slot]);
+		append_string(buf, m_slotNames[slot]);
 	}
+	append_scalar<i32>(buf, (i32)getMusicKey());
 
 	if (!ostd::Memory::saveByteStreamToFile(buf, path))
 		return false;
@@ -380,7 +480,11 @@ bool PianoRollEditor::loadProject(const String& path)
 	size_t offset = 0;
 	if (read_scalar<u32>(buf, offset) != kProjectMagic)
 		return false;
-	read_scalar<u32>(buf, offset); // version - nothing to branch on yet
+	if (read_scalar<u32>(buf, offset) != kProjectVersion)
+	{
+		OX_WARN("PianoRollEditor::loadProject: \"%s\" is a different project file version - re-save it with the current version to load it.", path.c_str());
+		return false;
+	}
 
 	ostd::ByteStream midiBytes = read_bytes(buf, offset);
 	String tempMidiPath = String(path).add(".loaded.mid");
@@ -407,7 +511,9 @@ bool PianoRollEditor::loadProject(const String& path)
 	{
 		m_slotOccupied[slot] = read_scalar<u8>(buf, offset) != 0;
 		m_slots[slot] = read_selection(buf, offset);
+		m_slotNames[slot] = read_string(buf, offset);
 	}
+	setMusicKey((ostd::MidiParser::eMusicKey)read_scalar<i32>(buf, offset));
 
 	if (!tempAudioPath.empty())
 		loadAudio(tempAudioPath);
@@ -424,6 +530,10 @@ void PianoRollEditor::onDraw(BasicRenderer2D& gfx)
 
 	Rectangle bounds = getGlobalBounds();
 	f32 scale = compute_scale(bounds);
+	Color activeHighlightColor = resolve_active_highlight_color();
+	Rectangle liveBoxRect = getBoxSelectionRect(); // {} (zero-size) when not box-selecting - never intersects anything, so no special-casing needed below
+	Color dimOverlay = Color(0, 0, 0, (u8)std::clamp((1.0f - m_focusModeAlpha) * 255.0f, 0.0f, 255.0f));
+
 	for (u32 v = 0; v < getVoiceCount(); v++)
 	{
 		auto& voice = getVoice(v);
@@ -431,24 +541,28 @@ void PianoRollEditor::onDraw(BasicRenderer2D& gfx)
 			continue;
 		for (u32 n = 0; n < voice.notes.size() && n < m_selected[v].size(); n++)
 		{
-			if (!m_selected[v][n])
-				continue;
 			auto& note = voice.notes[n];
 			if (!is_note_in_fall_window(note))
 				continue;
 			bool isBlack = ostd::MidiParser::getNoteInfo(note.pitch).isBlackKey();
 			Rectangle rect = compute_falling_note_rect(note, isBlack, bounds, scale);
-			gfx.outlinedRoundRect(rect, Colors::Transparent, m_selectionHighlightColor, 3.0f * scale, (i32)std::round(m_selectionBorderWidth * scale));
+
+			bool selected = m_selected[v][n];
+			bool hovered = !m_shiftHeld && v == m_hoveredVoiceIndex && n == m_hoveredNoteIndex;
+			bool inLiveBox = m_boxSelecting && rect.intersects(liveBoxRect);
+
+			// Focus mode dims everything except what's selected, hovered (unless Shift is
+			// held), or - while actively dragging - inside the live box-select preview.
+			if (m_focusModeActive && !selected && !hovered && !inLiveBox)
+				gfx.fillRoundRect(rect, dimOverlay, 3.0f * scale);
+
+			if (selected)
+				gfx.outlinedRoundRect(rect, Colors::Transparent, activeHighlightColor, 3.0f * scale, (i32)std::round(m_selectionBorderWidth * scale));
 		}
 	}
 
 	if (m_boxSelecting)
-	{
-		f32 left = std::min(m_boxSelectStart.x, m_boxSelectCurrent.x);
-		f32 top = std::min(m_boxSelectStart.y, m_boxSelectCurrent.y);
-		Rectangle dragRect { left, top, std::abs(m_boxSelectCurrent.x - m_boxSelectStart.x), std::abs(m_boxSelectCurrent.y - m_boxSelectStart.y) };
-		gfx.outlinedRoundRect(dragRect, Colors::Transparent, m_boxSelectColor, 0.0f, 1);
-	}
+		gfx.outlinedRoundRect(liveBoxRect, Colors::Transparent, m_boxSelectColor, 0.0f, 1);
 }
 
 void PianoRollEditor::onUpdate(void)
@@ -552,6 +666,26 @@ void PianoRollEditor::onMouseScrolled(const Event& event)
 	m_scrollAnimating = true;
 }
 
+void PianoRollEditor::onMouseMoved(const Event& event)
+{
+	Vec2 pos { event.mouse->position_x, event.mouse->position_y };
+	auto [voiceIndex, noteIndex] = hit_test_note(pos);
+	if (voiceIndex == m_hoveredVoiceIndex && noteIndex == m_hoveredNoteIndex)
+		return; // still inside (or still outside) the same note - not a new "enter"
+
+	m_hoveredVoiceIndex = voiceIndex;
+	m_hoveredNoteIndex = noteIndex;
+	if (voiceIndex != (u32)-1)
+		fire_hover_signal(voiceIndex, noteIndex);
+}
+
+void PianoRollEditor::onMouseExited(const Event& event)
+{
+	(void)event;
+	m_hoveredVoiceIndex = (u32)-1;
+	m_hoveredNoteIndex = (u32)-1;
+}
+
 void PianoRollEditor::onKeyPressed(const Event& event)
 {
 	auto& key = *event.keyboard;
@@ -569,6 +703,7 @@ void PianoRollEditor::onKeyPressed(const Event& event)
 	};
 
 	if (matches(invertSelectionKey, false, false)) { invertSelection(); return; }
+	if (matches(focusModeKey, false, false)) { toggleFocusMode(); return; }
 	if (matches(exportAllKey, true, false)) { exportAllSlotsToFolder(getWindow().showOpenFolderDialog()); return; }
 	if (matches(exportSelectionKey, false, false))
 	{

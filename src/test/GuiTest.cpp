@@ -511,12 +511,12 @@ class TestWindow : public Window
 			// the enharmonic spelling (Gb major spells pitch class 11 as "Cb", not "B").
 			m_pianoRollEditor.getStyle().enableShowNoteNamesOnFallingNotes(true);
 			m_pianoRollEditor.getStyle().enableShowNoteNamesOnKeys(true);
-			if (!m_pianoRollEditor.loadProject("./Chopin Nocturne No. 20 in C#m.pianoproj"))
-				out().fg("red").p("[PianoRollEditor] Failed to load project").reset().nl();
-			// if (m_pianoRollEditor.loadVoice("./notes.mid", Colors::Transparent, "Piano") == (u32)-1)
-			//     out().fg("red").p("[PianoRollEditor] Failed to load ./notes.mid").reset().nl();
-			// if (!m_pianoRollEditor.loadAudio("./audio.mp3"))
-			//     out().fg("red").p("[PianoRollEditor] Failed to load ./audio.mp3").reset().nl();
+			// if (!m_pianoRollEditor.loadProject("./Chopin Nocturne No. 20 in C#m.pianoproj"))
+			//     out().fg("red").p("[PianoRollEditor] Failed to load project").reset().nl();
+			if (m_pianoRollEditor.loadVoice("./notes.mid", Colors::Transparent, "Piano") == (u32)-1)
+				out().fg("red").p("[PianoRollEditor] Failed to load ./notes.mid").reset().nl();
+			if (!m_pianoRollEditor.loadAudio("./audio.mp3"))
+				out().fg("red").p("[PianoRollEditor] Failed to load ./audio.mp3").reset().nl();
 			m_editorStatusLbl.setText("Selected: 0 notes");
 
 			t6.addWidget(m_pianoRollEditor, { 0, 0 });

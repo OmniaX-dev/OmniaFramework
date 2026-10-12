@@ -17,5 +17,19 @@
 	boxSelectColor = #4AA3FFA0
 	scrollSpeedMultiplier = 1.0
 	selectionBorderWidth = 3.0
+	focusModeAlpha = 0.4
+
+	% Per-slot highlight colors - slot 0 (the auto-backup slot) stays neutral gray since it's
+	% not a deliberate "voice" the way 1-9 are. Falls back to these same values if omitted.
+	slot0Color = #888888C0
+	slot1Color = #E53935C0
+	slot2Color = #1E88E5C0
+	slot3Color = #43A047C0
+	slot4Color = #FB8C00C0
+	slot5Color = #8E24AAC0
+	slot6Color = #00ACC1C0
+	slot7Color = #D81B60C0
+	slot8Color = #AFB42BC0
+	slot9Color = #6D4C41C0
 }
 % ================================================================
