@@ -502,6 +502,7 @@ class TestWindow : public Window
 			// loadFromFile's "false" loads additively, on top of DefaultThemeDark.oss rather
 			// than replacing it - PianoRollEditor's own themeable properties (category
 			// "pianoRollEditor") live in this separate file since it isn't part of Omnia.
+			// m_pianoRollEditor.setSoundfont("/home/sylar/Desktop/Salamander.sf2");
 			m_theme.loadFromFile("./PianoRollEditorTheme.oss", false, getDefaultStylesheetVariableList());
 			m_pianoRollEditor.setSize(1100, 620);
 			m_pianoRollEditor.enableFocus();
@@ -515,8 +516,8 @@ class TestWindow : public Window
 			//     out().fg("red").p("[PianoRollEditor] Failed to load project").reset().nl();
 			if (m_pianoRollEditor.loadVoice("./notes.mid", Colors::Transparent, "Piano") == (u32)-1)
 				out().fg("red").p("[PianoRollEditor] Failed to load ./notes.mid").reset().nl();
-			if (!m_pianoRollEditor.loadAudio("./audio.mp3"))
-				out().fg("red").p("[PianoRollEditor] Failed to load ./audio.mp3").reset().nl();
+			// if (!m_pianoRollEditor.loadAudio("./audio.mp3"))
+			//     out().fg("red").p("[PianoRollEditor] Failed to load ./audio.mp3").reset().nl();
 			m_editorStatusLbl.setText("Selected: 0 notes");
 
 			t6.addWidget(m_pianoRollEditor, { 0, 0 });

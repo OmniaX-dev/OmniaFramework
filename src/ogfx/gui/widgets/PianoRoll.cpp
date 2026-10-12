@@ -48,9 +48,12 @@ namespace ogfx
 		u32 PianoRoll::loadVoice(const String& midiFilePath, const Color& color, const String& name)
 		{
 			Voice voice;
+			i32 ticksPerQuarterNote = 0;
+			stdvec<ostd::MidiParser::TempoEvent> tempoMap; // discarded - not needed by PianoRoll itself
 			try
 			{
-				voice.notes = ostd::MidiParser::parseFile(midiFilePath);
+				if (!ostd::MidiParser::parseFileEx(midiFilePath, voice.notes, ticksPerQuarterNote, tempoMap, voice.pedalEvents))
+					return (u32)-1;
 			}
 			catch (std::exception& e)
 			{
@@ -117,6 +120,10 @@ namespace ogfx
 			m_audioPlayer->load(std::move(clip));
 			m_audioPlayer->setVolume(m_volume);
 			m_audioStarted = false; // fresh device - hasn't been positioned/started for this session yet
+			// A real audio file now takes priority (see has_real_audio_clock()) - don't let the
+			// fallback synth keep sounding underneath it if it was already playing.
+			if (m_synth)
+				m_synth->pause();
 			recompute_total_duration();
 			return true;
 		}
@@ -128,11 +135,97 @@ namespace ogfx
 			recompute_total_duration();
 		}
 
+		bool PianoRoll::setSoundfont(const String& soundfontFilePath)
+		{
+			ensure_synth();
+			return m_synth && m_synth->setSoundfont(soundfontFilePath);
+		}
+
+		void PianoRoll::useEmbeddedSoundfont(void)
+		{
+			ensure_synth();
+			if (m_synth)
+				m_synth->useEmbeddedSoundfont();
+		}
+
+		void PianoRoll::ensure_synth(void)
+		{
+			if (!m_synth)
+			{
+				m_synth = std::make_unique<osnd::MidiSynth>();
+				m_synth->setVolume(m_volume);
+			}
+			rebuild_synth_schedule();
+		}
+
+		void PianoRoll::rebuild_synth_schedule(void)
+		{
+			if (!m_synth)
+				return; // nothing to rebuild yet - created lazily by ensure_synth()
+
+			// setSchedule() always resets position to 0 - if the synth is already the live clock
+			// right now (a voice's visibility/notes changed while synth-driven playback was
+			// already underway), preserve and restore its actual position instead of letting a
+			// schedule rebuild silently jump playback back to the start.
+			bool wasLive = has_synth_clock() && m_audioStarted;
+			f64 preservedRaw = wasLive ? m_synth->getPositionSeconds() : 0.0;
+
+			stdvec<osnd::MidiSynth::Event> schedule;
+			u64 totalSamples = 0;
+			constexpr f64 sampleRate = (f64)osnd::MidiSynth::SampleRate;
+
+			for (auto& voice : m_voices)
+			{
+				if (!voice.visible)
+					continue;
+				for (auto& note : voice.notes)
+				{
+					osnd::MidiSynth::Event on;
+					on.sampleOffset = (u64)std::max(0.0, note.startTime * sampleRate);
+					on.type = osnd::MidiSynth::Event::Type::NoteOn;
+					on.channel = note.channel;
+					on.param1 = note.pitch;
+					on.param2 = note.velocity;
+					schedule.push_back(on);
+
+					osnd::MidiSynth::Event off;
+					off.sampleOffset = (u64)std::max(0.0, note.endTime * sampleRate);
+					off.type = osnd::MidiSynth::Event::Type::NoteOff;
+					off.channel = note.channel;
+					off.param1 = note.pitch;
+					off.param2 = 0;
+					schedule.push_back(off);
+
+					totalSamples = std::max(totalSamples, off.sampleOffset);
+				}
+				// Pedals are global to whatever's actually sounding, not per-voice (see
+				// Voice::pedalEvents) - every visible voice's own pedal CCs get merged into this
+				// one flat timeline right alongside its notes.
+				for (auto& pedal : voice.pedalEvents)
+				{
+					osnd::MidiSynth::Event cc;
+					cc.sampleOffset = (u64)std::max(0.0, pedal.time * sampleRate);
+					cc.type = osnd::MidiSynth::Event::Type::ControlChange;
+					cc.channel = pedal.channel;
+					cc.param1 = pedal.controller;
+					cc.param2 = pedal.value;
+					schedule.push_back(cc);
+					totalSamples = std::max(totalSamples, cc.sampleOffset);
+				}
+			}
+
+			m_synth->setSchedule(std::move(schedule), totalSamples);
+			if (wasLive)
+				m_synth->seekSeconds(preservedRaw);
+		}
+
 		void PianoRoll::setVolume(f32 volume01)
 		{
 			m_volume = std::clamp(volume01, 0.0f, 1.0f);
 			if (m_audioPlayer)
 				m_audioPlayer->setVolume(m_volume);
+			if (m_synth)
+				m_synth->setVolume(m_volume);
 		}
 
 		void PianoRoll::recompute_total_duration(void)
@@ -150,6 +243,7 @@ namespace ogfx
 				}
 			if (hasAudio())
 				d = std::max(d, m_audioPlayer->getDurationSeconds());
+			rebuild_synth_schedule(); // keeps the fallback synth's schedule in sync with the voice list either way
 
 			// Lead-in silence so the earliest note starts fully offscreen instead of popping in
 			// already partway down - only needed if the content itself doesn't already have at
@@ -177,13 +271,18 @@ namespace ogfx
 					m_audioPlayer->pause();
 					m_audioPlayer->seekSeconds(0.0);
 				}
+				else if (m_synth)
+				{
+					m_synth->pause();
+					m_synth->seekSeconds(0.0);
+				}
 			}
 		}
 
 		void PianoRoll::play(void)
 		{
 			m_playing = true;
-			if (has_live_audio_clock() && !m_audioPlayer->isPlaying())
+			if (has_real_audio_clock() && !m_audioPlayer->isPlaying())
 			{
 				f64 raw = m_fallbackClockSeconds;
 				if (raw >= 0.0)
@@ -196,22 +295,40 @@ namespace ogfx
 					m_audioStarted = true;
 				}
 			}
+			else if (!hasAudio() && !m_voices.empty())
+			{
+				// No real audio file, but there's content to play - the fallback synth takes over
+				// the exact role m_audioPlayer plays above.
+				ensure_synth();
+				if (m_synth && m_synth->hasDevice() && !m_synth->isPlaying())
+				{
+					f64 raw = m_fallbackClockSeconds;
+					if (raw >= 0.0)
+					{
+						m_synth->seekSeconds(raw);
+						m_synth->play();
+						m_audioStarted = true;
+					}
+				}
+			}
 		}
 
 		void PianoRoll::pause(void)
 		{
-			// Sync the fallback clock to wherever the audio clock actually was - once the device
-			// starts actually driving things, m_fallbackClockSeconds is left frozen at whatever it
-			// was at that crossing (see onUpdate()); play()'s own "resume directly" branch reads
-			// m_fallbackClockSeconds, so without this it would always resume from that stale
-			// frozen value - a backward jump on every single pause/play, which also means
-			// update_active_notes() sees a backward (non-forward) jump and skips its own edge
-			// detection, leaving stale "ghost" pressed keys and rebuilding m_activeNotes around
-			// the wrong (far earlier) position.
+			// Sync the fallback clock to wherever the live clock (audio or synth) actually was -
+			// once either one starts actually driving things, m_fallbackClockSeconds is left
+			// frozen at whatever it was at that crossing (see onUpdate()); play()'s own "resume
+			// directly" branches read m_fallbackClockSeconds, so without this they'd always
+			// resume from that stale frozen value - a backward jump on every single pause/play,
+			// which also means update_active_notes() sees a backward (non-forward) jump and
+			// skips its own edge detection, leaving stale "ghost" pressed keys and rebuilding
+			// m_activeNotes around the wrong (far earlier) position.
 			m_fallbackClockSeconds = getCurrentTimeSeconds() - m_startPadSeconds;
 			m_playing = false;
 			if (hasAudio())
 				m_audioPlayer->pause();
+			else if (m_synth)
+				m_synth->pause();
 		}
 
 		void PianoRoll::stop(void)
@@ -253,6 +370,28 @@ namespace ogfx
 					m_audioStarted = false;
 				}
 			}
+			else if (!m_voices.empty())
+			{
+				ensure_synth();
+				if (m_synth && m_synth->hasDevice())
+				{
+					if (raw >= 0.0)
+					{
+						m_synth->seekSeconds(raw);
+						if (m_playing)
+							m_synth->play();
+						else
+							m_synth->pause();
+						m_audioStarted = true;
+					}
+					else
+					{
+						m_synth->pause();
+						m_synth->seekSeconds(0.0);
+						m_audioStarted = false;
+					}
+				}
+			}
 			// Prevents the next onUpdate() from seeing a huge prevNow->now jump and firing a
 			// storm of catch-up NoteOn/NoteOff signals for everything in between.
 			m_lastUpdateSeconds = raw;
@@ -268,7 +407,13 @@ namespace ogfx
 
 		f64 PianoRoll::getCurrentTimeSeconds(void) const
 		{
-			f64 raw = (has_live_audio_clock() && m_audioStarted) ? m_audioPlayer->getPositionSeconds() : m_fallbackClockSeconds;
+			f64 raw;
+			if (has_real_audio_clock() && m_audioStarted)
+				raw = m_audioPlayer->getPositionSeconds();
+			else if (has_synth_clock() && m_audioStarted)
+				raw = m_synth->getPositionSeconds();
+			else
+				raw = m_fallbackClockSeconds;
 			return raw + m_startPadSeconds;
 		}
 
@@ -284,21 +429,33 @@ namespace ogfx
 			m_updateClock.restart(ostd::eTimeUnits::Milliseconds);
 
 			f64 raw;
-			if (has_live_audio_clock() && m_audioPlayer->isPlaying())
+			if (has_real_audio_clock() && m_audioPlayer->isPlaying())
 				raw = m_audioPlayer->getPositionSeconds();
+			else if (has_synth_clock() && m_synth->isPlaying())
+				raw = m_synth->getPositionSeconds();
 			else
 			{
 				if (m_playing)
 					m_fallbackClockSeconds += deltaMs / 1000.0;
 				raw = m_fallbackClockSeconds;
-				if (m_playing && has_live_audio_clock() && raw >= 0.0)
+				if (m_playing && raw >= 0.0)
 				{
-					// Crossing out of the pre-roll silence into real time - start the device now
-					// so its own position (0 at this instant) lines up exactly with raw == 0.
-					m_audioPlayer->seekSeconds(0.0);
-					m_audioPlayer->play();
-					m_audioStarted = true;
-					raw = m_audioPlayer->getPositionSeconds();
+					if (has_real_audio_clock())
+					{
+						// Crossing out of the pre-roll silence into real time - start the device
+						// now so its own position (0 at this instant) lines up exactly with raw == 0.
+						m_audioPlayer->seekSeconds(0.0);
+						m_audioPlayer->play();
+						m_audioStarted = true;
+						raw = m_audioPlayer->getPositionSeconds();
+					}
+					else if (has_synth_clock())
+					{
+						m_synth->seekSeconds(0.0);
+						m_synth->play();
+						m_audioStarted = true;
+						raw = m_synth->getPositionSeconds();
+					}
 				}
 			}
 

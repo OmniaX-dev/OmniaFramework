@@ -129,6 +129,19 @@ namespace ostd
 				f64 microsecondsPerQuarter   { 500000.0 }; // 120 BPM
 		};
 
+		// A sustain/sostenuto/soft pedal control-change (CC64/66/67 only - see parseFileEx()).
+		// Kept as the controller's full 0-127 value, not collapsed to on/off, since recordings
+		// (e.g. from Pianoteq) use half-pedaling.
+		public: class ControlChangeEvent
+		{
+			public:
+				i32 tick        { 0 };
+				f64 time        { 0.0 }; // seconds, same clock as NoteEvent::startTime
+				i32 controller  { 0 };   // 64 = sustain, 66 = sostenuto, 67 = soft
+				i32 value       { 0 };   // 0-127
+				i32 channel     { 0 };
+		};
+
 	    public:
 			// Parses a single-track MIDI file and returns a vector of NoteEvents. A thin
 			// wrapper over parseFileEx() that discards the tick/tempo-map data - kept as the
@@ -140,6 +153,10 @@ namespace ostd
 			// needed to write a new file back out with writeFile() and have it play back
 			// identically, not just contain the same notes).
 			static bool parseFileEx(const String& filePath, stdvec<NoteEvent>& outNotes, i32& outTicksPerQuarterNote, stdvec<TempoEvent>& outTempoMap);
+			// Same as the 4-arg overload above, plus the file's pedal CCs (sustain/sostenuto/
+			// soft - see ControlChangeEvent); the 4-arg overload just calls this one with a
+			// throwaway vector, same relationship parseFile() has to parseFileEx().
+			static bool parseFileEx(const String& filePath, stdvec<NoteEvent>& outNotes, i32& outTicksPerQuarterNote, stdvec<TempoEvent>& outTempoMap, stdvec<ControlChangeEvent>& outPedalEvents);
 			// Writes notes (with their startTick/endTick/channel/velocity/offVelocity) back out
 			// as a new, single-track Standard MIDI File, reproducing ticksPerQuarterNote and
 			// tempoMap exactly - the counterpart to parseFileEx(), e.g. for exporting a subset

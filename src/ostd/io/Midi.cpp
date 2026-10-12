@@ -20,6 +20,12 @@ namespace ostd
 
 	bool MidiParser::parseFileEx(const String& filePath, stdvec<NoteEvent>& outNotes, i32& outTicksPerQuarterNote, stdvec<TempoEvent>& outTempoMap)
 	{
+	    stdvec<ControlChangeEvent> pedalEvents;
+	    return parseFileEx(filePath, outNotes, outTicksPerQuarterNote, outTempoMap, pedalEvents);
+	}
+
+	bool MidiParser::parseFileEx(const String& filePath, stdvec<NoteEvent>& outNotes, i32& outTicksPerQuarterNote, stdvec<TempoEvent>& outTempoMap, stdvec<ControlChangeEvent>& outPedalEvents)
+	{
 	    smf::MidiFile midi;
 
 	    if (!midi.read(filePath))
@@ -38,6 +44,7 @@ namespace ostd
 	    outNotes.reserve(256);
 	    outTicksPerQuarterNote = midi.getTicksPerQuarterNote();
 	    outTempoMap.clear();
+	    outPedalEvents.clear();
 
 	    for (i32 e = 0; e < midi[0].size(); ++e)
 		{
@@ -48,6 +55,21 @@ namespace ostd
 	            tempo.tick = ev.tick;
 	            tempo.microsecondsPerQuarter = (f64)ev.getTempoMicroseconds();
 	            outTempoMap.push_back(tempo);
+	            continue;
+	        }
+	        if (ev.isController())
+	        {
+	            i32 controller = ev.getControllerNumber();
+	            if (controller == 64 || controller == 66 || controller == 67) // sustain, sostenuto, soft
+	            {
+	                ControlChangeEvent pedal;
+	                pedal.tick = ev.tick;
+	                pedal.time = ev.seconds;
+	                pedal.controller = controller;
+	                pedal.value = ev.getControllerValue();
+	                pedal.channel = ev.getChannel();
+	                outPedalEvents.push_back(pedal);
+	            }
 	            continue;
 	        }
 	        if (ev.isNoteOn())

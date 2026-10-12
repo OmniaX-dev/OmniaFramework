@@ -60,6 +60,12 @@ namespace ogfx
 				Color color { Colors::Transparent }; // Transparent = let PianoRollStyle's other tiers decide
 				bool visible { true };
 				stdvec<ostd::MidiParser::NoteEvent> notes; // time-sorted (MidiParser's parse order)
+				// Sustain/sostenuto/soft CCs from this voice's own file - kept per-voice (not
+				// flattened away) so a future per-voice preview can "merge in the pedal events
+				// too" even when isolating just this one voice; ordinary multi-voice playback
+				// (build_synth_schedule()) merges every visible voice's pedalEvents into one
+				// timeline regardless, since pedals are global to whatever's actually sounding.
+				stdvec<ostd::MidiParser::ControlChangeEvent> pedalEvents;
 			};
 
 			public:
@@ -99,7 +105,11 @@ namespace ogfx
 				inline u32 getVoiceCount(void) const { return (u32)m_voices.size(); }
 				Voice& getVoice(u32 index);
 				const Voice& getVoice(u32 index) const;
-				inline void setVoiceVisible(u32 index, bool visible) { if (index < m_voices.size()) { m_voices[index].visible = visible; recompute_pressed_keys(getCurrentTimeSeconds()); } }
+				// rebuild_synth_schedule() keeps the fallback synth's own audible schedule
+				// consistent with visibility - without it, muting a voice visually wouldn't mute
+				// it audibly whenever the synth (rather than a real audio file) is the one
+				// actually sounding.
+				inline void setVoiceVisible(u32 index, bool visible) { if (index < m_voices.size()) { m_voices[index].visible = visible; recompute_pressed_keys(getCurrentTimeSeconds()); rebuild_synth_schedule(); } }
 				inline void setVoiceColor(u32 index, const Color& color) { if (index < m_voices.size()) { m_voices[index].color = color; recompute_pressed_keys(getCurrentTimeSeconds()); } }
 
 				// --- audio ---
@@ -111,6 +121,16 @@ namespace ogfx
 				virtual bool loadAudio(const String& audioFilePath);
 				virtual void clearAudio(void);
 				inline bool hasAudio(void) const { return m_audioPlayer && m_audioPlayer->isLoaded(); }
+
+				// --- fallback MIDI synth ---
+				// Takes over as the actual sound (and, via has_synth_clock(), timing) source
+				// whenever hasAudio() is false and there's at least one voice loaded - the embedded
+				// soundfont (osnd::MidiSynth's own default) needs nothing set up to work; these just
+				// let a caller point it at a different one instead. See getVoice()/pedalEvents - a
+				// real soundfont is only ever swapped, never required.
+				bool setSoundfont(const String& soundfontFilePath);
+				void useEmbeddedSoundfont(void);
+				inline bool hasSynthDevice(void) const { return m_synth && m_synth->hasDevice(); }
 
 				// Whether MIDI pitch (0-127) is currently highlighted on the keyboard - the same
 				// state driving draw_keyboard()'s own highlighting, exposed for anything an app
@@ -173,7 +193,16 @@ namespace ogfx
 				// This is the actual "can I trust AudioPlayer as the clock right now" check,
 				// used by onUpdate()/getCurrentTimeSeconds() - falls back to the internal clock
 				// whenever it's false, even if hasAudio() is true.
-				inline bool has_live_audio_clock(void) const { return m_audioPlayer && m_audioPlayer->isLoaded() && m_audioPlayer->hasDevice(); }
+				inline bool has_real_audio_clock(void) const { return m_audioPlayer && m_audioPlayer->isLoaded() && m_audioPlayer->hasDevice(); }
+				// Same idea, but for the fallback MIDI synth: only ever the live clock when
+				// there's no real audio file to prefer instead (m_synth exists lazily, see
+				// ensure_synth()/play()).
+				inline bool has_synth_clock(void) const { return !hasAudio() && m_synth && m_synth->hasDevice(); }
+				// Lazily creates m_synth (first use only) and (re)builds its schedule from every
+				// currently visible voice's notes + pedalEvents, flattened and sample-sorted -
+				// called whenever the voice list changes or the synth is about to start.
+				void ensure_synth(void);
+				void rebuild_synth_schedule(void);
 
 			public:
 
@@ -240,6 +269,11 @@ namespace ogfx
 				PianoRollStyle m_style;
 				stdvec<Voice> m_voices;
 				std::unique_ptr<osnd::AudioPlayer> m_audioPlayer;
+				// Fallback sound (and, via has_synth_clock(), timing) source - only ever relevant
+				// while !hasAudio(); created lazily by ensure_synth() on first actual need (play()/
+				// seekSeconds() with voices loaded and no audio file), not at construction, so a
+				// PianoRoll that always has real audio never pays for a FluidSynth instance/device.
+				std::unique_ptr<osnd::MidiSynth> m_synth;
 				// m_fallbackClockSeconds/m_lastUpdateSeconds/update_active_notes()/draw_falling_notes()
 				// all work in "raw" time - the MIDI/audio files' own native clock, where 0 is the
 				// first actual MIDI/audio sample, same as before this field existed. m_startPadSeconds
@@ -250,10 +284,11 @@ namespace ogfx
 				// presentation-facing clock that starts at 0 and only ever counts up) is just
 				// raw + m_startPadSeconds.
 				f64 m_startPadSeconds { 0.0 };
-				// Whether m_audioPlayer's own position is trustworthy right now - false during the
-				// pre-roll pad (before the device has ever been positioned/started for this session),
-				// in which case raw time is tracked by m_fallbackClockSeconds instead, same as when
-				// there's no live audio clock at all.
+				// Whether whichever live clock is actually in play right now (m_audioPlayer, or
+				// m_synth when there's no audio file) has had its own position trustworthy -
+				// false during the pre-roll pad (before it's ever been positioned/started this
+				// session), in which case raw time is tracked by m_fallbackClockSeconds instead,
+				// same as when there's no live clock of either kind at all.
 				bool m_audioStarted { false };
 				f64 m_fallbackClockSeconds { 0.0 }; // raw time; used whenever audio isn't (yet) driving it
 				ostd::Counter m_updateClock; // drives m_fallbackClockSeconds's delta time each frame

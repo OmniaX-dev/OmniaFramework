@@ -27,3 +27,4 @@
 
 #include <osnd/audio/AudioClip.hpp>
 #include <osnd/audio/AudioPlayer.hpp>
+#include <osnd/midi/MidiSynth.hpp>

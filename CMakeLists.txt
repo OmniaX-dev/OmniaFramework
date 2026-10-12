@@ -10,7 +10,7 @@ set(MINOR_VER 4)
 set(CMAKE_CXX_COMPILER "clang++")
 set(CMAKE_C_COMPILER "clang")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.28)
 project(${PROJ_NAME} LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 23)
 file(STRINGS "./other/build.nr" BUILD_NUMBER)
@@ -85,6 +85,8 @@ list(APPEND OSND_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/osnd/vendor/dr_mp3_impl.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/osnd/audio/AudioClip.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/osnd/audio/AudioPlayer.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/osnd/resources/UprightPianoKWSF.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/osnd/midi/MidiSynth.cpp
 )
 list(APPEND OGFX_SOURCE_FILES
 	# gui
@@ -239,6 +241,75 @@ if (WIN32)
 	target_link_libraries(${OMNIA_GFX_LIB} PUBLIC SDL3 SDL3_ttf SDL3_image)
 	target_link_libraries(${OMNIA_SND_LIB} PUBLIC SDL3)
 endif (WIN32)
+
+option(PROJ_SYSTEM_FLUIDSYNTH "Prefer the system FluidSynth" ON)
+
+set(_fluid_found FALSE)
+
+if(PROJ_SYSTEM_FLUIDSYNTH)
+    # 1) CMake config package (most distros ship FluidSynthConfig.cmake now)
+    find_package(FluidSynth 2.2 CONFIG QUIET)
+    if(TARGET FluidSynth::libfluidsynth)
+        add_library(fluidsynth::fluidsynth ALIAS FluidSynth::libfluidsynth)
+        set(_fluid_found TRUE)
+        message(STATUS "FluidSynth: system (CMake config) ${FluidSynth_VERSION}")
+    else()
+        # 2) pkg-config fallback
+        find_package(PkgConfig QUIET)
+        if(PKG_CONFIG_FOUND)
+            pkg_check_modules(FLUIDSYNTH_PC QUIET IMPORTED_TARGET fluidsynth>=2.2)
+            if(FLUIDSYNTH_PC_FOUND)
+                add_library(fluidsynth::fluidsynth ALIAS PkgConfig::FLUIDSYNTH_PC)
+                set(_fluid_found TRUE)
+                message(STATUS "FluidSynth: system (pkg-config) ${FLUIDSYNTH_PC_VERSION}")
+            endif()
+        endif()
+    endif()
+endif()
+
+if(NOT _fluid_found)
+    message(STATUS "FluidSynth: building bundled static copy")
+    include(FetchContent)
+
+    block()   # keep all these variables out of the parent scope (CMake 3.25+)
+        set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)   # let plain set() override option()
+        set(BUILD_SHARED_LIBS OFF)
+
+        set(osal "cpp11")                       # no glib
+
+        # We render into our own SDL3 stream: no audio/MIDI drivers at all
+        foreach(opt
+                alsa pulseaudio pipewire jack oss portaudio sdl3
+                coreaudio coremidi dsound wasapi waveout winmidi
+                opensles oboe midishare dart kai)
+            set(enable-${opt} OFF)
+        endforeach()
+
+        # Things we don't need
+        set(enable-aufile     OFF)   # file-rendering driver
+        set(enable-libsndfile OFF)   # only needed for SF3 / file output
+        set(enable-network    OFF)   # TCP shell server
+        set(enable-ipv6       OFF)
+        set(enable-ladspa     OFF)
+        set(enable-dbus       OFF)
+        set(enable-systemd    OFF)
+        set(enable-readline   OFF)   # CLI line editing
+        set(enable-openmp     OFF)   # avoid shipping libgomp
+        set(enable-framework  OFF)   # macOS: plain static lib, not a .framework
+
+        FetchContent_Declare(fluidsynth
+            GIT_REPOSITORY https://github.com/FluidSynth/fluidsynth.git
+            GIT_TAG        v2.6.1
+            GIT_SHALLOW    TRUE
+            EXCLUDE_FROM_ALL               # only build what we link (CMake 3.28+)
+        )
+        FetchContent_MakeAvailable(fluidsynth)
+    endblock()
+
+    add_library(fluidsynth::fluidsynth ALIAS libfluidsynth)
+endif()
+
+target_link_libraries(${OMNIA_SND_LIB} PUBLIC fluidsynth::fluidsynth)
 
 target_link_libraries(${OMNIA_SND_LIB} PUBLIC ${OMNIA_STD_LIB})
 target_link_libraries(${OMNIA_GFX_LIB} PUBLIC ${OMNIA_STD_LIB})

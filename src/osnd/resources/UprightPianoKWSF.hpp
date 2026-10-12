@@ -21,11 +21,8 @@
 #pragma once
 
 #include <cstddef>
-
 namespace osnd
 {
-	extern const unsigned char upright_piano_kw_sf2[] = {
-		#embed "../../../extra/UprightPianoKW.sf2"
-	};
-	extern const std::size_t upright_piano_kw_sf2_size = sizeof(upright_piano_kw_sf2);
+	extern const unsigned char upright_piano_kw_sf2[];
+	extern const std::size_t upright_piano_kw_sf2_size;
 }
