@@ -7,9 +7,15 @@
 #include <filesystem>
 #include <algorithm>
 #include <cmath>
+#include <chrono>
 
 namespace
 {
+	inline i64 now_ns(void)
+	{
+		return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+	}
+
 	constexpr u32 kProjectMagic = 0x314A5250; // "PRJ1" as a little-endian u32
 	// Bumped for the slot-name/music-key additions - this format isn't meant to stay stable
 	// across the widget's own active development (it's a one-off tool, not a public format),
@@ -572,17 +578,13 @@ void PianoRollEditor::onUpdate(void)
 
 	if (m_scrollAnimating)
 	{
-		f64 current = getCurrentTimeSeconds();
-		constexpr f64 easing = 0.25; // fraction of the remaining distance closed each frame
-		constexpr f64 epsilonSeconds = 0.01;
-		f64 remaining = m_scrollTargetSeconds - current;
-		if (std::abs(remaining) < epsilonSeconds)
-		{
-			seekSeconds(m_scrollTargetSeconds);
+		constexpr f64 glideDurationSeconds = 0.25;
+		f64 elapsed = (f64)(now_ns() - m_scrollGlideStartTimeNs) / 1e9;
+		f64 t = std::clamp(elapsed / glideDurationSeconds, 0.0, 1.0);
+		f64 easedT = 1.0 - (1.0 - t) * (1.0 - t); // ease-out quadratic
+		seekSeconds(m_scrollGlideStartValue + (m_scrollTargetSeconds - m_scrollGlideStartValue) * easedT);
+		if (t >= 1.0)
 			m_scrollAnimating = false;
-		}
-		else
-			seekSeconds(current + remaining * easing);
 	}
 }
 
@@ -658,11 +660,15 @@ void PianoRollEditor::onMouseScrolled(const Event& event)
 	constexpr f64 baseSeekStepSeconds = 2.0;
 	f64 step = direction * baseSeekStepSeconds * (f64)m_scrollSpeedMultiplier;
 
-	// Accumulates into a target that onUpdate() eases toward, rather than seeking straight to
-	// it - several quick wheel ticks build on the same in-flight target instead of each one
-	// restarting the glide from wherever playback happens to be at that instant.
+	// Accumulates into a target rather than seeking straight to it - several quick wheel ticks
+	// build on the same in-flight target instead of each one restarting the glide from
+	// wherever playback happens to be at that instant. The glide itself always restarts fresh
+	// from the current position/time though, so a new tick never causes a visible jump back
+	// to some earlier glide's starting point.
 	f64 base = m_scrollAnimating ? m_scrollTargetSeconds : getCurrentTimeSeconds();
 	m_scrollTargetSeconds = std::clamp(base + step, 0.0, getTotalDurationSeconds());
+	m_scrollGlideStartValue = getCurrentTimeSeconds();
+	m_scrollGlideStartTimeNs = now_ns();
 	m_scrollAnimating = true;
 }
 

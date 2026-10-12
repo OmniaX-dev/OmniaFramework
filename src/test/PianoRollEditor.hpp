@@ -250,10 +250,18 @@ class PianoRollEditor : public ogfx::gui::PianoRoll
 		u32 m_hoveredNoteIndex { (u32)-1 };
 
 		// Scrolling accumulates into a target instead of seeking straight to it, then
-		// onUpdate() eases toward that target a little each frame - a smoother glide instead
-		// of an instant jump per wheel tick.
+		// onUpdate() glides toward that target over a fixed real-time duration (ease-out),
+		// instead of an instant jump per wheel tick. The glide is a pure function of wall-clock
+		// time elapsed since it started (m_scrollGlideStartValue/StartTimeNs), deliberately
+		// never re-reading the live (and, while playing, constantly self-advancing)
+		// getCurrentTimeSeconds() as feedback into its own math - doing that previously caused
+		// a permanent small oscillation while playing, since the live position advances on its
+		// own between frames on top of whatever the easing step already moved it by, so the
+		// per-frame "distance remaining" never actually converges to zero.
 		bool m_scrollAnimating { false };
 		f64 m_scrollTargetSeconds { 0.0 };
+		f64 m_scrollGlideStartValue { 0.0 };
+		i64 m_scrollGlideStartTimeNs { 0 };
 
 		// Double-click detection - same frame-counted-timer + click-radius pattern as
 		// TextEdit::onMousePressed (src/ogfx/gui/widgets/Text.cpp).

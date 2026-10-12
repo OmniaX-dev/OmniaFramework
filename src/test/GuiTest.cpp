@@ -467,24 +467,24 @@ class TestWindow : public Window
 				out().fg("yellow").p("[PianoRoll] MidiEnd").reset().nl();
 				m_pianoPlayBtn.setText("Play");
 			});
-			m_pianoRoll.connectSignal(ostd::BuiltinSignals::KeyPressed, [this](ostd::Signal& sig) -> void {
-				if (!sig.userData)
-					return;
-				auto& ked = cast<ogfx::KeyEventData&>(*sig.userData);
-				if (ked.keyCode == ogfx::KeyCode::Space)
-				{
-					if (m_pianoRoll.isPlaying())
-					{
-						m_pianoRoll.pause();
-						m_pianoPlayBtn.setText("Play");
-					}
-					else
-					{
-						m_pianoRoll.play();
-						m_pianoPlayBtn.setText("Pause");
-					}
-				}
-			});
+			// m_pianoRoll.connectSignal(ostd::BuiltinSignals::KeyPressed, [this](ostd::Signal& sig) -> void {
+			//     if (!sig.userData)
+			//         return;
+			//     auto& ked = cast<ogfx::KeyEventData&>(*sig.userData);
+			//     if (ked.keyCode == ogfx::KeyCode::Space)
+			//     {
+			//         if (m_pianoRoll.isPlaying())
+			//         {
+			//             m_pianoRoll.pause();
+			//             m_pianoPlayBtn.setText("Play");
+			//         }
+			//         else
+			//         {
+			//             m_pianoRoll.play();
+			//             m_pianoPlayBtn.setText("Pause");
+			//         }
+			//     }
+			// });
 
 			t5.addWidget(m_pianoRoll, { 0, 0 });
 			t5.addWidget(m_pianoPlayBtn, { 20, 660 });
