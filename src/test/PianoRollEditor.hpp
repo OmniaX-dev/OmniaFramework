@@ -138,6 +138,17 @@ class PianoRollEditor : public ogfx::gui::PianoRoll
 		inline bool isFocusModeActive(void) const { return m_focusModeActive; }
 		OSTD_PARAM_GETSET(f32, FocusModeAlpha, m_focusModeAlpha); // 0..1, default 0.4, themeable ("focusModeAlpha")
 
+		// --- help overlay ---
+		// Top-left, lists every enabled keybind below with a short description, one per line -
+		// toggled by helpOverlayKey (on by default, see m_showHelpOverlay).
+		inline void setHelpOverlayVisible(bool visible) { m_showHelpOverlay = visible; }
+		inline bool isHelpOverlayVisible(void) const { return m_showHelpOverlay; }
+		inline void toggleHelpOverlay(void) { m_showHelpOverlay = !m_showHelpOverlay; }
+		// The description text's color; the keybind itself (e.g. "Ctrl+Z") is drawn separately
+		// in HelpOverlayKeyColor, so the two are visually distinguishable at a glance.
+		OSTD_PARAM_GETSET(Color, HelpOverlayColor, m_helpOverlayColor); // themeable ("helpOverlayColor")
+		OSTD_PARAM_GETSET(Color, HelpOverlayKeyColor, m_helpOverlayKeyColor); // themeable ("helpOverlayKeyColor")
+
 		// --- live interaction state (for a UI with no in-widget state of its own) ---
 		inline bool isBoxSelecting(void) const { return m_boxSelecting; }
 		inline bool isBoxSelectSubtracting(void) const { return m_boxSelectSubtract; }
@@ -165,6 +176,7 @@ class PianoRollEditor : public ogfx::gui::PianoRoll
 		std::array<Keybind, 10> recallSlotKey; // index 0-9, default Num0-Num9, set in create_default_keybinds()
 		std::array<Keybind, 9>  saveSlotKey;   // index 0-8 -> slot 1-9, default Num1-Num9 + primary
 		Keybind focusModeKey { ogfx::KeyCode::F };
+		Keybind helpOverlayKey { ogfx::KeyCode::H };
 
 		// --- style (themeable - see applyTheme(); category "pianoRollEditor") ---
 		OSTD_PARAM_GETSET(Color, SelectionHighlightColor, m_selectionHighlightColor);
@@ -218,6 +230,20 @@ class PianoRollEditor : public ogfx::gui::PianoRoll
 		Color resolve_active_highlight_color(void) const;
 		stdvec<u32> slots_containing(u32 voiceIndex, u32 noteIndex) const;
 		void fire_hover_signal(u32 voiceIndex, u32 noteIndex);
+
+		void draw_help_overlay(BasicRenderer2D& gfx) const;
+		// One {keybind, description} pair per line - the keybind half is rendered in
+		// HelpOverlayKeyColor, the description half in HelpOverlayColor, so draw_help_overlay()
+		// needs them kept apart rather than one pre-joined string. Built fresh every draw so a
+		// runtime remap (or disabling a binding) is reflected immediately. The 10 recall-slot
+		// and 9 save-slot bindings are summarized as two lines ("0-9"/"Ctrl+1-9") instead of one
+		// line per slot - correct for the default contiguous layout create_default_keybinds()
+		// sets up, not re-derived from whatever the slot keys actually are right now.
+		stdvec<std::pair<String, String>> build_help_lines(void) const;
+		// SDL_GetKeyName() keeps this correct under remapping without hand-naming every
+		// KeyCode; primary/primaryShift prepend "Ctrl+"/"Cmd+" (see Events.hpp's own MAC_OS
+		// split) to match how matches() in onKeyPressed() actually interprets the binding.
+		String format_keybind(const Keybind& kb, bool primary = false, bool primaryShift = false) const;
 
 	private:
 		stdvec<stdvec<bool>> m_selected; // [voiceIndex][noteIndex]
@@ -287,4 +313,8 @@ class PianoRollEditor : public ogfx::gui::PianoRoll
 		Color m_boxSelectColor { "#4AA3FFA0" }; // translucent light blue
 		f32 m_scrollSpeedMultiplier { 1.0f };
 		f32 m_selectionBorderWidth { 3.0f };
+
+		bool m_showHelpOverlay { true };
+		Color m_helpOverlayColor { "#FFFFFF80" }; // description text - white, ~50% alpha ("somewhat low-alpha")
+		Color m_helpOverlayKeyColor { "#FFFFFFD0" }; // the keybind itself - brighter/more opaque, to stand apart
 };

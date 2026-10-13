@@ -107,6 +107,8 @@ void PianoRollEditor::applyTheme(const ostd::Stylesheet& theme)
 	setScrollSpeedMultiplier(getThemeValue<f32>(theme, "scrollSpeedMultiplier", getScrollSpeedMultiplier()));
 	setSelectionBorderWidth(getThemeValue<f32>(theme, "selectionBorderWidth", getSelectionBorderWidth()));
 	setFocusModeAlpha(getThemeValue<f32>(theme, "focusModeAlpha", getFocusModeAlpha()));
+	setHelpOverlayColor(getThemeValue<Color>(theme, "helpOverlayColor", getHelpOverlayColor()));
+	setHelpOverlayKeyColor(getThemeValue<Color>(theme, "helpOverlayKeyColor", getHelpOverlayKeyColor()));
 	for (u32 i = 0; i < 10; i++)
 		m_slotColors[i] = getThemeValue<Color>(theme, String("slot").add((i32)i).add("Color"), m_slotColors[i]);
 }
@@ -569,6 +571,88 @@ void PianoRollEditor::onDraw(BasicRenderer2D& gfx)
 
 	if (m_boxSelecting)
 		gfx.outlinedRoundRect(liveBoxRect, Colors::Transparent, m_boxSelectColor, 0.0f, 1);
+
+	if (m_showHelpOverlay)
+		draw_help_overlay(gfx);
+}
+
+namespace
+{
+	inline const char* primary_key_name(void)
+	{
+#ifdef MAC_OS
+		return "Cmd";
+#else
+		return "Ctrl";
+#endif
+	}
+}
+
+void PianoRollEditor::draw_help_overlay(BasicRenderer2D& gfx) const
+{
+	constexpr f32 fontSize = 14.0f;
+	constexpr f32 lineSpacing = 4.0f;
+	constexpr f32 margin = 8.0f;
+	constexpr f32 columnGap = 8.0f; // between the keybind column and the description column
+
+	auto lines = build_help_lines();
+	Rectangle bounds = getGlobalBounds();
+
+	// A single shared column width (the widest keybind string) keeps every description aligned,
+	// instead of each one starting wherever its own keybind text happens to end.
+	f32 keyColumnWidth = 0.0f;
+	for (auto& [key, description] : lines)
+		keyColumnWidth = std::max(keyColumnWidth, gfx.getStringDimensions(key, (i32)fontSize).x);
+
+	f32 y = bounds.y + margin;
+	for (auto& [key, description] : lines)
+	{
+		gfx.drawString(key, { bounds.x + margin, y }, m_helpOverlayKeyColor, (i32)fontSize);
+		gfx.drawString(description, { bounds.x + margin + keyColumnWidth + columnGap, y }, m_helpOverlayColor, (i32)fontSize);
+		y += fontSize + lineSpacing;
+	}
+}
+
+stdvec<std::pair<String, String>> PianoRollEditor::build_help_lines(void) const
+{
+	stdvec<std::pair<String, String>> lines;
+	auto addLine = [&](const Keybind& kb, bool primary, bool primaryShift, const String& description)
+	{
+		if (!kb.enabled)
+			return; // a disabled binding has nothing to show
+		lines.push_back({ format_keybind(kb, primary, primaryShift).add(":"), description });
+	};
+
+	addLine(helpOverlayKey, false, false, "Toggle this overlay");
+	addLine(playPauseKey, false, false, "Play / pause");
+	addLine(invertSelectionKey, false, false, "Invert selection");
+	addLine(focusModeKey, false, false, "Toggle focus mode");
+	addLine(undoKey, true, false, "Undo");
+	addLine(redoKey, true, false, "Redo");
+	addLine(exportSelectionKey, false, false, "Export selection to .mid");
+	addLine(exportAllKey, true, false, "Export all slots to folder");
+	addLine(saveKey, true, false, "Save project");
+	addLine(saveAsKey, false, true, "Save project as...");
+	// The 10 recall-slot and 9 save-slot bindings are really one family each (the key pressed
+	// directly names the slot), so one summary line per family reads far better than 19 nearly
+	// identical ones - this assumes the default contiguous Num0-Num9 layout
+	// create_default_keybinds() sets up, not whatever recallSlotKey/saveSlotKey actually hold
+	// right now.
+	lines.push_back({ "0-9:", "Recall slot (0 = last auto-backup)" });
+	lines.push_back({ String(primary_key_name()).add("+1-9:"), "Save to slot" });
+	return lines;
+}
+
+String PianoRollEditor::format_keybind(const Keybind& kb, bool primary, bool primaryShift) const
+{
+	String name = SDL_GetKeyName((SDL_Keycode)kb.keyCode);
+	if (name.empty())
+		name = "?";
+	if (primaryShift)
+		return String(primary_key_name()).add("+Shift+").add(name);
+	if (primary)
+		return String(primary_key_name()).add("+").add(name);
+	return name;
 }
 
 void PianoRollEditor::onUpdate(void)
@@ -710,6 +794,7 @@ void PianoRollEditor::onKeyPressed(const Event& event)
 
 	if (matches(invertSelectionKey, false, false)) { invertSelection(); return; }
 	if (matches(focusModeKey, false, false)) { toggleFocusMode(); return; }
+	if (matches(helpOverlayKey, false, false)) { toggleHelpOverlay(); return; }
 	if (matches(exportAllKey, true, false)) { exportAllSlotsToFolder(getWindow().showOpenFolderDialog()); return; }
 	if (matches(exportSelectionKey, false, false))
 	{
