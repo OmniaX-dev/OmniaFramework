@@ -82,15 +82,15 @@ class TestWindow : public Window
 			m_pianoRollEditor.getStyle().enableShowNoteNamesOnKeys(true);
 			// if (!m_pianoRollEditor.loadProject("./audio/Chopin Nocturne No. 20 in C#m.pianoproj"))
 			//     out().fg("red").p("[PianoRollEditor] Failed to load project").reset().nl();
-			if (m_pianoRollEditor.loadVoice("./audio/notes.mid", Colors::Blue, "") == (u32)-1)
-				out().fg("red").p("[PianoRoll] Failed to load ./audio/nnotes.mid").reset().nl();
+			if (m_pianoRollEditor.loadVoice("./audio/Chopin Nocturne Op. 48 No. 1 in Cm.mid", Colors::Transparent, "") == (u32)-1)
+				out().fg("red").p("[PianoRoll] Failed to load ./audio/Chopin Nocturne Op. 48 No. 1 in Cm.mid").reset().nl();
 			// if (m_pianoRollEditor.loadVoice("./audio/lh.mid", Colors::Blue, "LH") == (u32)-1)
 			//     out().fg("red").p("[PianoRoll] Failed to load ./audio/lh.mid").reset().nl();
 			// if (m_pianoRollEditor.loadVoice("./audio/rh.mid", Colors::Green, "RH") == (u32)-1)
 			//     out().fg("red").p("[PianoRoll] Failed to load ./audio/rh.mid").reset().nl();
-			// if (!m_pianoRollEditor.loadAudio("./audio/audio.mp3"))
-			//     out().fg("red").p("[PianoRollEditor] Failed to load ./audio/audio.mp3").reset().nl();
-			m_pianoRollEditor.setMusicKey(ostd::MidiParser::eMusicKey::CSharpMinor);
+			if (!m_pianoRollEditor.loadAudio("./audio/Chopin Nocturne Op. 48 No. 1 in Cm.mp3"))
+				out().fg("red").p("[PianoRollEditor] Failed to load ./audio/Chopin Nocturne Op. 48 No. 1 in Cm.mp3").reset().nl();
+			m_pianoRollEditor.setMusicKey(ostd::MidiParser::eMusicKey::CMinor);
 
 			m_controlPanel.addThemeID("piano_roll_control_panel");
 
@@ -135,7 +135,19 @@ class TestWindow : public Window
 		{}
 
 		void onFixedUpdate(void) override
-		{}
+		{
+			auto& fm = getFocusManager();
+			auto focused = fm.getFocused();
+			if (focused)
+			{
+				if (focused == &m_pianoRollEditor)
+					return;
+				if (focused->getTypeName() == "ogfx::gui::TextEdit")
+					return;
+				// Add more exceptions here
+			}
+			getFocusManager().requestFocus(m_pianoRollEditor, m_rootWidget);
+		}
 
 		void onUpdate(f64 delta) override
 		{}

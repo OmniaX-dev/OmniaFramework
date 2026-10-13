@@ -34,8 +34,18 @@
 }
 
 (@piano_roll_control_panel panel) {
-	showBorder = false
-	useBackgroundGradient = true
-	backgroundGradient = gradientV(#111111FF - #222222FF)
+	showBorder = true
+	backgroundColor = #000000FF
+	borderColor = #555555FF
+	borderWidth = 1
+	titlebarType = full
+	titlebarColor = #070707FF
+	titlebarBorderColor = #AAAAAAFF
+	titlebarBorderWidth = 1
+	titlebarType =  none
+	titlebarHeight = 35
+	titlebarFontSize = 18
+	titlebarTextAlign = text_center
+	titleColor =  #AAAAAAFF
 }
 % ================================================================

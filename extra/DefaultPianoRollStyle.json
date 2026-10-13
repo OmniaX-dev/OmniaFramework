@@ -4,8 +4,8 @@
             "background": "#141414FF",
             "blackKey": "#222222FF",
             "blackKeyPressed": "#14145AFF",
-            "fallingBlackNote": "#00324BFF",
-            "fallingWhiteNote": "#146EAAFF",
+            "fallingBlackNote": [60, 10, 40, 255],
+            "fallingWhiteNote": [220, 20, 60, 255],
             "keyboardLine": "#A00A0AFF",
             "perKey": [],
             "perNote": {

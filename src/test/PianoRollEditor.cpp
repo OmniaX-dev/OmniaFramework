@@ -396,17 +396,33 @@ void PianoRollEditor::recallSlot(u32 slot)
 bool PianoRollEditor::export_notes(const stdvec<stdvec<bool>>& selection, const String& path)
 {
 	stdvec<ostd::MidiParser::NoteEvent> collected;
+	// One entry per voice that actually contributed a selected note - a voice with nothing
+	// selected from it has no business re-injecting its own copy of the pedal track into a
+	// file that otherwise doesn't include any of its notes. Fed through mergePedalEvents()
+	// below (even when only one voice contributes - it's a no-op in that case) so selecting
+	// across more than one voice doesn't just concatenate near-duplicate pedal data, same
+	// reasoning as PianoRoll::rebuild_synth_schedule()'s own live-playback merge.
+	stdvec<stdvec<ostd::MidiParser::ControlChangeEvent>> pedalSources;
 	for (u32 v = 0; v < getVoiceCount() && v < selection.size(); v++)
 	{
 		auto& voice = getVoice(v);
+		bool contributed = false;
 		for (u32 n = 0; n < voice.notes.size() && n < selection[v].size(); n++)
+		{
 			if (selection[v][n])
+			{
 				collected.push_back(voice.notes[n]);
+				contributed = true;
+			}
+		}
+		if (contributed)
+			pedalSources.push_back(voice.pedalEvents);
 	}
 	if (collected.empty())
 		return false;
 	std::sort(collected.begin(), collected.end(), [](auto& a, auto& b) { return a.startTick < b.startTick; });
-	return ostd::MidiParser::writeFile(path, collected, m_ticksPerQuarterNote, m_tempoMap);
+	stdvec<ostd::MidiParser::ControlChangeEvent> pedals = ostd::MidiParser::mergePedalEvents(pedalSources);
+	return ostd::MidiParser::writeFile(path, collected, m_ticksPerQuarterNote, m_tempoMap, pedals);
 }
 
 bool PianoRollEditor::exportSelectionToFile(const String& path)

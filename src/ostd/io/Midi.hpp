@@ -160,8 +160,33 @@ namespace ostd
 			// Writes notes (with their startTick/endTick/channel/velocity/offVelocity) back out
 			// as a new, single-track Standard MIDI File, reproducing ticksPerQuarterNote and
 			// tempoMap exactly - the counterpart to parseFileEx(), e.g. for exporting a subset
-			// of a file's notes (a selection) as its own playable .mid file.
-			static bool writeFile(const String& filePath, const stdvec<NoteEvent>& notes, i32 ticksPerQuarterNote, const stdvec<TempoEvent>& tempoMap);
+			// of a file's notes (a selection) as its own playable .mid file. pedalEvents (sustain/
+			// sostenuto/soft CCs - see ControlChangeEvent) is optional and, unlike notes, written
+			// as-is with no further deduplication/merging of its own - callers combining pedal
+			// data from more than one source (e.g. more than one Voice) should run it through
+			// mergePedalEvents() first, same as PianoRoll's own live playback schedule does.
+			static bool writeFile(const String& filePath, const stdvec<NoteEvent>& notes, i32 ticksPerQuarterNote, const stdvec<TempoEvent>& tempoMap, const stdvec<ControlChangeEvent>& pedalEvents = {});
+			// Combines pedal CC events from one or more independent sources (one inner vector
+			// per source, e.g. per PianoRoll::Voice) into a single, clean stream. This exists
+			// because this project's own common case - a performance already split into per-
+			// hand/voice .mid files - has each file carry its own near-identical copy of the
+			// sustain pedal track, so simply concatenating every source's raw events (sorted by
+			// time) can produce a spurious early release: if source A's pedal-up lands before
+			// source B's overlapping pedal-down for what both sources actually mean as the same,
+			// continuously-held pedal, naive interleaving briefly "releases" it mid-hold.
+			// Within each source, consecutive value>0 ("down") / value==0 ("up") events for the
+			// same channel+controller are first paired into hold intervals (any further value>0
+			// events before the matching "up" just update the interval's own peak value, for
+			// half-pedal data); a trailing, never-released "down" is kept open through its own
+			// last activity rather than dropped. Across sources, overlapping or touching
+			// intervals for the same channel+controller are then merged into one, spanning the
+			// earliest down to the latest up (by whichever contributing interval actually ends
+			// last - an earlier-ending contributor never retroactively cuts a later one short).
+			// The result is a flat, tick-sorted stream of down/up ControlChangeEvent pairs, used
+			// identically by PianoRoll's own multi-voice playback schedule and by exporting a
+			// selection spanning more than one voice, so "two voices open at once" behaves the
+			// same whether the pedal is actually heard or written to a file.
+			static stdvec<ControlChangeEvent> mergePedalEvents(const stdvec<stdvec<ControlChangeEvent>>& perSourceEvents);
 			// Convert MIDI pitch to NoteInfo
 			static NoteInfo getNoteInfo(i32 midiPitch);
 			// Note name (no octave) for a pitch class (0-11, C=0, any other i32 is normalized

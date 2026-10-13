@@ -4,6 +4,9 @@
 #include <string>
 #include <array>
 #include <cmath>
+#include <map>
+#include <utility>
+#include <algorithm>
 #include "../vendor/midifile/MidiFile.h"
 
 namespace ostd
@@ -143,7 +146,7 @@ namespace ostd
 	    return true;
 	}
 
-	bool MidiParser::writeFile(const String& filePath, const stdvec<NoteEvent>& notes, i32 ticksPerQuarterNote, const stdvec<TempoEvent>& tempoMap)
+	bool MidiParser::writeFile(const String& filePath, const stdvec<NoteEvent>& notes, i32 ticksPerQuarterNote, const stdvec<TempoEvent>& tempoMap, const stdvec<ControlChangeEvent>& pedalEvents)
 	{
 	    smf::MidiFile midi;
 	    // A fresh smf::MidiFile already has one (empty) track at index 0 - no addTrack() needed.
@@ -163,8 +166,124 @@ namespace ostd
 	        midi.addNoteOff(0, note.endTick, note.channel, note.pitch, note.offVelocity);
 	    }
 
+	    for (auto& pedal : pedalEvents)
+	        midi.addController(0, pedal.tick, pedal.channel, pedal.controller, pedal.value);
+
 	    midi.sortTracks();
 	    return midi.write(filePath.cpp_str());
+	}
+
+	stdvec<MidiParser::ControlChangeEvent> MidiParser::mergePedalEvents(const stdvec<stdvec<ControlChangeEvent>>& perSourceEvents)
+	{
+	    // One paired-up hold interval per (channel, controller) span - see the declaration
+	    // comment for the two-pass approach (pair within a source first, then merge across
+	    // sources) and why it's split that way.
+	    struct Interval
+	    {
+	        i32 channel; i32 controller;
+	        i32 startTick; i32 endTick;
+	        f64 startTime; f64 endTime;
+	        i32 peakValue;
+	        bool closed; // true if a real value==0 "up" was seen, false if still held when its source ran out of events
+	    };
+	    stdvec<Interval> intervals;
+
+	    for (auto& source : perSourceEvents)
+	    {
+	        // Keyed by (channel, controller) - a source's own stream can interleave more than
+	        // one pedal/channel at once, so each key tracks its own independent open/closed
+	        // state rather than assuming one pedal at a time.
+	        std::map<std::pair<i32, i32>, Interval> open;
+	        for (auto& ev : source)
+	        {
+	            auto key = std::make_pair(ev.channel, ev.controller);
+	            if (ev.value > 0)
+	            {
+	                auto it = open.find(key);
+	                if (it == open.end())
+	                    open.emplace(key, Interval{ ev.channel, ev.controller, ev.tick, ev.tick, ev.time, ev.time, ev.value, false });
+	                else
+	                {
+	                    // Still held - a further half-pedal fluctuation (or a duplicate "down")
+	                    // before the matching "up". Not a new interval; just extends how far
+	                    // this one's known-active so far and tracks its peak depth.
+	                    it->second.endTick = ev.tick;
+	                    it->second.endTime = ev.time;
+	                    it->second.peakValue = std::max(it->second.peakValue, ev.value);
+	                }
+	            }
+	            else
+	            {
+	                auto it = open.find(key);
+	                if (it != open.end())
+	                {
+	                    it->second.endTick = ev.tick;
+	                    it->second.endTime = ev.time;
+	                    it->second.closed = true;
+	                    intervals.push_back(it->second);
+	                    open.erase(it);
+	                }
+	                // an "up" with nothing open means nothing was ever held - nothing to close
+	            }
+	        }
+	        // Whatever's still open when this source runs out of events never got a real
+	        // release in the file - kept as its own (unclosed) interval rather than dropped, so
+	        // a trailing held pedal still comes through afterward.
+	        for (auto& [key, interval] : open)
+	            intervals.push_back(interval);
+	    }
+
+	    // Standard "merge overlapping intervals", grouped by (channel, controller): sort by
+	    // start, then absorb every following interval whose own start is at or before the
+	    // current run's end. closed only carries forward from whichever contributing interval
+	    // actually ends latest - an earlier-ending contributor that happened to get a real
+	    // release never retroactively cuts short a later, still-overlapping one.
+	    std::sort(intervals.begin(), intervals.end(), [](const Interval& a, const Interval& b) {
+	        if (a.channel != b.channel) return a.channel < b.channel;
+	        if (a.controller != b.controller) return a.controller < b.controller;
+	        return a.startTick < b.startTick;
+	    });
+
+	    stdvec<ControlChangeEvent> result;
+	    for (size_t i = 0; i < intervals.size(); )
+	    {
+	        Interval merged = intervals[i];
+	        size_t j = i + 1;
+	        while (j < intervals.size() && intervals[j].channel == merged.channel && intervals[j].controller == merged.controller && intervals[j].startTick <= merged.endTick)
+	        {
+	            if (intervals[j].endTick > merged.endTick)
+	            {
+	                merged.endTick = intervals[j].endTick;
+	                merged.endTime = intervals[j].endTime;
+	                merged.closed = intervals[j].closed;
+	            }
+	            else if (intervals[j].endTick == merged.endTick && intervals[j].closed)
+	                merged.closed = true;
+	            merged.peakValue = std::max(merged.peakValue, intervals[j].peakValue);
+	            j++;
+	        }
+
+	        ControlChangeEvent down;
+	        down.tick = merged.startTick; down.time = merged.startTime;
+	        down.channel = merged.channel; down.controller = merged.controller; down.value = merged.peakValue;
+	        result.push_back(down);
+
+	        // Only synthesize the matching "up" if some contributing interval actually closed
+	        // this one for real - otherwise the pedal was still held when every source's data
+	        // ran out, and a synthetic release here would be a fabricated event, not a merge.
+	        if (merged.closed)
+	        {
+	            ControlChangeEvent up;
+	            up.tick = merged.endTick; up.time = merged.endTime;
+	            up.channel = merged.channel; up.controller = merged.controller; up.value = 0;
+	            result.push_back(up);
+	        }
+
+	        i = j;
+	    }
+
+	    std::sort(result.begin(), result.end(), [](const ControlChangeEvent& a, const ControlChangeEvent& b) { return a.tick < b.tick; });
+	    return result;
 	}
 
 	MidiParser::NoteInfo MidiParser::getNoteInfo(i32 midiPitch)

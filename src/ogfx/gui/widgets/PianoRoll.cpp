@@ -174,6 +174,15 @@ namespace ogfx
 			u64 totalSamples = 0;
 			constexpr f64 sampleRate = (f64)osnd::MidiSynth::SampleRate;
 
+			// Collected per-voice (not flattened yet) so mergePedalEvents() can pair each
+			// voice's own down/up events independently before resolving overlaps across voices
+			// - see its own declaration comment for why that order matters (two voices each
+			// carrying a near-identical copy of the same sustain pedal, e.g. this project's own
+			// per-hand file split, would otherwise risk a spurious early release where simply
+			// interleaving the raw events by time briefly "lets go" of a pedal the other voice
+			// is still holding).
+			stdvec<stdvec<ostd::MidiParser::ControlChangeEvent>> pedalSources;
+
 			for (auto& voice : m_voices)
 			{
 				if (!voice.visible)
@@ -199,19 +208,21 @@ namespace ogfx
 					totalSamples = std::max(totalSamples, off.sampleOffset);
 				}
 				// Pedals are global to whatever's actually sounding, not per-voice (see
-				// Voice::pedalEvents) - every visible voice's own pedal CCs get merged into this
-				// one flat timeline right alongside its notes.
-				for (auto& pedal : voice.pedalEvents)
-				{
-					osnd::MidiSynth::Event cc;
-					cc.sampleOffset = (u64)std::max(0.0, pedal.time * sampleRate);
-					cc.type = osnd::MidiSynth::Event::Type::ControlChange;
-					cc.channel = pedal.channel;
-					cc.param1 = pedal.controller;
-					cc.param2 = pedal.value;
-					schedule.push_back(cc);
-					totalSamples = std::max(totalSamples, cc.sampleOffset);
-				}
+				// Voice::pedalEvents) - every visible voice's own pedal CCs feed into one shared
+				// timeline right alongside its notes, cleaned up below.
+				pedalSources.push_back(voice.pedalEvents);
+			}
+
+			for (auto& pedal : ostd::MidiParser::mergePedalEvents(pedalSources))
+			{
+				osnd::MidiSynth::Event cc;
+				cc.sampleOffset = (u64)std::max(0.0, pedal.time * sampleRate);
+				cc.type = osnd::MidiSynth::Event::Type::ControlChange;
+				cc.channel = pedal.channel;
+				cc.param1 = pedal.controller;
+				cc.param2 = pedal.value;
+				schedule.push_back(cc);
+				totalSamples = std::max(totalSamples, cc.sampleOffset);
 			}
 
 			m_synth->setSchedule(std::move(schedule), totalSamples);
