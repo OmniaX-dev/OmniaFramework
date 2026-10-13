@@ -125,18 +125,26 @@ namespace osnd
 			static void sdl_feed_callback(void* userdata, struct SDL_AudioStream* stream, int additionalAmount, int totalAmount);
 			void feed(struct SDL_AudioStream* stream, int additionalAmount);
 			void apply_event(const Event& event);
-			// Plays a short reference note in isolation (never sent to the audio device) right
-			// after a soundfont loads, measures its peak output, and sets fluid_synth's own
-			// gain so every soundfont settles near the same perceived loudness - this is what
-			// actually fixes "soundfont X sounds quieter than soundfont Y", since that's a
-			// property of how each soundfont's samples were recorded, not something a single
-			// fixed default gain (or the master volume) can compensate for on its own.
+			// Loads the soundfont named by m_currentSoundfontPath into a throwaway fluid_synth_t
+			// (never m_synth itself), plays a reference note on it, measures its peak output, and
+			// sets m_synth's own gain so every soundfont settles near the same perceived loudness
+			// - this is what actually fixes "soundfont X sounds quieter than soundfont Y", since
+			// that's a property of how each soundfont's samples were recorded, not something a
+			// single fixed default gain (or the master volume) can compensate for on its own.
+			// Measuring on a disposable synth instance, rather than noteon/noteoff-ing m_synth
+			// itself, means there's never any real voice state to silence afterward - no click
+			// from killing a voice mid-amplitude, no release tail that could bleed into whatever
+			// plays next.
 			void normalize_gain(void);
 
 		private:
 			fluid_settings_t* m_settings { nullptr };
 			fluid_synth_t* m_synth { nullptr };
 			int m_currentSoundfontId { -1 };
+			// Whatever was last loaded (the embedded sentinel path, or a real setSoundfont() file
+			// path) - kept around purely so normalize_gain() can load the same soundfont into its
+			// own throwaway synth instance.
+			String m_currentSoundfontPath;
 			struct SDL_AudioStream* m_stream { nullptr };
 
 			// Guards m_schedule/m_nextEventIndex/m_totalSamples across the UI thread

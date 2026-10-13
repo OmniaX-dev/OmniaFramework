@@ -234,6 +234,7 @@ namespace ogfx
 			f64 earliestStart = 0.0;
 			bool anyNotes = false;
 			for (auto& voice : m_voices)
+			{
 				for (auto& note : voice.notes)
 				{
 					d = std::max(d, note.endTime);
@@ -241,6 +242,14 @@ namespace ogfx
 						earliestStart = note.startTime;
 					anyNotes = true;
 				}
+				// A sustain/sostenuto/soft message after the last note's own end (e.g. the pedal
+				// is released, or simply stays held, after everything else has finished) still
+				// needs to be reached before playback is considered over - otherwise the fallback
+				// synth's audio gets cut via stop()/pause() before that pedal event, or the
+				// natural ring-out it implies, is ever heard.
+				for (auto& pedal : voice.pedalEvents)
+					d = std::max(d, pedal.time);
+			}
 			if (hasAudio())
 				d = std::max(d, m_audioPlayer->getDurationSeconds());
 			rebuild_synth_schedule(); // keeps the fallback synth's schedule in sync with the voice list either way
@@ -467,7 +476,15 @@ namespace ogfx
 					ostd::SignalHandler::emitSignal(MidiStartSignal);
 				}
 				f64 rawDuration = m_totalDurationSeconds - m_startPadSeconds;
-				if (rawDuration > 0.0 && raw >= rawDuration)
+				// rawDuration comes from a note/pedal event's raw timestamp in seconds, but when
+				// the fallback synth is the live clock, its own position is clamped to a ceiling
+				// derived from that same timestamp floored to a whole sample (rebuild_synth_schedule()
+				// converts seconds -> u64 samples). That ceiling can land a fraction of a sample
+				// below rawDuration, so raw would otherwise approach but never quite reach it -
+				// an epsilon well under a millisecond (over 40x a sample at 44.1kHz) absorbs that
+				// without noticeably moving when MidiEnd actually fires.
+				constexpr f64 kEndEpsilonSeconds = 0.001;
+				if (rawDuration > 0.0 && raw >= rawDuration - kEndEpsilonSeconds)
 				{
 					update_active_notes(rawDuration, prevRaw);
 					m_lastUpdateSeconds = rawDuration;

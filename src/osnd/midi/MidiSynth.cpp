@@ -126,6 +126,7 @@ namespace osnd
 		if (m_currentSoundfontId >= 0)
 			fluid_synth_sfunload(m_synth, m_currentSoundfontId, true);
 		m_currentSoundfontId = id;
+		m_currentSoundfontPath = kEmbeddedVirtualPath;
 		normalize_gain();
 	}
 
@@ -139,6 +140,7 @@ namespace osnd
 		if (m_currentSoundfontId >= 0)
 			fluid_synth_sfunload(m_synth, m_currentSoundfontId, true);
 		m_currentSoundfontId = id;
+		m_currentSoundfontPath = filePath;
 		normalize_gain();
 		return true;
 	}
@@ -201,9 +203,11 @@ namespace osnd
 
 		// Silence whatever was left sounding from before the jump - the events between the old
 		// and new position are being skipped outright, never individually applied, so any note
-		// still held at the old position would otherwise keep ringing forever.
+		// still held at the old position would otherwise keep ringing forever. Uses the
+		// immediate-kill variant, not a release tail, so the pre-seek audio can't bleed into
+		// whatever gets rendered right after.
 		if (m_synth)
-			fluid_synth_all_notes_off(m_synth, -1);
+			fluid_synth_all_sounds_off(m_synth, -1);
 
 		size_t newIndex = (size_t)(std::lower_bound(m_schedule.begin(), m_schedule.end(), sampleOffset,
 			[](const Event& e, u64 off) { return e.sampleOffset < off; }) - m_schedule.begin());
@@ -275,28 +279,32 @@ namespace osnd
 
 	void MidiSynth::normalize_gain(void)
 	{
-		if (!m_synth)
+		if (!m_synth || m_currentSoundfontPath.empty())
 			return;
 
-		bool wasPlaying = m_playing;
-		if (m_stream)
-			SDL_PauseAudioStreamDevice(m_stream); // keep the measurement note (and the
-												   // all-notes-off around it) inaudible
+		// A throwaway settings/synth pair, loading the same soundfont independently, so the
+		// measurement note never touches m_synth's own voice engine at all - nothing to silence
+		// afterward, so no click from an abrupt kill and no release tail to bleed into whatever
+		// plays next on the real synth (see the declaration comment for the history here).
+		fluid_settings_t* measureSettings = new_fluid_settings();
+		fluid_settings_setnum(measureSettings, "synth.sample-rate", (double)SampleRate);
+		fluid_settings_setnum(measureSettings, "synth.gain", 1.0); // measure at a neutral reference
+																	 // gain, not FluidSynth's own
+																	 // stock default (0.2)
+		fluid_synth_t* measureSynth = new_fluid_synth(measureSettings);
 
-		constexpr f32 targetPeak = 0.5f; // -6dBFS, leaves headroom so real polyphony doesn't clip
-		constexpr int measureFrames = (int)(SampleRate * 0.3); // 300ms - long enough to catch the attack
+		fluid_sfloader_t* loader = new_fluid_defsfloader(measureSettings);
+		fluid_sfloader_set_callbacks(loader, embedded_sf_open, embedded_sf_read, embedded_sf_seek, embedded_sf_tell, embedded_sf_close);
+		fluid_synth_add_sfloader(measureSynth, loader); // measureSynth takes ownership
+
+		int id = fluid_synth_sfload(measureSynth, m_currentSoundfontPath.c_str(), 1);
+		if (id >= 0)
 		{
-			// Serializes against feed()'s own fluid_synth_write_float calls on the audio
-			// thread - concurrent renders on the same synth are not safe, and this reuses the
-			// same mutex feed() already holds for its whole render.
-			std::lock_guard<std::mutex> lock(m_scheduleMutex);
-			fluid_synth_set_gain(m_synth, 1.0f); // measure at a neutral reference gain
-			fluid_synth_all_notes_off(m_synth, -1);
-			fluid_synth_noteon(m_synth, 0, 60, 100); // middle C, moderate velocity - representative
+			constexpr f32 targetPeak = 0.5f; // -6dBFS, leaves headroom so real polyphony doesn't clip
+			constexpr int measureFrames = (int)(SampleRate * 0.3); // 300ms - long enough to catch the attack
+			fluid_synth_noteon(measureSynth, 0, 60, 100); // middle C, moderate velocity - representative
 			stdvec<float> scratch((size_t)measureFrames * 2);
-			fluid_synth_write_float(m_synth, measureFrames, scratch.data(), 0, 2, scratch.data(), 1, 2);
-			fluid_synth_noteoff(m_synth, 0, 60);
-			fluid_synth_all_notes_off(m_synth, -1);
+			fluid_synth_write_float(measureSynth, measureFrames, scratch.data(), 0, 2, scratch.data(), 1, 2);
 
 			f32 peak = 0.0f;
 			for (f32 sample : scratch)
@@ -305,8 +313,8 @@ namespace osnd
 			fluid_synth_set_gain(m_synth, std::clamp(gain, 0.1f, 8.0f));
 		}
 
-		if (wasPlaying && m_stream)
-			SDL_ResumeAudioStreamDevice(m_stream);
+		delete_fluid_synth(measureSynth);
+		delete_fluid_settings(measureSettings);
 	}
 
 	void MidiSynth::noteOn(i32 channel, i32 pitch, i32 velocity)
@@ -325,10 +333,9 @@ namespace osnd
 	{
 		if (!m_synth)
 			return;
-		fluid_synth_all_notes_off(m_synth, -1);
-		// all_notes_off silences voices but doesn't clear controller state - without this, a
-		// pedal that was held down would still be "down" as far as the synth is concerned for
-		// whatever's played next.
+		fluid_synth_all_sounds_off(m_synth, -1); // immediate kill, not a release tail
+		// Also doesn't clear controller state on its own - without this, a pedal that was held
+		// down would still be "down" as far as the synth is concerned for whatever's played next.
 		for (i32 ch = 0; ch < 16; ++ch)
 			for (i32 controller : kPedalControllers)
 				fluid_synth_cc(m_synth, ch, controller, 0);

@@ -516,8 +516,8 @@ class TestWindow : public Window
 			//     out().fg("red").p("[PianoRollEditor] Failed to load project").reset().nl();
 			if (m_pianoRollEditor.loadVoice("./notes.mid", Colors::Transparent, "Piano") == (u32)-1)
 				out().fg("red").p("[PianoRollEditor] Failed to load ./notes.mid").reset().nl();
-			if (!m_pianoRollEditor.loadAudio("./audio.mp3"))
-				out().fg("red").p("[PianoRollEditor] Failed to load ./audio.mp3").reset().nl();
+			// if (!m_pianoRollEditor.loadAudio("./audio.mp3"))
+			//     out().fg("red").p("[PianoRollEditor] Failed to load ./audio.mp3").reset().nl();
 			m_editorStatusLbl.setText("Selected: 0 notes");
 
 			t6.addWidget(m_pianoRollEditor, { 0, 0 });
