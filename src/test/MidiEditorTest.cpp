@@ -80,14 +80,16 @@ class TestWindow : public Window
 			m_pianoRollEditor.getStyle().loadFromJson("DefaultPianoRollStyle.json");
 			m_pianoRollEditor.getStyle().enableShowNoteNamesOnFallingNotes(true);
 			m_pianoRollEditor.getStyle().enableShowNoteNamesOnKeys(true);
-			// if (!m_pianoRollEditor.loadProject("./Chopin Nocturne No. 20 in C#m.pianoproj"))
+			// if (!m_pianoRollEditor.loadProject("./audio/Chopin Nocturne No. 20 in C#m.pianoproj"))
 			//     out().fg("red").p("[PianoRollEditor] Failed to load project").reset().nl();
-			if (m_pianoRollEditor.loadVoice("./Chopin Nocturne No. 20 in C#m - Left Hand.mid", Colors::Blue, "LH") == (u32)-1)
-				out().fg("red").p("[PianoRoll] Failed to load ./nChopin Nocturne No. 20 in C#m - Left Hand.mid").reset().nl();
-			if (m_pianoRollEditor.loadVoice("./Chopin Nocturne No. 20 in C#m - Right Hand.mid", Colors::Green, "RH") == (u32)-1)
-				out().fg("red").p("[PianoRoll] Failed to load ./Chopin Nocturne No. 20 in C#m - Right Hand.mid").reset().nl();
-			// if (!m_pianoRollEditor.loadAudio("./audio.mp3"))
-			//     out().fg("red").p("[PianoRollEditor] Failed to load ./audio.mp3").reset().nl();
+			if (m_pianoRollEditor.loadVoice("./audio/notes.mid", Colors::Blue, "") == (u32)-1)
+				out().fg("red").p("[PianoRoll] Failed to load ./audio/nnotes.mid").reset().nl();
+			// if (m_pianoRollEditor.loadVoice("./audio/lh.mid", Colors::Blue, "LH") == (u32)-1)
+			//     out().fg("red").p("[PianoRoll] Failed to load ./audio/lh.mid").reset().nl();
+			// if (m_pianoRollEditor.loadVoice("./audio/rh.mid", Colors::Green, "RH") == (u32)-1)
+			//     out().fg("red").p("[PianoRoll] Failed to load ./audio/rh.mid").reset().nl();
+			// if (!m_pianoRollEditor.loadAudio("./audio/audio.mp3"))
+			//     out().fg("red").p("[PianoRollEditor] Failed to load ./audio/audio.mp3").reset().nl();
 			m_pianoRollEditor.setMusicKey(ostd::MidiParser::eMusicKey::CSharpMinor);
 
 			m_controlPanel.addThemeID("piano_roll_control_panel");

@@ -1,5 +1,6 @@
 #include "MidiSynth.hpp"
 #include <osnd/resources/UprightPianoKWSF.hpp>
+#include <ostd/io/IOHandlers.hpp>
 #include <fluidsynth.h>
 #include <SDL3/SDL_audio.h>
 #include <SDL3/SDL_init.h>
@@ -81,11 +82,66 @@ namespace osnd
 		// Sustain, sostenuto, soft - the only controllers seeksamples() needs to re-derive and
 		// resend when jumping mid-piece (see MidiSynth::seekSamples()).
 		constexpr i32 kPedalControllers[3] = { 64, 66, 67 };
+
+		// Where FluidSynth's own panic/error messages currently go - defaults to a fresh
+		// ConsoleOutputHandler (same default ostd::Logger itself uses) the first time any
+		// MidiSynth is constructed, and repointed by MidiSynth::setLogOutput() afterward. An
+		// indirection (the log callback's own userData is fixed at registration time, but
+		// FluidSynth only ever registers a log function once per level for the whole process -
+		// see ensure_fluidsynth_logging_installed() below) rather than a plain global, so a
+		// later setLogOutput() call takes effect without re-registering anything.
+		ostd::OutputHandlerBase* g_fluidLogDestination = nullptr;
+
+		void fluid_log_trampoline(int /*level*/, const char* message, void* userData)
+		{
+			auto* destination = static_cast<ostd::OutputHandlerBase**>(userData);
+			// flush() immediately rather than leaving it buffered - each log call is its own,
+			// independent message (FluidSynth doesn't call this incrementally for one line), and
+			// a destination like LogFileOutputHandler only writes (and timestamps) on flush(), so
+			// without it here two messages run together on one line with nothing separating them.
+			if (destination && *destination && message)
+				(*destination)->p(message).nl().flush();
+		}
+
+		// Installs FluidSynth's logging hooks exactly once per process, before the first
+		// new_fluid_settings()/new_fluid_synth() call so even startup-time messages are caught.
+		// WARN/INFO/DEBUG are where essentially all of the console noise actually comes from
+		// (ALSA device probing, the defsfloader-generic "Unable to open file" notice logged
+		// before falling through to the next registered sfloader, etc.) and are silenced
+		// outright - only PANIC/ERR are ever forwarded, to whatever g_fluidLogDestination
+		// currently points at.
+		void ensure_fluidsynth_logging_installed(void)
+		{
+			static const bool installed = []() {
+				if (!g_fluidLogDestination)
+					g_fluidLogDestination = new ostd::ConsoleOutputHandler();
+				fluid_set_log_function(FLUID_PANIC, fluid_log_trampoline, &g_fluidLogDestination);
+				fluid_set_log_function(FLUID_ERR, fluid_log_trampoline, &g_fluidLogDestination);
+				fluid_set_log_function(FLUID_WARN, nullptr, nullptr);
+				fluid_set_log_function(FLUID_INFO, nullptr, nullptr);
+				fluid_set_log_function(FLUID_DBG, nullptr, nullptr);
+				return true;
+			}();
+			(void)installed;
+		}
+	}
+
+	void MidiSynth::setLogOutput(ostd::OutputHandlerBase& destination)
+	{
+		ensure_fluidsynth_logging_installed(); // in case this is called before any MidiSynth exists
+		g_fluidLogDestination = &destination;
+	}
+
+	ostd::OutputHandlerBase& MidiSynth::getLogOutput(void)
+	{
+		ensure_fluidsynth_logging_installed();
+		return *g_fluidLogDestination;
 	}
 
 	MidiSynth::MidiSynth(void)
 	{
 		ensure_audio_subsystem();
+		ensure_fluidsynth_logging_installed();
 
 		m_settings = new_fluid_settings();
 		fluid_settings_setnum(m_settings, "synth.sample-rate", (double)SampleRate);

@@ -33,6 +33,11 @@ struct SDL_AudioStream;
 typedef struct _fluid_hashtable_t fluid_settings_t;
 typedef struct _fluid_synth_t fluid_synth_t;
 
+namespace ostd
+{
+	class OutputHandlerBase;
+}
+
 namespace osnd
 {
 	// Generic, widget-agnostic MIDI playback via FluidSynth - renders through
@@ -120,6 +125,19 @@ namespace osnd
 			void allNotesOff(void); // also resets CC64/66/67 to 0 on every channel
 
 			static constexpr u32 SampleRate = 44100;
+
+			// FluidSynth logs straight to stderr by default (startup info, ALSA probing
+			// warnings, "Unable to open file" loader-fallthrough notices, etc.) - this redirects
+			// it instead. Only PANIC/ERR are ever forwarded, to destination; WARN/INFO/DEBUG are
+			// pure noise in practice (confirmed by reproducing every message this emits outside
+			// of any real failure) and are dropped outright, same as if a caller of FluidSynth's
+			// own fluid_set_log_function() passed a null callback for those levels. Process-wide
+			// and idempotent to install - affects every MidiSynth instance, not just the one this
+			// happens to be called through - and safe to call before the first instance is even
+			// constructed, so startup-time messages are caught too (e.g. pass an
+			// ostd::LogFileOutputHandler here before constructing anything).
+			static void setLogOutput(ostd::OutputHandlerBase& destination);
+			static ostd::OutputHandlerBase& getLogOutput(void);
 
 		private:
 			static void sdl_feed_callback(void* userdata, struct SDL_AudioStream* stream, int additionalAmount, int totalAmount);
