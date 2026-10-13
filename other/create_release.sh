@@ -13,11 +13,13 @@ if [[ "$(uname)" == "Darwin" ]]; then
     # macOS shared libraries (.dylib)
     cp ../bin/libostd.dylib "$RELEASE_DIR/lib"
     cp ../bin/libogfx.dylib "$RELEASE_DIR/lib"
+    cp ../bin/libosnd.dylib "$RELEASE_DIR/lib"
 elif [[ "$(uname -s)" == Linux* ]]; then
 	RELEASE_DIR=../bin/OmniaFramework_linux64
 	mkdir -p $RELEASE_DIR/lib
+	cp ../bin/libostd.so $RELEASE_DIR/lib
     cp ../bin/libostd.so $RELEASE_DIR/lib
-    cp ../bin/libogfx.so $RELEASE_DIR/lib
+    cp ../bin/libosnd.so $RELEASE_DIR/lib
 elif [[ "$(uname -s)" == MINGW64_NT* ]]; then
 	RELEASE_DIR=../bin/OmniaFramework_w64
 	mkdir -p $RELEASE_DIR/lib
@@ -25,6 +27,8 @@ elif [[ "$(uname -s)" == MINGW64_NT* ]]; then
     cp ../bin/libostd.dll.a $RELEASE_DIR/lib
     cp ../bin/libogfx.dll $RELEASE_DIR/lib
     cp ../bin/libogfx.dll.a $RELEASE_DIR/lib
+    cp ../bin/liosnd.dll $RELEASE_DIR/lib
+    cp ../bin/liosnd.dll.a $RELEASE_DIR/lib
 
     cp $MSYS_ROOT/ucrt64/bin/libgcc_s_seh-1.dll $RELEASE_DIR/lib
     cp $MSYS_ROOT/ucrt64/bin/libstdc++-6.dll $RELEASE_DIR/lib
@@ -75,3 +79,16 @@ find ../src/ogfx/gui/menu/macos  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_D
 find ../src/ogfx/render  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/render \;
 find ../src/ogfx/resources  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/resources \;
 find ../src/ogfx/utils  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/utils \;
+
+
+# OSND
+mkdir -p $RELEASE_DIR/include/osnd
+mkdir -p $RELEASE_DIR/include/osnd/audio
+mkdir -p $RELEASE_DIR/include/osnd/midi
+mkdir -p $RELEASE_DIR/include/osnd/resources
+mkdir -p $RELEASE_DIR/include/osnd/vendor
+find ../src/osnd  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/osnd \;
+find ../src/osnd/audio  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/osnd/audio \;
+find ../src/osnd/midi  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/osnd/midi \;
+find ../src/osnd/resources  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/osnd/resources \;
+find ../src/osnd/vendor  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/osnd/vendor \;

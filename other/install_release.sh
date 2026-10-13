@@ -17,38 +17,52 @@ if [[ "$(uname)" == "Darwin" ]]; then
     # Remove old versions
     sudo rm -rf /usr/local/include/ostd 2> /dev/null
     sudo rm -rf /usr/local/include/ogfx 2> /dev/null
+    sudo rm -rf /usr/local/include/osnd 2> /dev/null
     sudo rm -f  "$PREFIX/lib/libostd.dylib" 2> /dev/null
     sudo rm -f  "$PREFIX/lib/libogfx.dylib" 2> /dev/null
+    sudo rm -f  "$PREFIX/lib/libosnd.dylib" 2> /dev/null
 
     # Install headers
     sudo cp -r "$RELEASE_DIR/include/ostd" /usr/local/include/
     sudo cp -r "$RELEASE_DIR/include/ogfx" /usr/local/include/
+    sudo cp -r "$RELEASE_DIR/include/osnd" /usr/local/include/
 
     # Install libraries
     sudo cp "$RELEASE_DIR/lib/libostd.dylib" "$PREFIX/lib/"
     sudo cp "$RELEASE_DIR/lib/libogfx.dylib" "$PREFIX/lib/"
+    sudo cp "$RELEASE_DIR/lib/libosnd.dylib" "$PREFIX/lib/"
 elif [[ "$(uname -s)" == Linux* ]]; then
 	RELEASE_DIR=../bin/OmniaFramework_linux64
 	sudo rm -rf /usr/include/ostd 2> /dev/null
 	sudo rm -rf /usr/include/ogfx 2> /dev/null
+	sudo rm -rf /usr/include/osnd 2> /dev/null
 	sudo rm -rf /usr/lib/libostd.so 2> /dev/null
 	sudo rm -rf /usr/lib/libogfx.so 2> /dev/null
+	sudo rm -rf /usr/lib/libosnd.so 2> /dev/null
 	sudo cp -r $RELEASE_DIR/include/ostd /usr/include/
 	sudo cp -r $RELEASE_DIR/include/ogfx /usr/include/
+	sudo cp -r $RELEASE_DIR/include/osnd /usr/include/
 	sudo cp -r $RELEASE_DIR/lib/libostd.so /usr/lib/
 	sudo cp -r $RELEASE_DIR/lib/libogfx.so /usr/lib/
+	sudo cp -r $RELEASE_DIR/lib/libosnd.so /usr/lib/
 elif [[ "$(uname -s)" == MINGW64_NT* ]]; then
 	RELEASE_DIR=../bin/OmniaFramework_w64
 	rm -rf $MSYS_ROOT/ucrt64/include/ostd 2> /dev/null
 	rm -rf $MSYS_ROOT/ucrt64/include/ogfx 2> /dev/null
+	rm -rf $MSYS_ROOT/ucrt64/include/osnd 2> /dev/null
 	rm -rf $MSYS_ROOT/ucrt64/bin/libostd.dll 2> /dev/null
 	rm -rf $MSYS_ROOT/ucrt64/lib/libostd.dll.a 2> /dev/null
 	rm -rf $MSYS_ROOT/ucrt64/bin/libogfx.dll 2> /dev/null
 	rm -rf $MSYS_ROOT/ucrt64/lib/libogfx.dll.a 2> /dev/null
+	rm -rf $MSYS_ROOT/ucrt64/bin/libosnd.dll 2> /dev/null
+	rm -rf $MSYS_ROOT/ucrt64/lib/libosnd.dll.a 2> /dev/null
 	cp -r $RELEASE_DIR/include/ostd $MSYS_ROOT/ucrt64/include/
 	cp -r $RELEASE_DIR/include/ogfx $MSYS_ROOT/ucrt64/include/
+	cp -r $RELEASE_DIR/include/osnd $MSYS_ROOT/ucrt64/include/
 	cp -r $RELEASE_DIR/lib/libostd.dll $MSYS_ROOT/ucrt64/bin/
 	cp -r $RELEASE_DIR/lib/libostd.dll.a $MSYS_ROOT/ucrt64/lib/
 	cp -r $RELEASE_DIR/lib/libogfx.dll $MSYS_ROOT/ucrt64/bin/
 	cp -r $RELEASE_DIR/lib/libogfx.dll.a $MSYS_ROOT/ucrt64/lib/
+	cp -r $RELEASE_DIR/lib/libosnd.dll $MSYS_ROOT/ucrt64/bin/
+	cp -r $RELEASE_DIR/lib/libosnd.dll.a $MSYS_ROOT/ucrt64/lib/
 fi
