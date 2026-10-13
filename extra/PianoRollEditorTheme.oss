@@ -7,9 +7,9 @@
 	% ======= Base Widget properties =======
 	borderColor = #2040BBFF
 	borderWidth = 1
-	showBorder = true
+	showBorder = false
 	focusBorderColor = #2FB000FF
-	showFocusBorder = true
+	showFocusBorder = false
 	focusBorderWidth = 1
 	% ======================================
 
@@ -31,5 +31,11 @@
 	slot7Color = #D81B60C0
 	slot8Color = #AFB42BC0
 	slot9Color = #6D4C41C0
+}
+
+(@piano_roll_control_panel panel) {
+	showBorder = false
+	useBackgroundGradient = true
+	backgroundGradient = gradientV(#111111FF - #222222FF)
 }
 % ================================================================

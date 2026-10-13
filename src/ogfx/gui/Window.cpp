@@ -879,6 +879,7 @@ namespace ogfx
 			m_lastFrameTime = ostd::StepTimer::Clock::now();
 			onInitialize();
 			m_rootWidget.setSize(cast<f32>(width), cast<f32>(height));
+			enableNativeMenuBar();
 		}
 
 		void Window::__on_window_close(void)
