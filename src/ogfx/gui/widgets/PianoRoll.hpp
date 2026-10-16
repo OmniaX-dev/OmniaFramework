@@ -90,6 +90,23 @@ namespace ogfx
 				// adjacent setting.
 				inline void setMusicKey(ostd::MidiParser::eMusicKey key) { m_style.setMusicKey(key); }
 				inline ostd::MidiParser::eMusicKey getMusicKey(void) const { return m_style.getMusicKey(); }
+				// Same forwarding idea as setMusicKey() above - tempo (BPM) and time signature
+				// ("4/4", "6/8", ...; see PianoRollStyle::setTimeSignature()) aren't derived from
+				// whatever's actually loaded, they're just what the bar/beat grid lines (below)
+				// are placed against, so getting them wrong just misplaces the grid, nothing else.
+				inline void setTempo(f32 bpm) { m_style.setTempo(bpm); }
+				inline f32 getTempo(void) const { return m_style.getTempo(); }
+				inline void setTimeSignature(const String& signature) { m_style.setTimeSignature(signature); }
+				inline String getTimeSignature(void) const { return m_style.getTimeSignature(); }
+				// Which beat of its bar the very first note (across every voice) actually falls
+				// on - see PianoRollStyle::setStartBeat()'s own comment. draw_bar_beat_lines()
+				// anchors the whole grid at (that note's own startTime) - (startBeat-1)*beat
+				// duration, so e.g. startBeat=3 puts the first bar line exactly 2 empty beats
+				// before the first note, instead of at raw time 0 (the file's own start, which
+				// setStartBeat()'s default of 1 still anchors it at when the first note already
+				// lands on a downbeat).
+				inline void setStartBeat(i32 beat) { m_style.setStartBeat(beat); }
+				inline i32 getStartBeat(void) const { return m_style.getStartBeat(); }
 
 				// --- voices ---
 				// Parses midiFilePath via ostd::MidiParser and adds it as a new voice. color ==
@@ -256,6 +273,20 @@ namespace ogfx
 				// including the style's own preferred ones - are preserved rather than distorted.
 				void draw_keyboard(BasicRenderer2D& gfx, const Rectangle& bounds, f32 scale);
 				void draw_falling_notes(BasicRenderer2D& gfx, const Rectangle& bounds, f32 scale);
+				// Horizontal grid lines (PianoRollStyle::isShowBarLinesEnabled()/
+				// isShowBeatLinesEnabled(), both off by default) spanning the fall area's full
+				// width, at every bar/beat boundary (from getStyle().getBarDurationSeconds()/
+				// getBeatDurationSeconds(), i.e. setTempo()/setTimeSignature()) currently inside
+				// the visible lookahead window - same y-per-second mapping as
+				// compute_falling_note_rect()'s own bottomY, just evaluated at a bar/beat time
+				// instead of a note's startTime. The grid is anchored at
+				// m_earliestNoteStartTime - (startBeat-1)*beatDuration (see setStartBeat()), not
+				// at raw time 0, so "bar 1, beat 1" lines up with wherever the first note
+				// actually starts, not the file's own start. Drawn before draw_falling_notes() so
+				// the grid sits behind notes, not on top of them. Each bar line also gets its
+				// 1-based bar number drawn just under it, left-aligned at the fall area's left
+				// edge.
+				void draw_bar_beat_lines(BasicRenderer2D& gfx, const Rectangle& bounds, f32 scale);
 				// What color a key should actually be drawn right now - pressed, mid-release-fade,
 				// or its plain normal color, in that priority order.
 				Color resolve_key_color(i32 pitch, bool isBlack, f64 now) const;
@@ -284,6 +315,11 @@ namespace ogfx
 				// presentation-facing clock that starts at 0 and only ever counts up) is just
 				// raw + m_startPadSeconds.
 				f64 m_startPadSeconds { 0.0 };
+				// The earliest note.startTime across every voice (raw time, same as
+				// m_startPadSeconds's own domain) - 0.0 if there are no notes at all. Kept around
+				// purely so draw_bar_beat_lines() can anchor the bar/beat grid relative to it (see
+				// setStartBeat()), rather than always at raw time 0.
+				f64 m_earliestNoteStartTime { 0.0 };
 				// Whether whichever live clock is actually in play right now (m_audioPlayer, or
 				// m_synth when there's no audio file) has had its own position trustworthy -
 				// false during the pre-roll pad (before it's ever been positioned/started this

@@ -263,6 +263,7 @@ namespace ogfx
 			}
 			if (hasAudio())
 				d = std::max(d, m_audioPlayer->getDurationSeconds());
+			m_earliestNoteStartTime = earliestStart; // see draw_bar_beat_lines()/setStartBeat()
 			rebuild_synth_schedule(); // keeps the fallback synth's schedule in sync with the voice list either way
 
 			// Lead-in silence so the earliest note starts fully offscreen instead of popping in
@@ -672,6 +673,7 @@ namespace ogfx
 			// panel's viewport) already has active, instead of overriding it outright - every
 			// other widget does the same (see Widget::onDraw()/WidgetManager's own calls).
 			gfx.pushClippingRect(bounds, true);
+			draw_bar_beat_lines(gfx, bounds, scale);
 			draw_falling_notes(gfx, bounds, scale);
 			draw_keyboard(gfx, bounds, scale);
 			gfx.popClippingRect();
@@ -734,6 +736,7 @@ namespace ogfx
 				if (showKeyNames)
 					draw_bottom_centered_label(gfx, m_style.getNoteName(pitch), keyRect, m_style.getKeyNoteNameColorWhite(), m_style.getKeyNoteNameFontSize(), scale);
 			}
+			gfx.drawLine({ { bounds.x, keyboardTop }, { bounds.x + bounds.w, keyboardTop } }, m_style.getKeyboardLineColor(), 2);
 			for (i32 k = 0; k < 88; k++)
 			{
 				i32 pitch = 21 + k;
@@ -745,7 +748,74 @@ namespace ogfx
 				if (showKeyNames)
 					draw_bottom_centered_label(gfx, m_style.getNoteName(pitch), keyRect, m_style.getKeyNoteNameColorBlack(), m_style.getKeyNoteNameFontSize(), scale);
 			}
-			gfx.drawLine({ { bounds.x, keyboardTop }, { bounds.x + bounds.w, keyboardTop } }, m_style.getKeyboardLineColor(), 2);
+		}
+
+		void PianoRoll::draw_bar_beat_lines(BasicRenderer2D& gfx, const Rectangle& bounds, f32 scale)
+		{
+			bool showBars = m_style.isShowBarLinesEnabled();
+			bool showBeats = m_style.isShowBeatLinesEnabled();
+			if (!showBars && !showBeats)
+				return;
+
+			f64 beatSeconds = m_style.getBeatDurationSeconds();
+			i32 beatsPerBar = m_style.getTimeSignatureNumerator();
+			if (beatSeconds <= 0.0 || beatsPerBar <= 0)
+				return; // tempo/time signature never set to anything usable - nothing to place
+			f64 barSeconds = beatSeconds * (f64)beatsPerBar;
+
+			// "Bar 1, beat 1" sits here, not at raw time 0 - setStartBeat() says which beat of
+			// its bar the first note actually falls on (1 = the ordinary case, right on the
+			// downbeat), so anything > 1 pushes the anchor earlier than the first note by that
+			// many already-elapsed beats, e.g. startBeat=3 anchors 2 beats before it.
+			f64 anchor = m_earliestNoteStartTime - (f64)(m_style.getStartBeat() - 1) * beatSeconds;
+
+			f32 whiteH = m_style.getWhiteKeyWidth() * scale * m_style.getWhiteKeyHeightMultiplier();
+			f32 keyboardTop = bounds.y + bounds.h - whiteH;
+			f32 fallAreaHeight = bounds.h - whiteH;
+			f32 lookahead = std::max(0.01f, m_style.getLookaheadSeconds());
+			f32 pxPerSecond = fallAreaHeight / lookahead;
+			f64 now = get_raw_time();
+
+			// Only whatever's actually inside the visible lookahead window right now - same
+			// window compute_falling_note_rect()'s own notes are visible within.
+			f64 windowStart = now;
+			f64 windowEnd = now + (f64)lookahead;
+
+			gfx.pushClippingRect({ bounds.x, bounds.y, bounds.w, fallAreaHeight }, true); // additive, same as draw_falling_notes()
+
+			if (showBeats)
+			{
+				i64 firstBeat = (i64)std::floor((windowStart - anchor) / beatSeconds);
+				i64 lastBeat = (i64)std::ceil((windowEnd - anchor) / beatSeconds);
+				// Indices before the anchor (i < 0) would be "before bar 1, beat 1" - nothing
+				// musically exists there, same as the old (anchor-less) version never drew
+				// anything before raw time 0.
+				for (i64 i = std::max<i64>(0, firstBeat); i <= lastBeat; i++)
+				{
+					// A beat that lands exactly on a bar boundary is drawn as that (more
+					// prominent) bar line instead, below - not redundantly under it as well.
+					if (showBars && (i % beatsPerBar) == 0)
+						continue;
+					f32 y = keyboardTop - (f32)((anchor + (f64)i * beatSeconds) - now) * pxPerSecond;
+					gfx.drawLine({ { bounds.x, y }, { bounds.x + bounds.w, y } }, m_style.getBeatLineColor(), 1);
+				}
+			}
+
+			if (showBars)
+			{
+				i64 firstBar = (i64)std::floor((windowStart - anchor) / barSeconds);
+				i64 lastBar = (i64)std::ceil((windowEnd - anchor) / barSeconds);
+				i32 fontSize = (i32)std::round(std::max(1.0f, m_style.getBarNumberFontSize() * scale));
+				f32 margin = 3.0f * scale;
+				for (i64 i = std::max<i64>(0, firstBar); i <= lastBar; i++)
+				{
+					f32 y = keyboardTop - (f32)((anchor + (f64)i * barSeconds) - now) * pxPerSecond;
+					gfx.drawLine({ { bounds.x, y }, { bounds.x + bounds.w, y } }, m_style.getBarLineColor(), 1);
+					gfx.drawString(String("").add((i32)(i + 1)), { bounds.x + margin, y + margin }, m_style.getBarNumberColor(), fontSize);
+				}
+			}
+
+			gfx.popClippingRect();
 		}
 
 		void PianoRoll::draw_falling_notes(BasicRenderer2D& gfx, const Rectangle& bounds, f32 scale)

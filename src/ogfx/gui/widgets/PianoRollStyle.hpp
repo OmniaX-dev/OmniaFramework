@@ -104,6 +104,52 @@ namespace ogfx
 				// music key.
 				inline String getNoteName(i32 midiPitch) const { return ostd::MidiParser::getNoteNameForKey(midiPitch, m_musicKey); }
 
+				// --- tempo / time signature - purely descriptive (not derived from whatever a
+				// loaded voice's own tempo map actually says - see PianoRoll::setTempo()/
+				// setTimeSignature()), used only to place the bar/beat grid lines below ---
+				// Non-positive is rejected outright (kept as whatever it was before), same as
+				// setTimeSignature() already does for its own parts - 0 (or negative) BPM isn't a
+				// real tempo, it's indistinguishable from "unset", and loadFromJson() relies on
+				// that same rejection to fall back to the compiled-in default (120) instead of
+				// silently zeroing out (and so completely disabling - see getBeatDurationSeconds())
+				// the whole bar/beat grid whenever an on-disk style predates these fields or was
+				// otherwise saved/edited with a placeholder 0.
+				inline f32 getTempo(void) const { return m_tempo; }
+				inline void setTempo(f32 bpm) { if (bpm > 0.0f) m_tempo = bpm; }
+				inline i32 getTimeSignatureNumerator(void) const { return m_timeSignatureNumerator; }
+				inline i32 getTimeSignatureDenominator(void) const { return m_timeSignatureDenominator; }
+				// Parses "N/D" (e.g. "4/4", "6/8") - anything malformed (no '/', a non-numeric or
+				// non-positive part) is ignored outright, leaving the current signature unchanged.
+				void setTimeSignature(const String& signature);
+				inline String getTimeSignature(void) const { return String("").add(m_timeSignatureNumerator).add("/").add(m_timeSignatureDenominator); }
+				// One beat's length in seconds, under the usual "BPM counts quarter notes"
+				// convention: a beat is (4/denominator) quarter notes long, so e.g. 6/8 at the
+				// same tempo as 4/4 has a beat (an eighth note) half as long as 4/4's (a quarter
+				// note) - not simply 60/bpm regardless of the signature's own denominator.
+				inline f64 getBeatDurationSeconds(void) const { return m_tempo > 0.0f && m_timeSignatureDenominator > 0 ? (60.0 / (f64)m_tempo) * (4.0 / (f64)m_timeSignatureDenominator) : 0.0; }
+				inline f64 getBarDurationSeconds(void) const { return getBeatDurationSeconds() * (f64)m_timeSignatureNumerator; }
+				// Which beat of its bar the very first note actually falls on (1-based, default
+				// 1 - the ordinary case, no pickup/anacrusis: the first note lands right on its
+				// bar's downbeat). A value > 1 means the piece effectively starts mid-bar - e.g.
+				// 3 means the first note is preceded by 2 empty beats still belonging to that same
+				// first bar - and PianoRoll::draw_bar_beat_lines() anchors the whole bar/beat grid
+				// accordingly (see PianoRoll::setStartBeat()). Non-positive is rejected, same
+				// reasoning as setTempo() above.
+				inline i32 getStartBeat(void) const { return m_startBeat; }
+				inline void setStartBeat(i32 beat) { if (beat > 0) m_startBeat = beat; }
+
+				// --- bar/beat grid lines, spanning the widget's full width, plus the bar number
+				// drawn just under each bar line at the left edge - both toggles default off
+				// (m_showBarLines/m_showBeatLines) since they assume setTempo()/setTimeSignature()
+				// were actually called for whatever's loaded; the beat color defaults fainter
+				// than the bar color so the bar grid reads as the more prominent of the two. ---
+				OSTD_BOOL_PARAM_GETSET_E(ShowBarLines, m_showBarLines);
+				OSTD_BOOL_PARAM_GETSET_E(ShowBeatLines, m_showBeatLines);
+				OSTD_PARAM_GETSET(Color, BarLineColor, m_barLineColor);
+				OSTD_PARAM_GETSET(Color, BeatLineColor, m_beatLineColor);
+				OSTD_PARAM_GETSET(Color, BarNumberColor, m_barNumberColor);
+				OSTD_PARAM_GETSET(f32, BarNumberFontSize, m_barNumberFontSize);
+
 				// --- note-name labels drawn inside each falling note, bottom-centered ---
 				OSTD_BOOL_PARAM_GETSET_E(ShowNoteNamesOnFallingNotes, m_showNoteNamesOnFallingNotes);
 				OSTD_PARAM_GETSET(Color, FallingNoteNameColorWhite, m_fallingNoteNameColorWhite);
@@ -165,6 +211,18 @@ namespace ogfx
 				f32 m_keyFadeDurationSeconds { 0.2f };
 
 				ostd::MidiParser::eMusicKey m_musicKey { ostd::MidiParser::eMusicKey::CMajor };
+
+				f32 m_tempo { 120.0f };
+				i32 m_timeSignatureNumerator { 4 };
+				i32 m_timeSignatureDenominator { 4 };
+				i32 m_startBeat { 1 };
+
+				bool m_showBarLines { false };
+				bool m_showBeatLines { false };
+				Color m_barLineColor { "#FFFFFF30" }; // faint
+				Color m_beatLineColor { "#FFFFFF18" }; // fainter still than m_barLineColor
+				Color m_barNumberColor { "#FFFFFF80" };
+				f32 m_barNumberFontSize { 12 };
 
 				bool m_showNoteNamesOnFallingNotes { false };
 				Color m_fallingNoteNameColorWhite { "#FFFFFFFF" };

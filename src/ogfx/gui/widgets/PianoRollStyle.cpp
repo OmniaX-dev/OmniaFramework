@@ -56,6 +56,25 @@ namespace ogfx
 			}
 		}
 
+		void PianoRollStyle::setTimeSignature(const String& signature)
+		{
+			i32 slash = signature.indexOf('/');
+			if (slash < 0)
+				return;
+			String numeratorStr = signature.new_substr(0, slash);
+			String denominatorStr = signature.new_substr((u32)slash + 1);
+			numeratorStr.trim();
+			denominatorStr.trim();
+			if (!numeratorStr.isInt() || !denominatorStr.isInt())
+				return;
+			i64 numerator = numeratorStr.toInt();
+			i64 denominator = denominatorStr.toInt();
+			if (numerator <= 0 || denominator <= 0)
+				return;
+			m_timeSignatureNumerator = (i32)numerator;
+			m_timeSignatureDenominator = (i32)denominator;
+		}
+
 		stdvec<Color> PianoRollStyle::rainbowGradientStops(void)
 		{
 			return {
@@ -84,8 +103,13 @@ namespace ogfx
 			f.set_double("style.dimensions.keyFadeDurationSeconds", m_keyFadeDurationSeconds);
 			f.set_double("style.noteNames.falling.fontSize", m_fallingNoteNameFontSize);
 			f.set_double("style.noteNames.keys.fontSize", m_keyNoteNameFontSize);
+			f.set_double("style.tempoAndTimeSignature.tempo", m_tempo);
+			f.set_double("style.barBeatLines.numberFontSize", m_barNumberFontSize);
 
 			f.set_int("style.musicKey", (i32)m_musicKey);
+			f.set_int("style.tempoAndTimeSignature.timeSignatureNumerator", m_timeSignatureNumerator);
+			f.set_int("style.tempoAndTimeSignature.timeSignatureDenominator", m_timeSignatureDenominator);
+			f.set_int("style.tempoAndTimeSignature.startBeat", m_startBeat);
 
 			f.set_bool("style.usePerNoteColors", m_usePerNoteColors);
 			f.set_bool("style.useFilledNotes", m_useFilledNotes);
@@ -93,6 +117,8 @@ namespace ogfx
 			f.set_bool("style.useKeyFade", m_useKeyFade);
 			f.set_bool("style.noteNames.falling.show", m_showNoteNamesOnFallingNotes);
 			f.set_bool("style.noteNames.keys.show", m_showNoteNamesOnKeys);
+			f.set_bool("style.barBeatLines.showBars", m_showBarLines);
+			f.set_bool("style.barBeatLines.showBeats", m_showBeatLines);
 
 			f.set_color("style.noteNames.falling.colorWhite", m_fallingNoteNameColorWhite);
 			f.set_color("style.noteNames.falling.colorBlack", m_fallingNoteNameColorBlack);
@@ -107,6 +133,9 @@ namespace ogfx
 			f.set_color("style.colors.blackKeyPressed", m_blackKeyPressedColor);
 			f.set_color("style.colors.background", m_backgroundColor);
 			f.set_color("style.colors.keyboardLine", m_keyboardLineColor);
+			f.set_color("style.barBeatLines.barColor", m_barLineColor);
+			f.set_color("style.barBeatLines.beatColor", m_beatLineColor);
+			f.set_color("style.barBeatLines.numberColor", m_barNumberColor);
 
 			for (u8 i = 0; i < 12; i++)
 			{
@@ -139,8 +168,23 @@ namespace ogfx
 			m_keyFadeDurationSeconds = f.get_float("style.dimensions.keyFadeDurationSeconds");
 			m_fallingNoteNameFontSize = f.get_float("style.noteNames.falling.fontSize");
 			m_keyNoteNameFontSize = f.get_float("style.noteNames.keys.fontSize");
+			setTempo(f.get_float("style.tempoAndTimeSignature.tempo")); // a non-positive value (missing key, or an old/placeholder 0) is rejected, keeping the compiled-in default
+			m_barNumberFontSize = f.get_float("style.barBeatLines.numberFontSize");
 
 			m_musicKey = (ostd::MidiParser::eMusicKey)f.get_int("style.musicKey");
+			// Same "reject non-positive, keep whatever's already there" rule as setTempo() above
+			// and setTimeSignature() itself - applied to both parts together (not one at a time
+			// via setTimeSignature(), which only accepts "N/D" as a single string) so a file with
+			// a valid numerator but a missing/zero denominator doesn't end up with one half
+			// updated and the other left stale.
+			i32 loadedNumerator = f.get_int("style.tempoAndTimeSignature.timeSignatureNumerator");
+			i32 loadedDenominator = f.get_int("style.tempoAndTimeSignature.timeSignatureDenominator");
+			if (loadedNumerator > 0 && loadedDenominator > 0)
+			{
+				m_timeSignatureNumerator = loadedNumerator;
+				m_timeSignatureDenominator = loadedDenominator;
+			}
+			setStartBeat(f.get_int("style.tempoAndTimeSignature.startBeat")); // non-positive (missing key, or an old/placeholder 0) is rejected, keeping the compiled-in default
 
 			m_usePerNoteColors = f.get_bool("style.usePerNoteColors");
 			m_useFilledNotes = f.get_bool("style.useFilledNotes");
@@ -148,6 +192,8 @@ namespace ogfx
 			m_useKeyFade = f.get_bool("style.useKeyFade");
 			m_showNoteNamesOnFallingNotes = f.get_bool("style.noteNames.falling.show");
 			m_showNoteNamesOnKeys = f.get_bool("style.noteNames.keys.show");
+			m_showBarLines = f.get_bool("style.barBeatLines.showBars");
+			m_showBeatLines = f.get_bool("style.barBeatLines.showBeats");
 
 			m_fallingNoteNameColorWhite = f.get_color("style.noteNames.falling.colorWhite");
 			m_fallingNoteNameColorBlack = f.get_color("style.noteNames.falling.colorBlack");
@@ -162,6 +208,9 @@ namespace ogfx
 			m_blackKeyPressedColor = f.get_color("style.colors.blackKeyPressed");
 			m_backgroundColor = f.get_color("style.colors.background");
 			m_keyboardLineColor = f.get_color("style.colors.keyboardLine");
+			m_barLineColor = f.get_color("style.barBeatLines.barColor");
+			m_beatLineColor = f.get_color("style.barBeatLines.beatColor");
+			m_barNumberColor = f.get_color("style.barBeatLines.numberColor");
 
 			for (u8 i = 0; i < 12; i++)
 			{

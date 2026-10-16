@@ -1,11 +1,19 @@
 {
     "style": {
+        "barBeatLines": {
+            "barColor": "#333333FF",
+            "beatColor": "#222222FF",
+            "numberColor": "#333333FF",
+            "numberFontSize": 24.0,
+            "showBars": true,
+            "showBeats": true
+        },
         "colors": {
             "background": "#141414FF",
             "blackKey": "#222222FF",
             "blackKeyPressed": "#14145AFF",
-            "fallingBlackNote": [60, 10, 40, 255],
-            "fallingWhiteNote": [220, 20, 60, 255],
+            "fallingBlackNote": "#3C0A28FF",
+            "fallingWhiteNote": "#DC143CFF",
             "keyboardLine": "#A00A0AFF",
             "perKey": [],
             "perNote": {
@@ -75,20 +83,26 @@
             "whiteKeyHeightMultiplier": 7.0,
             "whiteKeyWidth": 40.0
         },
-        "musicKey": 0,
+        "musicKey": 25,
         "noteNames": {
             "falling": {
                 "colorBlack": "#FFFFFFFF",
                 "colorWhite": "#FFFFFFFF",
                 "fontSize": 18.0,
-                "show": false
+                "show": true
             },
             "keys": {
                 "colorBlack": "#FFFFFFFF",
                 "colorWhite": "#000000FF",
                 "fontSize": 18.0,
-                "show": false
+                "show": true
             }
+        },
+        "tempoAndTimeSignature": {
+            "startBeat": 1,
+            "tempo": 90.0,
+            "timeSignatureDenominator": 4,
+            "timeSignatureNumerator": 4
         },
         "useFilledNotes": true,
         "useKeyFade": true,
