@@ -63,22 +63,27 @@ namespace ogfx
 		public:
 			inline FontGlyphAtlas(void) {  }
 			inline FontGlyphAtlas(BasicRenderer2D& renderer) { init(renderer); }
-			FontGlyphAtlas init(BasicRenderer2D& renderer);
+			FontGlyphAtlas& init(BasicRenderer2D& renderer);
 			const stdvec<const GlyphInfo*> processString(const String& str, TTF_Font* font, u32 fontSize);
 			inline Vec2 getNullTextureSlotUVs(void) const { return m_nullTexUVs; }
 			inline SDL_Texture* getAtlas(u32 index) const { return (index >= m_currentAtlasCount ? nullptr : m_atlases[index]); }
 
 		private:
+			// Moves the pen to the start of the next free row, keeping clear of the white block.
+			void next_row(void);
 			bool rasterize_glyph(const String& glyphStr, TTF_Font* font, u32 fontSize, const GlyphInfo** outGlyph);
 			bool create_new_atlas(void);
 
 		public:
-			inline static constexpr u32 AtlasTextureDimension { 8192 };
+			inline static constexpr u32 AtlasTextureDimension { 2048 };
 			inline static constexpr u32 MaxAtlasCount { 16 };
+			// Size of the opaque white block in the top-left corner of every atlas, sampled by flat
+			// shapes. Glyphs are never placed over it.
+			inline static constexpr i32 WhiteBlockSize { 4 };
 
 		private:
 			std::unordered_map<GlyphKey, GlyphInfo, GlyphKeyHasher> m_uvs;
-			SDL_Texture* m_atlases[FontGlyphAtlas::MaxAtlasCount];
+			SDL_Texture* m_atlases[FontGlyphAtlas::MaxAtlasCount] { };
 			i32 m_currentAtlasCount { 0 };
 			BasicRenderer2D* m_renderer { nullptr };
 			i32 m_penX { 0 };

@@ -27,6 +27,7 @@
 #include <ostd/io/IOHandlers.hpp>
 #include <ogfx/render/FontGlyphAtlas.hpp>
 #include <ostd/io/StaticHashMap.hpp>
+#include <memory>
 
 namespace ogfx
 {
@@ -55,8 +56,37 @@ namespace ogfx
 			private:
 				BasicRenderer2D& m_parent;
 		};
+		private: struct BatchState
+		{
+			SDL_Texture* texture { nullptr };
+			SDL_BlendMode blend { SDL_BLENDMODE_BLEND };
+
+			inline bool operator==(const BatchState& other) const { return texture == other.texture && blend == other.blend; }
+			inline bool operator!=(const BatchState& other) const { return !(*this == other); }
+		};
+		private: struct FlatMesh
+		{
+			stdvec<Vec2> positions;
+			stdvec<SDL_FColor> colors;
+			stdvec<u32> indices;
+
+			inline void clear(void) { positions.clear(); colors.clear(); indices.clear(); }
+			inline u32 addVertex(const Vec2& position, const SDL_FColor& color) { positions.push_back(position); colors.push_back(color); return cast<u32>(positions.size() - 1); }
+			inline void addTriangle(u32 a, u32 b, u32 c) { indices.push_back(a); indices.push_back(b); indices.push_back(c); }
+		};
+		private: class FontSizeGuard
+		{
+			public:
+				inline FontSizeGuard(BasicRenderer2D& parent) : m_parent(parent), m_oldFontSize(parent.m_fontSize) {  }
+				inline ~FontSizeGuard(void) { m_parent.setFontSize(m_oldFontSize); }
+
+			private:
+				BasicRenderer2D& m_parent;
+				i32 m_oldFontSize;
+		};
+		private: struct MeshProcessor;
 		public:
-			inline BasicRenderer2D(void) {  }
+			BasicRenderer2D(void);
 			~BasicRenderer2D(void);
 			i32 init(WindowCore& window);
 			SDL_Renderer* getSDLRenderer(void) const;
@@ -132,12 +162,17 @@ namespace ogfx
 			void outlinedTriangle(const Vec2& A, const Vec2& B, const Vec2& C, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1);
 
 		private:
-			void init_arrays(void);
-			void generate_half_circle(const Vec2& center, const Vec2& dir, f32 radius, i32 segments, const Color& color, bool use_null_tex = false);
-			void generate_ellipse_stroke(const Vec2& center, f32 radiusX, f32 radiusY, f32 thickness, f32 startAngle, f32 endAngle, const Color& color, i32 segments, bool use_null_tex = false);
-			void generate_filled_ellipse_stroke(const Vec2& center, f32 radiusX, f32 radiusY, f32 startAngle, const Color& color, i32 segments, bool use_null_tex = false);
-			void generate_filled_ellipse(const Vec2& center, f32 radiusX, f32 radiusY, const Color& color, i32 segments, bool use_null_tex = false);
-			void push_polygon(const Vec2* verts, const Vec2* texCoords, u32 vertCount, const u32* inds, u32 indexCount, const Color& color, SDL_Texture* texture, bool use_null_tex = false);
+			// Single choke point: every vertex the renderer draws goes through here. A change of
+			// batch state (texture, blend, ...) flushes the pending batch first.
+			void emit(const BatchState& state, const SDL_Vertex* verts, u32 vertCount, const i32* inds, u32 indexCount);
+			void emit_textured_quad(SDL_Texture* texture, const Vec2 verts[4], const Vec2 uvs[4], const Color& color);
+			// Welds, anti-aliases (silhouette fringe) and emits a flat-colored mesh sampling the atlas white texel.
+			void submit_flat_mesh(const FlatMesh& mesh, bool antialias = true);
+			BatchState flat_batch_state(void) const;
+
+			bool mesh_line(FlatMesh& mesh, const Vec2& p1, const Vec2& p2, f32 thickness, bool rounded, const SDL_FColor& color);
+			void mesh_filled_arc(FlatMesh& mesh, const Vec2& center, f32 radiusX, f32 radiusY, f32 startAngle, f32 endAngle, i32 segments, const SDL_FColor& color);
+			void mesh_arc_stroke(FlatMesh& mesh, const Vec2& center, f32 radiusX, f32 radiusY, f32 thickness, f32 startAngle, f32 endAngle, i32 segments, const SDL_FColor& color);
 			void print_ttf_error(const String& funcName);
 			inline i32 set_error_state(i32 err) { m_errorState = err; return m_errorState; }
 
@@ -154,7 +189,13 @@ namespace ogfx
 			std::array<i32, MaxIndices> m_indices;
 			i32 m_vertexCount { 0 };
 			i32 m_indexCount { 0 };
-			SDL_Texture* m_texture { nullptr };
+			BatchState m_batchState;
+			FlatMesh m_mesh;
+			stdvec<SDL_Vertex> m_meshVerts;
+			stdvec<i32> m_meshInds;
+			stdvec<Vec2> m_contourA;
+			stdvec<Vec2> m_contourB;
+			std::unique_ptr<MeshProcessor> m_meshProcessor;
 
 			u32 m_drawCallCount { 0 };
 			u32 m_lastFrameDrawCallCount { 0 };

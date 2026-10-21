@@ -27,7 +27,7 @@
 
 namespace ogfx
 {
-	FontGlyphAtlas FontGlyphAtlas::init(BasicRenderer2D& renderer)
+	FontGlyphAtlas& FontGlyphAtlas::init(BasicRenderer2D& renderer)
 	{
 		m_renderer = &renderer;
 		m_uvs.reserve(4096);
@@ -100,27 +100,29 @@ namespace ogfx
 		glyph.advance = advance;
 		glyph.codepoint = codepoint;
 
-		SDL_Texture* atlas = m_atlases[m_currentAtlasCount - 1];
+		if (gw > i32(AtlasTextureDimension) || gh > i32(AtlasTextureDimension))
+		{
+			SDL_DestroySurface(surf);
+			return false;
+		}
 
 		if (m_penX + gw > i32(AtlasTextureDimension))
-		{
-			m_penX = 0;
-			m_penY += m_rowHeight;
-			m_rowHeight = 0;
-		}
+			next_row();
 
 		if (m_penY + gh > i32(AtlasTextureDimension))
 		{
-			SDL_DestroySurface(surf);
-
+			// The surface stays alive: it still has to be uploaded into the new atlas.
 			if (!create_new_atlas())
+			{
+				SDL_DestroySurface(surf);
 				return false;
-
-			atlas = m_atlases[m_currentAtlasCount - 1];
-			m_penX = 0;
-			m_penY = 0;
-			m_rowHeight = 0;
+			}
 		}
+		// A fresh row starting at x = 0 must not dip into the white block.
+		if (m_penY < WhiteBlockSize && m_penX < WhiteBlockSize)
+			m_penX = WhiteBlockSize;
+
+		SDL_Texture* atlas = m_atlases[m_currentAtlasCount - 1];
 
 		SDL_Rect dstRect { m_penX, m_penY, gw, gh };
 		SDL_LockSurface(surf);
@@ -147,6 +149,13 @@ namespace ogfx
 		m_penX += gw;
 		m_rowHeight = std::max(m_rowHeight, gh);
 		return true;
+	}
+
+	void FontGlyphAtlas::next_row(void)
+	{
+		m_penX = 0;
+		m_penY += m_rowHeight;
+		m_rowHeight = 0;
 	}
 
 	bool FontGlyphAtlas::create_new_atlas(void)
@@ -176,9 +185,9 @@ namespace ogfx
 			{
 				memset(pixels, 0x00, pitch * AtlasTextureDimension);
 				auto u8_pixels = cast<u8*>(pixels);
-				for (i32 y = 0; y < 4; y++)
+				for (i32 y = 0; y < WhiteBlockSize; y++)
 				{
-					for (i32 x = 0; x < 4 * 4; x++)
+					for (i32 x = 0; x < WhiteBlockSize * 4; x++)
 					{
 						u8_pixels[x + (y * pitch)] = 0xFF;
 					}
@@ -190,9 +199,9 @@ namespace ogfx
 		m_atlases[m_currentAtlasCount] = tex;
 		m_currentAtlasCount++;
 
-		m_penX = 4;
+		m_penX = WhiteBlockSize;
 		m_penY = 0;
-		m_rowHeight = 0;
+		m_rowHeight = WhiteBlockSize;
 
 		return true;
 	}

@@ -29,54 +29,59 @@
 namespace
 {
 	// Width, in pixels, of the alpha-faded band generated around a flat-colored shape's outer
-	// edge (see collect_silhouette_fringe below) - this is what turns a hard-edged quad/fan into
-	// something that reads as anti-aliased without needing MSAA on the render target.
+	// edge (see BasicRenderer2D::MeshProcessor below) - this is what turns a hard-edged quad/fan
+	// into something that reads as anti-aliased without needing MSAA on the render target.
 	constexpr f32 AA_FRINGE_WIDTH = 1.0f;
+	// Vertices closer than 1/WELD_PRECISION pixels are merged before looking for the silhouette.
+	constexpr f32 WELD_PRECISION = 64.0f;
 
-	struct FringeEdge
+	inline u64 weld_key(const ostd::Vec2& p)
 	{
-		ostd::Vec2 ea, eb; // extruded (faded-to-transparent) copies of verts[a]/verts[b]
-		u32 a, b;          // original indices, reused at full alpha
-	};
+		const i32 qx = cast<i32>(std::lround(p.x * WELD_PRECISION));
+		const i32 qy = cast<i32>(std::lround(p.y * WELD_PRECISION));
+		return (cast<u64>(cast<u32>(qx)) << 32) | cast<u64>(cast<u32>(qy));
+	}
 
-	// Finds the silhouette (outer boundary) edges of an arbitrary triangle soup - any edge that
-	// isn't shared by two triangles winding it in opposite directions - and returns, for each,
-	// the pair of extruded points that fade its outward side to transparent. This works for a
-	// simple quad as much as it does for the multi-triangle fans used for rounded caps/circles,
-	// since it never assumes a fixed shape, and is robust to mixed triangle winding within the
-	// same call (the outward direction is derived per-triangle from its own signed area).
-	void collect_silhouette_fringe(const ostd::Vec2* verts, u32 vertCount, const u32* inds, u32 indexCount, f32 width, stdvec<FringeEdge>& out)
+	inline u64 edge_key(u32 a, u32 b)
 	{
-		const u32 triCount = indexCount / 3;
-		stdvec<std::pair<u32, u32>> edges;
-		edges.reserve(indexCount);
-		for (u32 t = 0; t < triCount; t++)
+		return a < b ? ((cast<u64>(a) << 32) | b) : ((cast<u64>(b) << 32) | a);
+	}
+
+	inline i32 circle_segments(f32 radius)
+	{
+		return std::clamp(cast<i32>(radius * 1.5f), 16, 1024);
+	}
+
+	inline i32 corner_segments(f32 radius)
+	{
+		if (radius <= 0.0f)
+			return 0;
+		return std::clamp(cast<i32>(std::ceil(radius)) + 2, 3, 128);
+	}
+
+	// Appends the outline of a rounded rectangle, clockwise (y down), starting at the top-left
+	// corner. radii: TL, TR, BR, BL. Each corner contributes segs[i] + 1 points (a single point
+	// when segs[i] == 0), so two contours built with the same segs correspond point by point.
+	void round_rect_contour(stdvec<ostd::Vec2>& out, const ostd::Rectangle& b, const f32 radii[4], const i32 segs[4])
+	{
+		const ostd::Vec2 centers[4] = {
+			{ b.x + radii[0],       b.y + radii[0] },
+			{ b.x + b.w - radii[1], b.y + radii[1] },
+			{ b.x + b.w - radii[2], b.y + b.h - radii[2] },
+			{ b.x + radii[3],       b.y + b.h - radii[3] }
+		};
+		const f32 startAngles[4] = { cast<f32>(M_PI), cast<f32>(M_PI * 1.5), 0.0f, cast<f32>(M_PI * 0.5) };
+		for (i32 c = 0; c < 4; c++)
 		{
-			u32 i0 = inds[t * 3 + 0], i1 = inds[t * 3 + 1], i2 = inds[t * 3 + 2];
-			edges.push_back({ i0, i1 });
-			edges.push_back({ i1, i2 });
-			edges.push_back({ i2, i0 });
-		}
-		for (u32 t = 0; t < triCount; t++)
-		{
-			u32 tri[3] = { inds[t * 3 + 0], inds[t * 3 + 1], inds[t * 3 + 2] };
-			const ostd::Vec2& p0 = verts[tri[0]];
-			const ostd::Vec2& p1 = verts[tri[1]];
-			const ostd::Vec2& p2 = verts[tri[2]];
-			const f32 sign = ((p1 - p0).cross(p2 - p0) >= 0.0f) ? 1.0f : -1.0f;
-			for (i32 e = 0; e < 3; e++)
+			if (segs[c] <= 0)
 			{
-				u32 a = tri[e], b = tri[(e + 1) % 3];
-				bool shared = false;
-				for (auto& edge : edges)
-				{
-					if (edge.first == b && edge.second == a) { shared = true; break; }
-				}
-				if (shared)
-					continue;
-				const ostd::Vec2 dir = (verts[b] - verts[a]).normalize();
-				const ostd::Vec2 n = ostd::Vec2 { dir.y, -dir.x } * sign;
-				out.push_back({ verts[a] + n * width, verts[b] + n * width, a, b });
+				out.push_back(centers[c]);
+				continue;
+			}
+			for (i32 i = 0; i <= segs[c]; i++)
+			{
+				const f32 angle = startAngles[c] + (cast<f32>(i) / cast<f32>(segs[c])) * cast<f32>(M_PI * 0.5);
+				out.push_back({ centers[c].x + std::cos(angle) * radii[c], centers[c].y + std::sin(angle) * radii[c] });
 			}
 		}
 	}
@@ -84,6 +89,239 @@ namespace
 
 namespace ogfx
 {
+	// ===================================================== MESH PROCESSOR =====================================================
+	// Turns a FlatMesh (arbitrary triangle soup, possibly built from several pieces) into the
+	// final vertex/index arrays for a flat-colored draw:
+	//   1. welds vertices that share a position, so pieces built separately (round-rect corners
+	//      and edges, line caps, the closing vertex of a full circle) become one connected mesh;
+	//   2. drops triangles that became degenerate after welding;
+	//   3. finds the silhouette - edges used by exactly one triangle, looked up through a hash map
+	//      keyed on the (min, max) index pair, so it is O(E) - and extrudes it outward by
+	//      AA_FRINGE_WIDTH into a band that fades to transparent. Extruded vertices are shared
+	//      between adjacent silhouette edges (mitered, with a 2x limit), so the band has no gaps
+	//      at corners and internal seams never get a fringe.
+	// Scratch buffers are kept between calls to avoid per-shape allocations.
+	struct BasicRenderer2D::MeshProcessor
+	{
+		// Open-addressing (linear probing) u64 -> u32 table on flat arrays, reused between calls.
+		// Used both to weld vertices (quantized position -> vertex) and to count edge uses
+		// ((min, max) index pair -> count), so both steps are O(n).
+		struct ProbeTable
+		{
+			inline static constexpr u32 Empty { 0xFFFFFFFF };
+			stdvec<u64> keys;
+			stdvec<u32> values;
+			u32 mask { 0 };
+
+			inline void reset(u32 expected)
+			{
+				u32 capacity = 16;
+				while (capacity < expected * 2)
+					capacity <<= 1;
+				keys.resize(capacity);
+				values.assign(capacity, Empty);
+				mask = capacity - 1;
+			}
+
+			inline u32 slot(u64 key) const
+			{
+				u32 h = cast<u32>((key * 0x9E3779B97F4A7C15ull) >> 32) & mask;
+				while (values[h] != Empty && keys[h] != key)
+					h = (h + 1) & mask;
+				return h;
+			}
+		};
+
+		struct BoundaryEdge
+		{
+			u32 a, b;
+			Vec2 normal;
+		};
+
+		stdvec<Vec2> positions;
+		stdvec<SDL_FColor> colors;
+		stdvec<u32> remap;
+		stdvec<u32> triangles;
+		stdvec<BoundaryEdge> boundary;
+		stdvec<Vec2> vertexNormals;
+		stdvec<Vec2> firstNormals;
+		stdvec<f32> minDots;
+		stdvec<i32> outIndex;
+		stdvec<i32> fringeIndex;
+		ProbeTable weldTable;
+		ProbeTable edgeTable;
+
+		void process(const FlatMesh& mesh, const Vec2& uv, bool antialias, stdvec<SDL_Vertex>& outVerts, stdvec<i32>& outInds)
+		{
+			outVerts.clear();
+			outInds.clear();
+			const u32 inCount = cast<u32>(mesh.positions.size());
+			if (inCount == 0 || mesh.indices.size() < 3)
+				return;
+
+			weld(mesh, inCount);
+			collect_triangles(mesh);
+			if (triangles.empty())
+				return;
+
+			const u32 vertCount = cast<u32>(positions.size());
+			outIndex.assign(vertCount, -1);
+			outInds.reserve(triangles.size() * 3);
+			for (u32 v : triangles)
+			{
+				if (outIndex[v] < 0)
+				{
+					outIndex[v] = cast<i32>(outVerts.size());
+					outVerts.push_back({ { positions[v].x, positions[v].y }, colors[v], { uv.x, uv.y } });
+				}
+				outInds.push_back(outIndex[v]);
+			}
+
+			if (!antialias)
+				return;
+
+			collect_boundary(vertCount);
+			if (boundary.empty())
+				return;
+
+			fringeIndex.assign(vertCount, -1);
+			for (const auto& edge : boundary)
+			{
+				add_fringe_vertex(edge.a, uv, outVerts);
+				add_fringe_vertex(edge.b, uv, outVerts);
+			}
+			for (const auto& edge : boundary)
+			{
+				const i32 a = outIndex[edge.a], b = outIndex[edge.b];
+				const i32 ea = fringeIndex[edge.a], eb = fringeIndex[edge.b];
+				outInds.push_back(a); outInds.push_back(b); outInds.push_back(eb);
+				outInds.push_back(a); outInds.push_back(eb); outInds.push_back(ea);
+			}
+		}
+
+		private:
+			void weld(const FlatMesh& mesh, u32 inCount)
+			{
+				positions.clear();
+				colors.clear();
+				remap.resize(inCount);
+				weldTable.reset(inCount);
+				for (u32 i = 0; i < inCount; i++)
+				{
+					const u64 key = weld_key(mesh.positions[i]);
+					const u32 h = weldTable.slot(key);
+					if (weldTable.values[h] == ProbeTable::Empty)
+					{
+						weldTable.keys[h] = key;
+						weldTable.values[h] = cast<u32>(positions.size());
+						positions.push_back(mesh.positions[i]);
+						colors.push_back(mesh.colors[i]);
+					}
+					remap[i] = weldTable.values[h];
+				}
+			}
+
+			void collect_triangles(const FlatMesh& mesh)
+			{
+				triangles.clear();
+				const u32 inCount = cast<u32>(remap.size());
+				for (size_t t = 0; t + 2 < mesh.indices.size(); t += 3)
+				{
+					const u32 i0 = mesh.indices[t], i1 = mesh.indices[t + 1], i2 = mesh.indices[t + 2];
+					if (i0 >= inCount || i1 >= inCount || i2 >= inCount)
+						continue;
+					const u32 a = remap[i0], b = remap[i1], c = remap[i2];
+					if (a == b || b == c || c == a)
+						continue;
+					if (std::abs((positions[b] - positions[a]).cross(positions[c] - positions[a])) < 1e-6f)
+						continue;
+					triangles.push_back(a);
+					triangles.push_back(b);
+					triangles.push_back(c);
+				}
+			}
+
+			void collect_boundary(u32 vertCount)
+			{
+				boundary.clear();
+				edgeTable.reset(cast<u32>(triangles.size()));
+				for (size_t t = 0; t < triangles.size(); t += 3)
+				{
+					for (i32 e = 0; e < 3; e++)
+					{
+						const u64 key = edge_key(triangles[t + e], triangles[t + (e + 1) % 3]);
+						const u32 h = edgeTable.slot(key);
+						if (edgeTable.values[h] == ProbeTable::Empty)
+						{
+							edgeTable.keys[h] = key;
+							edgeTable.values[h] = 1;
+						}
+						else
+							edgeTable.values[h]++;
+					}
+				}
+				vertexNormals.assign(vertCount, { 0.0f, 0.0f });
+				firstNormals.assign(vertCount, { 0.0f, 0.0f });
+				minDots.assign(vertCount, 1.0f);
+				for (size_t t = 0; t < triangles.size(); t += 3)
+				{
+					for (i32 e = 0; e < 3; e++)
+					{
+						const u32 a = triangles[t + e];
+						const u32 b = triangles[t + (e + 1) % 3];
+						const u32 c = triangles[t + (e + 2) % 3];
+						if (edgeTable.values[edgeTable.slot(edge_key(a, b))] != 1)
+							continue;
+						const Vec2 d = positions[b] - positions[a];
+						const f32 len = d.mag();
+						if (len < 1e-6f)
+							continue;
+						Vec2 n { d.y / len, -d.x / len };
+						if (n.dot(positions[c] - positions[a]) > 0.0f)
+							n = n * -1.0f;
+						boundary.push_back({ a, b, n });
+						for (u32 v : { a, b })
+						{
+							if (vertexNormals[v].x == 0.0f && vertexNormals[v].y == 0.0f)
+								firstNormals[v] = n;
+							vertexNormals[v] += n;
+						}
+					}
+				}
+				for (const auto& edge : boundary)
+				{
+					for (u32 v : { edge.a, edge.b })
+					{
+						Vec2 n = vertexNormals[v];
+						if (n.mag() < 1e-4f)
+							continue;
+						n.normalizem();
+						minDots[v] = std::min(minDots[v], n.dot(edge.normal));
+					}
+				}
+			}
+
+			void add_fringe_vertex(u32 v, const Vec2& uv, stdvec<SDL_Vertex>& outVerts)
+			{
+				if (fringeIndex[v] >= 0)
+					return;
+				Vec2 n = vertexNormals[v];
+				if (n.mag() < 1e-4f)
+					n = firstNormals[v];
+				else
+					n.normalizem();
+				const f32 dist = AA_FRINGE_WIDTH / std::max(minDots[v], 0.5f);
+				SDL_FColor faded = colors[v];
+				faded.a = 0.0f;
+				fringeIndex[v] = cast<i32>(outVerts.size());
+				outVerts.push_back({ { positions[v].x + n.x * dist, positions[v].y + n.y * dist }, faded, { uv.x, uv.y } });
+			}
+	};
+	// ===================================================== MESH PROCESSOR =====================================================
+
+
+
+
 	// ===================================================== SIGNAL HANDLER =====================================================
 	BasicRenderer2D::SignalHandler::SignalHandler(BasicRenderer2D& parent) : m_parent(parent)
 	{
@@ -107,6 +345,10 @@ namespace ogfx
 
 
 	// ===================================================== UTILS =====================================================
+	BasicRenderer2D::BasicRenderer2D(void) : m_meshProcessor(std::make_unique<MeshProcessor>())
+	{
+	}
+
 	BasicRenderer2D::~BasicRenderer2D(void)
 	{
 		closeFont();
@@ -117,7 +359,6 @@ namespace ogfx
 		m_window = &window;
 		if (m_initialized) return set_error_state(tErrors::NoError);
 		SDL_SetRenderDrawBlendMode(m_window->getSDLRenderer(), SDL_BLENDMODE_BLEND);
-		init_arrays();
 		m_initialized = true;
 		loadDefaultFont(20);
 		m_initialized = false;
@@ -138,9 +379,16 @@ namespace ogfx
 	{
 		if (!m_initialized || m_vertexCount == 0)
 			return;
-		SDL_RenderGeometry(m_window->getSDLRenderer(), m_texture, m_vertices.data(), m_vertexCount, m_indices.data(), m_indexCount);
+		SDL_Renderer* renderer = m_window->getSDLRenderer();
+		// The blend mode of a geometry draw comes from its texture (or from the renderer's draw
+		// blend mode when untextured), so it is applied right before submitting the batch.
+		if (m_batchState.texture)
+			SDL_SetTextureBlendMode(m_batchState.texture, m_batchState.blend);
+		else
+			SDL_SetRenderDrawBlendMode(renderer, m_batchState.blend);
+		SDL_RenderGeometry(renderer, m_batchState.texture, m_vertices.data(), m_vertexCount, m_indices.data(), m_indexCount);
 		m_drawCallCount++;
-		m_texture = nullptr;
+		m_batchState = { };
 		m_vertexCount = 0;
 		m_indexCount = 0;
 	}
@@ -318,7 +566,7 @@ namespace ogfx
 			return it->second;
 		}
 
-		i32 oldFontSize = getFontSize();
+		FontSizeGuard fontSizeGuard(*this);
 		setFontSize(fontSize);
 
 		auto glyphs = m_fontGlyphAtlas.processString(message, font, fontSize);
@@ -340,7 +588,6 @@ namespace ogfx
 			dimensions.push_back({ charWidth, glyphs[0]->size.y });
 			charWidth = 0;
 		}
-		setFontSize(oldFontSize);
 
 		if (m_strDimsCache.size() >= MaxStringDimsCacheSize)
 			m_strDimsCache.pop_back();
@@ -412,8 +659,7 @@ namespace ogfx
 		};
 
 		// 5. Push quad
-		u32 inds[6] = QUAD_INDICES_ARR;
-		push_polygon(verts, uvs, 4, inds, 6, tint, tex, false);
+		emit_textured_quad(tex, verts, uvs, tint);
 	}
 
 	void BasicRenderer2D::drawAnimation(const Animation& anim, const Vec2& position, const Vec2& size, const Color& tint)
@@ -427,8 +673,8 @@ namespace ogfx
 
 	void BasicRenderer2D::fillGradientRect(const Rectangle& rect, ColorGradient& gradient)
 	{
-		auto& colors = gradient.getColors();
-		auto& weights = gradient.getWeights();
+		const auto& colors = gradient.getColors();
+		stdvec<f32> weights = gradient.getWeights();
 		f32 angle_radians = gradient.getAngleRad();
 		if (!m_initialized || colors.size() < 2) return;
 		if (weights.size() != colors.size() - 1) return; // N colors = N-1 weights
@@ -436,6 +682,7 @@ namespace ogfx
 		// Normalize weights
 		f32 total = 0;
 		for (auto w : weights) total += w;
+		if (total <= 0.0f) return;
 		for (auto& w : weights) w /= total;
 
 		// Compute cumulative positions along gradient (0 to 1)
@@ -455,33 +702,23 @@ namespace ogfx
 					 center.y + p.x * sn + p.y * cs };
 		};
 
-		// For each color band, push a quad
-		for (size_t i = 0; i < colors.size() - 1; i++)
+		// One row of two vertices per stop; consecutive rows form the color bands, sharing their
+		// vertices so the whole gradient is a single mesh with a fringe only on its outline.
+		m_mesh.clear();
+		for (size_t i = 0; i < colors.size(); i++)
 		{
-			f32 y0 = rect.y + rect.h * stops[i];
-			f32 y1 = rect.y + rect.h * stops[i + 1];
-
-			Vec2 tl = rotate({ rect.x,          y0 });
-			Vec2 tr = rotate({ rect.x + rect.w,  y0 });
-			Vec2 br = rotate({ rect.x + rect.w,  y1 });
-			Vec2 bl = rotate({ rect.x,           y1 });
-
-			if (m_vertexCount + 4 >= MaxVertices || m_indexCount + 6 >= MaxIndices)
-				flushBatch();
-
-			SDL_FColor c0 = COLOR_CAST(colors[i]);
-			SDL_FColor c1 = COLOR_CAST(colors[i + 1]);
-
-			i32 base = m_vertexCount;
-			m_vertices[m_vertexCount++] = { { tl.x, tl.y }, c0, { 0, 0 } };
-			m_vertices[m_vertexCount++] = { { tr.x, tr.y }, c0, { 0, 0 } };
-			m_vertices[m_vertexCount++] = { { br.x, br.y }, c1, { 0, 0 } };
-			m_vertices[m_vertexCount++] = { { bl.x, bl.y }, c1, { 0, 0 } };
-
-			u32 inds[6] = QUAD_INDICES_ARR;
-			for (i32 j = 0; j < 6; j++)
-				m_indices[m_indexCount++] = base + inds[j];
+			f32 y = rect.y + rect.h * stops[i];
+			SDL_FColor c = COLOR_CAST(colors[i]);
+			m_mesh.addVertex(rotate({ rect.x, y }), c);
+			m_mesh.addVertex(rotate({ rect.x + rect.w, y }), c);
 		}
+		for (u32 i = 0; i + 1 < colors.size(); i++)
+		{
+			u32 tl = i * 2, tr = i * 2 + 1, bl = i * 2 + 2, br = i * 2 + 3;
+			m_mesh.addTriangle(tl, tr, br);
+			m_mesh.addTriangle(br, bl, tl);
+		}
+		submit_flat_mesh(m_mesh);
 	}
 
 	void BasicRenderer2D::drawString(const String& str, const Vec2& position, const Color& color, i32 fontSize, f32 scale)
@@ -489,7 +726,7 @@ namespace ogfx
 		if (!isValid()) return;
 		if (fontSize <= 0)
 			fontSize = m_fontSize;
-		i32 oldFontSize = m_fontSize;
+		FontSizeGuard fontSizeGuard(*this);
 		setFontSize(fontSize);
 
 		auto glyphs = m_fontGlyphAtlas.processString(str, m_font, fontSize);
@@ -516,12 +753,10 @@ namespace ogfx
 				{ x + g->size.x * scale,     y + g->size.y * scale },
 				{ x,                        y + g->size.y * scale }
 			};
-			u32 inds[6] = QUAD_INDICES_ARR;
-			push_polygon(verts, g->uvs, 4, inds, 6, color, g->atlas, false);
+			emit_textured_quad(g->atlas, verts, g->uvs, color);
 			m_lastUsedGlyphAtlasTex = g->atlas;
 			x += (g->advance * scale);
 		}
-		setFontSize(oldFontSize);
 	}
 
 	void BasicRenderer2D::drawCenteredString(const String& str, const Vec2& center, const Color& color, i32 fontSize, f32 scale)
@@ -557,62 +792,52 @@ namespace ogfx
 	{
 		if (!m_initialized || thickness <= 0) return;
 
-		using namespace ostd;
-
 		Vec2 p1 = line.p1.asVec2();
 		Vec2 p2 = line.p2.asVec2();
-
-		Vec2 dir = (p2 - p1).normalize();
-		Vec2 perp = { -dir.y, dir.x }; // 90° rotation
-		f32 half = thickness * 0.5f;
-		Vec2 off = perp * half;
-
-		std::array<Vec2, 4> verts = {{
-			p1 - off,
-			p1 + off,
-			p2 + off,
-			p2 - off
-		}};
-		std::array<u32, 6> inds = QUAD_INDICES_ARR;
-
-		push_polygon(verts.data(), nullptr, 4, inds.data(), 6, color, nullptr, true);
-
-		if (!rounded || thickness < 4)
+		if ((p2 - p1).mag() < 1e-4f)
+		{
+			// A zero-length line has no direction: a rounded one is a dot, a square one is nothing.
+			if (rounded)
+				fillCircle(p1, thickness * 0.5f, color);
 			return;
-
-		i32 segments = std::max(16, i32(thickness * 1.5f));
-		generate_half_circle(p1, -dir, half, segments, color, true);
-		generate_half_circle(p2, dir, half, segments, color, true);
+		}
+		m_mesh.clear();
+		mesh_line(m_mesh, p1, p2, cast<f32>(thickness), rounded && thickness >= 4, COLOR_CAST(color));
+		submit_flat_mesh(m_mesh);
 	}
 
 	void BasicRenderer2D::drawRect(const Rectangle& rect, const Color& color, i32 thickness, bool topEdge, bool rightEdge, bool bottomEdge, bool leftEdge)
 	{
 		if (!m_initialized || thickness <= 0)
 			return;
+		if (!topEdge && !rightEdge && !bottomEdge && !leftEdge)
+			return;
 
-		f32 half = thickness * 0.5f;
+		// The outline is the border ring of a 3x3 grid (outer edges = rect, inner edges = rect inset
+		// by the thickness); each enabled edge contributes its row/column of cells. The cells share
+		// the grid's vertices, so the outline is one connected mesh without overlapping corners.
+		f32 t = std::min(cast<f32>(thickness), std::min(rect.w, rect.h) * 0.5f);
+		const f32 xs[4] = { rect.x, rect.x + t, rect.x + rect.w - t, rect.x + rect.w };
+		const f32 ys[4] = { rect.y, rect.y + t, rect.y + rect.h - t, rect.y + rect.h };
+		SDL_FColor col = COLOR_CAST(color);
 
-		// Inset rectangle so the outline stays inside the original bounds
-		f32 x1 = rect.x + half;
-		f32 y1 = rect.y + half;
-		f32 x2 = rect.x + rect.w - half;
-		f32 y2 = rect.y + rect.h - half;
-
-		// Top
-		if (topEdge)
-			drawLine({ {x1, y1}, {x2, y1} }, color, thickness, false);
-
-		// Right
-		if (rightEdge)
-			drawLine({ {x2, y1 - half}, {x2, y2 + half} }, color, thickness, false);
-
-		// Bottom
-		if (bottomEdge)
-			drawLine({ {x2, y2}, {x1, y2} }, color, thickness, false);
-
-		// Left
-		if (leftEdge)
-			drawLine({ {x1, y2 + half}, {x1, y1 - half} }, color, thickness, false);
+		m_mesh.clear();
+		for (i32 y = 0; y < 4; y++)
+			for (i32 x = 0; x < 4; x++)
+				m_mesh.addVertex({ xs[x], ys[y] }, col);
+		for (i32 cy = 0; cy < 3; cy++)
+		{
+			for (i32 cx = 0; cx < 3; cx++)
+			{
+				bool include = (cy == 0 && topEdge) || (cy == 2 && bottomEdge) || (cx == 0 && leftEdge) || (cx == 2 && rightEdge);
+				if (!include || (cx == 1 && cy == 1))
+					continue;
+				u32 tl = cy * 4 + cx, tr = tl + 1, bl = tl + 4, br = bl + 1;
+				m_mesh.addTriangle(tl, tr, br);
+				m_mesh.addTriangle(br, bl, tl);
+			}
+		}
+		submit_flat_mesh(m_mesh);
 	}
 
 	void BasicRenderer2D::drawRect(const Vec2& center, const Vec2& size, const Color& color, i32 thickness, bool topEdge, bool rightEdge, bool bottomEdge, bool leftEdge)
@@ -640,41 +865,61 @@ namespace ogfx
 		if (!m_initialized || thickness <= 0)
 			return;
 
-		// radii: x=TL, y=TR, w=BR, h=BL
+		// radii: x=TL, y=TR, w=BR, h=BL - the radius of the stroke's center line, as before.
 		f32 maxR = std::min(rect.w, rect.h) * 0.5f;
-		f32 rTL = std::max(0.0f, std::min(radii.x, maxR));
-		f32 rTR = std::max(0.0f, std::min(radii.y, maxR));
-		f32 rBR = std::max(0.0f, std::min(radii.w, maxR));
-		f32 rBL = std::max(0.0f, std::min(radii.h, maxR));
+		f32 t = std::min(cast<f32>(thickness), maxR);
+		f32 half = t * 0.5f;
+		const f32 centerRadii[4] = { radii.x, radii.y, radii.w, radii.h };
 
-		f32 half = thickness * 0.5f;
+		// The stroke is the band between an outer contour (the rect itself) and an inner contour
+		// (the rect inset by the thickness). Both use the same number of points per corner, so they
+		// can be stitched into a closed strip.
+		f32 outerRadii[4], innerRadii[4];
+		i32 segs[4];
+		for (i32 i = 0; i < 4; i++)
+		{
+			f32 r = std::clamp(centerRadii[i], 0.0f, maxR);
+			outerRadii[i] = (r > 0.0f ? std::min(r + half, maxR) : 0.0f);
+			innerRadii[i] = std::max(0.0f, outerRadii[i] - t);
+			segs[i] = corner_segments(outerRadii[i]);
+		}
+		Rectangle inner { rect.x + t, rect.y + t, std::max(0.0f, rect.w - t * 2.0f), std::max(0.0f, rect.h - t * 2.0f) };
+		f32 innerMaxR = std::min(inner.w, inner.h) * 0.5f;
+		for (i32 i = 0; i < 4; i++)
+			innerRadii[i] = std::min(innerRadii[i], innerMaxR);
 
-		f32 x1 = rect.x + half;
-		f32 y1 = rect.y + half;
-		f32 x2 = rect.x + rect.w - half;
-		f32 y2 = rect.y + rect.h - half;
+		auto& outerPts = m_contourA;
+		auto& innerPts = m_contourB;
+		outerPts.clear();
+		innerPts.clear();
+		round_rect_contour(outerPts, rect, outerRadii, segs);
+		round_rect_contour(innerPts, inner, innerRadii, segs);
 
-		// Straight edges
-		drawLine({ {x1 + rTL, y1}, {x2 - rTR, y1} }, color, thickness, false); // top
-		drawLine({ {x2, y1 + rTR}, {x2, y2 - rBR} }, color, thickness, false); // right
-		drawLine({ {x2 - rBR, y2}, {x1 + rBL, y2} }, color, thickness, false); // bottom
-		drawLine({ {x1, y2 - rBL}, {x1, y1 + rTL} }, color, thickness, false); // left
-
-		// Corner arcs
-		auto segments = [](f32 r) -> i32 { return std::max(16, i32(r * 1.5f)); };
-
-		if (rTL > 0) generate_ellipse_stroke({ x1 + rTL, y1 + rTL }, rTL, rTL, thickness, M_PI, M_PI * 1.5f, color, segments(rTL), true);
-		if (rTR > 0) generate_ellipse_stroke({ x2 - rTR, y1 + rTR }, rTR, rTR, thickness, M_PI * 1.5f, M_PI * 2.0f, color, segments(rTR), true);
-		if (rBR > 0) generate_ellipse_stroke({ x2 - rBR, y2 - rBR }, rBR, rBR, thickness, 0.0f, M_PI * 0.5f, color, segments(rBR), true);
-		if (rBL > 0) generate_ellipse_stroke({ x1 + rBL, y2 - rBL }, rBL, rBL, thickness, M_PI * 0.5f, M_PI, color, segments(rBL), true);
+		SDL_FColor col = COLOR_CAST(color);
+		m_mesh.clear();
+		const u32 n = cast<u32>(outerPts.size());
+		for (u32 i = 0; i < n; i++)
+		{
+			m_mesh.addVertex(outerPts[i], col);
+			m_mesh.addVertex(innerPts[i], col);
+		}
+		for (u32 i = 0; i < n; i++)
+		{
+			u32 j = (i + 1) % n;
+			u32 o0 = i * 2, i0 = i * 2 + 1, o1 = j * 2, i1 = j * 2 + 1;
+			m_mesh.addTriangle(o0, o1, i0);
+			m_mesh.addTriangle(o1, i1, i0);
+		}
+		submit_flat_mesh(m_mesh);
 	}
 
 	void BasicRenderer2D::drawCircle(const Vec2& center, f32 radius, const Color& color, i32 thickness)
 	{
 		if (!m_initialized || thickness <= 0)
 			return;
-		i32 segments = std::max(16, i32(radius * 1.5f));
-		generate_ellipse_stroke(center, radius, radius, thickness, 0.0f, 2.0f * M_PI, color, segments, true);
+		m_mesh.clear();
+		mesh_arc_stroke(m_mesh, center, radius, radius, cast<f32>(thickness), 0.0f, 2.0f * M_PI, circle_segments(radius), COLOR_CAST(color));
+		submit_flat_mesh(m_mesh);
 	}
 
 	void BasicRenderer2D::drawCircle(const Rectangle& rect, const Color& color, i32 thickness)
@@ -699,8 +944,9 @@ namespace ogfx
 		Vec2 center = { rect.x + rect.w*0.5f, rect.y + rect.h*0.5f };
 		f32 rx = rect.w * 0.5f;
 		f32 ry = rect.h * 0.5f;
-		i32 segments = std::max(16, i32(std::max(rx, ry) * 1.5f));
-		generate_ellipse_stroke(center, rx, ry, thickness, 0.0f, 2.0f * M_PI, color, segments, true);
+		m_mesh.clear();
+		mesh_arc_stroke(m_mesh, center, rx, ry, cast<f32>(thickness), 0.0f, 2.0f * M_PI, circle_segments(std::max(rx, ry)), COLOR_CAST(color));
+		submit_flat_mesh(m_mesh);
 	}
 
 	void BasicRenderer2D::drawTriangle(const Triangle& tri, const Color& color, i32 thickness)
@@ -732,14 +978,15 @@ namespace ogfx
 		f32 x2 = rect.x + rect.w;
 		f32 y2 = rect.y + rect.h;
 
-		Vec2 verts[4] = {
-			{ x1, y1 },
-			{ x2, y1 },
-			{ x2, y2 },
-			{ x1, y2 }
-		};
-		u32 inds[6] = QUAD_INDICES_ARR;
-		push_polygon(verts, nullptr, 4, inds, 6, color, nullptr, true);
+		SDL_FColor col = COLOR_CAST(color);
+		m_mesh.clear();
+		m_mesh.addVertex({ x1, y1 }, col);
+		m_mesh.addVertex({ x2, y1 }, col);
+		m_mesh.addVertex({ x2, y2 }, col);
+		m_mesh.addVertex({ x1, y2 }, col);
+		m_mesh.addTriangle(0, 1, 2);
+		m_mesh.addTriangle(2, 3, 0);
+		submit_flat_mesh(m_mesh);
 	}
 
 	void BasicRenderer2D::fillRect(const Vec2& center, const Vec2& size, const Color& color)
@@ -767,162 +1014,39 @@ namespace ogfx
 		if (!m_initialized)
 			return;
 
+		// radii: x=TL, y=TR, w=BR, h=BL. A rounded rect is convex, so its outline triangulated as a
+		// fan from the center is a single mesh - no internal seams for the AA fringe to pick up.
 		f32 maxR = std::min(rect.w, rect.h) * 0.5f;
-		f32 rTL = std::max(0.0f, std::min(radii.x, maxR));
-		f32 rTR = std::max(0.0f, std::min(radii.y, maxR));
-		f32 rBR = std::max(0.0f, std::min(radii.w, maxR));
-		f32 rBL = std::max(0.0f, std::min(radii.h, maxR));
+		const f32 r[4] = {
+			std::clamp(radii.x, 0.0f, maxR),
+			std::clamp(radii.y, 0.0f, maxR),
+			std::clamp(radii.w, 0.0f, maxR),
+			std::clamp(radii.h, 0.0f, maxR)
+		};
+		const i32 segs[4] = { corner_segments(r[0]), corner_segments(r[1]), corner_segments(r[2]), corner_segments(r[3]) };
 
-		f32 x1 = rect.x;
-		f32 y1 = rect.y;
-		f32 x2 = rect.x + rect.w;
-		f32 y2 = rect.y + rect.h;
+		auto& contour = m_contourA;
+		contour.clear();
+		round_rect_contour(contour, rect, r, segs);
 
-		// The largest corner radius on each side determines the inset for that side
-		f32 topInset    = std::max(rTL, rTR);
-		f32 bottomInset = std::max(rBL, rBR);
-		f32 leftInset   = std::max(rTL, rBL);
-		f32 rightInset  = std::max(rTR, rBR);
-
-		// Center rectangle
-		{
-			Vec2 verts[4] = {
-				{ x1 + leftInset, y1 + topInset },
-				{ x2 - rightInset, y1 + topInset },
-				{ x2 - rightInset, y2 - bottomInset },
-				{ x1 + leftInset, y2 - bottomInset }
-			};
-			u32 inds[6] = QUAD_INDICES_ARR;
-			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr, true);
-		}
-
-		// Top strip
-		{
-			Vec2 verts[4] = {
-				{ x1 + rTL, y1 },
-				{ x2 - rTR, y1 },
-				{ x2 - rTR, y1 + topInset },
-				{ x1 + rTL, y1 + topInset }
-			};
-			u32 inds[6] = QUAD_INDICES_ARR;
-			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr, true);
-		}
-
-		// Bottom strip
-		{
-			Vec2 verts[4] = {
-				{ x1 + rBL, y2 - bottomInset },
-				{ x2 - rBR, y2 - bottomInset },
-				{ x2 - rBR, y2 },
-				{ x1 + rBL, y2 }
-			};
-			u32 inds[6] = QUAD_INDICES_ARR;
-			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr, true);
-		}
-
-		// Left strip
-		{
-			Vec2 verts[4] = {
-				{ x1, y1 + rTL },
-				{ x1 + leftInset, y1 + rTL },
-				{ x1 + leftInset, y2 - rBL },
-				{ x1, y2 - rBL }
-			};
-			u32 inds[6] = QUAD_INDICES_ARR;
-			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr, true);
-		}
-
-		// Right strip
-		{
-			Vec2 verts[4] = {
-				{ x2 - rightInset, y1 + rTR },
-				{ x2, y1 + rTR },
-				{ x2, y2 - rBR },
-				{ x2 - rightInset, y2 - rBR }
-			};
-			u32 inds[6] = QUAD_INDICES_ARR;
-			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr, true);
-		}
-
-		// Fill gaps between corners and strips when radii differ on the same side
-		// Top-left gap (if rTL < topInset, there's a rectangular gap below the TL corner)
-		if (rTL < topInset)
-		{
-			Vec2 verts[4] = {
-				{ x1, y1 + rTL },
-				{ x1 + leftInset, y1 + rTL },
-				{ x1 + leftInset, y1 + topInset },
-				{ x1, y1 + topInset }
-			};
-			u32 inds[6] = QUAD_INDICES_ARR;
-			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr, true);
-		}
-
-		// Top-right gap
-		if (rTR < topInset)
-		{
-			Vec2 verts[4] = {
-				{ x2 - rightInset, y1 + rTR },
-				{ x2, y1 + rTR },
-				{ x2, y1 + topInset },
-				{ x2 - rightInset, y1 + topInset }
-			};
-			u32 inds[6] = QUAD_INDICES_ARR;
-			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr, true);
-		}
-
-		// Bottom-left gap
-		if (rBL < bottomInset)
-		{
-			Vec2 verts[4] = {
-				{ x1, y2 - bottomInset },
-				{ x1 + leftInset, y2 - bottomInset },
-				{ x1 + leftInset, y2 - rBL },
-				{ x1, y2 - rBL }
-			};
-			u32 inds[6] = QUAD_INDICES_ARR;
-			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr, true);
-		}
-
-		// Bottom-right gap
-		if (rBR < bottomInset)
-		{
-			Vec2 verts[4] = {
-				{ x2 - rightInset, y2 - bottomInset },
-				{ x2, y2 - bottomInset },
-				{ x2, y2 - rBR },
-				{ x2 - rightInset, y2 - rBR }
-			};
-			u32 inds[6] = QUAD_INDICES_ARR;
-			push_polygon(verts, nullptr, 4, inds, 6, color, nullptr, true);
-		}
-
-		// Left-side gap (if rTL != rBL, leftInset is the max, smaller one needs a gap)
-		if (rTL < leftInset && rTL < topInset)
-		{
-			// Already covered by TL gap above
-		}
-		if (rBL < leftInset && rBL < bottomInset)
-		{
-			// Already covered by BL gap above
-		}
-
-		// Corner fills
-		auto segments = [](f32 r) -> i32 { return std::max(16, i32(r * 1.5f)); };
-
-		if (rTL > 0) generate_filled_ellipse_stroke({ x1 + rTL, y1 + rTL }, rTL, rTL, M_PI, color, segments(rTL), true);
-		if (rTR > 0) generate_filled_ellipse_stroke({ x2 - rTR, y1 + rTR }, rTR, rTR, M_PI * 1.5f, color, segments(rTR), true);
-		if (rBR > 0) generate_filled_ellipse_stroke({ x2 - rBR, y2 - rBR }, rBR, rBR, 0.0f, color, segments(rBR), true);
-		if (rBL > 0) generate_filled_ellipse_stroke({ x1 + rBL, y2 - rBL }, rBL, rBL, M_PI * 0.5f, color, segments(rBL), true);
+		SDL_FColor col = COLOR_CAST(color);
+		m_mesh.clear();
+		u32 centerIndex = m_mesh.addVertex({ rect.x + rect.w * 0.5f, rect.y + rect.h * 0.5f }, col);
+		for (const auto& p : contour)
+			m_mesh.addVertex(p, col);
+		const u32 n = cast<u32>(contour.size());
+		for (u32 i = 0; i < n; i++)
+			m_mesh.addTriangle(centerIndex, 1 + i, 1 + (i + 1) % n);
+		submit_flat_mesh(m_mesh);
 	}
 
 	void BasicRenderer2D::fillCircle(const Vec2& center, f32 radius, const Color& color)
 	{
 		if (!m_initialized)
 			return;
-
-		i32 segments = std::max(16, i32(radius * 1.5f));
-		generate_filled_ellipse(center, radius, radius, color, segments, true);
+		m_mesh.clear();
+		mesh_filled_arc(m_mesh, center, radius, radius, 0.0f, 2.0f * M_PI, circle_segments(radius), COLOR_CAST(color));
+		submit_flat_mesh(m_mesh);
 	}
 
 	void BasicRenderer2D::fillCircle(const Rectangle& rect, const Color& color)
@@ -951,9 +1075,9 @@ namespace ogfx
 
 		f32 radiusX = rect.w * 0.5f;
 		f32 radiusY = rect.h * 0.5f;
-
-		i32 segments = std::max(16, i32(std::max(radiusX, radiusY) * 1.5f));
-		generate_filled_ellipse(center, radiusX, radiusY, color, segments, true);
+		m_mesh.clear();
+		mesh_filled_arc(m_mesh, center, radiusX, radiusY, 0.0f, 2.0f * M_PI, circle_segments(std::max(radiusX, radiusY)), COLOR_CAST(color));
+		submit_flat_mesh(m_mesh);
 	}
 
 	void BasicRenderer2D::fillTriangle(const Triangle& tri, const Color& color)
@@ -967,10 +1091,13 @@ namespace ogfx
 	{
 		if (!m_initialized)
 			return;
-		Vec2 verts[3] = { A, B, C };
-		Vec2 texCoords[3] = { {0, 0}, {0, 0}, {0, 0} };
-		u32 inds[3] = { 0, 1, 2 };
-		push_polygon(verts, texCoords, 3, inds, 3, color, nullptr);
+		SDL_FColor col = COLOR_CAST(color);
+		m_mesh.clear();
+		m_mesh.addVertex(A, col);
+		m_mesh.addVertex(B, col);
+		m_mesh.addVertex(C, col);
+		m_mesh.addTriangle(0, 1, 2);
+		submit_flat_mesh(m_mesh);
 	}
 
 
@@ -1073,308 +1200,129 @@ namespace ogfx
 
 
 	// ===================================================== PRIVATE HELPERS =====================================================
-	void BasicRenderer2D::init_arrays(void)
+	void BasicRenderer2D::emit(const BatchState& state, const SDL_Vertex* verts, u32 vertCount, const i32* inds, u32 indexCount)
 	{
-		for (auto& v : m_vertices)
-		{
-			v.color = COLOR_CAST(Colors::Transparent);
-			v.position = { 0, 0 };
-			v.tex_coord = { 0, 0 };
-		}
-		for (auto& i : m_indices)
-			i = 0;
-	}
-
-	void BasicRenderer2D::generate_half_circle(const Vec2& center, const Vec2& dir, f32 radius, i32 segments, const Color& color, bool use_null_tex)
-	{
-		// Ensure we have room
-		if (m_vertexCount + segments + 2 >= MaxVertices ||  m_indexCount + segments * 3 >= MaxIndices)
-			flushBatch();
-
-		SDL_FColor col = COLOR_CAST(color);
-
-		// Index of the center vertex
-		i32 centerIndex = m_vertexCount;
-
-		// Push center vertex
-		m_vertices[m_vertexCount++] = {
-			{ center.x, center.y },
-			col,
-			{ 0.0f, 0.0f },
-		};
-
-		// Compute the base angle from the direction vector
-		f32 baseAngle = std::atan2(dir.y, dir.x);
-
-		// Half circle spans 180 degrees
-		f32 startAngle = baseAngle - M_PI * 0.5f;
-		f32 endAngle   = baseAngle + M_PI * 0.5f;
-
-		Vec2 uvs = { 0.0f, 0.0f };
-		if (use_null_tex)
-			uvs = m_fontGlyphAtlas.getNullTextureSlotUVs();
-
-		// Generate arc vertices
-		for (i32 i = 0; i <= segments; i++)
-		{
-			f32 t = f32(i) / f32(segments);
-			f32 angle = startAngle + t * (endAngle - startAngle);
-
-			f32 x = center.x + std::cos(angle) * radius;
-			f32 y = center.y + std::sin(angle) * radius;
-
-			m_vertices[m_vertexCount++] = {
-				{ x, y },
-				col,
-				{ uvs.x, uvs.y }
-			};
-		}
-
-		// Generate triangle fan indices
-		for (i32 i = 0; i < segments; i++)
-		{
-			m_indices[m_indexCount++] = centerIndex;
-			m_indices[m_indexCount++] = centerIndex + 1 + i;
-			m_indices[m_indexCount++] = centerIndex + 2 + i;
-		}
-	}
-
-	void BasicRenderer2D::generate_ellipse_stroke(const Vec2& center, f32 radiusX, f32 radiusY, f32 thickness, f32 startAngle, f32 endAngle, const Color& color, i32 segments, bool use_null_tex)
-	{
-		f32 half = thickness * 0.5f;
-
-		f32 outerRX = radiusX + half;
-		f32 outerRY = radiusY + half;
-		f32 innerRX = std::max(0.0f, radiusX - half);
-		f32 innerRY = std::max(0.0f, radiusY - half);
-
-		// Ensure capacity
-		if (m_vertexCount + (segments + 1) * 2 >= MaxVertices ||
-			m_indexCount + segments * 6 >= MaxIndices)
-		{
-			flushBatch();
-		}
-
-		SDL_FColor col = COLOR_CAST(color);
-
-		i32 base = m_vertexCount;
-
-		f32 angleRange = endAngle - startAngle;
-
-		Vec2 uvs = { 0.0f, 0.0f };
-		if (use_null_tex)
-			uvs = m_fontGlyphAtlas.getNullTextureSlotUVs();
-
-		// Generate vertices: outer arc + inner arc
-		for (i32 i = 0; i <= segments; i++)
-		{
-			f32 t = f32(i) / f32(segments);
-			f32 angle = startAngle + t * angleRange;
-
-			f32 cs = std::cos(angle);
-			f32 sn = std::sin(angle);
-
-			// Outer arc
-			m_vertices[m_vertexCount++] = {
-				{ center.x + cs * outerRX, center.y + sn * outerRY },
-				col,
-				{ uvs.x, uvs.y }
-			};
-
-			// Inner arc
-			m_vertices[m_vertexCount++] = {
-				{ center.x + cs * innerRX, center.y + sn * innerRY },
-				col,
-				{ uvs.x, uvs.y }
-			};
-		}
-
-		// Generate indices (triangle strip → triangles)
-		for (i32 i = 0; i < segments; i++)
-		{
-			i32 o0 = base + i * 2;
-			i32 i0 = o0 + 1;
-			i32 o1 = o0 + 2;
-			i32 i1 = o0 + 3;
-
-			// Triangle 1
-			m_indices[m_indexCount++] = o0;
-			m_indices[m_indexCount++] = o1;
-			m_indices[m_indexCount++] = i0;
-
-			// Triangle 2
-			m_indices[m_indexCount++] = o1;
-			m_indices[m_indexCount++] = i1;
-			m_indices[m_indexCount++] = i0;
-		}
-	}
-
-	void BasicRenderer2D::generate_filled_ellipse_stroke(const Vec2& center, f32 radiusX, f32 radiusY, f32 startAngle, const Color& color, i32 segments, bool use_null_tex)
-	{
-		// Ensure capacity
-		if (m_vertexCount + segments + 2 >= MaxVertices || m_indexCount + segments * 3 >= MaxIndices)
-			flushBatch();
-
-		SDL_FColor col = COLOR_CAST(color);
-
-		i32 base = m_vertexCount;
-
-		// Center vertex
-		m_vertices[m_vertexCount++] = {
-			{ center.x, center.y },
-			col,
-			{ 0, 0 }
-		};
-
-		f32 endAngle = startAngle + M_PI * 0.5f;
-
-		Vec2 uvs = { 0.0f, 0.0f };
-		if (use_null_tex)
-			uvs = m_fontGlyphAtlas.getNullTextureSlotUVs();
-
-		for (i32 i = 0; i <= segments; i++)
-		{
-			f32 t = f32(i) / f32(segments);
-			f32 angle = startAngle + t * (endAngle - startAngle);
-
-			f32 x = center.x + std::cos(angle) * radiusX;
-			f32 y = center.y + std::sin(angle) * radiusY;
-
-			m_vertices[m_vertexCount++] = {
-				{ x, y },
-				col,
-				{ uvs.x, uvs.y }
-			};
-		}
-
-		// Triangle fan indices
-		for (i32 i = 0; i < segments; i++)
-		{
-			m_indices[m_indexCount++] = base;
-			m_indices[m_indexCount++] = base + 1 + i;
-			m_indices[m_indexCount++] = base + 2 + i;
-		}
-	}
-
-	void BasicRenderer2D::generate_filled_ellipse(const Vec2& center, f32 radiusX, f32 radiusY, const Color& color, i32 segments, bool use_null_tex)
-	{
-		// Ensure capacity
-		if (m_vertexCount + segments + 2 >= MaxVertices || m_indexCount + segments * 3 >= MaxIndices)
-			flushBatch();
-
-		SDL_FColor col = COLOR_CAST(color);
-
-		i32 base = m_vertexCount;
-
-		// Center vertex
-		m_vertices[m_vertexCount++] = {
-			{ center.x, center.y },
-			col,
-			{ 0, 0 }
-		};
-
-		Vec2 uvs = { 0.0f, 0.0f };
-		if (use_null_tex)
-			uvs = m_fontGlyphAtlas.getNullTextureSlotUVs();
-
-		// Outer ring vertices
-		for (i32 i = 0; i <= segments; i++)
-		{
-			f32 t = f32(i) / f32(segments);
-			f32 angle = t * (2.0f * M_PI);
-
-			f32 x = center.x + std::cos(angle) * radiusX;
-			f32 y = center.y + std::sin(angle) * radiusY;
-
-			m_vertices[m_vertexCount++] = {
-				{ x, y },
-				col,
-				{ uvs.x, uvs.y }
-			};
-		}
-
-		// Triangle fan indices
-		for (i32 i = 0; i < segments; i++)
-		{
-			m_indices[m_indexCount++] = base;
-			m_indices[m_indexCount++] = base + 1 + i;
-			m_indices[m_indexCount++] = base + 2 + i;
-		}
-	}
-
-	void BasicRenderer2D::push_polygon(const Vec2* verts, const Vec2* texCoords, u32 vertCount, const u32* inds, u32 indexCount, const Color& color, SDL_Texture* texture, bool use_null_tex)
-	{
-		if (!m_initialized || vertCount <= 0 || indexCount <= 0)
+		if (!m_initialized || vertCount == 0 || indexCount == 0)
 			return;
-
 		if (vertCount > MaxVertices || indexCount > MaxIndices)
 		{
 			OX_ERROR("Maximum number of vertices exceeded in single draw call.");
 			return;
 		}
-		use_null_tex = use_null_tex || !texCoords;
-
-		// A textured draw's edges are already defined by the texture's own alpha, so the fringe
-		// only applies to flat-color fills (see collect_silhouette_fringe for why/how).
-		stdvec<FringeEdge> fringe;
-		if (use_null_tex)
-			collect_silhouette_fringe(verts, vertCount, inds, indexCount, AA_FRINGE_WIDTH, fringe);
-		const i32 fringeVertCount = (i32)fringe.size() * 2;
-		const i32 fringeIndexCount = (i32)fringe.size() * 6;
-
-		auto tmpTex = (use_null_tex ? m_lastUsedGlyphAtlasTex : texture);
-		if (tmpTex != m_texture)
+		if (state != m_batchState)
 			flushBatch();
-		m_texture = tmpTex;
-		if (m_vertexCount + vertCount + fringeVertCount >= MaxVertices || m_indexCount + indexCount + fringeIndexCount >= MaxIndices)
-		{
+		if (m_vertexCount + cast<i32>(vertCount) > MaxVertices || m_indexCount + cast<i32>(indexCount) > MaxIndices)
 			flushBatch();
-			m_texture = tmpTex;
-		}
+		m_batchState = state;
 
-		SDL_FColor col = COLOR_CAST(color);
-
-		i32 base = m_vertexCount;
-		Vec2 whiteUV = m_fontGlyphAtlas.getNullTextureSlotUVs();
-		for (i32 i = 0; i < vertCount; i++)
-		{
-			Vec2 tc { 0.0f, 0.0f };
-			if (use_null_tex)
-				tc = whiteUV;
-			else
-				tc = texCoords[i];
-			m_vertices[m_vertexCount++] = {
-				{ verts[i].x, verts[i].y },
-				col,
-				{ tc.x, tc.y },
-			};
-		}
-		for (i32 i = 0; i < indexCount; i++)
+		const i32 base = m_vertexCount;
+		std::memcpy(&m_vertices[m_vertexCount], verts, sizeof(SDL_Vertex) * vertCount);
+		m_vertexCount += cast<i32>(vertCount);
+		for (u32 i = 0; i < indexCount; i++)
 			m_indices[m_indexCount++] = base + inds[i];
+	}
 
-		if (!fringe.empty())
+	void BasicRenderer2D::emit_textured_quad(SDL_Texture* texture, const Vec2 verts[4], const Vec2 uvs[4], const Color& color)
+	{
+		SDL_FColor col = COLOR_CAST(color);
+		const SDL_Vertex quad[4] = {
+			{ { verts[0].x, verts[0].y }, col, { uvs[0].x, uvs[0].y } },
+			{ { verts[1].x, verts[1].y }, col, { uvs[1].x, uvs[1].y } },
+			{ { verts[2].x, verts[2].y }, col, { uvs[2].x, uvs[2].y } },
+			{ { verts[3].x, verts[3].y }, col, { uvs[3].x, uvs[3].y } }
+		};
+		const i32 inds[6] = QUAD_INDICES_ARR;
+		emit({ texture, SDL_BLENDMODE_BLEND }, quad, 4, inds, 6);
+	}
+
+	void BasicRenderer2D::submit_flat_mesh(const FlatMesh& mesh, bool antialias)
+	{
+		if (!m_initialized)
+			return;
+		m_meshProcessor->process(mesh, m_fontGlyphAtlas.getNullTextureSlotUVs(), antialias, m_meshVerts, m_meshInds);
+		emit(flat_batch_state(), m_meshVerts.data(), cast<u32>(m_meshVerts.size()), m_meshInds.data(), cast<u32>(m_meshInds.size()));
+	}
+
+	BasicRenderer2D::BatchState BasicRenderer2D::flat_batch_state(void) const
+	{
+		// Every atlas has the white texel block at the same spot, so flat shapes sample whichever
+		// atlas text was last drawn with - that way text and shapes share batches.
+		return { m_lastUsedGlyphAtlasTex, SDL_BLENDMODE_BLEND };
+	}
+
+	bool BasicRenderer2D::mesh_line(FlatMesh& mesh, const Vec2& p1, const Vec2& p2, f32 thickness, bool rounded, const SDL_FColor& color)
+	{
+		Vec2 delta = p2 - p1;
+		if (delta.mag() < 1e-4f || thickness <= 0.0f)
+			return false;
+		Vec2 dir = delta.normalize();
+		Vec2 perp = { -dir.y, dir.x }; // 90° rotation
+		f32 half = thickness * 0.5f;
+		Vec2 off = perp * half;
+
+		u32 a = mesh.addVertex(p1 - off, color);
+		u32 b = mesh.addVertex(p1 + off, color);
+		u32 c = mesh.addVertex(p2 + off, color);
+		u32 d = mesh.addVertex(p2 - off, color);
+		mesh.addTriangle(a, b, c);
+		mesh.addTriangle(c, d, a);
+
+		if (!rounded)
+			return true;
+
+		// Half-circle caps: their end points coincide with the quad's corners, so after welding the
+		// caps and the body are one mesh (no fringe along the joins).
+		i32 segments = std::max(16, cast<i32>(thickness * 1.5f));
+		f32 angle1 = std::atan2(-dir.y, -dir.x);
+		f32 angle2 = std::atan2(dir.y, dir.x);
+		mesh_filled_arc(mesh, p1, half, half, angle1 - M_PI * 0.5f, angle1 + M_PI * 0.5f, segments, color);
+		mesh_filled_arc(mesh, p2, half, half, angle2 - M_PI * 0.5f, angle2 + M_PI * 0.5f, segments, color);
+		return true;
+	}
+
+	void BasicRenderer2D::mesh_filled_arc(FlatMesh& mesh, const Vec2& center, f32 radiusX, f32 radiusY, f32 startAngle, f32 endAngle, i32 segments, const SDL_FColor& color)
+	{
+		if (segments <= 0)
+			return;
+		u32 centerIndex = mesh.addVertex(center, color);
+		for (i32 i = 0; i <= segments; i++)
 		{
-			SDL_FColor fadedCol = col;
-			fadedCol.a = 0.0f;
-			i32 fringeBase = m_vertexCount;
-			for (u32 i = 0; i < fringe.size(); i++)
-			{
-				m_vertices[m_vertexCount++] = { { fringe[i].ea.x, fringe[i].ea.y }, fadedCol, { whiteUV.x, whiteUV.y } };
-				m_vertices[m_vertexCount++] = { { fringe[i].eb.x, fringe[i].eb.y }, fadedCol, { whiteUV.x, whiteUV.y } };
-			}
-			for (u32 i = 0; i < fringe.size(); i++)
-			{
-				u32 a  = (u32)base + fringe[i].a;
-				u32 b  = (u32)base + fringe[i].b;
-				u32 ea = (u32)fringeBase + i * 2 + 0;
-				u32 eb = (u32)fringeBase + i * 2 + 1;
-				m_indices[m_indexCount++] = a;
-				m_indices[m_indexCount++] = b;
-				m_indices[m_indexCount++] = eb;
-				m_indices[m_indexCount++] = a;
-				m_indices[m_indexCount++] = eb;
-				m_indices[m_indexCount++] = ea;
-			}
+			f32 t = cast<f32>(i) / cast<f32>(segments);
+			f32 angle = startAngle + t * (endAngle - startAngle);
+			mesh.addVertex({ center.x + std::cos(angle) * radiusX, center.y + std::sin(angle) * radiusY }, color);
+		}
+		for (i32 i = 0; i < segments; i++)
+			mesh.addTriangle(centerIndex, centerIndex + 1 + i, centerIndex + 2 + i);
+	}
+
+	void BasicRenderer2D::mesh_arc_stroke(FlatMesh& mesh, const Vec2& center, f32 radiusX, f32 radiusY, f32 thickness, f32 startAngle, f32 endAngle, i32 segments, const SDL_FColor& color)
+	{
+		if (segments <= 0)
+			return;
+		f32 half = thickness * 0.5f;
+		f32 outerRX = radiusX + half;
+		f32 outerRY = radiusY + half;
+		f32 innerRX = std::max(0.0f, radiusX - half);
+		f32 innerRY = std::max(0.0f, radiusY - half);
+
+		u32 base = cast<u32>(mesh.positions.size());
+		for (i32 i = 0; i <= segments; i++)
+		{
+			f32 t = cast<f32>(i) / cast<f32>(segments);
+			f32 angle = startAngle + t * (endAngle - startAngle);
+			f32 cs = std::cos(angle);
+			f32 sn = std::sin(angle);
+			mesh.addVertex({ center.x + cs * outerRX, center.y + sn * outerRY }, color);
+			mesh.addVertex({ center.x + cs * innerRX, center.y + sn * innerRY }, color);
+		}
+		for (i32 i = 0; i < segments; i++)
+		{
+			u32 o0 = base + i * 2;
+			u32 i0 = o0 + 1;
+			u32 o1 = o0 + 2;
+			u32 i1 = o0 + 3;
+			mesh.addTriangle(o0, o1, i0);
+			mesh.addTriangle(o1, i1, i0);
 		}
 	}
 
