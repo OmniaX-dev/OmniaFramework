@@ -18,7 +18,7 @@ elif [[ "$(uname -s)" == Linux* ]]; then
 	RELEASE_DIR=../bin/OmniaFramework_linux64
 	mkdir -p $RELEASE_DIR/lib
 	cp ../bin/libostd.so $RELEASE_DIR/lib
-    cp ../bin/libostd.so $RELEASE_DIR/lib
+    cp ../bin/libogfx.so $RELEASE_DIR/lib
     cp ../bin/libosnd.so $RELEASE_DIR/lib
 elif [[ "$(uname -s)" == MINGW64_NT* ]]; then
 	RELEASE_DIR=../bin/OmniaFramework_w64
