@@ -21,6 +21,7 @@
 #include "Text.hpp"
 #include "../../utils/Keycodes.hpp"
 #include "../../render/BasicRenderer.hpp"
+#include "../Window.hpp"
 
 namespace ogfx
 {
@@ -330,6 +331,16 @@ namespace ogfx
 			else if (styleStr == "box")        setCursorStyle(CursorStyle::Box);
 			else if (styleStr == "underscore") setCursorStyle(CursorStyle::Underscore);
 			else                               setCursorStyle(CursorStyle::Line);
+		}
+
+		Vec2 TextEdit::getContentMinSize(void) const
+		{
+			const f32 lineH = getWindow().getGFX().getStringDimensions("Ag", getFontSize()).y;
+			const Rectangle pad = getPadding();
+			return {
+				m_textPadding.left + m_textPadding.right + cast<f32>(getFontSize()) * 2.0f + pad.left() + pad.right(),
+				lineH + 6.0f + pad.top() + pad.bottom()
+			};
 		}
 
 		void TextEdit::onDraw(ogfx::BasicRenderer2D& gfx)

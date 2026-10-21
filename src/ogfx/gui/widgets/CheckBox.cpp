@@ -20,6 +20,7 @@
 
 #include "CheckBox.hpp"
 #include "../../render/BasicRenderer.hpp"
+#include "../Window.hpp"
 
 namespace ogfx
 {
@@ -43,6 +44,8 @@ namespace ogfx
 			setCheckBoxColor(getThemeValue<Color>(theme, "checkBoxColor", Colors::White));
 			m_checkBorderRadius = getThemeValue<i32>(theme, "checkBorderRadius", 5);
 			m_checkBorderWidth = getThemeValue<i32>(theme, "checkBorderWidth", 1);
+			m_textChanged = true;
+			updateMinimumSize();
 		}
 
 		void CheckBox::onDraw(ogfx::BasicRenderer2D& gfx)
@@ -66,6 +69,7 @@ namespace ogfx
 		{
 			m_text = text;
 			m_textChanged = true;
+			updateMinimumSize();
 		}
 
 		void CheckBox::setChecked(bool checked)
@@ -78,16 +82,30 @@ namespace ogfx
 				callback_onStateChanged(*this, m_checked);
 		}
 
-		void CheckBox::__update_size(ogfx::BasicRenderer2D& gfx)
+		Vec2 CheckBox::measure(ogfx::BasicRenderer2D& gfx, Vec2& outIndicatorSize) const
 		{
 			auto size = gfx.getStringDimensions(getText(), getFontSize());
-			m_checkSize = { cast<f32>(size.y), cast<f32>(size.y) };
-			size.x += m_spacing + m_checkSize.x;
+			outIndicatorSize = { cast<f32>(size.y), cast<f32>(size.y) };
+			size.x += m_spacing + outIndicatorSize.x;
 			size.x += getPadding().left();
 			size.x += getPadding().right();
 			size.y += getPadding().top();
 			size.y += getPadding().bottom();
-			setSize({ cast<f32>(size.x), cast<f32>(size.y) });
+			return { cast<f32>(size.x), cast<f32>(size.y) };
+		}
+
+		Vec2 CheckBox::getContentMinSize(void) const
+		{
+			Vec2 indicator;
+			return measure(getWindow().getGFX(), indicator);
+		}
+
+		void CheckBox::__update_size(ogfx::BasicRenderer2D& gfx)
+		{
+			const Vec2 size = measure(gfx, m_checkSize);
+			// When the layout system owns our size we only report the minimum size.
+			if (!isLayoutManaged())
+				applyAutoSize(size);
 			m_textChanged = false;
 		}
 	}

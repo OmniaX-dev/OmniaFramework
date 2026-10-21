@@ -34,8 +34,7 @@ class TestWindow : public Window
 			setTheme(m_theme);
 
 			getToolBar().setHeight(30);
-			getToolBar().setLayout<BoxLayout>(BoxLayout::Orientation::Horizontal);
-			getToolBar().getLayout()->setSpacing(10);
+			getToolBar().setButtonSpacing(10);
 			showToolBar();
 
 			auto l_randomIcon = [this]() -> ogfx::Icon {
@@ -94,8 +93,13 @@ class TestWindow : public Window
 
 			m_controlPanel.addThemeID("piano_roll_control_panel");
 
+			// Piano roll takes the left 1100/1440 of the window (a tested ratio I like),
+			// the control panel the rest; both follow the window through their anchors.
+			const f32 split = 1100.0f / 1440.0f;
 			addWidget(m_pianoRollEditor, { 0,  0 });
+			m_pianoRollEditor.setRelativeBounds({ 0.0f, 0.0f, split, 1.0f });
 			addWidget(m_controlPanel, { 0, 0 });
+			m_controlPanel.setRelativeBounds({ split, 0.0f, 1.0f - split, 1.0f });
 			getToolBar().reloadTheme(true);
 		}
 
@@ -109,25 +113,6 @@ class TestWindow : public Window
 			}
 			else if (signal.ID == ostd::BuiltinSignals::MouseReleased)
 			{
-			}
-			else if (signal.ID == ostd::BuiltinSignals::WindowResized)
-			{
-				if (!signal.userData)
-					return;
-				auto& wrd = cast<ogfx::WindowResizedData&>(*signal.userData);
-				Vec2 pianoRollSize {
-					(1100.0f * wrd.new_width) / 1440.0f, // A tested ratio I like
-					wrd.new_height - getToolBar().getHeight()
-				};
-				m_pianoRollEditor.setPosition({ 0, 0 });
-				m_pianoRollEditor.setSize(pianoRollSize);
-
-				Vec2 controlPanelSize {
-					wrd.new_width - pianoRollSize.x,
-					pianoRollSize.y
-				};
-				m_controlPanel.setPosition({ pianoRollSize.x, 0 });
-				m_controlPanel.setSize(controlPanelSize);
 			}
 		}
 

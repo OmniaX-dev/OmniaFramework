@@ -37,6 +37,7 @@ namespace ogfx
 				bool removeMenuItem(i32 id);
 				void setItemCallback(ContextMenu::Instance::Callback callback);
 				void setw(f32 w) override;
+				Vec2 getContentMinSize(void) const override;
 				void applyTheme(const ostd::Stylesheet& theme) override;
 				void onDraw(ogfx::BasicRenderer2D& gfx) override;
 				void onMouseReleased(const Event& event) override;

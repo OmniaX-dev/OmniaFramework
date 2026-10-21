@@ -23,6 +23,7 @@
 #include "../../../ostd/io/FileSystem.hpp"
 #include "../Window.hpp"
 #include <algorithm>
+#include <cmath>
 
 namespace ogfx
 {
@@ -48,15 +49,15 @@ namespace ogfx
 		{
 			m_sizeMode = mode;
 			m_modeExplicitlySet = true;
-			invalidate_layout();
+			invalidate_content();
 		}
 
 		eSizeMode Button::effectiveSizeMode(void) const
 		{
-			// Auto-detect: if user never set a mode explicitly and our parent
-			// owns a layout, we run as LayoutManaged. Otherwise honor the
-			// stored mode (AutoSize by default).
-			if (!m_modeExplicitlySet && getParent() && getParent()->hasLayout())
+			// Auto-detect: if user never set a mode explicitly and the layout
+			// system decides our size, we run as LayoutManaged. Otherwise honor
+			// the stored mode (AutoSize by default).
+			if (!m_modeExplicitlySet && isLayoutManaged())
 				return eSizeMode::LayoutManaged;
 			return m_sizeMode;
 		}
@@ -120,18 +121,18 @@ namespace ogfx
 		void Button::setText(const String& text)
 		{
 			m_text = text;
-			invalidate_layout();
+			invalidate_content();
 		}
 
 		void Button::setIcon(const String& filePath)
 		{
 			disableIcon();
-			if (filePath == "") { invalidate_layout(); return; }
-			if (!ostd::FileSystem::fileExists(filePath)) { invalidate_layout(); return; }
+			if (filePath == "") { invalidate_content(); return; }
+			if (!ostd::FileSystem::fileExists(filePath)) { invalidate_content(); return; }
 			m_icon.destroy();
 			m_icon.loadFromFile(filePath, getWindow().getGFX());
 			enableIcon();
-			invalidate_layout();
+			invalidate_content();
 		}
 
 		void Button::applyTheme(const ostd::Stylesheet& theme)
@@ -151,7 +152,23 @@ namespace ogfx
 				m_anim.create(m_animData);
 				m_anim.setSpriteSheet(m_icon);
 			}
-			invalidate_layout();
+			invalidate_content();
+		}
+
+		Vec2 Button::getContentMinSize(void) const
+		{
+			auto& gfx = getWindow().getGFX();
+			const Rectangle pad = getPadding();
+			const bool hasText = !isIconOnlyEnabled() && m_text.len() > 0;
+			const Vec2 textSize = hasText ? gfx.getStringDimensions(m_text, getFontSize()) : Vec2 { 0, 0 };
+			// An expanding icon adapts to whatever space is left, so it has no minimum.
+			const Vec2 iconSize = (isIconEnabled() && !m_expandIcon) ? compute_icon_size(textSize.y) : Vec2 { 0, 0 };
+			const bool hasIcon = iconSize.x > 0 && iconSize.y > 0;
+			f32 cw = textSize.x + iconSize.x;
+			if (hasText && hasIcon)
+				cw += m_iconSpacing;
+			const f32 ch = std::max(textSize.y, iconSize.y);
+			return { cw + pad.left() + pad.right(), ch + pad.top() + pad.bottom() };
 		}
 
 		// ===================================================================
@@ -266,10 +283,12 @@ namespace ogfx
 					// respected. Aspect ratio is preserved during the cap.
 					// AutoSize doesn't need this because it grows the widget
 					// to accommodate the icon + padding.
-					const f32 availW = std::max(0.0f, getw() - padW);
+					f32 availW = std::max(0.0f, getw() - padW);
 					const f32 availH = std::max(0.0f, geth() - padH);
-					if (iconSize.x > 0 && iconSize.y > 0
-						&& (iconSize.x > availW || iconSize.y > availH))
+					if (hasText)
+						availW = std::max(0.0f, availW - textSize.x - m_iconSpacing);
+					if (m_expandIcon || (iconSize.x > 0 && iconSize.y > 0
+						&& (iconSize.x > availW || iconSize.y > availH)))
 					{
 						const f32 sx = (iconSize.x > 0) ? availW / iconSize.x : 1.0f;
 						const f32 sy = (iconSize.y > 0) ? availH / iconSize.y : 1.0f;
@@ -307,7 +326,7 @@ namespace ogfx
 				// invalidate_layout -> recompute -> setSize -> hover boundary
 				// crosses -> ... ).
 				if (std::abs(getw() - wantW) > 0.5f || std::abs(geth() - wantH) > 0.5f)
-					setSize({ wantW, wantH });
+					applyAutoSize({ wantW, wantH });
 			}
 			// else: Manual & LayoutManaged keep current widget size.
 
@@ -315,18 +334,18 @@ namespace ogfx
 			const Vec2 contentSize = getContentBounds().getSize();
 			const f32  spacing     = (hasIcon && hasText) ? m_iconSpacing : 0.0f;
 			const f32  totalW      = (hasIcon ? iconSize.x : 0) + spacing + (hasText ? textSize.x : 0);
-			const f32  startX      = (contentSize.x - totalW) * 0.5f;
+			const f32  startX      = std::floor((contentSize.x - totalW) * 0.5f);
 
 			m_drawIconSize = iconSize;
 			if (hasIcon)
-				m_drawIconOffset = { startX, (contentSize.y - iconSize.y) * 0.5f };
+				m_drawIconOffset = { startX, std::floor((contentSize.y - iconSize.y) * 0.5f) };
 			else
 				m_drawIconOffset = { 0, 0 };
 
 			if (hasText)
 				m_drawTextOffset = {
 					startX + (hasIcon ? iconSize.x + spacing : 0.0f),
-					(contentSize.y - textSize.y) * 0.5f
+					std::floor((contentSize.y - textSize.y) * 0.5f)
 				};
 			else
 				m_drawTextOffset = { 0, 0 };

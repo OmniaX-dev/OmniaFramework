@@ -76,15 +76,14 @@ namespace ogfx
 
 		void ColorPickerPanel::layout_children(void)
 		{
-			// Simple manual vertical layout:
+			// Simple vertical layout; sliders and the hex field are anchored to
+			// both horizontal edges so they follow the panel's width:
 			//   [swatch]
 			//   R: [-----slider-----]
 			//   G: [-----slider-----]
 			//   B: [-----slider-----]
 			//   A: [-----slider-----]
 			//   [    hex field      ]
-			const Rectangle cb = getGlobalContentBounds();
-			const Vec2 cp = getGlobalContentPosition();
 			const f32 lblW = 18.0f;
 			const f32 gap  = 6.0f;
 			const f32 rowH = 22.0f;
@@ -95,8 +94,9 @@ namespace ogfx
 			auto place_row = [&](Label* lbl, Slider* sl) {
 				lbl->setPosition({ 0, y + 2 });
 				lbl->setSize({ lblW, rowH });
-				sl->setPosition({ lblW + gap, y + rowH * 0.5f - 9.0f });
-				sl->setSize({ cb.w - lblW - gap, 18.0f });
+				const f32 sliderY = y + rowH * 0.5f - 9.0f;
+				sl->setAnchors(0.0f, 0.0f, 1.0f, 0.0f);
+				sl->setOffsets(lblW + gap, sliderY, 0.0f, sliderY + 18.0f);
 				y += rowH + 4.0f;
 			};
 			place_row(m_rLabel, m_rSlider);
@@ -105,10 +105,8 @@ namespace ogfx
 			place_row(m_aLabel, m_aSlider);
 
 			y += gap;
-			m_hexField->setPosition({ 0, y });
-			m_hexField->setSize({ cb.w, 26.0f });
-
-			(void)cp;
+			m_hexField->setAnchors(0.0f, 0.0f, 1.0f, 0.0f);
+			m_hexField->setOffsets(0.0f, y, 0.0f, y + 26.0f);
 		}
 
 		Color ColorPickerPanel::getColor(void) const

@@ -34,6 +34,7 @@ namespace ogfx
 				ProgressBar& create(void);
 				void applyTheme(const ostd::Stylesheet& theme) override;
 				void onDraw(ogfx::BasicRenderer2D& gfx) override;
+				Vec2 getContentMinSize(void) const override;
 				void setProgressNormalized(f32 normalized_value);
 				void setProgress(f32 value);
 				f32 getProgress(void) const;

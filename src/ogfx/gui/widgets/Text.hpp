@@ -111,6 +111,8 @@ namespace ogfx
 				TextEdit& create(void);
 				void applyTheme(const ostd::Stylesheet& theme) override;
 				void onDraw(ogfx::BasicRenderer2D& gfx) override;
+				// One line of text plus the text padding.
+				Vec2 getContentMinSize(void) const override;
 				void onUpdate(void) override;
 
 				void onFocusLost(const Event& event) override;

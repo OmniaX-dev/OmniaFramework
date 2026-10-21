@@ -20,7 +20,6 @@
 
 #pragma once
 
-#include <ogfx/gui/LayoutHint.hpp>
 #include <ostd/math/Geometry.hpp>
 #include <ostd/utils/Defines.hpp>
 
@@ -28,118 +27,159 @@ namespace ogfx
 {
 	namespace gui
 	{
-		class Widget;
+		// ============================================================================
+		// Anchor-based layout (modelled after Godot's Control layout).
+		//
+		// Every widget stores four ANCHORS and four OFFSETS, one per edge:
+		//
+		//   anchors: fractions (0.0 .. 1.0) of the parent's content area.
+		//            0.0 = the parent's left/top edge, 1.0 = its right/bottom edge,
+		//            0.5 = its center. Think of them as percentages (0.25 = 25%).
+		//   offsets: pixel distances added to the anchor positions.
+		//
+		// The widget's rectangle (local to the parent's content frame) is:
+		//
+		//   left   = parentW * anchors.left   + offsets.left
+		//   top    = parentH * anchors.top    + offsets.top
+		//   right  = parentW * anchors.right  + offsets.right
+		//   bottom = parentH * anchors.bottom + offsets.bottom
+		//
+		// Whenever the parent is resized, the rectangle is recomputed from these
+		// values. Some examples:
+		//
+		//   - anchors { 0, 0, 0, 0 }:  fixed position and size (the default; a widget
+		//                              behaves exactly like with plain setPosition/setSize).
+		//   - anchors { 0, 0, 1, 1 }, offsets { 10, 10, -10, -10 }:
+		//                              fills the parent with a 10px margin.
+		//   - anchors { 1, 1, 1, 1 }, offsets { -110, -40, -10, -10 }:
+		//                              100x30 box glued to the bottom-right corner.
+		//   - anchors { 0.25, 0, 0.75, 1 }:
+		//                              always covers the middle 50% of the parent's width.
+		//
+		// setPosition()/setSize() keep working: they update the offsets so that the
+		// widget ends up at the requested rectangle with the current anchors.
+		//
+		// When the computed size is smaller than the widget's minimum size, the
+		// widget grows according to its grow direction (End = towards right/bottom,
+		// Begin = towards left/top, Both = around its center).
+		//
+		// Widgets whose parent is a Container (BoxContainer, GridContainer, ...)
+		// ignore anchors entirely: the container decides their rectangle, using
+		// the child's minimum size, size flags and stretch ratio.
+		// ============================================================================
 
-		// ============================================================================
-		// Layout — abstract base.
-		//
-		// A Layout is owned by a Widget (the "container") and is responsible for
-		// positioning and sizing that widget's children inside the container's
-		// content bounds (i.e. inside padding, after content offset).
-		//
-		// Two responsibilities:
-		//   - arrange(parent): set position + size on every laid-out child.
-		//   - measure(parent): report how much space this layout *wants* given
-		//                      its current children. Used so a Layout can drive
-		//                      a parent's contentExtents (and therefore scrollbars),
-		//                      and so a parent Layout can ask a child container
-		//                      "how big would you like to be?".
-		// ============================================================================
-		class Layout
+		// One value per edge. Used for both anchors (fractions) and offsets (pixels).
+		struct EdgeValues
 		{
-			public:
-				virtual ~Layout(void) = default;
+			f32 left   { 0.0f };
+			f32 top    { 0.0f };
+			f32 right  { 0.0f };
+			f32 bottom { 0.0f };
 
-				// Place children. Called from Widget::relayout().
-				virtual void arrange(Widget& parent) = 0;
+			inline EdgeValues(void) = default;
+			inline EdgeValues(f32 l, f32 t, f32 r, f32 b) : left(l), top(t), right(r), bottom(b) {  }
+			inline bool operator==(const EdgeValues& o) const { return left == o.left && top == o.top && right == o.right && bottom == o.bottom; }
+			inline bool operator!=(const EdgeValues& o) const { return !(*this == o); }
+			inline bool isZero(void) const { return left == 0.0f && top == 0.0f && right == 0.0f && bottom == 0.0f; }
+		};
+		using Anchors = EdgeValues;
+		using Offsets = EdgeValues;
 
-				// Compute desired size of this layout's content. Should NOT mutate
-				// children. Used by Widget::getContentExtents() override below and
-				// by parent layouts asking for preferred size.
-				virtual Vec2 measure(const Widget& parent) const = 0;
-
-				// Spacing between adjacent items along the main axis (Box) or
-				// between cells (Grid). FillLayout ignores it.
-				inline f32 getSpacing(void) const { return m_spacing; }
-				inline void setSpacing(f32 s) { m_spacing = s; }
-
-			protected:
-				// Helpers used by concrete layouts to honor a child's hint
-				// without each subclass re-implementing the same min/max/preferred
-				// resolution logic.
-				static Vec2 resolvePreferred(const Widget& child);
-				static f32  applyMinMax(f32 value, f32 minV, f32 maxV);
-				static f32  alignOffset(eAlign a, f32 available, f32 size);
-
-				f32 m_spacing { 0.0f };
+		enum class eSide : u8
+		{
+			Left = 0,
+			Top,
+			Right,
+			Bottom
 		};
 
-
-		// ============================================================================
-		// FillLayout — every laid-out child is sized to fill the parent's content
-		// area. Useful as a default (a "single slot" container) and as a building
-		// block for things like SplitView panels.
-		// ============================================================================
-		class FillLayout : public Layout
+		// Common anchor configurations. "Wide" presets stretch along one axis.
+		enum class eAnchorPreset : u8
 		{
-			public:
-				void arrange(Widget& parent) override;
-				Vec2 measure(const Widget& parent) const override;
+			TopLeft = 0,
+			TopRight,
+			BottomLeft,
+			BottomRight,
+			CenterLeft,
+			CenterTop,
+			CenterRight,
+			CenterBottom,
+			Center,
+			LeftWide,      // left edge, full height
+			TopWide,       // top edge, full width
+			RightWide,     // right edge, full height
+			BottomWide,    // bottom edge, full width
+			VCenterWide,   // vertical band through the center, full height
+			HCenterWide,   // horizontal band through the center, full width
+			FullRect       // fill the parent
 		};
 
-
-		// ============================================================================
-		// BoxLayout — arrange children in a single row (Horizontal) or column
-		// (Vertical) with stretch factors and spacing.
-		//
-		// Algorithm (per axis = "main"):
-		//   1. Sum preferred sizes of non-stretching children + spacing.
-		//   2. The remainder is distributed among stretching children proportional
-		//      to their stretch factor.
-		//   3. min/max are clamped per child; if a stretching child hits its max,
-		//      the leftover is redistributed among the rest in a second pass.
-		//
-		// Cross axis: each child either fills (Stretch, default) or uses its
-		// preferred size aligned per alignCross.
-		// ============================================================================
-		class BoxLayout : public Layout
+		// Which size to use when a preset computes offsets for a non-stretching axis.
+		enum class ePresetResizeMode : u8
 		{
-			public:
-				enum class Orientation { Horizontal, Vertical };
-
-				explicit BoxLayout(Orientation orientation) : m_orientation(orientation) {}
-
-				void arrange(Widget& parent) override;
-				Vec2 measure(const Widget& parent) const override;
-
-				inline Orientation getOrientation(void) const { return m_orientation; }
-				inline void setOrientation(Orientation o) { m_orientation = o; }
-
-			private:
-				Orientation m_orientation;
+			KeepSize = 0,  // keep the widget's current width and height
+			MinSize,       // shrink to the widget's minimum size
+			KeepWidth,     // keep width, use minimum height
+			KeepHeight     // keep height, use minimum width
 		};
 
-
-		// ============================================================================
-		// GridLayout — fixed rows × cols. Cell sizes are uniform (rows = h/N,
-		// cols = w/M). Children are placed in row-major insertion order.
-		// LayoutHint::colSpan / rowSpan let a child cover multiple cells.
-		// ============================================================================
-		class GridLayout : public Layout
+		// Direction a widget grows in when its anchored rectangle is smaller than
+		// its minimum size (or when an auto-sizing widget changes its own size).
+		enum class eGrowDirection : u8
 		{
-			public:
-				GridLayout(u32 rows, u32 cols) : m_rows(rows), m_cols(cols) {}
+			Begin = 0,  // towards left / top
+			End,        // towards right / bottom
+			Both        // symmetrically around the center
+		};
 
-				void arrange(Widget& parent) override;
-				Vec2 measure(const Widget& parent) const override;
+		// How a child of a Container uses the space the container gives it.
+		// Flags can be combined with '|' (e.g. Fill | Expand).
+		enum class eSizeFlags : u8
+		{
+			ShrinkBegin  = 0,       // use minimum size, aligned to the start of the slot
+			Fill         = 1 << 0,  // fill the whole slot
+			Expand       = 1 << 1,  // ask for a share of the container's leftover space
+			ShrinkCenter = 1 << 2,  // use minimum size, centered in the slot
+			ShrinkEnd    = 1 << 3,  // use minimum size, aligned to the end of the slot
 
-				inline u32 getRows(void) const { return m_rows; }
-				inline u32 getCols(void) const { return m_cols; }
-				inline void setDimensions(u32 rows, u32 cols) { m_rows = rows; m_cols = cols; }
+			ExpandFill   = Fill | Expand
+		};
+		inline constexpr eSizeFlags operator|(eSizeFlags a, eSizeFlags b) { return cast<eSizeFlags>(cast<u8>(a) | cast<u8>(b)); }
+		inline constexpr eSizeFlags operator&(eSizeFlags a, eSizeFlags b) { return cast<eSizeFlags>(cast<u8>(a) & cast<u8>(b)); }
+		inline constexpr bool hasSizeFlag(eSizeFlags flags, eSizeFlags flag) { return (cast<u8>(flags) & cast<u8>(flag)) != 0; }
 
-			private:
-				u32 m_rows;
-				u32 m_cols;
+		// Alignment of the whole group of children inside a BoxContainer when no
+		// child expands.
+		enum class eBoxAlignment : u8
+		{
+			Begin = 0,
+			Center,
+			End
+		};
+
+		enum class eOrientation : u8
+		{
+			Horizontal = 0,
+			Vertical
+		};
+
+		// All per-widget layout state. Owned by Widget, see Widget's LAYOUT section.
+		struct LayoutData
+		{
+			Anchors anchors { 0, 0, 0, 0 };
+			Offsets offsets { 0, 0, 0, 0 };
+
+			// User-defined minimum size; the effective minimum is the max of this and
+			// the widget's own content minimum (see Widget::getCombinedMinSize()).
+			Vec2 minSize { 0, 0 };
+
+			eGrowDirection growH { eGrowDirection::End };
+			eGrowDirection growV { eGrowDirection::End };
+
+			// Only used when the parent is a Container.
+			eSizeFlags sizeFlagsH { eSizeFlags::Fill };
+			eSizeFlags sizeFlagsV { eSizeFlags::Fill };
+			f32 stretchRatio { 1.0f };
 		};
 	}
 }

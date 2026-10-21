@@ -27,7 +27,6 @@
 #include <ostd/io/Stylesheet.hpp>
 #include <ostd/utils/Defines.hpp>
 #include <ostd/utils/Time.hpp>
-#include <ogfx/gui/LayoutHint.hpp>
 #include <ogfx/gui/Layout.hpp>
 #include <memory>
 #include <functional>
@@ -120,28 +119,100 @@ namespace ogfx
 
 
 				// ============================== LAYOUT ==============================
-				void setLayout(std::unique_ptr<Layout> layout);
-				template<typename L, typename... Args>
-				inline L& setLayout(Args&&... args)
-				{
-					static_assert(std::is_base_of_v<Layout, L>, "L must derive from Layout");
-					auto owned = std::make_unique<L>(std::forward<Args>(args)...);
-					L* raw = owned.get();
-					setLayout(std::move(owned));
-					return *raw;
-				}
-				inline Layout* getLayout(void) { return m_layout.get(); }
-				inline bool hasLayout(void) const { return m_layout != nullptr; }
+				// See ogfx/gui/Layout.hpp for an overview of the anchor system.
 
-				inline void setw(f32 w) override { Rectangle::setw(w); if (m_layout) relayout(); }
-				inline void seth(f32 h) override { Rectangle::seth(h); if (m_layout) relayout(); }
+				// Geometry setters: they move/resize the widget and update the offsets
+				// so the new rectangle is kept when the parent is later resized.
+				void setx(f32 xx) override;
+				void sety(f32 yy) override;
+				void setw(f32 ww) override;
+				void seth(f32 hh) override;
+				using Rectangle::setPosition;
+				void setSize(const Vec2& size);
+				void setSize(f32 ww, f32 hh);
+				void setBounds(f32 xx, f32 yy, f32 ww, f32 hh);
+				inline void setBounds(const Rectangle& bounds) { setBounds(bounds.x, bounds.y, bounds.w, bounds.h); }
 
-				// Re-runs the owned Layout (if any) and recursively re-runs layouts
-				// on children that have their own. Safe to call when no layout is set.
-				void relayout(void);
+				// Anchors (fractions of the parent's content area). If keepRect is true,
+				// offsets are recomputed so the widget doesn't move right now; otherwise
+				// the offsets are kept and the widget jumps to the new anchored rect.
+				void setAnchors(const Anchors& anchors, bool keepRect = false);
+				inline void setAnchors(f32 l, f32 t, f32 r, f32 b, bool keepRect = false) { setAnchors(Anchors { l, t, r, b }, keepRect); }
+				void setAnchor(eSide side, f32 value, bool keepRect = false);
+				inline const Anchors& getAnchors(void) const { return m_layoutData.anchors; }
 
-				inline LayoutHint& layoutHint(void) { return m_layoutHint; }
-				inline const LayoutHint& layoutHint(void) const { return m_layoutHint; }
+				// Pixel offsets from the anchors.
+				void setOffsets(const Offsets& offsets);
+				inline void setOffsets(f32 l, f32 t, f32 r, f32 b) { setOffsets(Offsets { l, t, r, b }); }
+				void setOffset(eSide side, f32 value);
+				inline const Offsets& getOffsets(void) const { return m_layoutData.offsets; }
+
+				// Sets anchors AND offsets for a common configuration. margin is the
+				// distance (in pixels) kept from the anchored edges.
+				void setAnchorPreset(eAnchorPreset preset, ePresetResizeMode resizeMode = ePresetResizeMode::KeepSize, f32 margin = 0.0f);
+
+				// Percentage-based placement: x/y/w/h are fractions (0..1) of the parent's
+				// content area, e.g. { 0.1f, 0.1f, 0.5f, 0.8f } = start at 10%/10%, take
+				// 50% of the width and 80% of the height. Optional pixel insets.
+				void setRelativeBounds(const Rectangle& fractions, const Offsets& insets = { 0, 0, 0, 0 });
+
+				void setGrowDirection(eGrowDirection horizontal, eGrowDirection vertical);
+				inline eGrowDirection getHGrowDirection(void) const { return m_layoutData.growH; }
+				inline eGrowDirection getVGrowDirection(void) const { return m_layoutData.growV; }
+
+				// Minimum size. getCombinedMinSize() = max(user minimum, content minimum).
+				void setMinSize(const Vec2& size);
+				inline void setMinSize(f32 ww, f32 hh) { setMinSize(Vec2 { ww, hh }); }
+				inline Vec2 getMinSize(void) const { return m_layoutData.minSize; }
+				Vec2 getCombinedMinSize(void) const;
+
+				// Container-child properties.
+				void setSizeFlags(eSizeFlags horizontal, eSizeFlags vertical);
+				inline void setHSizeFlags(eSizeFlags flags) { setSizeFlags(flags, m_layoutData.sizeFlagsV); }
+				inline void setVSizeFlags(eSizeFlags flags) { setSizeFlags(m_layoutData.sizeFlagsH, flags); }
+				inline eSizeFlags getHSizeFlags(void) const { return m_layoutData.sizeFlagsH; }
+				inline eSizeFlags getVSizeFlags(void) const { return m_layoutData.sizeFlagsV; }
+				void setStretchRatio(f32 ratio);
+				inline f32 getStretchRatio(void) const { return m_layoutData.stretchRatio; }
+
+				inline const LayoutData& getLayoutData(void) const { return m_layoutData; }
+
+				// True when something other than the widget itself decides its size:
+				// either the parent is a Container, or the anchors stretch on an axis.
+				// Auto-sizing widgets (Button, Label, ...) switch off auto-sizing then.
+				bool isLayoutManaged(void) const;
+
+				// Re-applies the anchors of all children (or, for Containers, re-arranges
+				// them). Called automatically on resize; call it manually only if you
+				// changed something the layout depends on behind the widget's back.
+				virtual void layoutChildren(void);
+
+				// Recomputes the widget's own rect from its anchors/offsets.
+				void updateLayout(void);
+
+				// Content-based minimum size; widgets with intrinsic content (text,
+				// handles, ...) override this. Expressed in widget size (incl. padding).
+				inline virtual Vec2 getContentMinSize(void) const { return { 0, 0 }; }
+
+				// Widgets call this when their content minimum may have changed; it
+				// notifies the parent Container (or re-applies the anchors) if it did.
+				void updateMinimumSize(void);
+
+				// Resizes the widget honoring its grow direction (used by auto-sizing
+				// widgets so e.g. a right-anchored label grows towards the left).
+				void applyAutoSize(const Vec2& newSize);
+
+				// True for Containers: children are positioned by the parent, not by
+				// their anchors.
+				inline virtual bool managesChildLayout(void) const { return false; }
+
+				// Sets the rect on behalf of the layout system (Containers): offsets
+				// are left untouched. Not meant for regular user code.
+				void setLayoutRect(const Rectangle& rect);
+
+				// Converts a content-area size into the matching widget size (adds
+				// padding and content offset, mirroring getContentBounds()).
+				Vec2 contentToWidgetSize(const Vec2& contentSize) const;
 				// ====================================================================
 
 
@@ -164,7 +235,7 @@ namespace ogfx
 				inline static void clearDragAndDropData(void) { s_dragAndDropData = nullptr; }
 				inline static ostd::Object* getDragAndDropData(void) { return s_dragAndDropData; }
 				inline i32 getTabIndex(void) const { return m_tabIndex; }
-				inline Window& getWindow(void) { return *m_window; }
+				inline Window& getWindow(void) const { return *m_window; }
 				inline Widget* getParent(void) { return m_parent; }
 				inline const Widget* getParent(void) const { return m_parent; }
 				inline ogfx::MouseEventData::eButton getPressedMouseButton(void) const { return m_pressedButton; }
@@ -181,9 +252,11 @@ namespace ogfx
 				OSTD_PARAM_GETSET(i32, FocusBorderWidth, m_focusBorderWidth);
 				OSTD_PARAM_GETSET(i32, FontSize, m_fontSize);
 				OSTD_PARAM_GETSET(ostd::ColorGradient, BackgroundGradient, m_backgroundGradient);
-				OSTD_PARAM_GETSET(Rectangle, Padding, m_padding);
+				inline Rectangle getPadding(void) const { return m_padding; }
+				void setPadding(const Rectangle& padding);
 				OSTD_PARAM_GETSET(Rectangle, Margin, m_margin);
-				OSTD_PARAM_GETSET(Vec2, ContentOffset, m_contentOffset);
+				inline Vec2 getContentOffset(void) const { return m_contentOffset; }
+				void setContentOffset(const Vec2& offset);
 				OSTD_PARAM_GETSET(String, TooltipText, m_tooltipText);
 
 				// BOOL PARAMETERS
@@ -237,12 +310,25 @@ namespace ogfx
 				inline String property(const ostd::String& prop) const { return m_stylesheetCategoryName +  "." + prop; }
 
 			private:
+				Vec2 parent_content_size(void) const;
+				void sync_offsets_h(void);
+				void sync_offsets_v(void);
+				void apply_anchors(bool force);
+				void notify_size_changed(void);
+				void begin_size_batch(void);
+				void end_size_batch(void);
+				void parent_child_list_changed(void);
+
+			private:
 				// ======= CORE =======
 				Window* m_window { nullptr };
 				Widget* m_parent { nullptr };
 				WidgetManager m_widgets;
-				std::unique_ptr<Layout> m_layout;
-				LayoutHint m_layoutHint;
+				LayoutData m_layoutData;
+				Vec2 m_lastMinSize { 0, 0 };
+				bool m_applyingLayout { false };
+				i32 m_sizeBatchDepth { 0 };
+				bool m_sizeChangedPending { false };
 
 				bool m_rootChild { false };
 				bool m_focused { false };

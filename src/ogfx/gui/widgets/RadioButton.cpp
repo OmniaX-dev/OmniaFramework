@@ -20,6 +20,7 @@
 
 #include "RadioButton.hpp"
 #include "../../render/BasicRenderer.hpp"
+#include "../Window.hpp"
 
 namespace ogfx
 {
@@ -43,6 +44,8 @@ namespace ogfx
 			setInnerCircleColor(getThemeValue<Color>(theme, "innerCircleColor", m_innerCircleColor));
 			setOuterCircleColor(getThemeValue<Color>(theme, "outerCircleColor", m_outerCircleColor));
 			m_outerCircleBorderWidth = getThemeValue<i32>(theme, "outerCircleBorderWidth", m_outerCircleBorderWidth);
+			m_textChanged = true;
+			updateMinimumSize();
 		}
 
 		void RadioButton::onMouseReleased(const Event& event)
@@ -68,18 +71,33 @@ namespace ogfx
 		{
 			m_text = text;
 			m_textChanged = true;
+			updateMinimumSize();
 		}
 
-		void RadioButton::__update_size(ogfx::BasicRenderer2D& gfx)
+		Vec2 RadioButton::measure(ogfx::BasicRenderer2D& gfx, Vec2& outIndicatorSize) const
 		{
 			auto size = gfx.getStringDimensions(getText(), getFontSize());
-			m_circleSize = { cast<f32>(size.y - 6), cast<f32>(size.y - 6) };
-			size.x += m_spacing + m_circleSize.x;
+			outIndicatorSize = { cast<f32>(size.y - 6), cast<f32>(size.y - 6) };
+			size.x += m_spacing + outIndicatorSize.x;
 			size.x += getPadding().left();
 			size.x += getPadding().right();
 			size.y += getPadding().top();
 			size.y += getPadding().bottom();
-			setSize({ cast<f32>(size.x), cast<f32>(size.y) });
+			return { cast<f32>(size.x), cast<f32>(size.y) };
+		}
+
+		Vec2 RadioButton::getContentMinSize(void) const
+		{
+			Vec2 indicator;
+			return measure(getWindow().getGFX(), indicator);
+		}
+
+		void RadioButton::__update_size(ogfx::BasicRenderer2D& gfx)
+		{
+			const Vec2 size = measure(gfx, m_circleSize);
+			// When the layout system owns our size we only report the minimum size.
+			if (!isLayoutManaged())
+				applyAutoSize(size);
 			m_textChanged = false;
 		}
 

@@ -50,12 +50,12 @@ namespace ogfx
 		{
 			m_sizeMode = mode;
 			m_modeExplicitlySet = true;
-			invalidate_layout();
+			invalidate_content();
 		}
 
 		eSizeMode Label::effectiveSizeMode(void) const
 		{
-			if (!m_modeExplicitlySet && getParent() && getParent()->hasLayout())
+			if (!m_modeExplicitlySet && isLayoutManaged())
 				return eSizeMode::LayoutManaged;
 			return m_sizeMode;
 		}
@@ -65,10 +65,23 @@ namespace ogfx
 			invalidate_layout();
 		}
 
+		void Label::applyTheme(const ostd::Stylesheet& theme)
+		{
+			// Font size / padding may have changed.
+			invalidate_content();
+		}
+
+		Vec2 Label::getContentMinSize(void) const
+		{
+			const Vec2 textSize = getWindow().getGFX().getStringDimensions(m_text, getFontSize());
+			const Rectangle pad = getPadding();
+			return { textSize.x + pad.left() + pad.right(), textSize.y + pad.top() + pad.bottom() };
+		}
+
 		void Label::setText(const String& text)
 		{
 			m_text = text;
-			invalidate_layout();
+			invalidate_content();
 		}
 
 		void Label::onDraw(ogfx::BasicRenderer2D& gfx)
@@ -100,7 +113,7 @@ namespace ogfx
 				// Avoid feedback loop on hover/focus theme reloads — only resize
 				// if the desired size actually changed by a meaningful amount.
 				if (std::abs(getw() - wantW) > 0.5f || std::abs(geth() - wantH) > 0.5f)
-					setSize({ wantW, wantH });
+					applyAutoSize({ wantW, wantH });
 
 				// Auto-size means the content fills the content box exactly,
 				// so the text offset is (0, 0).
@@ -112,8 +125,8 @@ namespace ogfx
 				// content area. Overflow is clipped at the widget edge.
 				const Vec2 contentSize = getContentBounds().getSize();
 				m_drawTextOffset = {
-					(contentSize.x - textSize.x) * 0.5f,
-					(contentSize.y - textSize.y) * 0.5f
+					std::floor((contentSize.x - textSize.x) * 0.5f),
+					std::floor((contentSize.y - textSize.y) * 0.5f)
 				};
 			}
 		}
@@ -164,6 +177,13 @@ namespace ogfx
 				return;
 			m_image.destroy();
 			m_image.loadFromFile(filePath, getWindow().getGFX());
+		}
+
+		Vec2 ImageLabel::getContentMinSize(void) const
+		{
+			if (m_fit != eImageFit::Native)
+				return { 0, 0 };
+			return contentToWidgetSize(m_imageSize);
 		}
 
 		void ImageLabel::onUpdate(void)

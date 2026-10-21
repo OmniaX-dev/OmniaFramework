@@ -301,12 +301,15 @@ namespace ogfx
 			m_currentTabIndex = index;
 			m_currentTab = curr;
 			m_currentTab->setMargin({ 0, 0, 0, 0 });
-			m_currentTab->setSize(getPureContentBounds().getSize());
-			m_currentTab->setPosition({ 0, 0 });
 			m_currentTab->reloadTheme(true);
 			m_currentTab->resetScroll();
 			m_currentTab->updateScrollbarsSize();
-			return addWidget(*m_currentTab);
+			if (!addWidget(*m_currentTab))
+				return false;
+			// The page always fills the area below the tab bar, following the
+			// TabPanel when it is resized.
+			m_currentTab->setAnchorPreset(eAnchorPreset::FullRect);
+			return true;
 		}
 
 		void TabPanel::setTabBarHeight(f32 height)

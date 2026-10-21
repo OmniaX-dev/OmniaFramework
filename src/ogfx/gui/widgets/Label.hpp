@@ -36,7 +36,10 @@ namespace ogfx
 		//   AutoSize:      widget shrinks/grows to fit text + padding.
 		//   Manual:        widget keeps user-set size; text drawn inside, clipped
 		//                  if it doesn't fit.
-		//   LayoutManaged: parent layout decides size; otherwise behaves like Manual.
+		//   LayoutManaged: the layout system decides the size (parent is a Container
+		//                  or the anchors stretch); otherwise behaves like Manual.
+		//
+		// The text size (+ padding) is always reported as the minimum size.
 		// ===========================================================================
 		class Label : public Widget
 		{
@@ -47,6 +50,8 @@ namespace ogfx
 
 				void onDraw(ogfx::BasicRenderer2D& gfx) override;
 				void onBoundsChanged(const Vec2& newSize) override;
+				void applyTheme(const ostd::Stylesheet& theme) override;
+				Vec2 getContentMinSize(void) const override;
 
 				void setText(const String& text);
 				inline String getText(void) const { return m_text; }
@@ -58,6 +63,7 @@ namespace ogfx
 
 			private:
 				inline void invalidate_layout(void) { m_layoutDirty = true; }
+				inline void invalidate_content(void) { m_layoutDirty = true; updateMinimumSize(); }
 				void recompute_layout(void);
 
 			private:
@@ -101,12 +107,14 @@ namespace ogfx
 				void applyTheme(const ostd::Stylesheet& theme) override;
 				void onDraw(ogfx::BasicRenderer2D& gfx) override;
 				void onUpdate(void) override;
+				// Native mode reports the image size as minimum size; Fit mode has none.
+				Vec2 getContentMinSize(void) const override;
 
 				void setImage(const String& filePath);
 				inline Image& getImage(void) { return m_image; }
 
 				// Mode selection. Default is Fit + keepAspectRatio=true.
-				inline void setImageFit(eImageFit fit) { m_fit = fit; }
+				inline void setImageFit(eImageFit fit) { m_fit = fit; updateMinimumSize(); }
 				inline eImageFit getImageFit(void) const { return m_fit; }
 
 				// Only meaningful when fit == Fit. If true, image keeps its
@@ -116,7 +124,8 @@ namespace ogfx
 
 				// Only meaningful when fit == Native. The size to draw the image at,
 				// regardless of widget size. The image is drawn centered.
-				OSTD_PARAM_GETSET(Vec2, ImageSize, m_imageSize);
+				inline Vec2 getImageSize(void) const { return m_imageSize; }
+				inline void setImageSize(const Vec2& size) { m_imageSize = size; updateMinimumSize(); }
 
 				OSTD_BOOL_PARAM_GETSET_E(Animated, m_animated);
 				OSTD_PARAM_GETSET(AnimationData, AnimationData, m_animData);

@@ -31,6 +31,8 @@ namespace ogfx
 		{
 			public:
 				void applyTheme(const ostd::Stylesheet& theme) override;
+				// Box/circle + spacing + text + padding.
+				Vec2 getContentMinSize(void) const override;
 				void onMouseReleased(const Event& event) override;
 				void onDraw(ogfx::BasicRenderer2D& gfx) override;
 				void setText(const String& text);
@@ -44,6 +46,7 @@ namespace ogfx
 				inline RadioButton(Window& window, RadioButtonGroup& group, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(group, text); }
 				RadioButton& create(RadioButtonGroup& group, const String& text);
 				void __update_size(ogfx::BasicRenderer2D& gfx);
+				Vec2 measure(ogfx::BasicRenderer2D& gfx, Vec2& outIndicatorSize) const;
 				void __set_selected(bool selected);
 
 			private:

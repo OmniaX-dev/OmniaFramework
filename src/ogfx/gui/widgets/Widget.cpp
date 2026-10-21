@@ -23,6 +23,8 @@
 #include "io/Memory.hpp"
 #include "../..//render/BasicRenderer.hpp"
 #include "../Window.hpp"
+#include <algorithm>
+#include <cmath>
 
 namespace ogfx
 {
@@ -49,23 +51,33 @@ namespace ogfx
 		{
 			if (!m_allowChildren)
 				return false;
-			if (position.x != 0 || position.y != 0)
-				child.setPosition(position);
 			child.reloadTheme();
 			bool result = m_widgets.addWidget(child);
 			if (!result) return false;
+			// The position is applied after parenting so that the child's offsets
+			// are computed against our content area.
+			if (position.x != 0 || position.y != 0)
+				child.setPosition(position);
+			else
+				child.apply_anchors(false);
 			if (!__skip_callback)
 				onWidgetAdded(child);
-			if (m_layout && !__skip_callback)
-				relayout();
+			if (managesChildLayout())
+			{
+				updateMinimumSize();
+				layoutChildren();
+			}
 			return result;
 		}
 
 		bool Widget::removeWidget(Widget& child)
 		{
 			bool result = m_widgets.removeWidget(child);
-			if (result && m_layout)
-				relayout();
+			if (result && managesChildLayout())
+			{
+				updateMinimumSize();
+				layoutChildren();
+			}
 			return result;
 		}
 
@@ -119,21 +131,15 @@ namespace ogfx
 
 		Rectangle Widget::getContentExtents(void) const
 		{
-			// If a layout owns this widget, prefer its measure() — it knows
-			// the real desired extent (e.g. a vertical box with 50 items
-			// reports 50*itemHeight even if only 5 are visible).
-			if (m_layout)
-			{
-				Vec2 desired = m_layout->measure(*this);
-				return { 0, 0, desired.x, desired.y };
-			}
 			f32 maxX = 0, maxY = 0;
 			for (auto* child : m_widgets.getWidgets())
 			{
 				if (!child || child->isInvalid()) continue;
 				if (child->isIgnoreScrollEnabled()) continue;
 				if (!child->isVisible()) continue;
-				Vec2 localPos = getPadding().getPosition() + child->getPosition() + child->getMargin().getPosition() + child->getContentBounds().getPosition();
+				// Measured in our content frame (same space as child positions), so
+				// it can be compared directly with getContentBounds().getSize().
+				Vec2 localPos = child->getPosition() + child->getMargin().getPosition();
 				maxX = std::max(maxX, localPos.x + child->getw() + child->getMargin().w);
 				maxY = std::max(maxY, localPos.y + child->geth() + child->getMargin().h);
 			}
@@ -235,7 +241,10 @@ namespace ogfx
 
 		void Widget::setVisible(bool v)
 		{
+			if (m_visible == v)
+				return;
 			m_visible = v;
+			parent_child_list_changed();
 		}
 
 		bool Widget::setTabIndex(i32 index)
@@ -248,26 +257,411 @@ namespace ogfx
 			return false;
 		}
 
-		void Widget::setLayout(std::unique_ptr<Layout> layout)
+		// ============================================================================
+		// LAYOUT
+		// ============================================================================
+
+		void Widget::setx(f32 xx)
 		{
-			m_layout = std::move(layout);
-			if (m_layout)
-				relayout();
+			Rectangle::setx(xx);
+			sync_offsets_h();
 		}
 
-		void Widget::relayout(void)
+		void Widget::sety(f32 yy)
 		{
-			if (!m_layout) return;
-			m_layout->arrange(*this);
+			Rectangle::sety(yy);
+			sync_offsets_v();
+		}
 
-			// After our children's bounds changed, give *their* layouts a chance
-			// to re-run (a horizontal layout containing a vertical layout, etc.).
+		void Widget::setw(f32 ww)
+		{
+			const f32 old = w;
+			Rectangle::setw(ww);
+			sync_offsets_h();
+			if (old != w)
+				notify_size_changed();
+		}
+
+		void Widget::seth(f32 hh)
+		{
+			const f32 old = h;
+			Rectangle::seth(hh);
+			sync_offsets_v();
+			if (old != h)
+				notify_size_changed();
+		}
+
+		void Widget::setSize(const Vec2& size)
+		{
+			setSize(size.x, size.y);
+		}
+
+		void Widget::setSize(f32 ww, f32 hh)
+		{
+			begin_size_batch();
+			setw(ww);
+			seth(hh);
+			end_size_batch();
+		}
+
+		void Widget::setBounds(f32 xx, f32 yy, f32 ww, f32 hh)
+		{
+			begin_size_batch();
+			setx(xx);
+			sety(yy);
+			setw(ww);
+			seth(hh);
+			end_size_batch();
+		}
+
+		void Widget::setLayoutRect(const Rectangle& rect)
+		{
+			m_applyingLayout = true;
+			begin_size_batch();
+			setx(rect.x);
+			sety(rect.y);
+			setw(rect.w);
+			seth(rect.h);
+			m_applyingLayout = false;
+			end_size_batch();
+		}
+
+		void Widget::setAnchors(const Anchors& anchors, bool keepRect)
+		{
+			m_layoutData.anchors = anchors;
+			if (keepRect)
+			{
+				sync_offsets_h();
+				sync_offsets_v();
+			}
+			else
+				apply_anchors(true);
+		}
+
+		void Widget::setAnchor(eSide side, f32 value, bool keepRect)
+		{
+			Anchors a = m_layoutData.anchors;
+			switch (side)
+			{
+				case eSide::Left:   a.left   = value; break;
+				case eSide::Top:    a.top    = value; break;
+				case eSide::Right:  a.right  = value; break;
+				case eSide::Bottom: a.bottom = value; break;
+			}
+			setAnchors(a, keepRect);
+		}
+
+		void Widget::setOffsets(const Offsets& offsets)
+		{
+			m_layoutData.offsets = offsets;
+			apply_anchors(true);
+		}
+
+		void Widget::setOffset(eSide side, f32 value)
+		{
+			Offsets o = m_layoutData.offsets;
+			switch (side)
+			{
+				case eSide::Left:   o.left   = value; break;
+				case eSide::Top:    o.top    = value; break;
+				case eSide::Right:  o.right  = value; break;
+				case eSide::Bottom: o.bottom = value; break;
+			}
+			setOffsets(o);
+		}
+
+		void Widget::setAnchorPreset(eAnchorPreset preset, ePresetResizeMode resizeMode, f32 margin)
+		{
+			// Each preset is a combination of one horizontal and one vertical mode.
+			enum class eAxis : u8 { Begin, End, Center, Wide };
+			eAxis hor = eAxis::Begin, ver = eAxis::Begin;
+			switch (preset)
+			{
+				case eAnchorPreset::TopLeft:      hor = eAxis::Begin;  ver = eAxis::Begin;  break;
+				case eAnchorPreset::TopRight:     hor = eAxis::End;    ver = eAxis::Begin;  break;
+				case eAnchorPreset::BottomLeft:   hor = eAxis::Begin;  ver = eAxis::End;    break;
+				case eAnchorPreset::BottomRight:  hor = eAxis::End;    ver = eAxis::End;    break;
+				case eAnchorPreset::CenterLeft:   hor = eAxis::Begin;  ver = eAxis::Center; break;
+				case eAnchorPreset::CenterTop:    hor = eAxis::Center; ver = eAxis::Begin;  break;
+				case eAnchorPreset::CenterRight:  hor = eAxis::End;    ver = eAxis::Center; break;
+				case eAnchorPreset::CenterBottom: hor = eAxis::Center; ver = eAxis::End;    break;
+				case eAnchorPreset::Center:       hor = eAxis::Center; ver = eAxis::Center; break;
+				case eAnchorPreset::LeftWide:     hor = eAxis::Begin;  ver = eAxis::Wide;   break;
+				case eAnchorPreset::TopWide:      hor = eAxis::Wide;   ver = eAxis::Begin;  break;
+				case eAnchorPreset::RightWide:    hor = eAxis::End;    ver = eAxis::Wide;   break;
+				case eAnchorPreset::BottomWide:   hor = eAxis::Wide;   ver = eAxis::End;    break;
+				case eAnchorPreset::VCenterWide:  hor = eAxis::Center; ver = eAxis::Wide;   break;
+				case eAnchorPreset::HCenterWide:  hor = eAxis::Wide;   ver = eAxis::Center; break;
+				case eAnchorPreset::FullRect:     hor = eAxis::Wide;   ver = eAxis::Wide;   break;
+			}
+
+			Vec2 size = getSize();
+			const Vec2 minSize = getCombinedMinSize();
+			switch (resizeMode)
+			{
+				case ePresetResizeMode::KeepSize:   break;
+				case ePresetResizeMode::MinSize:    size = minSize; break;
+				case ePresetResizeMode::KeepWidth:  size.y = minSize.y; break;
+				case ePresetResizeMode::KeepHeight: size.x = minSize.x; break;
+			}
+
+			// Computes (anchorBegin, anchorEnd, offsetBegin, offsetEnd, grow) for one axis.
+			auto l_axis = [margin](eAxis mode, f32 length, f32& aBegin, f32& aEnd, f32& oBegin, f32& oEnd, eGrowDirection& grow) {
+				switch (mode)
+				{
+					case eAxis::Begin:
+						aBegin = 0.0f; aEnd = 0.0f;
+						oBegin = margin; oEnd = margin + length;
+						grow = eGrowDirection::End;
+						break;
+					case eAxis::End:
+						aBegin = 1.0f; aEnd = 1.0f;
+						oBegin = -margin - length; oEnd = -margin;
+						grow = eGrowDirection::Begin;
+						break;
+					case eAxis::Center:
+						aBegin = 0.5f; aEnd = 0.5f;
+						oBegin = -length * 0.5f; oEnd = oBegin + length;
+						grow = eGrowDirection::Both;
+						break;
+					case eAxis::Wide:
+						aBegin = 0.0f; aEnd = 1.0f;
+						oBegin = margin; oEnd = -margin;
+						grow = eGrowDirection::End;
+						break;
+				}
+			};
+
+			auto& ld = m_layoutData;
+			l_axis(hor, size.x, ld.anchors.left, ld.anchors.right, ld.offsets.left, ld.offsets.right, ld.growH);
+			l_axis(ver, size.y, ld.anchors.top, ld.anchors.bottom, ld.offsets.top, ld.offsets.bottom, ld.growV);
+			apply_anchors(true);
+		}
+
+		void Widget::setRelativeBounds(const Rectangle& fractions, const Offsets& insets)
+		{
+			m_layoutData.anchors = { fractions.x, fractions.y, fractions.x + fractions.w, fractions.y + fractions.h };
+			m_layoutData.offsets = { insets.left, insets.top, -insets.right, -insets.bottom };
+			apply_anchors(true);
+		}
+
+		void Widget::setGrowDirection(eGrowDirection horizontal, eGrowDirection vertical)
+		{
+			m_layoutData.growH = horizontal;
+			m_layoutData.growV = vertical;
+			apply_anchors(false);
+		}
+
+		void Widget::setMinSize(const Vec2& size)
+		{
+			m_layoutData.minSize = size;
+			updateMinimumSize();
+		}
+
+		Vec2 Widget::getCombinedMinSize(void) const
+		{
+			const Vec2 content = getContentMinSize();
+			return { std::max(m_layoutData.minSize.x, content.x), std::max(m_layoutData.minSize.y, content.y) };
+		}
+
+		void Widget::setSizeFlags(eSizeFlags horizontal, eSizeFlags vertical)
+		{
+			m_layoutData.sizeFlagsH = horizontal;
+			m_layoutData.sizeFlagsV = vertical;
+			if (m_parent && !m_rootChild && m_parent->managesChildLayout())
+				m_parent->layoutChildren();
+		}
+
+		void Widget::setStretchRatio(f32 ratio)
+		{
+			m_layoutData.stretchRatio = std::max(0.0f, ratio);
+			if (m_parent && !m_rootChild && m_parent->managesChildLayout())
+				m_parent->layoutChildren();
+		}
+
+		bool Widget::isLayoutManaged(void) const
+		{
+			if (m_parent && !m_rootChild && m_parent->managesChildLayout())
+				return true;
+			const auto& a = m_layoutData.anchors;
+			return a.left != a.right || a.top != a.bottom;
+		}
+
+		void Widget::layoutChildren(void)
+		{
 			for (auto* c : m_widgets.getWidgets())
 			{
 				if (!c || c->isInvalid()) continue;
-				if (c->hasLayout())
-					c->relayout();
+				c->apply_anchors(false);
 			}
+		}
+
+		void Widget::updateLayout(void)
+		{
+			apply_anchors(true);
+		}
+
+		void Widget::updateMinimumSize(void)
+		{
+			// Nobody depends on our minimum size until we have a parent (this also
+			// keeps content measurement away from widgets constructed before the
+			// window's renderer is initialized).
+			if (!m_parent || m_rootChild)
+				return;
+			const Vec2 minSize = getCombinedMinSize();
+			if (minSize == m_lastMinSize)
+				return;
+			m_lastMinSize = minSize;
+			if (m_parent->managesChildLayout())
+			{
+				m_parent->updateMinimumSize();
+				m_parent->layoutChildren();
+			}
+			else
+				apply_anchors(false);
+		}
+
+		void Widget::applyAutoSize(const Vec2& newSize)
+		{
+			const f32 dw = newSize.x - getw();
+			const f32 dh = newSize.y - geth();
+			f32 nx = getx(), ny = gety();
+			if (m_layoutData.growH == eGrowDirection::Begin) nx -= dw;
+			else if (m_layoutData.growH == eGrowDirection::Both) nx -= dw * 0.5f;
+			if (m_layoutData.growV == eGrowDirection::Begin) ny -= dh;
+			else if (m_layoutData.growV == eGrowDirection::Both) ny -= dh * 0.5f;
+			setBounds(nx, ny, newSize.x, newSize.y);
+		}
+
+		Vec2 Widget::contentToWidgetSize(const Vec2& contentSize) const
+		{
+			// Inverse of getContentBounds().
+			return contentSize + m_contentOffset + (m_padding.getSize() * 2);
+		}
+
+		void Widget::setPadding(const Rectangle& padding)
+		{
+			if (m_padding == padding)
+				return;
+			m_padding = padding;
+			layoutChildren();
+			updateMinimumSize();
+		}
+
+		void Widget::setContentOffset(const Vec2& offset)
+		{
+			if (m_contentOffset == offset)
+				return;
+			m_contentOffset = offset;
+			layoutChildren();
+			updateMinimumSize();
+		}
+
+		Vec2 Widget::parent_content_size(void) const
+		{
+			if (!m_parent || m_rootChild)
+				return { 0, 0 };
+			return m_parent->getContentBounds().getSize();
+		}
+
+		void Widget::sync_offsets_h(void)
+		{
+			if (m_applyingLayout)
+				return;
+			const f32 pw = parent_content_size().x;
+			m_layoutData.offsets.left = x - (m_layoutData.anchors.left * pw);
+			m_layoutData.offsets.right = (x + w) - (m_layoutData.anchors.right * pw);
+		}
+
+		void Widget::sync_offsets_v(void)
+		{
+			if (m_applyingLayout)
+				return;
+			const f32 ph = parent_content_size().y;
+			m_layoutData.offsets.top = y - (m_layoutData.anchors.top * ph);
+			m_layoutData.offsets.bottom = (y + h) - (m_layoutData.anchors.bottom * ph);
+		}
+
+		void Widget::apply_anchors(bool force)
+		{
+			if (m_rootChild)
+				return;
+			if (m_parent && m_parent->managesChildLayout())
+				return;  // the Container decides
+			const auto& a = m_layoutData.anchors;
+			const auto& o = m_layoutData.offsets;
+			// Widgets anchored to the top-left corner don't depend on the parent's
+			// size at all; leave them alone unless explicitly asked to.
+			if (!force && a.isZero())
+				return;
+
+			const Vec2 ps = parent_content_size();
+			f32 left   = (ps.x * a.left)   + o.left;
+			f32 top    = (ps.y * a.top)    + o.top;
+			f32 right  = (ps.x * a.right)  + o.right;
+			f32 bottom = (ps.y * a.bottom) + o.bottom;
+
+			// Grow according to the grow direction if the rect is below minimum size.
+			auto l_grow = [](f32& begin, f32& end, f32 minLen, eGrowDirection dir) {
+				if (end - begin >= minLen)
+					return;
+				switch (dir)
+				{
+					case eGrowDirection::Begin: begin = end - minLen; break;
+					case eGrowDirection::End:   end = begin + minLen; break;
+					case eGrowDirection::Both:
+					{
+						const f32 center = (begin + end) * 0.5f;
+						begin = center - (minLen * 0.5f);
+						end = begin + minLen;
+						break;
+					}
+				}
+			};
+			const Vec2 minSize = getCombinedMinSize();
+			l_grow(left, right, std::max(0.0f, minSize.x), m_layoutData.growH);
+			l_grow(top, bottom, std::max(0.0f, minSize.y), m_layoutData.growV);
+
+			// Snap to whole pixels so text and borders stay crisp.
+			left = std::round(left); top = std::round(top);
+			right = std::round(right); bottom = std::round(bottom);
+			setLayoutRect({ left, top, right - left, bottom - top });
+		}
+
+		void Widget::notify_size_changed(void)
+		{
+			if (m_sizeBatchDepth > 0)
+			{
+				m_sizeChangedPending = true;
+				return;
+			}
+			layoutChildren();
+			onBoundsChanged(getSize());
+		}
+
+		void Widget::begin_size_batch(void)
+		{
+			m_sizeBatchDepth++;
+		}
+
+		void Widget::end_size_batch(void)
+		{
+			if (--m_sizeBatchDepth > 0)
+				return;
+			m_sizeBatchDepth = 0;
+			if (m_sizeChangedPending)
+			{
+				m_sizeChangedPending = false;
+				notify_size_changed();
+			}
+		}
+
+		void Widget::parent_child_list_changed(void)
+		{
+			if (!m_parent || m_rootChild || !m_parent->managesChildLayout())
+				return;
+			m_parent->updateMinimumSize();
+			m_parent->layoutChildren();
 		}
 
 		void Widget::setCallback(eCallback type, EventCallback callback)
@@ -480,8 +874,6 @@ namespace ogfx
 					callback_onWindowResized(event);
 				onWindowResized(event);
 			}
-			if (m_layout)
-				relayout();
 		}
 
 		void Widget::__onWindowFocused(const Event& event)

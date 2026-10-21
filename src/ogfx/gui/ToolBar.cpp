@@ -36,19 +36,13 @@ namespace ogfx
 			setRootChild();
 			setStylesheetCategoryName("toolbar");
 			setTypeName("ogfx::gui::ToolBar");
-			auto& win = getWindow();
-			w = win.getWindowWidth();
-			h = m_height;
 			disableBorder();
 			setAsStatusBar(statusbar);
 			hide();
-			if (isStatusBar())
-				setPosition(0, win.getWindowHeight() - m_height);
-			else if (win.isMenuBarVisible())
-				setPosition(0, win.getMenuBar().getHeight());
-			else
-				setPosition(0, 0);
-			
+			m_buttonBox.setSpacing(0);
+			addWidget(m_buttonBox);
+			m_buttonBox.setAnchorPreset(eAnchorPreset::FullRect);
+			updateBounds();
 			return *this;
 		}
 
@@ -62,29 +56,42 @@ namespace ogfx
 			btn.setSizeMode(eSizeMode::LayoutManaged);
 			btn.setCallback(ogfx::gui::Widget::eCallback::ActionPerformed, callback);
 			btn.enableIconOnly();
-			btn.layoutHint().preferred = { m_height, m_height };
-			addWidget(btn);
+			btn.enableExpandIcon();
+			btn.setMinSize({ m_height, m_height });
+			m_buttonBox.addWidget(btn);
 			return btn;
 		}
 
 		void ToolBar::onWindowResized(const Event& event)
 		{
+			updateBounds();
+		}
+
+		void ToolBar::updateBounds(void)
+		{
 			auto& win = getWindow();
-			w = win.getWindowWidth();
-			h = m_height;
+			set_bar_size(cast<f32>(win.getWindowWidth()), m_height);
 			f32 offset_y = 0;
 			if (isStatusBar())
 				offset_y = win.getWindowHeight() - m_height;
-			else if (win.getMenuBar().isVisible())
+			else if (win.isMenuBarVisible())
 				offset_y += win.getMenuBar().geth();
-			sety(offset_y);
+			setPosition(0, offset_y);
+		}
+
+		void ToolBar::setHeight(f32 height)
+		{
+			if (height == m_height && height == geth())
+				return;
+			m_height = height;
+			refresh_size();
+			updateBounds();
+			getWindow().updateRootWidgetBounds();
 		}
 
 		void ToolBar::applyTheme(const ostd::Stylesheet& theme)
 		{
-			auto& win = getWindow();
 			setHeight(getThemeValue<f32>(theme, "height", getHeight()));
-			setSize(win.getWindowWidth(), m_height);
 			enableBottomBorder(isBorderEnabled());
 			disableBorder();
 		}
@@ -109,9 +116,14 @@ namespace ogfx
 		void ToolBar::refresh_size(void)
 		{
 			for (auto& btn : m_buttons)
-			{
-				btn.setIconSize({ m_height, m_height });
-			}
+				btn.setMinSize({ m_height, m_height });
+		}
+
+		void ToolBar::set_bar_size(f32 ww, f32 hh)
+		{
+			// Bypass the public setw()/seth() overrides (width is locked).
+			Widget::setw(ww);
+			Widget::seth(hh);
 		}
 	}
 }

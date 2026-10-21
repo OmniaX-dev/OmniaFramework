@@ -20,6 +20,7 @@
 
 #include "ProgressBar.hpp"
 #include "../../render/BasicRenderer.hpp"
+#include "../Window.hpp"
 
 namespace ogfx
 {
@@ -45,6 +46,14 @@ namespace ogfx
 			enableShowText(getThemeValue<bool>(theme, "showText", isShowTextEnabled()));
 			enableProgressGradient(getThemeValue<bool>(theme, "useProgressGradient", isProgressGradientEnabled()));
 			setProgressGradient(getThemeValue<ColorGradient>(theme, "progressGradient", getProgressGradient()));
+		}
+
+		Vec2 ProgressBar::getContentMinSize(void) const
+		{
+			if (!isShowTextEnabled())
+				return { 0, 4 };
+			const Vec2 text = getWindow().getGFX().getStringDimensions("100.0%", getFontSize());
+			return { text.x + 8, text.y + 4 };
 		}
 
 		void ProgressBar::onDraw(ogfx::BasicRenderer2D& gfx)

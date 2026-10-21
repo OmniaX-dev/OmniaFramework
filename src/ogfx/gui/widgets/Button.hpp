@@ -40,11 +40,15 @@ namespace ogfx
 		//                  Content is drawn at its user-specified size, centered, and
 		//                  clipped at the widget edge if it doesn't fit.
 		//
-		//   LayoutManaged: parent's Layout controls the widget's size. Content
+		//   LayoutManaged: the layout system controls the widget's size. Content
 		//                  (text/icon) is at its user-specified size, and the widget
 		//                  honors whatever bounds the layout assigns.
-		//                  This mode is auto-selected when added to a parent that
-		//                  has a layout — unless the user explicitly set Manual.
+		//                  This mode is auto-selected when the widget is laid out by
+		//                  someone else (parent is a Container, or its anchors stretch
+		//                  on an axis) — unless the user explicitly set a mode.
+		//
+		// In every mode, the content size (text + icon + padding) is reported as the
+		// widget's minimum size, so containers and anchors never squash it.
 		// ===========================================================================
 		enum class eSizeMode : u8
 		{
@@ -65,6 +69,7 @@ namespace ogfx
 				void onMouseReleased(const Event& event) override;
 				void onBoundsChanged(const Vec2& newSize) override;
 				void applyTheme(const ostd::Stylesheet& theme) override;
+				Vec2 getContentMinSize(void) const override;
 
 				void setText(const String& text);
 				void setIcon(const String& filePath);
@@ -80,10 +85,15 @@ namespace ogfx
 
 				// The mode actually used by the layout/draw code. Resolves auto-
 				// detection: if the user hasn't explicitly set a mode and the
-				// parent has a layout, this returns LayoutManaged.
+				// widget is layout managed (see Widget::isLayoutManaged()), this
+				// returns LayoutManaged.
 				eSizeMode effectiveSizeMode(void) const;
 				// ==================================================================
 
+				// Expand icon: in Manual/LayoutManaged mode the icon is scaled (aspect
+				// preserved) to fill the content area left by the text, and it doesn't
+				// contribute to the minimum size. Handy for toolbar-style buttons.
+				OSTD_BOOL_PARAM_GETSET_E(ExpandIcon, m_expandIcon);
 				OSTD_BOOL_PARAM_GETSET_E(IconOnly, m_iconOnly);
 				OSTD_BOOL_PARAM_GETSET_E(Animated, m_animated);
 				OSTD_BOOL_PARAM_GETSET_E(Icon, m_showIcon);
@@ -94,6 +104,8 @@ namespace ogfx
 
 			private:
 				inline void invalidate_layout(void) { m_layoutDirty = true; }
+				// Content changed: re-place it and report the new minimum size.
+				inline void invalidate_content(void) { m_layoutDirty = true; updateMinimumSize(); }
 
 				// Re-runs the size + content computation. What this does depends
 				// entirely on effectiveSizeMode() — see the cpp for details.
@@ -134,6 +146,7 @@ namespace ogfx
 
 				// ===== Flags =====
 				bool m_iconOnly { false };
+				bool m_expandIcon { false };
 				bool m_showIcon { false };
 				bool m_animated { false };
 				// =================

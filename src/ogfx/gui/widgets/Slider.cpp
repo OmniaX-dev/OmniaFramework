@@ -154,6 +154,13 @@ namespace ogfx
 			}
 		}
 
+		Vec2 Slider::getContentMinSize(void) const
+		{
+			const Vec2 hs = getHandleSize();
+			Vec2 horiz { hs.x * 2.0f, std::max(hs.y, getTrackWidth()) };
+			return isVertical() ? horiz.swap() : horiz;
+		}
+
 		void Slider::enableVertical(bool enable)
 		{
 			if (isVertical() && enable) return;

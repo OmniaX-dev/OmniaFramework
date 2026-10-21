@@ -285,9 +285,15 @@ namespace ogfx
 				inline MenuBar& getMenuBar(void) { return m_menubar; }
 				inline ToolBar& getToolBar(void) { return m_toolbar; }
 				inline ToolBar& getStatusBar(void) { return m_statusbar; }
-				inline void showMenuBar(bool show = true) { m_menubar.show(show); }
-				inline void showToolBar(bool show = true) { m_toolbar.setVisible(show); }
-				inline void showStatusBar(bool show = true) { m_statusbar.setVisible(show); }
+				inline void showMenuBar(bool show = true) { m_menubar.show(show); updateRootWidgetBounds(); }
+				inline void showToolBar(bool show = true) { m_toolbar.setVisible(show); updateRootWidgetBounds(); }
+				inline void showStatusBar(bool show = true) { m_statusbar.setVisible(show); updateRootWidgetBounds(); }
+
+				// Re-fits the menubar/toolbar/statusbar and the root widget (the area all
+				// top-level widgets are anchored to) to the window. Called automatically on
+				// resize and when one of the bars is shown/hidden. width/height < 0 means
+				// "use the current window size".
+				void updateRootWidgetBounds(i32 width = -1, i32 height = -1);
 				inline FocusManager& getFocusManager(void) { return m_focusManager; }
 
 				// Mirrors the in-widget MenuBar into the desktop's native global menu (Plasma's

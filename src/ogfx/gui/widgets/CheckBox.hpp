@@ -34,6 +34,8 @@ namespace ogfx
 				inline CheckBox(Window& window, const String& text) : Widget({ 0, 0, 0, 0 }, window) { create(text); }
 				CheckBox& create(const String& text);
 				void applyTheme(const ostd::Stylesheet& theme) override;
+				// Box/circle + spacing + text + padding.
+				Vec2 getContentMinSize(void) const override;
 				void onDraw(ogfx::BasicRenderer2D& gfx) override;
 				void onMouseReleased(const Event& event) override;
 				void setText(const String& text);
@@ -48,6 +50,7 @@ namespace ogfx
 
 			private:
 				void __update_size(ogfx::BasicRenderer2D& gfx);
+				Vec2 measure(ogfx::BasicRenderer2D& gfx, Vec2& outIndicatorSize) const;
 
 			private:
 				bool m_checked { false };

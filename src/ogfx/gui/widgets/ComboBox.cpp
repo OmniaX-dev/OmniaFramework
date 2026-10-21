@@ -70,9 +70,17 @@ namespace ogfx
 			};
 		}
 
+		Vec2 ComboBox::getContentMinSize(void) const
+		{
+			// One line of text plus room for the HxH triangle indicator.
+			const f32 textH = getWindow().getGFX().getStringDimensions("Ag", getFontSize()).y;
+			const f32 h = textH + getPadding().top() + getPadding().bottom();
+			return { h * 3.0f, h };
+		}
+
 		void ComboBox::setw(f32 w)
 		{
-			Rectangle::setw(w);
+			Widget::setw(w);
 			m_menu.minWidth = getw();
 			if (m_selectedEntry.id >= 0)
 				m_selectedEntryText = get_display_text(m_selectedEntry.text);

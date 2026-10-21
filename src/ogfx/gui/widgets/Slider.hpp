@@ -37,6 +37,8 @@ namespace ogfx
 				void onMouseDragged(const Event& event) override;
 				void onMouseScrolled(const Event& event) override;
 				void onDraw(ogfx::BasicRenderer2D& gfx) override;
+				// Room for the handle (twice its length along the track).
+				Vec2 getContentMinSize(void) const override;
 				inline f32 getValue(void) const { return m_value; }
 				inline void setValueChangedCallback(std::function<void(f32 oldValue, f32 newValue)> callback) { callback_onValueChanged = std::move(callback); }
 				// Updates the handle/track position only - unlike dragging or scrolling, this never

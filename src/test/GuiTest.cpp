@@ -59,8 +59,7 @@ class TestWindow : public Window
 			setTheme(m_theme);
 
 			getToolBar().setHeight(30);
-			getToolBar().setLayout<BoxLayout>(BoxLayout::Orientation::Horizontal);
-			getToolBar().getLayout()->setSpacing(10);
+			getToolBar().setButtonSpacing(10);
 			getStatusBar().setHeight(24);
 			showMenuBar();
 			showToolBar();
@@ -219,7 +218,6 @@ class TestWindow : public Window
 			auto& t4 = m_tabs.addTab("Line Graph");
 			auto& t5 = m_tabs.addTab("Piano Roll");
 			auto& t6 = m_tabs.addTab("Piano Roll Editor");
-			t3.setLayout<FillLayout>();
 
 			t1.addWidget(m_check1, { 30, 30 });
 			auto& rb1 = m_radioGroup.addButton(t1, "Radio this out!", { 30, 80 });
@@ -244,17 +242,17 @@ class TestWindow : public Window
 			t1.addWidget(m_colBtn2, { 950, 700 });
 			t1.addWidget(m_colPan, { 1200, 700 });
 
-			t2.setLayout<BoxLayout>(BoxLayout::Orientation::Vertical);
-			t2.getLayout()->setSpacing(16);
+			auto* t2Box = new VBoxContainer(*this);
+			t2Box->setSpacing(16);
 
 			auto* header = new Button(*this);
-			header->layoutHint().preferred = { -1, 32 };   // fixed 32px height, width follows cross-stretch
+			header->setMinSize({ 0, 32 });                 // at least 32px tall, width fills the box
 
 			auto* body = new TreeView(*this);
-			body->layoutHint().stretch = 1.0f;             // takes all leftover vertical space
+			body->setVSizeFlags(eSizeFlags::ExpandFill);   // takes all leftover vertical space
 
 			auto* footer = new Button(*this);
-			footer->layoutHint().preferred = { -1, 24 };
+			footer->setMinSize({ 0, 24 });
 
 			m_combo.setSize(200, 30);
 			m_combo.addMenuItem("Item 1");
@@ -266,13 +264,15 @@ class TestWindow : public Window
 				std::cout << "COMBO: " << entry.text << "\n";
 			});
 
-			t2.addWidget(*header);   // each addWidget() call triggers a relayout
-			t2.addWidget(*body);
+			t2.addWidget(*t2Box);
+			t2Box->setAnchorPreset(eAnchorPreset::FullRect);
+			t2Box->addWidget(*header);   // each addWidget() call re-arranges the box
+			t2Box->addWidget(*body);
 			for (i32 i = 0; i < 100; i++)
 			{
 				body->addRoot(ostd::Random::getString(ostd::Random::getui8(1, 40)));
 			}
-			t2.addWidget(*footer);
+			t2Box->addWidget(*footer);
 
 			// t3: DetailList comprehensive example.
 			static const stdvec<String> detailCategories = { "Electronics", "FurnitureFurnitureFurnitureFurnitureFurniture", "Groceries", "Toys", "Books", "Clothing" };
@@ -310,7 +310,8 @@ class TestWindow : public Window
 				std::cout << "[DetailList] Sorted by \"" << sender.getColumn(columnIndex).name.c_str() << "\": " << dir.c_str() << "\n";
 			});
 
-			t3.addWidget(m_details, { 30, 30 });
+			t3.addWidget(m_details);
+			m_details.setAnchorPreset(eAnchorPreset::FullRect);
 
 			// t4: LineGraph comprehensive example - a finance-style "income vs. spending" chart.
 
@@ -487,6 +488,7 @@ class TestWindow : public Window
 			// });
 
 			t5.addWidget(m_pianoRoll, { 0, 0 });
+			m_pianoRoll.setAnchorPreset(eAnchorPreset::TopWide);   // follows the window width
 			t5.addWidget(m_pianoPlayBtn, { 20, 660 });
 			t5.addWidget(m_pianoSeekSlider, { 140, 654 });
 			t5.addWidget(m_pianoTimeLbl, { 560, 638 });
@@ -536,6 +538,8 @@ class TestWindow : public Window
 			m_panel2.addWidget(m_img, { 20, 50 });
 
 			addWidget(m_tabs, { 0,  0 });
+			m_tabs.setAnchorPreset(eAnchorPreset::FullRect);
+			m_tabs.setOffset(eSide::Top, -1);
 			getToolBar().reloadTheme(true);
 
 			m_drawCallsLbl.addThemeOverride("@.label.fontSize", 20);
@@ -613,11 +617,7 @@ class TestWindow : public Window
 			{
 				if (!signal.userData)
 					return;
-				auto& wrd = cast<ogfx::WindowResizedData&>(*signal.userData);
-				m_tabs.setSize(cast<f32>(getWindowWidth()), cast<f32>(getWindowHeight() - getMenuBar().geth() - getToolBar().geth() - getStatusBar().geth()));
-				m_tabs.setPosition(0, -1);
-				m_tabs.refreshCurrentTab();
-				m_pianoRoll.setw(cast<f32>(getWindowWidth()));
+				// m_tabs and m_pianoRoll follow the window through their anchors.
 			}
 		}
 

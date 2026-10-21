@@ -98,12 +98,12 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/MenuBar.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/menu/NativeMenu.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/ToolBar.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/Layout.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/FocusManager.cpp
 
 	# gui/widgets
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Widget.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Containers.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/LayoutContainers.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Label.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/RootWidget.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/CheckBox.cpp
@@ -180,8 +180,9 @@ endif ()
 list(APPEND TEST_SOURCE_FILES
 	# ${CMAKE_CURRENT_LIST_DIR}/src/test/GraphicsWindowTest.cpp
 	# ${CMAKE_CURRENT_LIST_DIR}/src/test/GuiTest.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/test/MidiEditorTest.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/test/PianoRollEditor.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/test/LayoutExample.cpp
+	# ${CMAKE_CURRENT_LIST_DIR}/src/test/MidiEditorTest.cpp
+	# ${CMAKE_CURRENT_LIST_DIR}/src/test/PianoRollEditor.cpp
 	# ${CMAKE_CURRENT_LIST_DIR}/src/test/TextBufferUnitTest.cpp
 	# ${CMAKE_CURRENT_LIST_DIR}/src/test/LogFileOutputHandlerTest.cpp
 	# ${CMAKE_CURRENT_LIST_DIR}/src/test/ObjectSignalExamples.cpp

@@ -849,6 +849,23 @@ namespace ogfx
 			return true;
 		}
 
+		void Window::updateRootWidgetBounds(i32 width, i32 height)
+		{
+			if (width < 0) width = getWindowWidth(false);
+			if (height < 0) height = getWindowHeight(false);
+			m_toolbar.updateBounds();
+			m_statusbar.updateBounds();
+			f32 offset_y = 0;
+			if (m_menubar.isVisible())
+				offset_y += m_menubar.geth();
+			if (m_toolbar.isVisible())
+				offset_y += m_toolbar.geth();
+			f32 height_reduction = offset_y;
+			if (m_statusbar.isVisible())
+				height_reduction += m_statusbar.geth();
+			m_rootWidget.setBounds(0, offset_y, cast<f32>(width), cast<f32>(height) - height_reduction);
+		}
+
 		void Window::setTheme(const ostd::Stylesheet& theme)
 		{
 			m_guiTheme = &theme;
@@ -878,7 +895,7 @@ namespace ogfx
 			});
 			m_lastFrameTime = ostd::StepTimer::Clock::now();
 			onInitialize();
-			m_rootWidget.setSize(cast<f32>(width), cast<f32>(height));
+			updateRootWidgetBounds(width, height);
 			enableNativeMenuBar();
 		}
 

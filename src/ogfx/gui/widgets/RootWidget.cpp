@@ -37,16 +37,8 @@ namespace ogfx
 
 		void RootWidget::onWindowResized(const Event& event)
 		{
-			Window& win = getWindow();
-			f32 offset_y = 0;
-			if (win.m_menubar.isVisible())
-				offset_y += win.m_menubar.geth();
-			if (win.m_toolbar.isVisible())
-				offset_y += win.m_toolbar.geth();
-			sety(offset_y);
-			if (win.m_statusbar.isVisible())
-				offset_y += win.m_statusbar.geth();
-			setSize(cast<f32>(event.windowResized->new_width), cast<f32>(event.windowResized->new_height) - offset_y);
+			// Resizing the root re-applies the anchors of every top-level widget.
+			getWindow().updateRootWidgetBounds(event.windowResized->new_width, event.windowResized->new_height);
 		}
 
 		void RootWidget::applyTheme(const ostd::Stylesheet& theme)
