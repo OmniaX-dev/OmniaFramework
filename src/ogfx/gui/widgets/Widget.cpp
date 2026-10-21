@@ -802,6 +802,15 @@ namespace ogfx
 
 		void Widget::__onMouseExited(const Event& event)
 		{
+			// Mouse-exit is only detected by a widget's direct parent, so when the
+			// mouse leaves us, children still flagged as hovered (e.g. a button
+			// touching our edge, inside a container) must be exited here too.
+			for (auto* child : m_widgets.getWidgets())
+			{
+				if (!child || child->isInvalid() || !child->m_mouseInside) continue;
+				child->m_mouseInside = false;
+				child->__onMouseExited(event);
+			}
 			if (event.isHandled() || !isMouseExitedEventEnabled()) return;
 			setThemeQualifier("hover", false);
 			if (callback_onMouseExited)
