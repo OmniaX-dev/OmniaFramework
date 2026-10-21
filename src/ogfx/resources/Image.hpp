@@ -33,6 +33,11 @@ namespace ogfx
 			inline Image(void) { invalidate(); }
 			inline Image(const String& filePath, BasicRenderer2D& gfx) { loadFromFile(filePath, gfx); }
 			inline ~Image(void) { destroy(); }
+			// An Image owns its texture: copies would destroy it twice.
+			Image(const Image&) = delete;
+			Image& operator=(const Image&) = delete;
+			Image(Image&& other) noexcept;
+			Image& operator=(Image&& other) noexcept;
 			void destroy(void);
 			Image& loadFromFile(const String& filePath, BasicRenderer2D& gfx);
 			inline Vec2 getSize(void) const { return { m_width, m_height }; }
@@ -41,10 +46,19 @@ namespace ogfx
 			inline String getFilePath(void) const { return m_filePath; }
 
 		private:
+			// Called by the renderer the image was loaded with.
+			void __reload(void);              // device reset: the texture is gone, load it again
+			void __release_texture(void);     // the SDL renderer is about to be destroyed
+			void __detach_from_renderer(void); // the BasicRenderer2D itself is being destroyed
+
+		private:
+			BasicRenderer2D* m_renderer { nullptr };
 			SDL_Texture* m_sdl_texture { nullptr };
 			String m_filePath { "" };
 			f32 m_width { 0 };
 			f32 m_height { 0 };
 			bool m_loaded { false };
+
+			friend class BasicRenderer2D;
 	};
 }

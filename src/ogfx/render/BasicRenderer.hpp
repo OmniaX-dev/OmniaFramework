@@ -26,6 +26,7 @@
 #include <ogfx/resources/Image.hpp>
 #include <ostd/io/IOHandlers.hpp>
 #include <ogfx/render/FontGlyphAtlas.hpp>
+#include <ogfx/render/RenderTarget.hpp>
 #include <ostd/io/StaticHashMap.hpp>
 #include <memory>
 
@@ -117,6 +118,24 @@ namespace ogfx
 			inline WindowCore& getWindow(void) { return *m_window; }
 			inline bool isInitialized(void) { return m_initialized; }
 			inline FontGlyphAtlas& getFontGlyphAtlas(void) { return m_fontGlyphAtlas; }
+			// Logical-to-pixel scale of the window (system DPI scale * user scale).
+			f32 getPixelScale(void) const;
+			// Debug helper: does what SDL_EVENT_RENDER_DEVICE_RESET does (every texture is destroyed
+			// and re-created: glyph atlases, render targets, images), to test the recovery path.
+			void simulateDeviceReset(void);
+
+			// ===== RENDER TARGETS =====
+			// Binds a target (targets nest, as a stack). The target starts with an empty clip
+			// stack; the previous one is restored by endRenderTarget(). Returns false (and
+			// changes nothing) if the target can't be bound: not created with this renderer,
+			// already bound, or its texture could not be created.
+			bool beginRenderTarget(RenderTarget& target, bool clear = true, const Color& clearColor = Colors::Transparent);
+			void endRenderTarget(void);
+			inline bool isRenderingToTarget(void) const { return !m_targetStack.empty(); }
+			inline RenderTarget* getCurrentRenderTarget(void) const { return m_targetStack.empty() ? nullptr : m_targetStack.back().target; }
+			// Draws a target like an image (premultiplied-alpha compositing). size {0,0} = the
+			// target's logical size; srcRect is in the target's logical units.
+			void drawRenderTarget(const RenderTarget& target, const Vec2& position, const Vec2& size = { 0, 0 }, const Color& tint = Colors::White, const Rectangle& srcRect = { 0, 0, 0, 0 });
 
 			void drawImage(const ogfx::Image& image, const Vec2& position, const Vec2& size = { 0, 0 }, const Color& tint = Colors::White, const Rectangle& srcRect = { 0, 0, 0, 0 });
 			void drawAnimation(const Animation& anim, const Vec2& position, const Vec2& size = { 0, 0 }, const Color& tint = Colors::White);
@@ -164,17 +183,30 @@ namespace ogfx
 			void outlinedTriangle(const Triangle& tri, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1);
 			void outlinedTriangle(const Vec2& A, const Vec2& B, const Vec2& C, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1);
 
+		private: struct TargetBinding
+		{
+			RenderTarget* target { nullptr };
+			stdvec<Rectangle> savedClipStack;
+		};
 		private:
 			// Called by RenderContext for SDL_EVENT_RENDER_* events of this renderer's window.
 			void __on_render_event(u32 eventType);
 			// Called by RenderContext right before the SDL renderer is destroyed.
 			void __release_device_resources(void);
 			void discard_batch(void);
+			void apply_clip_rect(void);
+			void bind_sdl_target(RenderTarget* target);
+			void clear_texture(SDL_Texture* texture);
+			void unwind_render_targets(void);
+			void register_target(RenderTarget& target);
+			void unregister_target(RenderTarget& target);
+			void register_image(Image& image);
+			void unregister_image(Image& image);
 
 			// Single choke point: every vertex the renderer draws goes through here. A change of
 			// batch state (texture, blend, ...) flushes the pending batch first.
 			void emit(const BatchState& state, const SDL_Vertex* verts, u32 vertCount, const i32* inds, u32 indexCount);
-			void emit_textured_quad(SDL_Texture* texture, const Vec2 verts[4], const Vec2 uvs[4], const Color& color);
+			void emit_textured_quad(SDL_Texture* texture, const Vec2 verts[4], const Vec2 uvs[4], const SDL_FColor& color, SDL_BlendMode blend = SDL_BLENDMODE_BLEND);
 			// Welds, anti-aliases (silhouette fringe) and emits a flat-colored mesh sampling the atlas white texel.
 			void submit_flat_mesh(const FlatMesh& mesh, bool antialias = true);
 			BatchState flat_batch_state(void) const;
@@ -223,10 +255,15 @@ namespace ogfx
 			i32 m_cacheMissCount { 0 };
 
 			bool m_deviceLost { false };
+			stdvec<TargetBinding> m_targetStack;
+			stdvec<RenderTarget*> m_targets;
+			stdvec<Image*> m_images;
 
 			inline static constexpr i32 DefaultFontSize { 16 };
 			inline static constexpr i32 MaxStringDimsCacheSize { 512 };
 
 			friend class RenderContext;
+			friend class RenderTarget;
+			friend class Image;
 	};
 }

@@ -29,6 +29,7 @@
 
 #include <ogfx/render/BasicRenderer.hpp>
 #include <ogfx/render/PixelRenderer.hpp>
+#include <ogfx/render/RenderTarget.hpp>
 
 #include <ogfx/resources/Image.hpp>
 

@@ -127,6 +127,7 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/PixelRenderer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/FontGlyphAtlas.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/RenderContext.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/RenderTarget.cpp
 
 	# resources
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/resources/Image.cpp

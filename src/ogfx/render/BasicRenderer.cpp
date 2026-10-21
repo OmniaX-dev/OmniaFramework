@@ -352,7 +352,13 @@ namespace ogfx
 
 	BasicRenderer2D::~BasicRenderer2D(void)
 	{
+		if (m_initialized)
+			__release_device_resources();
 		closeFont();
+		for (auto* target : stdvec<RenderTarget*>(m_targets))
+			target->detach_from_renderer();
+		for (auto* image : stdvec<Image*>(m_images))
+			image->__detach_from_renderer();
 		RenderContext::get().unregisterRenderer(*this);
 	}
 
@@ -403,6 +409,11 @@ namespace ogfx
 
 	void BasicRenderer2D::endFrame(void)
 	{
+		if (!m_targetStack.empty())
+		{
+			OX_ERROR("BasicRenderer2D::endFrame() called with %d render target(s) still bound.", cast<i32>(m_targetStack.size()));
+			unwind_render_targets();
+		}
 		flushBatch();
 		m_lastFrameDrawCallCount = m_drawCallCount;
 		m_drawCallCount = 0;
@@ -425,14 +436,7 @@ namespace ogfx
 		flushBatch();
 
 		m_clipStack.push_back(finalRect);
-
-		SDL_Rect r;
-		r.x = (i32)std::round(finalRect.x);
-		r.y = (i32)std::round(finalRect.y);
-		r.w = (i32)std::round(finalRect.w);
-		r.h = (i32)std::round(finalRect.h);
-
-		SDL_SetRenderClipRect(m_window->getSDLRenderer(), &r);
+		apply_clip_rect();
 	}
 
 	void BasicRenderer2D::popClippingRect(void)
@@ -443,25 +447,11 @@ namespace ogfx
 		Rectangle popped = m_clipStack.back();
 		m_clipStack.pop_back();
 
-		if (m_clipStack.empty())
-		{
-			flushBatch();
-			SDL_SetRenderClipRect(m_window->getSDLRenderer(), nullptr);
-			return;
-		}
-
-		const auto& prev = m_clipStack.back();
-		if (prev == popped)
+		if (!m_clipStack.empty() && m_clipStack.back() == popped)
 			return;
 
 		flushBatch();
-		SDL_Rect r;
-		r.x = (i32)std::round(prev.x);
-		r.y = (i32)std::round(prev.y);
-		r.w = (i32)std::round(prev.w);
-		r.h = (i32)std::round(prev.h);
-
-		SDL_SetRenderClipRect(m_window->getSDLRenderer(), &r);
+		apply_clip_rect();
 	}
 
 	i32 BasicRenderer2D::loadDefaultMonoFont(i32 fontSize)
@@ -667,7 +657,7 @@ namespace ogfx
 		};
 
 		// 5. Push quad
-		emit_textured_quad(tex, verts, uvs, tint);
+		emit_textured_quad(tex, verts, uvs, COLOR_CAST(tint));
 	}
 
 	void BasicRenderer2D::drawAnimation(const Animation& anim, const Vec2& position, const Vec2& size, const Color& tint)
@@ -761,7 +751,7 @@ namespace ogfx
 				{ x + g->size.x * scale,     y + g->size.y * scale },
 				{ x,                        y + g->size.y * scale }
 			};
-			emit_textured_quad(g->atlas, verts, g->uvs, color);
+			emit_textured_quad(g->atlas, verts, g->uvs, COLOR_CAST(color));
 			m_lastUsedGlyphAtlasTex = g->atlas;
 			x += (g->advance * scale);
 		}
@@ -1218,26 +1208,232 @@ namespace ogfx
 			discard_batch();
 			return;
 		}
+		if (eventType == SDL_EVENT_RENDER_TARGETS_RESET)
+		{
+			// The textures still exist, only render target contents are gone.
+			for (auto* target : stdvec<RenderTarget*>(m_targets))
+				target->notify_contents_lost();
+			return;
+		}
 		if (eventType == SDL_EVENT_RENDER_DEVICE_RESET)
 		{
-			// Every texture is gone: queued geometry references them, and the glyph atlases must be
-			// rebuilt from scratch (glyphs get re-rasterized on demand).
+			// Every texture is gone: queued geometry references them, the glyph atlases are rebuilt
+			// from scratch (glyphs get re-rasterized on demand), targets get new (empty) textures
+			// and images are reloaded from their files.
 			discard_batch();
-			if (m_initialized)
+			unwind_render_targets();
+			if (!m_initialized)
+				return;
+			m_fontGlyphAtlas.rebuild();
+			m_lastUsedGlyphAtlasTex = m_fontGlyphAtlas.getAtlas(0);
+			for (auto* target : stdvec<RenderTarget*>(m_targets))
 			{
-				m_fontGlyphAtlas.rebuild();
-				m_lastUsedGlyphAtlasTex = m_fontGlyphAtlas.getAtlas(0);
+				target->release_texture();
+				target->ensure_texture();
+				target->notify_contents_lost();
+			}
+			for (auto* image : stdvec<Image*>(m_images))
+				image->__reload();
+		}
+	}
+
+	void BasicRenderer2D::simulateDeviceReset(void)
+	{
+		__on_render_event(SDL_EVENT_RENDER_DEVICE_RESET);
+	}
+
+	f32 BasicRenderer2D::getPixelScale(void) const
+	{
+		return m_window != nullptr ? m_window->getScaleFactor() : 1.0f;
+	}
+
+	bool BasicRenderer2D::beginRenderTarget(RenderTarget& target, bool clear, const Color& clearColor)
+	{
+		if (!m_initialized)
+			return false;
+		if (target.m_renderer != this)
+		{
+			OX_ERROR("BasicRenderer2D::beginRenderTarget(): the target was not created with this renderer.");
+			return false;
+		}
+		for (const auto& binding : m_targetStack)
+		{
+			if (binding.target == &target)
+			{
+				OX_ERROR("BasicRenderer2D::beginRenderTarget(): the target is already bound.");
+				return false;
 			}
 		}
+		if (!target.ensure_texture())
+			return false;
+
+		flushBatch();
+		m_targetStack.push_back({ &target, std::move(m_clipStack) });
+		m_clipStack.clear();
+		bind_sdl_target(&target);
+		apply_clip_rect();
+		if (clear)
+		{
+			// Target contents are premultiplied, so is the clear color.
+			auto c = clearColor.getNormalizedColor();
+			SDL_SetRenderDrawColorFloat(getSDLRenderer(), c.r * c.a, c.g * c.a, c.b * c.a, c.a);
+			SDL_RenderClear(getSDLRenderer());
+			target.m_contentsLost = false;
+		}
+		return true;
+	}
+
+	void BasicRenderer2D::endRenderTarget(void)
+	{
+		if (m_targetStack.empty())
+		{
+			OX_WARN("BasicRenderer2D::endRenderTarget() called without a bound render target.");
+			return;
+		}
+		flushBatch();
+		TargetBinding binding = std::move(m_targetStack.back());
+		m_targetStack.pop_back();
+		m_clipStack = std::move(binding.savedClipStack);
+		bind_sdl_target(m_targetStack.empty() ? nullptr : m_targetStack.back().target);
+		apply_clip_rect();
+	}
+
+	void BasicRenderer2D::drawRenderTarget(const RenderTarget& target, const Vec2& position, const Vec2& size, const Color& tint, const Rectangle& srcRect)
+	{
+		if (!m_initialized || !target.m_texture)
+			return;
+		if (target.m_renderer != this)
+		{
+			OX_ERROR("BasicRenderer2D::drawRenderTarget(): the target was not created with this renderer.");
+			return;
+		}
+		if (!m_targetStack.empty() && m_targetStack.back().target == &target)
+		{
+			OX_ERROR("BasicRenderer2D::drawRenderTarget(): a render target can't be drawn into itself.");
+			return;
+		}
+		const Vec2 tsize = target.m_size;
+		Rectangle src = srcRect;
+		if (src.w == 0 && src.h == 0)
+			src = { 0, 0, tsize.x, tsize.y };
+		f32 dw = (size.x == 0) ? src.w : size.x;
+		f32 dh = (size.y == 0) ? src.h : size.y;
+
+		Vec2 verts[4] = {
+			{ position.x,      position.y },
+			{ position.x + dw, position.y },
+			{ position.x + dw, position.y + dh },
+			{ position.x,      position.y + dh }
+		};
+		Vec2 uvs[4] = {
+			{ src.x / tsize.x,           src.y / tsize.y },
+			{ (src.x + src.w) / tsize.x, src.y / tsize.y },
+			{ (src.x + src.w) / tsize.x, (src.y + src.h) / tsize.y },
+			{ src.x / tsize.x,           (src.y + src.h) / tsize.y }
+		};
+		// The contents are premultiplied: the tint's alpha must scale the color channels too.
+		SDL_FColor col = COLOR_CAST(tint);
+		col.r *= col.a;
+		col.g *= col.a;
+		col.b *= col.a;
+		emit_textured_quad(target.m_texture, verts, uvs, col, SDL_BLENDMODE_BLEND_PREMULTIPLIED);
 	}
 
 	void BasicRenderer2D::__release_device_resources(void)
 	{
 		discard_batch();
+		unwind_render_targets();
+		for (auto* target : stdvec<RenderTarget*>(m_targets))
+			target->release_texture();
+		for (auto* image : stdvec<Image*>(m_images))
+			image->__release_texture();
 		m_fontGlyphAtlas.destroy();
 		m_lastUsedGlyphAtlasTex = nullptr;
 		m_clipStack.clear();
+		closeFont();
 		m_initialized = false;
+	}
+
+	void BasicRenderer2D::apply_clip_rect(void)
+	{
+		SDL_Renderer* renderer = getSDLRenderer();
+		if (!renderer)
+			return;
+		if (m_clipStack.empty())
+		{
+			SDL_SetRenderClipRect(renderer, nullptr);
+			return;
+		}
+		const auto& clip = m_clipStack.back();
+		SDL_Rect r;
+		r.x = (i32)std::round(clip.x);
+		r.y = (i32)std::round(clip.y);
+		r.w = (i32)std::round(clip.w);
+		r.h = (i32)std::round(clip.h);
+		SDL_SetRenderClipRect(renderer, &r);
+	}
+
+	void BasicRenderer2D::bind_sdl_target(RenderTarget* target)
+	{
+		SDL_Renderer* renderer = getSDLRenderer();
+		if (!renderer)
+			return;
+		SDL_SetRenderTarget(renderer, target ? target->m_texture : nullptr);
+		// SDL3 keeps viewport/clip/scale per target: a target's view starts at scale 1, so it gets
+		// the target's own pixel scale (the window's view keeps the scale the window set).
+		if (target)
+			SDL_SetRenderScale(renderer, target->m_scale, target->m_scale);
+	}
+
+	void BasicRenderer2D::clear_texture(SDL_Texture* texture)
+	{
+		SDL_Renderer* renderer = getSDLRenderer();
+		if (!renderer || !texture)
+			return;
+		flushBatch();
+		SDL_Texture* previous = SDL_GetRenderTarget(renderer);
+		SDL_SetRenderTarget(renderer, texture);
+		SDL_SetRenderDrawColorFloat(renderer, 0.0f, 0.0f, 0.0f, 0.0f);
+		SDL_RenderClear(renderer);
+		SDL_SetRenderTarget(renderer, previous);
+	}
+
+	void BasicRenderer2D::unwind_render_targets(void)
+	{
+		while (!m_targetStack.empty())
+			endRenderTarget();
+	}
+
+	void BasicRenderer2D::register_target(RenderTarget& target)
+	{
+		if (std::find(m_targets.begin(), m_targets.end(), &target) == m_targets.end())
+			m_targets.push_back(&target);
+	}
+
+	void BasicRenderer2D::unregister_target(RenderTarget& target)
+	{
+		for (size_t i = 0; i < m_targetStack.size(); i++)
+		{
+			if (m_targetStack[i].target == &target)
+			{
+				OX_ERROR("A RenderTarget was destroyed while bound.");
+				while (m_targetStack.size() > i)
+					endRenderTarget();
+				break;
+			}
+		}
+		std::erase(m_targets, &target);
+	}
+
+	void BasicRenderer2D::register_image(Image& image)
+	{
+		if (std::find(m_images.begin(), m_images.end(), &image) == m_images.end())
+			m_images.push_back(&image);
+	}
+
+	void BasicRenderer2D::unregister_image(Image& image)
+	{
+		std::erase(m_images, &image);
 	}
 
 	void BasicRenderer2D::discard_batch(void)
@@ -1273,9 +1469,8 @@ namespace ogfx
 			m_indices[m_indexCount++] = base + inds[i];
 	}
 
-	void BasicRenderer2D::emit_textured_quad(SDL_Texture* texture, const Vec2 verts[4], const Vec2 uvs[4], const Color& color)
+	void BasicRenderer2D::emit_textured_quad(SDL_Texture* texture, const Vec2 verts[4], const Vec2 uvs[4], const SDL_FColor& col, SDL_BlendMode blend)
 	{
-		SDL_FColor col = COLOR_CAST(color);
 		const SDL_Vertex quad[4] = {
 			{ { verts[0].x, verts[0].y }, col, { uvs[0].x, uvs[0].y } },
 			{ { verts[1].x, verts[1].y }, col, { uvs[1].x, uvs[1].y } },
@@ -1283,7 +1478,7 @@ namespace ogfx
 			{ { verts[3].x, verts[3].y }, col, { uvs[3].x, uvs[3].y } }
 		};
 		const i32 inds[6] = QUAD_INDICES_ARR;
-		emit({ texture, SDL_BLENDMODE_BLEND }, quad, 4, inds, 6);
+		emit({ texture, blend }, quad, 4, inds, 6);
 	}
 
 	void BasicRenderer2D::submit_flat_mesh(const FlatMesh& mesh, bool antialias)
