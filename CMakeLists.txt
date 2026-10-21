@@ -223,6 +223,11 @@ target_include_directories(${OMNIA_SND_LIB} PUBLIC ${INCLUDE_DIRS})
 target_include_directories(${OMNIA_GFX_LIB} PUBLIC ${INCLUDE_DIRS})
 target_include_directories(${TEST_TARGET} PUBLIC ${INCLUDE_DIRS})
 
+# Render targets + live blur demo (src/test/BlurExample.cpp), built next to the test target.
+set(BLUR_EXAMPLE_TARGET blur_example)
+add_executable(${BLUR_EXAMPLE_TARGET} ${CMAKE_CURRENT_LIST_DIR}/src/test/BlurExample.cpp)
+target_include_directories(${BLUR_EXAMPLE_TARGET} PUBLIC ${INCLUDE_DIRS})
+
 if (WIN32)
 	set(MSYS2_UCRT64 "C:/msys64/ucrt64")
 	target_include_directories(${OMNIA_STD_LIB} PRIVATE
@@ -333,6 +338,7 @@ target_link_libraries(${OMNIA_GFX_LIB} PUBLIC ${OMNIA_STD_LIB})
 target_link_libraries(${OMNIA_GFX_LIB} PUBLIC ${OMNIA_SND_LIB})
 target_link_libraries(${TEST_TARGET} PUBLIC ${OMNIA_STD_LIB})
 target_link_libraries(${TEST_TARGET} PUBLIC ${OMNIA_GFX_LIB})
+target_link_libraries(${BLUR_EXAMPLE_TARGET} PUBLIC ${OMNIA_GFX_LIB})
 
 if (APPLE)
 	cmake_policy(SET CMP0167 OLD)
