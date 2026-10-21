@@ -38,6 +38,27 @@ namespace ogfx
 		return *this;
 	}
 
+	void FontGlyphAtlas::destroy(void)
+	{
+		for (i32 i = 0; i < m_currentAtlasCount; i++)
+		{
+			if (m_atlases[i])
+				SDL_DestroyTexture(m_atlases[i]);
+			m_atlases[i] = nullptr;
+		}
+		m_currentAtlasCount = 0;
+		m_uvs.clear();
+		m_penX = 0;
+		m_penY = 0;
+		m_rowHeight = 0;
+	}
+
+	bool FontGlyphAtlas::rebuild(void)
+	{
+		destroy();
+		return create_new_atlas();
+	}
+
 	const stdvec<const FontGlyphAtlas::GlyphInfo*> FontGlyphAtlas::processString(const String& str, TTF_Font* font, u32 fontSize)
 	{
 		if (m_currentAtlasCount <= 0)

@@ -19,6 +19,7 @@
 */
 
 #include "BasicRenderer.hpp"
+#include "RenderContext.hpp"
 #include "../gui/Window.hpp"
 #include "../resources/UbuntuTTF.hpp"
 #include "../gui/Window.hpp"
@@ -352,12 +353,14 @@ namespace ogfx
 	BasicRenderer2D::~BasicRenderer2D(void)
 	{
 		closeFont();
+		RenderContext::get().unregisterRenderer(*this);
 	}
 
 	i32 BasicRenderer2D::init(WindowCore& window)
 	{
 		m_window = &window;
 		if (m_initialized) return set_error_state(tErrors::NoError);
+		RenderContext::get().registerRenderer(*this);
 		SDL_SetRenderDrawBlendMode(m_window->getSDLRenderer(), SDL_BLENDMODE_BLEND);
 		m_initialized = true;
 		loadDefaultFont(20);
@@ -373,6 +376,11 @@ namespace ogfx
 	SDL_Renderer* BasicRenderer2D::getSDLRenderer(void) const
 	{
 		return m_window != nullptr ? m_window->getSDLRenderer() : nullptr;
+	}
+
+	SDL_WindowID BasicRenderer2D::getWindowID(void) const
+	{
+		return (m_window != nullptr && m_window->getSDLWindow() != nullptr) ? SDL_GetWindowID(m_window->getSDLWindow()) : 0;
 	}
 
 	void BasicRenderer2D::flushBatch(void)
@@ -1200,6 +1208,45 @@ namespace ogfx
 
 
 	// ===================================================== PRIVATE HELPERS =====================================================
+	void BasicRenderer2D::__on_render_event(u32 eventType)
+	{
+		if (eventType == SDL_EVENT_RENDER_DEVICE_LOST)
+		{
+			if (!m_deviceLost)
+				OX_ERROR("ogfx: the render device of window %u was lost and cannot be recovered.", getWindowID());
+			m_deviceLost = true;
+			discard_batch();
+			return;
+		}
+		if (eventType == SDL_EVENT_RENDER_DEVICE_RESET)
+		{
+			// Every texture is gone: queued geometry references them, and the glyph atlases must be
+			// rebuilt from scratch (glyphs get re-rasterized on demand).
+			discard_batch();
+			if (m_initialized)
+			{
+				m_fontGlyphAtlas.rebuild();
+				m_lastUsedGlyphAtlasTex = m_fontGlyphAtlas.getAtlas(0);
+			}
+		}
+	}
+
+	void BasicRenderer2D::__release_device_resources(void)
+	{
+		discard_batch();
+		m_fontGlyphAtlas.destroy();
+		m_lastUsedGlyphAtlasTex = nullptr;
+		m_clipStack.clear();
+		m_initialized = false;
+	}
+
+	void BasicRenderer2D::discard_batch(void)
+	{
+		m_vertexCount = 0;
+		m_indexCount = 0;
+		m_batchState = { };
+	}
+
 	void BasicRenderer2D::emit(const BatchState& state, const SDL_Vertex* verts, u32 vertCount, const i32* inds, u32 indexCount)
 	{
 		if (!m_initialized || vertCount == 0 || indexCount == 0)
@@ -1210,7 +1257,11 @@ namespace ogfx
 			return;
 		}
 		if (state != m_batchState)
+		{
 			flushBatch();
+			// Textures belong to one SDL_Renderer: using one from another window's renderer is a bug.
+			SDL_assert(state.texture == nullptr || SDL_GetRendererFromTexture(state.texture) == getSDLRenderer());
+		}
 		if (m_vertexCount + cast<i32>(vertCount) > MaxVertices || m_indexCount + cast<i32>(indexCount) > MaxIndices)
 			flushBatch();
 		m_batchState = state;

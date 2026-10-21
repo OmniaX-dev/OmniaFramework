@@ -19,6 +19,7 @@
 */
 
 #include "Window.hpp"
+#include "../render/RenderContext.hpp"
 #include "../../ostd/utils/Time.hpp"
 #include "utils/Keycodes.hpp"
 #include <SDL3/SDL_events.h>
@@ -52,7 +53,9 @@ namespace ogfx
 		SDL_DestroyCursor(m_cursor_SW_Resize);
 		SDL_DestroyCursor(m_cursor_W_Resize);
 
+		RenderContext::get().releaseRenderer(m_renderer);
 		SDL_DestroyRenderer(m_renderer);
+		m_renderer = nullptr;
 		SDL_DestroyWindow(m_window);
 		SDLSysten::release();
 	}
@@ -70,7 +73,7 @@ namespace ogfx
 		setBlockingEventsRefreshFPS(DefaultBlockingEventsFPS);
 
 		m_window = SDL_CreateWindow("", m_windowWidth, m_windowHeight, SDL_WINDOW_RESIZABLE);
-		m_renderer = SDL_CreateRenderer(m_window, nullptr);
+		m_renderer = RenderContext::get().createRenderer(m_window);
 		// SDL_SetWindowMinimumSize(m_window, m_windowWidth, m_windowHeight);
 		setPosition(WindowsPositionCenter);
 		SDL_SetWindowTitle(m_window, m_title.c_str());
@@ -541,6 +544,11 @@ namespace ogfx
 		if (event.type == REDRAW_EVENT)
 		{
 			//Doesn't need to do anything, the event exists just to make SDL_WaitEventTimeout() return early
+		}
+		else if (event.type == SDL_EVENT_RENDER_TARGETS_RESET || event.type == SDL_EVENT_RENDER_DEVICE_RESET || event.type == SDL_EVENT_RENDER_DEVICE_LOST)
+		{
+			// Routed by windowID: with several windows, any window's loop may pop the event.
+			RenderContext::get().dispatchRenderEvent(event);
 		}
 		else if (event.type == SDL_EVENT_QUIT)
 		{

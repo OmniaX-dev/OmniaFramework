@@ -32,6 +32,7 @@
 namespace ogfx
 {
 	class WindowCore;
+	class RenderContext;
 	class BasicRenderer2D
 	{
 		public: struct tErrors
@@ -90,6 +91,8 @@ namespace ogfx
 			~BasicRenderer2D(void);
 			i32 init(WindowCore& window);
 			SDL_Renderer* getSDLRenderer(void) const;
+			// ID of the window this renderer draws into (0 before init()).
+			SDL_WindowID getWindowID(void) const;
 			void flushBatch(void);
 			void endFrame(void);
 			void pushClippingRect(const Rectangle& rect, bool additive = false);
@@ -162,6 +165,12 @@ namespace ogfx
 			void outlinedTriangle(const Vec2& A, const Vec2& B, const Vec2& C, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1);
 
 		private:
+			// Called by RenderContext for SDL_EVENT_RENDER_* events of this renderer's window.
+			void __on_render_event(u32 eventType);
+			// Called by RenderContext right before the SDL renderer is destroyed.
+			void __release_device_resources(void);
+			void discard_batch(void);
+
 			// Single choke point: every vertex the renderer draws goes through here. A change of
 			// batch state (texture, blend, ...) flushes the pending batch first.
 			void emit(const BatchState& state, const SDL_Vertex* verts, u32 vertCount, const i32* inds, u32 indexCount);
@@ -213,7 +222,11 @@ namespace ogfx
 			i32 m_cacheHitCount { 0 };
 			i32 m_cacheMissCount { 0 };
 
+			bool m_deviceLost { false };
+
 			inline static constexpr i32 DefaultFontSize { 16 };
 			inline static constexpr i32 MaxStringDimsCacheSize { 512 };
+
+			friend class RenderContext;
 	};
 }

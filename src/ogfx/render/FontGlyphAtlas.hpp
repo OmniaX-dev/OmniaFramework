@@ -64,6 +64,10 @@ namespace ogfx
 			inline FontGlyphAtlas(void) {  }
 			inline FontGlyphAtlas(BasicRenderer2D& renderer) { init(renderer); }
 			FontGlyphAtlas& init(BasicRenderer2D& renderer);
+			// Destroys all atlas textures and forgets every glyph.
+			void destroy(void);
+			// destroy() + a fresh first atlas: used after the device lost its textures.
+			bool rebuild(void);
 			const stdvec<const GlyphInfo*> processString(const String& str, TTF_Font* font, u32 fontSize);
 			inline Vec2 getNullTextureSlotUVs(void) const { return m_nullTexUVs; }
 			inline SDL_Texture* getAtlas(u32 index) const { return (index >= m_currentAtlasCount ? nullptr : m_atlases[index]); }
