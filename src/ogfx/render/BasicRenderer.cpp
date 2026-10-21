@@ -20,6 +20,7 @@
 
 #include "BasicRenderer.hpp"
 #include "RenderContext.hpp"
+#include "../resources/EmbeddedShaders.hpp"
 #include "../gui/Window.hpp"
 #include "../resources/UbuntuTTF.hpp"
 #include "../gui/Window.hpp"
@@ -29,6 +30,17 @@
 
 namespace
 {
+	// Matches the BlurParams cbuffer in shaders/blur.frag.hlsl (std140 packing).
+	struct BlurUniforms
+	{
+		f32 texelSize[2];
+		f32 direction[2];
+		f32 sigma;
+		i32 radius;
+		f32 padding[2];
+	};
+	static_assert(sizeof(BlurUniforms) == 32);
+
 	// Width, in pixels, of the alpha-faded band generated around a flat-colored shape's outer
 	// edge (see BasicRenderer2D::MeshProcessor below) - this is what turns a hard-edged quad/fan
 	// into something that reads as anti-aliased without needing MSAA on the render target.
@@ -352,6 +364,10 @@ namespace ogfx
 
 	BasicRenderer2D::~BasicRenderer2D(void)
 	{
+		// Internal targets/shaders unregister themselves, so they go while everything is intact.
+		m_blurCache.clear();
+		m_blurShaderH.reset();
+		m_blurShaderV.reset();
 		if (m_initialized)
 			__release_device_resources();
 		closeFont();
@@ -359,6 +375,8 @@ namespace ogfx
 			target->detach_from_renderer();
 		for (auto* image : stdvec<Image*>(m_images))
 			image->__detach_from_renderer();
+		for (auto* shader : stdvec<Shader*>(m_shaders))
+			shader->release_renderer(*this);
 		RenderContext::get().unregisterRenderer(*this);
 	}
 
@@ -400,7 +418,12 @@ namespace ogfx
 			SDL_SetTextureBlendMode(m_batchState.texture, m_batchState.blend);
 		else
 			SDL_SetRenderDrawBlendMode(renderer, m_batchState.blend);
+		if (m_batchState.shader)
+			SDL_SetGPURenderState(renderer, m_batchState.shader);
 		SDL_RenderGeometry(renderer, m_batchState.texture, m_vertices.data(), m_vertexCount, m_indices.data(), m_indexCount);
+		// Reset right away, so SDL draws made outside of this renderer never inherit the shader.
+		if (m_batchState.shader)
+			SDL_SetGPURenderState(renderer, nullptr);
 		m_drawCallCount++;
 		m_batchState = { };
 		m_vertexCount = 0;
@@ -414,7 +437,14 @@ namespace ogfx
 			OX_ERROR("BasicRenderer2D::endFrame() called with %d render target(s) still bound.", cast<i32>(m_targetStack.size()));
 			unwind_render_targets();
 		}
+		if (!m_shaderStack.empty())
+		{
+			OX_ERROR("BasicRenderer2D::endFrame() called with %d shader(s) still active.", cast<i32>(m_shaderStack.size()));
+			m_shaderStack.clear();
+			update_active_shader();
+		}
 		flushBatch();
+		m_frameIndex++;
 		m_lastFrameDrawCallCount = m_drawCallCount;
 		m_drawCallCount = 0;
 	}
@@ -1339,10 +1369,110 @@ namespace ogfx
 		emit_textured_quad(target.m_texture, verts, uvs, col, SDL_BLENDMODE_BLEND_PREMULTIPLIED);
 	}
 
+	bool BasicRenderer2D::areShadersSupported(void) const
+	{
+		SDL_Renderer* renderer = getSDLRenderer();
+		return m_initialized && renderer && SDL_GetGPURendererDevice(renderer) != nullptr;
+	}
+
+	void BasicRenderer2D::beginShader(Shader& shader)
+	{
+		m_shaderStack.push_back(&shader);
+		update_active_shader();
+	}
+
+	void BasicRenderer2D::endShader(void)
+	{
+		if (m_shaderStack.empty())
+		{
+			OX_WARN("BasicRenderer2D::endShader() called without an active shader.");
+			return;
+		}
+		m_shaderStack.pop_back();
+		update_active_shader();
+	}
+
+	bool BasicRenderer2D::blurRenderTarget(const RenderTarget& source, RenderTarget& destination, f32 radius)
+	{
+		if (!m_initialized || !source.hasTexture() || &source == &destination)
+			return false;
+		if (!areShadersSupported() || !ensure_blur_shaders())
+		{
+			if (!m_warnedNoBlur)
+				OX_WARN("ogfx: blur needs shader support (SDL's GPU renderer), which is not available.");
+			m_warnedNoBlur = true;
+			return false;
+		}
+		if (!destination.isCreated())
+			destination.create(*this, source.getSize());
+		if (destination.getRenderer() != this)
+		{
+			OX_ERROR("BasicRenderer2D::blurRenderTarget(): the destination belongs to another renderer.");
+			return false;
+		}
+		destination.resize(source.getSize());
+
+		BlurTargets& temp = get_blur_targets(source.getSize());
+		const IPoint px = source.getPixelSize();
+		const f32 reach = std::clamp(radius * source.getPixelScale(), 0.0f, cast<f32>(MaxBlurRadius));
+		BlurUniforms uniforms { };
+		uniforms.texelSize[0] = 1.0f / cast<f32>(px.x);
+		uniforms.texelSize[1] = 1.0f / cast<f32>(px.y);
+		uniforms.sigma = std::max(reach / 3.0f, 0.001f);
+		uniforms.radius = cast<i32>(std::ceil(reach));
+
+		uniforms.direction[0] = 1.0f;
+		uniforms.direction[1] = 0.0f;
+		m_blurShaderH->setUniforms(uniforms);
+		uniforms.direction[0] = 0.0f;
+		uniforms.direction[1] = 1.0f;
+		m_blurShaderV->setUniforms(uniforms);
+
+		if (!beginRenderTarget(*temp.pass))
+			return false;
+		beginShader(*m_blurShaderH);
+		drawRenderTarget(source, { 0, 0 });
+		endShader();
+		endRenderTarget();
+
+		if (!beginRenderTarget(destination))
+			return false;
+		beginShader(*m_blurShaderV);
+		drawRenderTarget(*temp.pass, { 0, 0 });
+		endShader();
+		endRenderTarget();
+		return true;
+	}
+
+	void BasicRenderer2D::drawRenderTargetBlurred(const RenderTarget& target, const Vec2& position, f32 radius, const Vec2& size, const Color& tint, const Rectangle& srcRect)
+	{
+		if (!m_initialized || !target.hasTexture())
+			return;
+		if (!areShadersSupported())
+		{
+			if (!m_warnedNoBlur)
+				OX_WARN("ogfx: blur needs shader support (SDL's GPU renderer), which is not available; drawing unblurred.");
+			m_warnedNoBlur = true;
+			drawRenderTarget(target, position, size, tint, srcRect);
+			return;
+		}
+		BlurTargets& temp = get_blur_targets(target.getSize());
+		if (!blurRenderTarget(target, *temp.result, radius))
+		{
+			drawRenderTarget(target, position, size, tint, srcRect);
+			return;
+		}
+		drawRenderTarget(*temp.result, position, size, tint, srcRect);
+	}
+
 	void BasicRenderer2D::__release_device_resources(void)
 	{
 		discard_batch();
 		unwind_render_targets();
+		m_shaderStack.clear();
+		update_active_shader();
+		for (auto* shader : stdvec<Shader*>(m_shaders))
+			shader->release_renderer(*this);
 		for (auto* target : stdvec<RenderTarget*>(m_targets))
 			target->release_texture();
 		for (auto* image : stdvec<Image*>(m_images))
@@ -1443,10 +1573,13 @@ namespace ogfx
 		m_batchState = { };
 	}
 
-	void BasicRenderer2D::emit(const BatchState& state, const SDL_Vertex* verts, u32 vertCount, const i32* inds, u32 indexCount)
+	void BasicRenderer2D::emit(const BatchState& drawState, const SDL_Vertex* verts, u32 vertCount, const i32* inds, u32 indexCount)
 	{
 		if (!m_initialized || vertCount == 0 || indexCount == 0)
 			return;
+		BatchState state = drawState;
+		// A custom fragment shader samples the draw's texture: untextured draws can't use one.
+		state.shader = state.texture ? m_activeShaderState : nullptr;
 		if (vertCount > MaxVertices || indexCount > MaxIndices)
 		{
 			OX_ERROR("Maximum number of vertices exceeded in single draw call.");
@@ -1570,6 +1703,91 @@ namespace ogfx
 			mesh.addTriangle(o0, o1, i0);
 			mesh.addTriangle(o1, i1, i0);
 		}
+	}
+
+	void BasicRenderer2D::register_shader(Shader& shader)
+	{
+		if (std::find(m_shaders.begin(), m_shaders.end(), &shader) == m_shaders.end())
+			m_shaders.push_back(&shader);
+	}
+
+	void BasicRenderer2D::unregister_shader(Shader& shader, SDL_GPURenderState* state)
+	{
+		flush_if_using(state);
+		std::erase(m_shaders, &shader);
+		std::erase(m_shaderStack, &shader);
+		update_active_shader();
+	}
+
+	void BasicRenderer2D::flush_if_using(SDL_GPURenderState* state)
+	{
+		if (state && m_vertexCount > 0 && m_batchState.shader == state)
+			flushBatch();
+	}
+
+	void BasicRenderer2D::update_active_shader(void)
+	{
+		m_activeShaderState = m_shaderStack.empty() ? nullptr : m_shaderStack.back()->get_render_state(*this);
+	}
+
+	bool BasicRenderer2D::ensure_blur_shaders(void)
+	{
+		if (m_blurShaderH && m_blurShaderV)
+			return m_blurShaderH->isLoaded() && m_blurShaderV->isLoaded();
+		using namespace embedded_shaders;
+		ShaderBytecode bytecode;
+		if constexpr (HasFormat_SPV)
+		{
+			bytecode.spirv = blur_frag_spv_data;
+			bytecode.spirvSize = blur_frag_spv_size;
+		}
+		if constexpr (HasFormat_MSL)
+		{
+			bytecode.msl = blur_frag_msl_data;
+			bytecode.mslSize = blur_frag_msl_size;
+		}
+		if constexpr (HasFormat_DXIL)
+		{
+			bytecode.dxil = blur_frag_dxil_data;
+			bytecode.dxilSize = blur_frag_dxil_size;
+		}
+		const ShaderLayout layout { blur_frag_num_samplers, blur_frag_num_uniform_buffers, blur_frag_num_storage_textures, blur_frag_num_storage_buffers };
+		// One shader per direction: each keeps its own uniforms, so the two passes don't force
+		// a uniform update (and a GPU flush) between them. They share the compiled GPU shader.
+		m_blurShaderH = std::make_unique<Shader>();
+		m_blurShaderV = std::make_unique<Shader>();
+		return m_blurShaderH->loadFromMemory(bytecode, layout) && m_blurShaderV->loadFromMemory(bytecode, layout);
+	}
+
+	BasicRenderer2D::BlurTargets& BasicRenderer2D::get_blur_targets(const Vec2& size)
+	{
+		BlurTargets* lru = nullptr;
+		for (auto& entry : m_blurCache)
+		{
+			if (entry->size.x == size.x && entry->size.y == size.y)
+			{
+				entry->lastUsedFrame = m_frameIndex;
+				return *entry;
+			}
+			if (!lru || entry->lastUsedFrame < lru->lastUsedFrame)
+				lru = entry.get();
+		}
+		// Cache full: reuse the least recently used pair (e.g. while a window is being resized).
+		if (m_blurCache.size() >= MaxBlurCacheEntries && lru)
+		{
+			lru->size = size;
+			lru->pass->resize(size);
+			lru->result->resize(size);
+			lru->lastUsedFrame = m_frameIndex;
+			return *lru;
+		}
+		auto entry = std::make_unique<BlurTargets>();
+		entry->size = size;
+		entry->pass = std::make_unique<RenderTarget>(*this, size);
+		entry->result = std::make_unique<RenderTarget>(*this, size);
+		entry->lastUsedFrame = m_frameIndex;
+		m_blurCache.push_back(std::move(entry));
+		return *m_blurCache.back();
 	}
 
 	void BasicRenderer2D::print_ttf_error(const String& funcName)

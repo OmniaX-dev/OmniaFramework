@@ -85,6 +85,11 @@ namespace ogfx
 			inline bool hasTexture(void) const { return m_texture != nullptr; }
 			inline BasicRenderer2D* getRenderer(void) const { return m_renderer; }
 
+			// Filtering used when the target is drawn scaled (and when shaders sample it):
+			// smooth (bilinear, the default) or nearest-neighbour.
+			void setSmoothFiltering(bool smooth);
+			inline bool isSmoothFiltering(void) const { return m_smoothFiltering; }
+
 			inline bool contentsLost(void) const { return m_contentsLost; }
 			inline void setContentsLostCallback(ContentsLostCallback callback) { m_contentsLostCallback = std::move(callback); }
 
@@ -101,6 +106,7 @@ namespace ogfx
 			IPoint m_pixelSize { 0, 0 };
 			f32 m_scale { 1.0f };
 			bool m_contentsLost { false };
+			bool m_smoothFiltering { true };
 			ContentsLostCallback m_contentsLostCallback { nullptr };
 
 			friend class BasicRenderer2D;

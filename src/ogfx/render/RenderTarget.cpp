@@ -93,7 +93,7 @@ namespace ogfx
 			return false;
 		}
 		SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND_PREMULTIPLIED);
-		SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_LINEAR);
+		SDL_SetTextureScaleMode(texture, m_smoothFiltering ? SDL_SCALEMODE_LINEAR : SDL_SCALEMODE_NEAREST);
 		m_texture = texture;
 		m_pixelSize = pixelSize;
 		m_scale = scale;
@@ -101,6 +101,13 @@ namespace ogfx
 		m_renderer->clear_texture(m_texture);
 		m_contentsLost = true;
 		return true;
+	}
+
+	void RenderTarget::setSmoothFiltering(bool smooth)
+	{
+		m_smoothFiltering = smooth;
+		if (m_texture)
+			SDL_SetTextureScaleMode(m_texture, smooth ? SDL_SCALEMODE_LINEAR : SDL_SCALEMODE_NEAREST);
 	}
 
 	void RenderTarget::release_texture(void)

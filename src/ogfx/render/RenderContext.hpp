@@ -26,6 +26,8 @@
 namespace ogfx
 {
 	class BasicRenderer2D;
+	struct ShaderBytecode;
+	struct ShaderLayout;
 
 	// ============================================================================
 	// RenderContext — framework-level rendering state shared by all windows.
@@ -66,6 +68,11 @@ namespace ogfx
 			inline SDL_GPUDevice* getGPUDevice(void) const { return m_device; }
 			// Shader formats the shared device accepts (0 when there is no device).
 			SDL_GPUShaderFormat getShaderFormats(void) const;
+			// Compiles a fragment shader for the device, picking the bytecode format the device
+			// supports. Compiled shaders are cached by content, so every Shader (and every
+			// window) using the same bytecode shares one SDL_GPUShader; they are released with
+			// the device.
+			SDL_GPUShader* acquireFragmentShader(SDL_GPUDevice* device, const ShaderBytecode& bytecode, const ShaderLayout& layout);
 			void handleSignal(ostd::Signal& signal) override;
 
 		private:
@@ -77,5 +84,6 @@ namespace ogfx
 			SDL_GPUDevice* m_device { nullptr };
 			bool m_deviceCreationFailed { false };
 			stdvec<BasicRenderer2D*> m_renderers;
+			std::unordered_map<u64, SDL_GPUShader*> m_shaderCache;
 	};
 }

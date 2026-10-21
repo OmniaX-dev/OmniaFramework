@@ -128,6 +128,8 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/FontGlyphAtlas.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/RenderContext.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/RenderTarget.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/Shader.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/resources/EmbeddedShaders.cpp
 
 	# resources
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/resources/Image.cpp
@@ -201,6 +203,17 @@ add_library(${OMNIA_STD_LIB} SHARED ${OSTD_SOURCE_FILES})
 add_library(${OMNIA_SND_LIB} SHARED ${OSND_SOURCE_FILES})
 add_library(${OMNIA_GFX_LIB} SHARED ${OGFX_SOURCE_FILES})
 add_executable(${TEST_TARGET} ${TEST_SOURCE_FILES})
+
+# Regenerates src/ogfx/resources/EmbeddedShaders.* from shaders/*.hlsl (needs SDL_shadercross;
+# see shaders/build_shaders.py). Not part of the normal build: the generated files are committed.
+set(SHADERCROSS "shadercross" CACHE STRING "SDL_shadercross CLI used by the ogfx_shaders target")
+set(DXC_LIB_DIR "" CACHE PATH "Directory with libdxcompiler/libdxil for DXIL output (optional)")
+add_custom_target(ogfx_shaders
+	COMMAND python3 ${CMAKE_CURRENT_LIST_DIR}/shaders/build_shaders.py --shadercross ${SHADERCROSS} $<$<BOOL:${DXC_LIB_DIR}>:--dxc-lib-dir=${DXC_LIB_DIR}>
+	WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+	COMMENT "Compiling built-in shaders with SDL_shadercross"
+	VERBATIM
+)
 
 target_compile_definitions(${OMNIA_STD_LIB} PUBLIC BUILD_CONFIG="${CMAKE_BUILD_TYPE}" BUILD_NR=${BUILD_NUMBER} MAJ_V=${MAJOR_VER} MIN_V=${MINOR_VER} VERSION_STR="${MAJOR_VER}.${MINOR_VER}.${BUILD_NUMBER}")
 target_compile_definitions(${OMNIA_SND_LIB} PUBLIC BUILD_CONFIG="${CMAKE_BUILD_TYPE}" BUILD_NR=${BUILD_NUMBER} MAJ_V=${MAJOR_VER} MIN_V=${MINOR_VER} VERSION_STR="${MAJOR_VER}.${MINOR_VER}.${BUILD_NUMBER}")

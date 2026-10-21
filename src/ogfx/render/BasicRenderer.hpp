@@ -27,6 +27,7 @@
 #include <ostd/io/IOHandlers.hpp>
 #include <ogfx/render/FontGlyphAtlas.hpp>
 #include <ogfx/render/RenderTarget.hpp>
+#include <ogfx/render/Shader.hpp>
 #include <ostd/io/StaticHashMap.hpp>
 #include <memory>
 
@@ -62,8 +63,9 @@ namespace ogfx
 		{
 			SDL_Texture* texture { nullptr };
 			SDL_BlendMode blend { SDL_BLENDMODE_BLEND };
+			SDL_GPURenderState* shader { nullptr };
 
-			inline bool operator==(const BatchState& other) const { return texture == other.texture && blend == other.blend; }
+			inline bool operator==(const BatchState& other) const { return texture == other.texture && blend == other.blend && shader == other.shader; }
 			inline bool operator!=(const BatchState& other) const { return !(*this == other); }
 		};
 		private: struct FlatMesh
@@ -137,6 +139,25 @@ namespace ogfx
 			// target's logical size; srcRect is in the target's logical units.
 			void drawRenderTarget(const RenderTarget& target, const Vec2& position, const Vec2& size = { 0, 0 }, const Color& tint = Colors::White, const Rectangle& srcRect = { 0, 0, 0, 0 });
 
+			// ===== SHADERS =====
+			// True when this renderer can use shaders (it runs on SDL's GPU renderer).
+			bool areShadersSupported(void) const;
+			// Everything drawn until endShader() goes through the shader. Shaders nest (a stack);
+			// see ogfx::ScopedShader. Without shader support this warns once and draws unshaded.
+			void beginShader(Shader& shader);
+			void endShader(void);
+			inline Shader* getCurrentShader(void) const { return m_shaderStack.empty() ? nullptr : m_shaderStack.back(); }
+
+			// ===== EFFECTS =====
+			// Gaussian blur of `source` into `destination` (two separable passes through an
+			// internal, cached, intermediate target; destination is resized to the source). radius
+			// is in logical units: how far the blur reaches (up to MaxBlurRadius pixels). Returns
+			// false when shaders aren't supported.
+			bool blurRenderTarget(const RenderTarget& source, RenderTarget& destination, f32 radius);
+			// Draws a target blurred, like drawRenderTarget(); the blurred copy lives in internal
+			// targets cached by size. Without shader support it draws the target unblurred.
+			void drawRenderTargetBlurred(const RenderTarget& target, const Vec2& position, f32 radius, const Vec2& size = { 0, 0 }, const Color& tint = Colors::White, const Rectangle& srcRect = { 0, 0, 0, 0 });
+
 			void drawImage(const ogfx::Image& image, const Vec2& position, const Vec2& size = { 0, 0 }, const Color& tint = Colors::White, const Rectangle& srcRect = { 0, 0, 0, 0 });
 			void drawAnimation(const Animation& anim, const Vec2& position, const Vec2& size = { 0, 0 }, const Color& tint = Colors::White);
 			void fillGradientRect(const Rectangle& rect, ColorGradient& gradient);
@@ -183,6 +204,13 @@ namespace ogfx
 			void outlinedTriangle(const Triangle& tri, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1);
 			void outlinedTriangle(const Vec2& A, const Vec2& B, const Vec2& C, const Color& fillColor, const Color& outlineColor, i32 outlineThickness = 1);
 
+		private: struct BlurTargets
+		{
+			Vec2 size { 0, 0 };
+			std::unique_ptr<RenderTarget> pass;
+			std::unique_ptr<RenderTarget> result;
+			u64 lastUsedFrame { 0 };
+		};
 		private: struct TargetBinding
 		{
 			RenderTarget* target { nullptr };
@@ -202,6 +230,12 @@ namespace ogfx
 			void unregister_target(RenderTarget& target);
 			void register_image(Image& image);
 			void unregister_image(Image& image);
+			void register_shader(Shader& shader);
+			void unregister_shader(Shader& shader, SDL_GPURenderState* state);
+			void flush_if_using(SDL_GPURenderState* state);
+			void update_active_shader(void);
+			bool ensure_blur_shaders(void);
+			BlurTargets& get_blur_targets(const Vec2& size);
 
 			// Single choke point: every vertex the renderer draws goes through here. A change of
 			// batch state (texture, blend, ...) flushes the pending batch first.
@@ -220,6 +254,9 @@ namespace ogfx
 		public:
 			inline static constexpr i32 MaxVertices { 8192 };
 			inline static constexpr i32 MaxIndices { (i32)(MaxVertices * 1.5f) };
+			// Largest blur reach, in pixels (the built-in blur shader's tap limit).
+			inline static constexpr i32 MaxBlurRadius { 96 };
+			inline static constexpr i32 MaxBlurCacheEntries { 4 };
 		private:
 			WindowCore* m_window { nullptr };
 			ostd::ConsoleOutputHandler m_out;
@@ -258,6 +295,14 @@ namespace ogfx
 			stdvec<TargetBinding> m_targetStack;
 			stdvec<RenderTarget*> m_targets;
 			stdvec<Image*> m_images;
+			stdvec<Shader*> m_shaderStack;
+			stdvec<Shader*> m_shaders;
+			SDL_GPURenderState* m_activeShaderState { nullptr };
+			std::unique_ptr<Shader> m_blurShaderH;
+			std::unique_ptr<Shader> m_blurShaderV;
+			stdvec<std::unique_ptr<BlurTargets>> m_blurCache;
+			u64 m_frameIndex { 0 };
+			bool m_warnedNoBlur { false };
 
 			inline static constexpr i32 DefaultFontSize { 16 };
 			inline static constexpr i32 MaxStringDimsCacheSize { 512 };
@@ -265,5 +310,6 @@ namespace ogfx
 			friend class RenderContext;
 			friend class RenderTarget;
 			friend class Image;
+			friend class Shader;
 	};
 }

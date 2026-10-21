@@ -20,12 +20,27 @@
 
 #include "RenderContext.hpp"
 #include "BasicRenderer.hpp"
+#include "Shader.hpp"
+#include "../resources/EmbeddedShaders.hpp"
 #include <ostd/io/Logger.hpp>
 
 namespace
 {
-	// Shader formats the framework ships built-in shader blobs for.
-	constexpr SDL_GPUShaderFormat EmbeddedShaderFormats = SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL;
+	// Shader formats the framework ships built-in shader blobs for (see shaders/build_shaders.py).
+	constexpr SDL_GPUShaderFormat EmbeddedShaderFormats =
+		(ogfx::embedded_shaders::HasFormat_SPV ? SDL_GPU_SHADERFORMAT_SPIRV : 0) |
+		(ogfx::embedded_shaders::HasFormat_DXIL ? SDL_GPU_SHADERFORMAT_DXIL : 0) |
+		(ogfx::embedded_shaders::HasFormat_MSL ? SDL_GPU_SHADERFORMAT_MSL : 0);
+
+	u64 fnv1a(const u8* data, u32 size, u64 hash = 14695981039346656037ull)
+	{
+		for (u32 i = 0; i < size; i++)
+		{
+			hash ^= data[i];
+			hash *= 1099511628211ull;
+		}
+		return hash;
+	}
 }
 
 namespace ogfx
@@ -101,6 +116,63 @@ namespace ogfx
 		return m_device ? SDL_GetGPUShaderFormats(m_device) : SDL_GPU_SHADERFORMAT_INVALID;
 	}
 
+	SDL_GPUShader* RenderContext::acquireFragmentShader(SDL_GPUDevice* device, const ShaderBytecode& bytecode, const ShaderLayout& layout)
+	{
+		if (!device)
+			return nullptr;
+		const SDL_GPUShaderFormat formats = SDL_GetGPUShaderFormats(device);
+		SDL_GPUShaderCreateInfo info;
+		SDL_zero(info);
+		if ((formats & SDL_GPU_SHADERFORMAT_SPIRV) && bytecode.spirv && bytecode.spirvSize > 0)
+		{
+			info.format = SDL_GPU_SHADERFORMAT_SPIRV;
+			info.code = bytecode.spirv;
+			info.code_size = bytecode.spirvSize;
+			info.entrypoint = "main";
+		}
+		else if ((formats & SDL_GPU_SHADERFORMAT_DXIL) && bytecode.dxil && bytecode.dxilSize > 0)
+		{
+			info.format = SDL_GPU_SHADERFORMAT_DXIL;
+			info.code = bytecode.dxil;
+			info.code_size = bytecode.dxilSize;
+			info.entrypoint = "main";
+		}
+		else if ((formats & SDL_GPU_SHADERFORMAT_MSL) && bytecode.msl && bytecode.mslSize > 0)
+		{
+			info.format = SDL_GPU_SHADERFORMAT_MSL;
+			info.code = bytecode.msl;
+			info.code_size = bytecode.mslSize;
+			info.entrypoint = "main0"; // what SDL_shadercross / SPIRV-Cross name the MSL entry point
+		}
+		else
+		{
+			OX_ERROR("ogfx::Shader: no bytecode in a format the GPU device supports (driver: %s).", SDL_GetGPUDeviceDriver(device));
+			return nullptr;
+		}
+		info.stage = SDL_GPU_SHADERSTAGE_FRAGMENT;
+		info.num_samplers = layout.samplerCount;
+		info.num_uniform_buffers = layout.uniformBufferCount;
+		info.num_storage_textures = layout.storageTextureCount;
+		info.num_storage_buffers = layout.storageBufferCount;
+
+		u64 key = fnv1a(cast<const u8*>(info.code), cast<u32>(info.code_size));
+		const u32 meta[6] = { cast<u32>(info.format), layout.samplerCount, layout.uniformBufferCount, layout.storageTextureCount, layout.storageBufferCount, cast<u32>(info.code_size) };
+		key = fnv1a(cast<const u8*>(cast<const void*>(meta)), sizeof(meta), key);
+		key ^= cast<u64>(reinterpret_cast<uintptr_t>(device));
+		auto it = m_shaderCache.find(key);
+		if (it != m_shaderCache.end())
+			return it->second;
+
+		SDL_GPUShader* shader = SDL_CreateGPUShader(device, &info);
+		if (!shader)
+		{
+			OX_ERROR("ogfx::Shader: SDL_CreateGPUShader failed: %s", SDL_GetError());
+			return nullptr;
+		}
+		m_shaderCache[key] = shader;
+		return shader;
+	}
+
 	void RenderContext::handleSignal(ostd::Signal& signal)
 	{
 		if (signal.ID == ostd::BuiltinSignals::BeforeSDLShutdown)
@@ -146,6 +218,9 @@ namespace ogfx
 	{
 		if (!m_device)
 			return;
+		for (auto& [key, shader] : m_shaderCache)
+			SDL_ReleaseGPUShader(m_device, shader);
+		m_shaderCache.clear();
 		SDL_DestroyGPUDevice(m_device);
 		m_device = nullptr;
 		m_deviceCreationFailed = false;
