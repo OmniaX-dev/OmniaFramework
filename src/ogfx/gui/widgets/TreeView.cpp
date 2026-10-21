@@ -156,6 +156,14 @@ namespace ogfx
 
 		void TreeView::onDraw(ogfx::BasicRenderer2D& gfx)
 		{
+			// Rows never draw under the scrollbars.
+			gfx.pushClippingRect(getGlobalPureContentBounds(), true);
+			draw_rows(gfx);
+			gfx.popClippingRect();
+		}
+
+		void TreeView::draw_rows(ogfx::BasicRenderer2D& gfx)
+		{
 			const auto& bounds = getGlobalBounds();
 			const auto& content = getContentExtents();
 			const f32 scrollY = -getScrollOffset().y;

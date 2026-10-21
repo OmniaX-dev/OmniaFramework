@@ -193,7 +193,7 @@ namespace ogfx
 				if (c.visible)
 					totalWidth += c.width;
 			}
-			const f32 available = getContentBounds().w - getVScrollbarSize();
+			const f32 available = getContentBounds().w;  // viewport: already excludes the scrollbar
 			return (totalWidth < available) ? (available - totalWidth) : 0.0f;
 		}
 
@@ -212,7 +212,10 @@ namespace ogfx
 		void DetailList::onDraw(ogfx::BasicRenderer2D& gfx)
 		{
 			ensure_sorted();
+			// Rows never draw under the header or the scrollbars.
+			gfx.pushClippingRect(getGlobalPureContentBounds(), true);
 			draw_rows(gfx);
+			gfx.popClippingRect();
 		}
 
 		void DetailList::afterDraw(ogfx::BasicRenderer2D& gfx)

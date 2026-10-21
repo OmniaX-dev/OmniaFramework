@@ -98,7 +98,7 @@ namespace ogfx
 				if (w == nullptr) continue;
 				if (w->isInvalid()) continue;
 				if (!w->isVisible()) continue;
-				if (!w->contains(event.mouse->position_x, event.mouse->position_y, true))
+				if (!hit_test(w, event.mouse->position_x, event.mouse->position_y))
 					continue;
 				event.mouse->mousePressedOnWidget = w;
 				m_window.getFocusManager().requestFocus(*w);
@@ -147,7 +147,7 @@ namespace ogfx
 				if (w == nullptr) continue;
 				if (w->isInvalid()) continue;
 				if (!w->isVisible()) continue;
-				if (!w->contains(event.mouse->position_x, event.mouse->position_y, true))
+				if (!hit_test(w, event.mouse->position_x, event.mouse->position_y))
 				{
 					if (w->m_mouseInside)
 					{
@@ -193,7 +193,7 @@ namespace ogfx
 				if (w == nullptr) continue;
 				if (w->isInvalid()) continue;
 				if (!w->isVisible()) continue;
-				if (!w->contains(event.mouse->position_x, event.mouse->position_y, true))
+				if (!hit_test(w, event.mouse->position_x, event.mouse->position_y))
 					continue;
 				w->__onMouseScrolled(event);
 				if (event.isHandled() || w->m_stopEvents)
@@ -209,7 +209,7 @@ namespace ogfx
 				if (w == nullptr) continue;
 				if (w->isInvalid()) continue;
 				if (!w->isVisible()) continue;
-				// if (!w->contains(event.mouse->position_x, event.mouse->position_y, true))
+				// if (!hit_test(w, event.mouse->position_x, event.mouse->position_y))
 				//     continue;
 				w->__onMouseDragged(event);
 				if (event.isHandled())
@@ -263,6 +263,17 @@ namespace ogfx
 				if (event.isHandled())
 					break;
 			}
+		}
+
+		bool WidgetManager::hit_test(Widget* widget, f32 x, f32 y) const
+		{
+			if (!widget->contains(x, y, true))
+				return false;
+			// Root-level owners don't clip their children; ignore-scroll children
+			// (scrollbars, overlays) live outside the clipped content area.
+			if (m_owner.isRootChild() || widget->isIgnoreScrollEnabled())
+				return true;
+			return m_owner.getGlobalPureContentBounds().contains({ x, y }, true);
 		}
 
 		void WidgetManager::processDragAndDrop(Widget* widget, const Event& event)

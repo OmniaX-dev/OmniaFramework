@@ -110,8 +110,10 @@ namespace ogfx
 
 		Rectangle Widget::getContentBounds(void) const
 		{
-			auto pad = getPadding();
-			return { Vec2 { m_contentOffset.x, m_contentOffset.y } + pad.getPosition(), (getSize() - m_contentOffset - (pad.getSize() * 2)) };
+			// Padding is stored as { left, top, right, bottom }.
+			const auto pad = getPadding();
+			const Vec2 padTotal { pad.left() + pad.right(), pad.top() + pad.bottom() };
+			return { m_contentOffset + pad.getPosition(), getSize() - m_contentOffset - padTotal };
 		}
 
 		Rectangle Widget::getPureContentBounds(void) const
@@ -131,19 +133,22 @@ namespace ogfx
 
 		Rectangle Widget::getContentExtents(void) const
 		{
-			f32 maxX = 0, maxY = 0;
+			// Bounding box of the children in our content frame (same space as child
+			// positions). It always includes the origin, and extends to negative
+			// coordinates when a child sits left of / above it.
+			f32 minX = 0, minY = 0, maxX = 0, maxY = 0;
 			for (auto* child : m_widgets.getWidgets())
 			{
 				if (!child || child->isInvalid()) continue;
 				if (child->isIgnoreScrollEnabled()) continue;
 				if (!child->isVisible()) continue;
-				// Measured in our content frame (same space as child positions), so
-				// it can be compared directly with getContentBounds().getSize().
-				Vec2 localPos = child->getPosition() + child->getMargin().getPosition();
+				const Vec2 localPos = child->getPosition() + child->getMargin().getPosition();
+				minX = std::min(minX, localPos.x);
+				minY = std::min(minY, localPos.y);
 				maxX = std::max(maxX, localPos.x + child->getw() + child->getMargin().w);
 				maxY = std::max(maxY, localPos.y + child->geth() + child->getMargin().h);
 			}
-			return { 0, 0, maxX, maxY };
+			return { minX, minY, maxX - minX, maxY - minY };
 		}
 
 		bool Widget::contains(Vec2 p, bool includeBounds) const
@@ -536,7 +541,7 @@ namespace ogfx
 		Vec2 Widget::contentToWidgetSize(const Vec2& contentSize) const
 		{
 			// Inverse of getContentBounds().
-			return contentSize + m_contentOffset + (m_padding.getSize() * 2);
+			return contentSize + m_contentOffset + Vec2 { m_padding.left() + m_padding.right(), m_padding.top() + m_padding.bottom() };
 		}
 
 		void Widget::setPadding(const Rectangle& padding)

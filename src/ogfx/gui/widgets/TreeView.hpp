@@ -130,6 +130,9 @@ namespace ogfx
 				OSTD_PARAM_GETSET(f32, BranchLineThickness, m_branchLineThickness);
 
 			private:
+				void draw_rows(ogfx::BasicRenderer2D& gfx);
+
+			private:
 				void render_chevron(ogfx::BasicRenderer2D& gfx, const Item& item, const Rectangle& bounds);
 				void render_branch_lines(ogfx::BasicRenderer2D& gfx, const Item& item, const Rectangle& rowRect);
 				u32 get_last_descendant_index(u32 itemIndex) const;

@@ -21,269 +21,176 @@
 #include "Scrollbar.hpp"
 #include "../../render/BasicRenderer.hpp"
 
+#include <algorithm>
+#include <cmath>
+
 namespace ogfx
 {
 	namespace gui
 	{
-		VerticalScrollBar& VerticalScrollBar::create(void)
+		// ============================================================================
+		// ScrollBar
+		// ============================================================================
+
+		ScrollBar::ScrollBar(Window& window, eOrientation orientation) : Widget({ 0, 0, 0, 0 }, window), m_orientation(orientation)
+		{
+			create();
+		}
+
+		ScrollBar& ScrollBar::create(void)
 		{
 			setPadding({ 0, 0, 0, 0 });
 			setMargin({ 0, 0, 0, 0 });
-			setTypeName("ogfx::gui::Label");
+			setTypeName("ogfx::gui::ScrollBar");
 			disableChildren();
 			disableFocus();
-			enableBackground(true);
+			enableBackground(false);
 			enableBorder(false);
 			enableTopMost(true);
+			// Positioned relative to the owner's frame, not its scrolled content.
 			enableIgnoreScroll(true);
+			// The owner draws it on top of its content (drawScrollbars()).
+			enableManualDraw(true);
+			setVisible(false);
 			setStylesheetCategoryName("scrollbar");
+			// Global mouse signals keep a drag going wherever the cursor is.
+			connectSignal(ostd::BuiltinSignals::MouseMoved);
+			connectSignal(ostd::BuiltinSignals::MouseReleased);
 			validate();
 			return *this;
 		}
 
-		void VerticalScrollBar::applyTheme(const ostd::Stylesheet& theme)
+		void ScrollBar::applyTheme(const ostd::Stylesheet& theme)
 		{
-			w = getThemeValue<f32>(theme, "width", 15);
-			m_thumbColor = getThemeValue<Color>(theme, "thumb.color", { 120, 120, 120 });
-			m_thumbBorderRadius = getThemeValue<f32>(theme, "thumb.borderRadius", 16);
-			m_thumbBorderColor = getThemeValue<Color>(theme, "thumb.borderColor", { 150, 150, 150 });
-			m_thumbShowBorder = getThemeValue<bool>(theme, "thumb.showBorder", true);
-			m_trackColor = getThemeValue<Color>(theme, "track.color", { 70, 70, 70 });
+			m_thickness = std::max(1.0f, getThemeValue<f32>(theme, "width", m_thickness));
+			m_thumbColor = getThemeValue<Color>(theme, "thumb.color", m_thumbColor);
+			m_thumbBorderRadius = getThemeValue<f32>(theme, "thumb.borderRadius", m_thumbBorderRadius);
+			m_thumbBorderColor = getThemeValue<Color>(theme, "thumb.borderColor", m_thumbBorderColor);
+			m_thumbShowBorder = getThemeValue<bool>(theme, "thumb.showBorder", m_thumbShowBorder);
+			m_thumbInset = getThemeValue<f32>(theme, "thumb.inset", m_thumbInset);
+			m_minThumbLength = getThemeValue<f32>(theme, "thumb.minLength", m_minThumbLength);
+			m_trackColor = getThemeValue<Color>(theme, "track.color", m_trackColor);
 		}
 
-		void VerticalScrollBar::afterDraw(ogfx::BasicRenderer2D& gfx)
+		void ScrollBar::setRange(f32 contentLength, f32 viewportLength, f32 position)
 		{
-			if (!getParent()->needsVScroll())
-				return;
-			gfx.fillRoundRect(getGlobalBounds() - m_correctionOffset, m_trackColor, m_trackBorderRadii);
-			gfx.outlinedRoundRect(m_thumbGlobalBounds, m_thumbColor, m_thumbBorderColor, m_thumbBorderRadius, 1);
+			m_contentLength = std::max(0.0f, contentLength);
+			m_viewportLength = std::max(0.0f, viewportLength);
+			m_position = std::clamp(position, 0.0f, getMaxScrollPosition());
 		}
 
-		void VerticalScrollBar::onMouseDragged(const Event& event)
+		f32 ScrollBar::track_length(void) const
 		{
-			if (!m_mousePressed)
+			return isVertical() ? geth() : getw();
+		}
+
+		f32 ScrollBar::thumb_length(void) const
+		{
+			const f32 track = track_length();
+			if (m_contentLength <= 0.0f || m_viewportLength >= m_contentLength)
+				return track;
+			const f32 proportional = track * (m_viewportLength / m_contentLength);
+			return std::clamp(proportional, std::min(m_minThumbLength, track), track);
+		}
+
+		f32 ScrollBar::thumb_offset(void) const
+		{
+			const f32 maxPos = getMaxScrollPosition();
+			if (maxPos <= 0.0f)
+				return 0.0f;
+			return (track_length() - thumb_length()) * std::clamp(m_position / maxPos, 0.0f, 1.0f);
+		}
+
+		Rectangle ScrollBar::getGlobalThumbBounds(void) const
+		{
+			const Vec2 g = getGlobalPosition();
+			const f32 offset = thumb_offset();
+			const f32 length = thumb_length();
+			if (isVertical())
+				return { g.x + m_thumbInset, g.y + offset, std::max(0.0f, getw() - (m_thumbInset * 2)), length };
+			return { g.x + offset, g.y + m_thumbInset, length, std::max(0.0f, geth() - (m_thumbInset * 2)) };
+		}
+
+		f32 ScrollBar::local_axis_position(f32 globalX, f32 globalY) const
+		{
+			const Vec2 g = getGlobalPosition();
+			return isVertical() ? (globalY - g.y) : (globalX - g.x);
+		}
+
+		void ScrollBar::drag_to(f32 localAxisPos)
+		{
+			const f32 freeSpace = track_length() - thumb_length();
+			if (freeSpace <= 0.0f)
 				return;
+			const f32 t = std::clamp((localAxisPos - m_grabOffset) / freeSpace, 0.0f, 1.0f);
+			const f32 newPosition = t * getMaxScrollPosition();
+			if (newPosition == m_position)
+				return;
+			m_position = newPosition;
+			if (m_scrollCallback)
+				m_scrollCallback(m_position);
+		}
 
-			if (isMouseInsideThumb({ event.mouse->position_x, event.mouse->position_y }))
-				m_mouseDragged = true;
+		void ScrollBar::onDraw(ogfx::BasicRenderer2D& gfx)
+		{
+			gfx.fillRect({ getGlobalPosition(), getSize() }, m_trackColor);
+			const Rectangle thumb = getGlobalThumbBounds();
+			if (m_thumbShowBorder)
+				gfx.outlinedRoundRect(thumb, m_thumbColor, m_thumbBorderColor, m_thumbBorderRadius, 1);
+			else
+				gfx.fillRoundRect(thumb, m_thumbColor, m_thumbBorderRadius);
+		}
 
-			if (m_mouseDragged)
+		void ScrollBar::onMousePressed(const Event& event)
+		{
+			if (event.mouse->button != MouseEventData::eButton::Left)
+				return;
+			const f32 local = local_axis_position(event.mouse->position_x, event.mouse->position_y);
+			const f32 offset = thumb_offset();
+			const f32 length = thumb_length();
+			if (local >= offset && local <= offset + length)
+				m_grabOffset = local - offset;  // grab the thumb where it was clicked
+			else
 			{
-				auto bounds = getGlobalBounds() - m_correctionOffset;
-				f32 newThumbY = (event.mouse->position_y - bounds.y) - m_dragGrabOffset;
-				set_thumb_y(newThumbY);
+				// Track click: jump so the thumb is centered on the cursor, then drag.
+				m_grabOffset = length * 0.5f;
+				drag_to(local);
 			}
+			m_dragging = true;
+			event.handle();  // the owner must not treat this as a click on its content
 		}
 
-		void VerticalScrollBar::onMousePressed(const Event& event)
+		void ScrollBar::handleSignal(ostd::Signal& signal)
 		{
-			m_mousePressed = true;
-			m_dragGrabOffset = event.mouse->position_y - m_thumbGlobalBounds.y;
-		}
-
-		void VerticalScrollBar::onMouseReleased(const Event& event)
-		{
-			m_mousePressed = false;
-			if (event.mouse->mousePressedOnWidget != this)
+			if (!m_dragging || !signal.userData)
 				return;
-			if (!m_mouseDragged)
-			{
-				auto bounds = getGlobalBounds() - m_correctionOffset;
-				f32 newThumbY = (event.mouse->position_y - bounds.y);
-				newThumbY -= m_thumbHeight / 2.0f;
-				set_thumb_y(newThumbY);
-			}
-			m_mouseDragged = false;
-		}
-
-		void VerticalScrollBar::onUpdate(void)
-		{
-			update_thumb();
-		}
-
-		bool VerticalScrollBar::isMouseInsideThumb(const Vec2& mouse_pos)
-		{
-			return m_thumbGlobalBounds.contains(mouse_pos, true);
-		}
-
-		void VerticalScrollBar::update_thumb(void)
-		{
-			x = getParent()->getSize().x - w;
-			y = 0;
-			h = getParent()->getGlobalPureContentBounds().h;
-
-			auto ext = getParent()->getContentExtents();
-			auto cont = getParent()->getContentBounds();
-			auto scrollOfset = getParent()->getScrollOffset();
-
-			// Thumb size is proportional to visible/total ratio
-			f32 visibleRatio = cont.h / ext.h;  // e.g. 0.4 means 40% visible
-			m_thumbHeight = std::max(20.0f, geth() * visibleRatio);  // min 20px for usability
-
-			// Thumb position is proportional to scroll progress
-			f32 scrollProgress = -scrollOfset.y / (ext.h - cont.h);  // 0 to 1
-			m_thumbY = gety() + ((geth() - m_thumbHeight) * scrollProgress);
-
-			auto bounds = getGlobalBounds() - m_correctionOffset;
-			m_thumbGlobalBounds = { bounds.x + 2, bounds.y + gety() + m_thumbY, getw() - 4, m_thumbHeight };
-		}
-
-		void VerticalScrollBar::set_thumb_y(f32 thumby)
-		{
-			if (!getParent()->needsVScroll())
-				return;
-			auto bounds = getGlobalBounds() - m_correctionOffset;
-			auto ext = getParent()->getContentExtents();
-			auto cont = getParent()->getContentBounds();
-			thumby = std::clamp(thumby, 0.0f, h - m_thumbHeight);
-			m_thumbY = thumby;
-			f32 scrollProgress = (bounds.y + gety() + m_thumbY - bounds.y) / (bounds.h - m_thumbHeight);
-			f32 maxScroll = -(ext.h - cont.h);
-			auto parentScrollOffset = getParent()->getScrollOffset();
-			parentScrollOffset.y = maxScroll * scrollProgress;
-			getParent()->setScrollOffset(parentScrollOffset);
+			auto& med = cast<MouseEventData&>(*signal.userData);
+			if (signal.ID == ostd::BuiltinSignals::MouseMoved)
+				drag_to(local_axis_position(med.position_x, med.position_y));
+			else if (signal.ID == ostd::BuiltinSignals::MouseReleased)
+				m_dragging = false;
 		}
 
 
-
-
-
-
-		HorizontalScrollbar& HorizontalScrollbar::create(void)
-		{
-			setPadding({ 0, 0, 0, 0 });
-			setMargin({ 0, 0, 0, 0 });
-			setTypeName("ogfx::gui::Label");
-			disableChildren();
-			disableFocus();
-			enableBackground(true);
-			enableBorder(false);
-			enableTopMost(true);
-			enableIgnoreScroll(true);
-			setStylesheetCategoryName("scrollbar");
-			validate();
-			return *this;
-		}
-
-		void HorizontalScrollbar::applyTheme(const ostd::Stylesheet& theme)
-		{
-			h = getThemeValue<f32>(theme, "width", 15);
-			m_thumbColor = getThemeValue<Color>(theme, "thumb.color", { 120, 120, 120 });
-			m_thumbBorderRadius = getThemeValue<f32>(theme, "thumb.borderRadius", 16);
-			m_thumbBorderColor = getThemeValue<Color>(theme, "thumb.borderColor", { 150, 150, 150 });
-			m_thumbShowBorder = getThemeValue<bool>(theme, "thumb.showBorder", true);
-			m_trackColor = getThemeValue<Color>(theme, "track.color", { 70, 70, 70 });
-		 }
-
-		void HorizontalScrollbar::afterDraw(ogfx::BasicRenderer2D& gfx)
-		{
-			if (!getParent()->needsHScroll())
-				return;
-			gfx.fillRoundRect(getGlobalBounds() - m_correctionOffset, m_trackColor, m_trackBorderRadii);
-			gfx.outlinedRoundRect(m_thumbGlobalBounds, m_thumbColor, m_thumbBorderColor, m_thumbBorderRadius, 1);
-		}
-
-		void HorizontalScrollbar::onMouseDragged(const Event& event)
-		{
-			if (!m_mousePressed)
-				return;
-
-			if (isMouseInsideThumb({ event.mouse->position_x, event.mouse->position_y }))
-				m_mouseDragged = true;
-
-			if (m_mouseDragged)
-			{
-				auto bounds = getGlobalBounds() - m_correctionOffset;
-				f32 newThumbX = (event.mouse->position_x - bounds.x) - m_dragGrabOffset;
-				set_thumb_x(newThumbX);
-			}
-		}
-
-		void HorizontalScrollbar::onMousePressed(const Event& event)
-		{
-			m_mousePressed = true;
-			m_dragGrabOffset = event.mouse->position_x - m_thumbGlobalBounds.x;
-		}
-
-		void HorizontalScrollbar::onMouseReleased(const Event& event)
-		{
-			m_mousePressed = false;
-			if (event.mouse->mousePressedOnWidget != this)
-				return;
-			if (!m_mouseDragged)
-			{
-				auto bounds = getGlobalBounds() - m_correctionOffset;
-				f32 newThumbX = (event.mouse->position_x - bounds.x);
-				newThumbX -= m_thumbWidth / 2.0f;
-				set_thumb_x(newThumbX);
-			}
-			m_mouseDragged = false;
-		}
-
-		void HorizontalScrollbar::onUpdate(void)
-		{
-			update_thumb();
-		}
-
-		bool HorizontalScrollbar::isMouseInsideThumb(const Vec2& mouse_pos)
-		{
-			return m_thumbGlobalBounds.contains(mouse_pos, true);
-		}
-
-		void HorizontalScrollbar::update_thumb(void)
-		{
-			x = 0;
-			y = getParent()->getSize().y - h;
-			w = getParent()->getGlobalBounds().w - getParent()->getVScrollbarSize();
-
-			auto ext = getParent()->getContentExtents();
-			auto cont = getParent()->getContentBounds();
-			auto scrollOfset = getParent()->getScrollOffset();
-
-			// Thumb size is proportional to visible/total ratio
-			f32 visibleRatio = cont.w / ext.w;  // e.g. 0.4 means 40% visible
-			m_thumbWidth = std::max(20.0f, getw() * visibleRatio);  // min 20px for usability
-
-			// Thumb position is proportional to scroll progress
-			f32 scrollProgress = -scrollOfset.x / (ext.w - cont.w);  // 0 to 1
-			m_thumbX = getx() + ((getw() - m_thumbWidth) * scrollProgress);
-
-			auto bounds = getGlobalBounds() - m_correctionOffset;
-			m_thumbGlobalBounds = { bounds.x + 2 + m_thumbX, bounds.y + gety(), m_thumbWidth, geth() - 4 };
-			m_thumbGlobalBounds = { bounds.x + getx() + m_thumbX, bounds.y + 2, m_thumbWidth, geth() - 4 };
-		}
-
-		void HorizontalScrollbar::set_thumb_x(f32 thumbx)
-		{
-			if (!getParent()->needsHScroll())
-				return;
-			auto bounds = getGlobalBounds() - m_correctionOffset;
-			auto ext = getParent()->getContentExtents();
-			auto cont = getParent()->getContentBounds();
-			thumbx = std::clamp(thumbx, 0.0f, w - m_thumbWidth);
-			m_thumbX = thumbx;
-			f32 scrollProgress = (bounds.x + getx() + m_thumbX - bounds.x) / (bounds.w - m_thumbWidth);
-			f32 maxScroll = -(ext.w - cont.w);
-			auto parentScrollOffset = getParent()->getScrollOffset();
-			parentScrollOffset.x = maxScroll * scrollProgress;
-			getParent()->setScrollOffset(parentScrollOffset);
-		}
-
-
-
-
-
+		// ============================================================================
+		// ScrollableWidget
+		// ============================================================================
 
 		ScrollableWidget& ScrollableWidget::create(void)
 		{
 			setTypeName("ogfx::gui::ScrollableWidget");
 			enableVScroll(true);
 			enableHScroll(true);
-			m_vScrollbar.enableManualDraw(true);
 			addWidget(m_vScrollbar);
-			m_hScrollbar.setMargin({ 0, 0, 0, 0 });
-			m_hScrollbar.enableManualDraw(true);
 			addWidget(m_hScrollbar);
+			m_vScrollbar.setScrollCallback([this](f32 position) {
+				m_scrollVelocity.y = 0;
+				setScrollOffset({ m_scrollOffset.x, -(position + getScrollArea().y) });
+			});
+			m_hScrollbar.setScrollCallback([this](f32 position) {
+				m_scrollVelocity.x = 0;
+				setScrollOffset({ -(position + getScrollArea().x), m_scrollOffset.y });
+			});
 			m_smoothScrollTimer.create(60.0f, [&](f64 dt) -> void {
 				f32 stepX = m_scrollVelocity.x * (1.0f - m_scrollSmoothFactor);
 				f32 stepY = m_scrollVelocity.y * (1.0f - m_scrollSmoothFactor);
@@ -298,7 +205,6 @@ namespace ogfx
 			m_smoothScrollTimer.setStopCondition([&](void) -> bool {
 				return m_scrollVelocity.x == 0 && m_scrollVelocity.y == 0;
 			});
-			updateScrollbarsSize();
 			validate();
 			return *this;
 		}
@@ -306,45 +212,195 @@ namespace ogfx
 		void ScrollableWidget::onUpdate(void)
 		{
 			m_smoothScrollTimer.update();
-			if (!needsVScroll() && m_vScrollbarAdded)
+			// Content can change at any time (children moved, rows added, ...).
+			refresh_scrollbars();
+		}
+
+		void ScrollableWidget::layoutChildren(void)
+		{
+			Widget::layoutChildren();
+			refresh_scrollbars();
+		}
+
+		f32 ScrollableWidget::bar_inset(void) const
+		{
+			// Keep the bars inside the widget's border.
+			return isBorderEnabled() ? cast<f32>(std::max(0, getBorderWidth())) : 0.0f;
+		}
+
+		f32 ScrollableWidget::v_bar_extent(void) const
+		{
+			return m_vVisible ? (m_vScrollbar.getThickness() + bar_inset()) : 0.0f;
+		}
+
+		f32 ScrollableWidget::h_bar_extent(void) const
+		{
+			return m_hVisible ? (m_hScrollbar.getThickness() + bar_inset()) : 0.0f;
+		}
+
+		Rectangle ScrollableWidget::getContentBounds(void) const
+		{
+			Rectangle cb = Widget::getContentBounds();
+			const Vec2 size = getSize();
+			// The viewport ends where a visible scrollbar begins (or at the padding,
+			// whichever comes first): bars never cover content.
+			if (m_vVisible)
+				cb.w = std::min(cb.w, (size.x - v_bar_extent()) - cb.x);
+			if (m_hVisible)
+				cb.h = std::min(cb.h, (size.y - h_bar_extent()) - cb.y);
+			cb.w = std::max(0.0f, cb.w);
+			cb.h = std::max(0.0f, cb.h);
+			return cb;
+		}
+
+		Rectangle ScrollableWidget::getGlobalPureContentBounds(void) const
+		{
+			Rectangle r = Widget::getGlobalPureContentBounds();
+			const Vec2 size = getSize();
+			const Vec2 off = getContentOffset();
+			if (m_vVisible)
+				r.w = std::max(0.0f, std::min(r.w, size.x - v_bar_extent() - off.x));
+			if (m_hVisible)
+				r.h = std::max(0.0f, std::min(r.h, size.y - h_bar_extent() - off.y));
+			return r;
+		}
+
+		Rectangle ScrollableWidget::getScrollArea(void) const
+		{
+			const Rectangle ext = getContentExtents();
+			const Rectangle view = getContentBounds();
+			const f32 left   = std::min(0.0f, ext.x);
+			const f32 top    = std::min(0.0f, ext.y);
+			const f32 right  = std::max(view.w, ext.x + ext.w);
+			const f32 bottom = std::max(view.h, ext.y + ext.h);
+			return { left, top, right - left, bottom - top };
+		}
+
+		void ScrollableWidget::refresh_scrollbars(void)
+		{
+			if (m_refreshing)
+				return;
+			m_refreshing = true;
+
+			// Showing one bar shrinks the viewport, which can make the other one
+			// necessary; and the new viewport can move anchored children. Iterate
+			// until stable (two passes are enough in practice; the cap guards
+			// against content that keeps reacting to the viewport size).
+			for (i32 pass = 0; pass < 4; pass++)
 			{
-				removeWidget(m_vScrollbar);
-				m_vScrollbarAdded = false;
+				const Rectangle full = Widget::getContentBounds();  // without any bar
+				const Rectangle ext = getContentExtents();
+				const f32 vSpace = m_vScrollbar.getThickness() + bar_inset();
+				const f32 hSpace = m_hScrollbar.getThickness() + bar_inset();
+				const Vec2 size = getSize();
+				// Viewport size for a given combination of bars.
+				auto l_viewW = [&](bool withV) { return withV ? std::min(full.w, (size.x - vSpace) - full.x) : full.w; };
+				auto l_viewH = [&](bool withH) { return withH ? std::min(full.h, (size.y - hSpace) - full.y) : full.h; };
+				// Content sticking out on either side of the viewport needs scrolling.
+				auto l_overflows = [](f32 extBegin, f32 extLength, f32 viewLength) {
+					const f32 begin = std::min(0.0f, extBegin);
+					const f32 end = std::max(viewLength, extBegin + extLength);
+					return (end - begin) > viewLength + 0.5f;
+				};
+
+				bool needV = isVScrollEnabled() && l_overflows(ext.y, ext.h, l_viewH(false));
+				bool needH = isHScrollEnabled() && l_overflows(ext.x, ext.w, l_viewW(false));
+				if (needV && !needH)
+					needH = isHScrollEnabled() && l_overflows(ext.x, ext.w, l_viewW(true));
+				if (needH && !needV)
+					needV = isVScrollEnabled() && l_overflows(ext.y, ext.h, l_viewH(true));
+
+				if (needV == m_vVisible && needH == m_hVisible)
+					break;
+				m_vVisible = needV;
+				m_hVisible = needH;
+				// Viewport changed: re-anchor the children against it.
+				m_appliedBarExtents = { v_bar_extent(), h_bar_extent() };
+				Widget::layoutChildren();
 			}
-			else if (!m_vScrollbarAdded)
+			// Same visibility but different bar thickness (e.g. new theme).
+			const Vec2 barExtents { v_bar_extent(), h_bar_extent() };
+			if (barExtents != m_appliedBarExtents)
 			{
-				addWidget(m_vScrollbar);
-				m_vScrollbarAdded = true;
+				m_appliedBarExtents = barExtents;
+				Widget::layoutChildren();
 			}
-			if (!needsHScroll() && m_hScrollbarAdded)
+
+			m_refreshing = false;
+			sync_scrollbars();
+		}
+
+		void ScrollableWidget::sync_scrollbars(void)
+		{
+			m_scrollOffset = clamp_scroll_offset(m_scrollOffset);
+
+			const Vec2 size = getSize();
+			const Vec2 off = getContentOffset();
+			const f32 inset = bar_inset();
+			const f32 vT = m_vScrollbar.getThickness();
+			const f32 hT = m_hScrollbar.getThickness();
+			const Rectangle area = getScrollArea();
+			const Rectangle view = getContentBounds();
+
+			m_vScrollbar.setVisible(m_vVisible);
+			if (m_vVisible)
 			{
-				removeWidget(m_hScrollbar);
-				m_hScrollbarAdded = false;
+				const f32 top = std::max(off.y, inset);
+				const f32 bottom = size.y - inset - (m_hVisible ? hT : 0.0f);
+				m_vScrollbar.setBounds(size.x - inset - vT, top, vT, std::max(0.0f, bottom - top));
+				m_vScrollbar.setRange(area.h, view.h, -m_scrollOffset.y - area.y);
 			}
-			else if (!m_hScrollbarAdded)
+
+			m_hScrollbar.setVisible(m_hVisible);
+			if (m_hVisible)
 			{
-				addWidget(m_hScrollbar);
-				m_hScrollbarAdded = true;
+				const f32 left = std::max(off.x, inset);
+				const f32 right = size.x - inset - (m_vVisible ? vT : 0.0f);
+				m_hScrollbar.setBounds(left, size.y - inset - hT, std::max(0.0f, right - left), hT);
+				m_hScrollbar.setRange(area.w, view.w, -m_scrollOffset.x - area.x);
 			}
+		}
+
+		Vec2 ScrollableWidget::clamp_scroll_offset(const Vec2& offset) const
+		{
+			// The visible window in content coordinates is [-offset, -offset + view];
+			// it must stay inside the scroll area. Without a bar, the axis doesn't scroll.
+			const Rectangle area = getScrollArea();
+			const Rectangle view = getContentBounds();
+			Vec2 result { 0, 0 };
+			if (m_hVisible)
+				result.x = std::clamp(offset.x, view.w - (area.x + area.w), -area.x);
+			if (m_vVisible)
+				result.y = std::clamp(offset.y, view.h - (area.y + area.h), -area.y);
+			return result;
 		}
 
 		void ScrollableWidget::drawScrollbars(ogfx::BasicRenderer2D& gfx)
 		{
-			m_vScrollbar.__draw(gfx);
-			m_hScrollbar.__draw(gfx);
+			if (m_vVisible)
+				m_vScrollbar.__draw(gfx);
+			if (m_hVisible)
+				m_hScrollbar.__draw(gfx);
 		}
 
 		void ScrollableWidget::updateScrollbarsSize(void)
 		{
-			m_vScrollbar.setMargin({ 0, getPureContentBounds().y, 0, 0 });
+			refresh_scrollbars();
 		}
 
 		void ScrollableWidget::resetScroll(bool horizontal, bool vertical, bool propagate)
 		{
 			if (vertical)
+			{
 				m_scrollOffset.y = 0;
+				m_scrollVelocity.y = 0;
+			}
 			if (horizontal)
+			{
 				m_scrollOffset.x = 0;
+				m_scrollVelocity.x = 0;
+			}
+			m_scrollOffset = clamp_scroll_offset(m_scrollOffset);
 			if (propagate)
 			{
 				for (auto& w : getChildren().getWidgets())
@@ -357,88 +413,69 @@ namespace ogfx
 
 		bool ScrollableWidget::isMouseInsideVScrollbar(void) const
 		{
-			return m_vScrollbar.isMouseInside();
+			return m_vVisible && (m_vScrollbar.isMouseInside() || m_vScrollbar.isDragging());
 		}
 
 		bool ScrollableWidget::isMouseInsideHScrollbar(void) const
 		{
-			return m_hScrollbar.isMouseInside();
+			return m_hVisible && (m_hScrollbar.isMouseInside() || m_hScrollbar.isDragging());
 		}
 
 		void ScrollableWidget::onMouseScrolled(const Event& event)
 		{
-			if (isVScrollEnabled())
+			f32 dx = event.mouse->scrollAmount.x;
+			f32 dy = event.mouse->scrollAmount.y;
+			// The vertical wheel scrolls horizontally while hovering the horizontal bar
+			// (or when there is nothing to scroll vertically).
+			if (dx == 0 && m_hVisible && (m_hScrollbar.isMouseInside() || !m_vVisible))
 			{
-				bool mouseInsideHScrollbar = m_hScrollbar.isMouseInside() && needsHScroll();
-				if (std::abs(event.mouse->scrollAmount.y) > 0 && !mouseInsideHScrollbar)
-				{
-					m_scrollVelocity.y += m_scrollSpeed * event.mouse->scrollAmount.y * m_scrollSpeedMultiplier;
-					if (m_smoothScrollTimer.isStopped())
-						m_smoothScrollTimer.restart();
-					event.handle();
-				}
-				else if (std::abs(event.mouse->scrollAmount.y) > 0)
-				{
-					m_scrollVelocity.x += m_scrollSpeed * event.mouse->scrollAmount.y * m_scrollSpeedMultiplier;
-					if (m_smoothScrollTimer.isStopped())
-						m_smoothScrollTimer.restart();
-					event.handle();
-				}
+				dx = dy;
+				dy = 0;
 			}
-			if (isHScrollEnabled())
+			bool used = false;
+			if (dy != 0 && m_vVisible)
 			{
-				if (std::abs(event.mouse->scrollAmount.x) > 0)
-				{
-					m_scrollVelocity.x += m_scrollSpeed * event.mouse->scrollAmount.x * m_scrollSpeedMultiplier;
-					if (m_smoothScrollTimer.isStopped())
-						m_smoothScrollTimer.restart();
-					event.handle();
-				}
+				m_scrollVelocity.y += m_scrollSpeed * dy * m_scrollSpeedMultiplier;
+				used = true;
 			}
+			if (dx != 0 && m_hVisible)
+			{
+				m_scrollVelocity.x += m_scrollSpeed * dx * m_scrollSpeedMultiplier;
+				used = true;
+			}
+			// Only consume the wheel if we could scroll, so an enclosing scrollable
+			// widget gets it otherwise.
+			if (!used)
+				return;
+			if (m_smoothScrollTimer.isStopped())
+				m_smoothScrollTimer.restart();
+			event.handle();
 		}
 
 		void ScrollableWidget::setScrollOffset(const Vec2& offset)
 		{
-			auto ext = getContentExtents();
-			auto cont = getContentBounds();
-			f32 maxScrollY = -(ext.h - cont.h);
-			f32 maxScrollX = -(ext.w - cont.w);
-
-			m_scrollOffset = offset;
-
-			if (m_scrollOffset.y < maxScrollY) m_scrollOffset.y = maxScrollY;
-			if (m_scrollOffset.y > 0) m_scrollOffset.y = 0;
-			if (m_scrollOffset.x < maxScrollX) m_scrollOffset.x = maxScrollX;
-			if (m_scrollOffset.x > 0) m_scrollOffset.x = 0;
+			m_scrollOffset = clamp_scroll_offset(offset);
+			sync_scrollbars();
 		}
 
 		void ScrollableWidget::addScrollOffset(const Vec2& offset)
 		{
-			auto ext = getContentExtents();
-			auto cont = getContentBounds();
-			f32 maxScrollY = -(ext.h - cont.h);
-			f32 maxScrollX = -(ext.w - cont.w);
-
-			m_scrollOffset += offset;
-
-			if (m_scrollOffset.y < maxScrollY) m_scrollOffset.y = maxScrollY;
-			if (m_scrollOffset.y > 0) m_scrollOffset.y = 0;
-			if (m_scrollOffset.x < maxScrollX) m_scrollOffset.x = maxScrollX;
-			if (m_scrollOffset.x > 0) m_scrollOffset.x = 0;
+			setScrollOffset(m_scrollOffset + offset);
 		}
 
 		bool ScrollableWidget::needsVScroll(void) const
 		{
-			return isVScrollEnabled() && getContentExtents().h > getContentBounds().h;
+			return m_vVisible;
 		}
 
 		bool ScrollableWidget::needsHScroll(void) const
 		{
-			return isHScrollEnabled() && getContentExtents().w > getContentBounds().w;
+			return m_hVisible;
 		}
 
 		void ScrollableWidget::onWidgetAdded(Widget& child)
 		{
+			// Keep the scrollbars last, so they are hit-tested before the content.
 			removeWidget(m_vScrollbar);
 			removeWidget(m_hScrollbar);
 			addWidget(m_vScrollbar, { 0, 0 }, true);
@@ -447,20 +484,12 @@ namespace ogfx
 
 		f32 ScrollableWidget::getVScrollbarSize(void) const
 		{
-			if (!isVScrollEnabled())
-				return 0;
-			if (!needsVScroll())
-				return 0;
-			return m_vScrollbar.getw();
+			return m_vVisible ? m_vScrollbar.getThickness() : 0.0f;
 		}
 
 		f32 ScrollableWidget::getHScrollbarSize(void) const
 		{
-			if (!isHScrollEnabled())
-				return 0;
-			if (!needsHScroll())
-				return 0;
-			return m_hScrollbar.geth();
+			return m_hVisible ? m_hScrollbar.getThickness() : 0.0f;
 		}
 	}
 }

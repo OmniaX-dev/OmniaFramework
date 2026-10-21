@@ -61,6 +61,10 @@ namespace ogfx
 
 			private:
 				void processDragAndDrop(Widget* widget, const Event& event);
+				// True if the point is over the widget AND over the part of the owner
+				// where children are visible (so content scrolled out of view, or
+				// hidden behind the owner's scrollbars, can't be hit).
+				bool hit_test(Widget* widget, f32 x, f32 y) const;
 
 			private:
 				Window& m_window;
