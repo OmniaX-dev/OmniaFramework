@@ -183,10 +183,11 @@ if (UNIX AND NOT APPLE)
 endif ()
 list(APPEND TEST_SOURCE_FILES
 	# ${CMAKE_CURRENT_LIST_DIR}/src/test/GraphicsWindowTest.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/test/GuiTest.cpp
+	# ${CMAKE_CURRENT_LIST_DIR}/src/test/GuiTest.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/test/BlurExample.cpp
 	# ${CMAKE_CURRENT_LIST_DIR}/src/test/LayoutExample.cpp
 	# ${CMAKE_CURRENT_LIST_DIR}/src/test/MidiEditorTest.cpp
-	${CMAKE_CURRENT_LIST_DIR}/src/test/PianoRollEditor.cpp
+	# ${CMAKE_CURRENT_LIST_DIR}/src/test/PianoRollEditor.cpp
 	# ${CMAKE_CURRENT_LIST_DIR}/src/test/TextBufferUnitTest.cpp
 	# ${CMAKE_CURRENT_LIST_DIR}/src/test/LogFileOutputHandlerTest.cpp
 	# ${CMAKE_CURRENT_LIST_DIR}/src/test/ObjectSignalExamples.cpp

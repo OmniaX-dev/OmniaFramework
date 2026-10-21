@@ -404,12 +404,10 @@ class TestWindow : public Window
 			m_pianoRoll.getStyle().enableShowNoteNamesOnFallingNotes(true);
 			m_pianoRoll.getStyle().enableShowNoteNamesOnKeys(true);
 			// m_pianoRoll.setMusicKey(ostd::MidiParser::eMusicKey::);
-			if (m_pianoRoll.loadVoice("./Chopin Nocturne No. 20 in C#m - Left Hand.mid", Colors::Blue, "LH") == (u32)-1)
-				out().fg("red").p("[PianoRoll] Failed to load ./nChopin Nocturne No. 20 in C#m - Left Hand.mid").reset().nl();
-			if (m_pianoRoll.loadVoice("./Chopin Nocturne No. 20 in C#m - Right Hand.mid", Colors::Green, "RH") == (u32)-1)
-				out().fg("red").p("[PianoRoll] Failed to load ./Chopin Nocturne No. 20 in C#m - Right Hand.mid").reset().nl();
-			if (!m_pianoRoll.loadAudio("./audio.mp3"))
-				out().fg("red").p("[PianoRoll] Failed to load ./audio.mp3").reset().nl();
+			if (m_pianoRoll.loadVoice("./audio/Chopin Nocturne Op. 48 No. 1 in Cm.mid", Colors::Blue, "") == (u32)-1)
+				out().fg("red").p("[PianoRoll] Failed to load ./audio/Chopin Nocturne Op. 48 No. 1 in Cm.mid").reset().nl();
+			if (!m_pianoRoll.loadAudio("./audio/Chopin Nocturne Op. 48 No. 1 in Cm.mp3"))
+				out().fg("red").p("[PianoRoll] Failed to load ./audio/Chopin Nocturne Op. 48 No. 1 in Cm.mp3").reset().nl();
 
 			m_pianoPlayBtn.setSize(100, 36);
 			m_pianoPlayBtn.setText("Play");
@@ -516,10 +514,10 @@ class TestWindow : public Window
 			m_pianoRollEditor.getStyle().enableShowNoteNamesOnKeys(true);
 			// if (!m_pianoRollEditor.loadProject("./Chopin Nocturne No. 20 in C#m.pianoproj"))
 			//     out().fg("red").p("[PianoRollEditor] Failed to load project").reset().nl();
-			if (m_pianoRollEditor.loadVoice("./notes.mid", Colors::Transparent, "Piano") == (u32)-1)
-				out().fg("red").p("[PianoRollEditor] Failed to load ./notes.mid").reset().nl();
-			// if (!m_pianoRollEditor.loadAudio("./audio.mp3"))
-			//     out().fg("red").p("[PianoRollEditor] Failed to load ./audio.mp3").reset().nl();
+			if (m_pianoRollEditor.loadVoice("./audio/notes.mid", Colors::Transparent, "Piano") == (u32)-1)
+				out().fg("red").p("[PianoRollEditor] Failed to load ./audio/notes.mid").reset().nl();
+			// if (!m_pianoRollEditor.loadAudio("./audio/audio.mp3"))
+			//     out().fg("red").p("[PianoRollEditor] Failed to load ./audio/audio.mp3").reset().nl();
 			m_editorStatusLbl.setText("Selected: 0 notes");
 
 			t6.addWidget(m_pianoRollEditor, { 0, 0 });
