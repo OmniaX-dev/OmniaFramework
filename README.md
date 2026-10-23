@@ -22,7 +22,7 @@ Once you have the **MSYS2 UCRT64 terminal** open, run theese two commands to pre
 
 ```bash
 pacman -Syuu
-pacman -S --needed base-devel git mingw-w64-ucrt-x86_64-clang mingw-w64-ucrt-x86_64-gdb mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-make mingw-w64-ucrt-x86_64-boost mingw-w64-ucrt-x86_64-sdl3 mingw-w64-ucrt-x86_64-sdl3-image mingw-w64-ucrt-x86_64-sdl3-ttf mingw-w64-ucrt-x86_64-fluidsynth
+pacman -S --needed base-devel git mingw-w64-ucrt-x86_64-clang mingw-w64-ucrt-x86_64-gdb mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-make mingw-w64-ucrt-x86_64-boost mingw-w64-ucrt-x86_64-sdl3 mingw-w64-ucrt-x86_64-sdl3-image mingw-w64-ucrt-x86_64-sdl3-ttf mingw-w64-ucrt-x86_64-fluidsynth mingw-w64-ucrt-x86_64-pkgconf
 ```
 
 #### Step 3: build OmniaFramework
