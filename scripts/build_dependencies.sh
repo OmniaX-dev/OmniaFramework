@@ -1,4 +1,29 @@
 #!/bin/bash
+# build_dependencies.sh
+#
+# Installs everything needed to build OmniaFramework with the system's package manager,
+# then sets up the shader tools (scripts/setup-shader-tools.sh) on Linux and Windows.
+#
+# Usage: scripts/build_dependencies.sh [--skip-shader-tools]
+# Normally run by ./build dependencies (SKIP_SHADER_TOOLS=true passes --skip-shader-tools).
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKIP_SHADER_TOOLS=0
+for arg in "$@"; do
+	case "$arg" in
+		--skip-shader-tools) SKIP_SHADER_TOOLS=1 ;;
+		*) echo "unknown argument '$arg'" >&2; exit 1 ;;
+	esac
+done
+
+# Only needed to regenerate the embedded shaders (./build shaders), not for normal builds.
+setup_shader_tools() {
+	if [[ $SKIP_SHADER_TOOLS -eq 1 ]]; then
+		echo "Skipping the shader tools setup"
+	else
+		bash "$SCRIPT_DIR/setup-shader-tools.sh"
+	fi
+}
 
 detect_package_manager() {
 	if [[ -f /etc/os-release ]]; then
@@ -63,32 +88,32 @@ case "$(uname -s)" in
 		pacman -Syuu --noconfirm
 		pacman -S --noconfirm --needed base-devel git mingw-w64-ucrt-x86_64-clang mingw-w64-ucrt-x86_64-gdb mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-make \
 								   	   mingw-w64-ucrt-x86_64-boost mingw-w64-ucrt-x86_64-sdl3 mingw-w64-ucrt-x86_64-sdl3-image mingw-w64-ucrt-x86_64-sdl3-ttf \
-								       mingw-w64-ucrt-x86_64-fluidsynth mingw-w64-ucrt-x86_64-pkgconf
-		./setup-shader-tools.sh
+								       mingw-w64-ucrt-x86_64-fluidsynth mingw-w64-ucrt-x86_64-pkgconf mingw-w64-ucrt-x86_64-python
+		setup_shader_tools
 		;;
 	Linux) # Linux ======================================================================================================
 		pkgmgr=$(detect_package_manager)
 		case "$pkgmgr" in
 			pacman) # Arch Based ========================================================================================
 				sudo pacman -Syu --noconfirm
-				sudo pacman -S --noconfirm --needed base-devel clang gdb cmake make boost sdl3 sdl3_image sdl3_ttf fluidsynth pkgconf libxcb ncurses
+				sudo pacman -S --noconfirm --needed base-devel clang gdb cmake make boost sdl3 sdl3_image sdl3_ttf fluidsynth pkgconf libxcb ncurses python
 				;;
 			apt) # Debian Based =========================================================================================
 				sudo apt update -y && sudo apt upgrade -y
 				sudo apt install -y build-essential dkms linux-headers-$(uname -r) clang gdb make cmake libssl-dev libboost-all-dev libsdl3-dev libsdl3-image-dev \
-									libsdl3-ttf-dev libxcb-randr0-dev libfluidsynth-dev pkg-config libxcb1-dev libncurses-dev
+									libsdl3-ttf-dev libxcb-randr0-dev libfluidsynth-dev pkg-config libxcb1-dev libncurses-dev python3
 				;;
 			dnf) # Fedora ===============================================================================================
 				sudo dnf update -y
 				sudo dnf install -y gcc gcc-c++ make clang gdb cmake clang-tools-extra boost boost-devel SDL3 SDL3_image SDL3_ttf SDL3-devel SDL3_image-devel \
-									SDL3_ttf-devel fluidsynth-devel pkg-config libxcb-devel ncurses-devel
+									SDL3_ttf-devel fluidsynth-devel pkg-config libxcb-devel ncurses-devel python3
 				;;
 			*)
 				echo "Unsupported distro. Supported distros are: Arch, EndeavourOS, Garuda, Manjaro, Ubuntu, Mint, Debian, Fedora."
 				exit 1
 				;;
 		esac
-		./setup-shader-tools.sh
+		setup_shader_tools
 		;;
 	Darwin) # macOS =====================================================================================================
 		ensure_brew

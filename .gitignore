@@ -2,3 +2,4 @@
 bin/
 tools/
 dependencies/
+other/shaders/.build/

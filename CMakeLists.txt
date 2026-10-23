@@ -205,12 +205,29 @@ add_library(${OMNIA_SND_LIB} SHARED ${OSND_SOURCE_FILES})
 add_library(${OMNIA_GFX_LIB} SHARED ${OGFX_SOURCE_FILES})
 add_executable(${TEST_TARGET} ${TEST_SOURCE_FILES})
 
-# Regenerates src/ogfx/resources/EmbeddedShaders.* from shaders/*.hlsl (needs SDL_shadercross;
-# see shaders/build_shaders.py). Not part of the normal build: the generated files are committed.
-set(SHADERCROSS "shadercross" CACHE STRING "SDL_shadercross CLI used by the ogfx_shaders target")
-set(DXC_LIB_DIR "" CACHE PATH "Directory with libdxcompiler/libdxil for DXIL output (optional)")
+# Regenerates src/ogfx/resources/EmbeddedShaders.* from other/shaders/*.frag.hlsl. Not part of the
+# normal build: the generated files are committed. Defaults to the tools ./build shaders sets up
+# in tools/ (scripts/setup-shader-tools.sh), so run that once first; ./build shaders is the usual
+# way to regenerate them anyway.
+if (WIN32)
+	set(OGFX_TOOLS_SHADERCROSS ${CMAKE_CURRENT_LIST_DIR}/tools/shadercross/bin/shadercross.exe)
+	set(OGFX_TOOLS_DXC_LIB_DIR ${CMAKE_CURRENT_LIST_DIR}/tools/dxc/bin/x64)
+else()
+	set(OGFX_TOOLS_SHADERCROSS ${CMAKE_CURRENT_LIST_DIR}/tools/shadercross/bin/shadercross)
+	set(OGFX_TOOLS_DXC_LIB_DIR ${CMAKE_CURRENT_LIST_DIR}/tools/dxc/lib)
+endif()
+set(SHADERCROSS ${OGFX_TOOLS_SHADERCROSS} CACHE FILEPATH "SDL_shadercross CLI used by the ogfx_shaders target")
+set(DXC_LIB_DIR ${OGFX_TOOLS_DXC_LIB_DIR} CACHE PATH "Directory with libdxcompiler/libdxil for DXIL output (empty: whatever shadercross finds)")
+option(NO_DXIL "Leave DXIL out of the shaders built by the ogfx_shaders target" OFF)
+set(OGFX_SHADERS_ARGS --shadercross ${SHADERCROSS})
+if (DXC_LIB_DIR)
+	list(APPEND OGFX_SHADERS_ARGS --dxc-lib-dir ${DXC_LIB_DIR})
+endif()
+if (NO_DXIL)
+	list(APPEND OGFX_SHADERS_ARGS --no-dxil)
+endif()
 add_custom_target(ogfx_shaders
-	COMMAND python3 ${CMAKE_CURRENT_LIST_DIR}/shaders/build_shaders.py --shadercross ${SHADERCROSS} $<$<BOOL:${DXC_LIB_DIR}>:--dxc-lib-dir=${DXC_LIB_DIR}>
+	COMMAND python3 ${CMAKE_CURRENT_LIST_DIR}/scripts/build_shaders.py ${OGFX_SHADERS_ARGS}
 	WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
 	COMMENT "Compiling built-in shaders with SDL_shadercross"
 	VERBATIM

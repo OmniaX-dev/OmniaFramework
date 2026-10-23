@@ -1,93 +1,126 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# create_release.sh
+#
+# Assembles the release package in bin/OmniaFramework_<platform>/ from a finished build:
+#   lib/        libostd, libogfx, libosnd (+ import libraries and runtime DLLs on Windows)
+#   include/    every public header of ostd, ogfx and osnd, with their directory layout
+#   licences/   third-party licences + OmniaFramework's own
+#
+# Usage: scripts/create_release.sh [--msys2-root DIR]
+#   --msys2-root   Windows only: MSYS2's root (default: the running MSYS2, e.g. C:/msys64).
+#                  The runtime DLLs bundled with the libraries are the ones from its ucrt64/bin.
+# Normally run by ./build (release/debug, or -i); works from any directory.
 
-MSYS_ROOT=c:/msys64
+set -euo pipefail
 
-set -e
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+BUILD_DIR="$REPO_ROOT/bin"
+MODULES="ostd ogfx osnd"
 
-RELEASE_DIR=
+die() { printf '\033[1;31merror: %s\033[0m\n' "$*" >&2; exit 1; }
 
-if [[ "$(uname)" == "Darwin" ]]; then
-    RELEASE_DIR=../bin/OmniaFramework_macos
-    mkdir -p "$RELEASE_DIR/lib"
+MSYS2_ROOT=""
+while (($#)); do
+	case "$1" in
+		--msys2-root)
+			[[ $# -ge 2 ]] || die "--msys2-root needs a path"
+			MSYS2_ROOT="$2"
+			shift 2
+			;;
+		*)
+			die "unknown argument '$1'"
+			;;
+	esac
+done
 
-    # macOS shared libraries (.dylib)
-    cp ../bin/libostd.dylib "$RELEASE_DIR/lib"
-    cp ../bin/libogfx.dylib "$RELEASE_DIR/lib"
-    cp ../bin/libosnd.dylib "$RELEASE_DIR/lib"
-elif [[ "$(uname -s)" == Linux* ]]; then
-	RELEASE_DIR=../bin/OmniaFramework_linux64
-	mkdir -p $RELEASE_DIR/lib
-	cp ../bin/libostd.so $RELEASE_DIR/lib
-    cp ../bin/libogfx.so $RELEASE_DIR/lib
-    cp ../bin/libosnd.so $RELEASE_DIR/lib
-elif [[ "$(uname -s)" == MINGW64_NT* ]]; then
-	RELEASE_DIR=../bin/OmniaFramework_w64
-	mkdir -p $RELEASE_DIR/lib
-    cp ../bin/libostd.dll $RELEASE_DIR/lib
-    cp ../bin/libostd.dll.a $RELEASE_DIR/lib
-    cp ../bin/libogfx.dll $RELEASE_DIR/lib
-    cp ../bin/libogfx.dll.a $RELEASE_DIR/lib
-    cp ../bin/libosnd.dll $RELEASE_DIR/lib
-    cp ../bin/libosnd.dll.a $RELEASE_DIR/lib
+case "$(uname -s)" in
+	Darwin)      PLATFORM="macos";   RELEASE_DIR="$BUILD_DIR/OmniaFramework_macos" ;;
+	Linux*)      PLATFORM="linux";   RELEASE_DIR="$BUILD_DIR/OmniaFramework_linux64" ;;
+	MINGW64_NT*) PLATFORM="windows"; RELEASE_DIR="$BUILD_DIR/OmniaFramework_w64" ;;
+	*)           die "unsupported platform: $(uname -s)" ;;
+esac
 
-    cp $MSYS_ROOT/ucrt64/bin/libgcc_s_seh-1.dll $RELEASE_DIR/lib
-    cp $MSYS_ROOT/ucrt64/bin/libstdc++-6.dll $RELEASE_DIR/lib
-    cp $MSYS_ROOT/ucrt64/bin/libwinpthread-1.dll $RELEASE_DIR/lib
-    cp $MSYS_ROOT/ucrt64/bin/SDL3.dll $RELEASE_DIR/lib
-    cp $MSYS_ROOT/ucrt64/bin/SDL3_image.dll $RELEASE_DIR/lib
-    cp $MSYS_ROOT/ucrt64/bin/SDL3_ttf.dll $RELEASE_DIR/lib
+# Files that make up each library on this platform (relative to bin/).
+library_files() { # library_files <module>
+	case "$PLATFORM" in
+		macos)   echo "lib$1.dylib" ;;
+		linux)   echo "lib$1.so" ;;
+		windows) echo "lib$1.dll lib$1.dll.a" ;;
+	esac
+}
+
+# ===================================================== LIBRARIES =====================================================
+missing=""
+for module in $MODULES; do
+	for file in $(library_files "$module"); do
+		[[ -f "$BUILD_DIR/$file" ]] || missing="$missing $file"
+	done
+done
+[[ -z "$missing" ]] || die "not built yet (bin/):$missing"
+
+rm -rf "$RELEASE_DIR"
+mkdir -p "$RELEASE_DIR/lib" "$RELEASE_DIR/include"
+for module in $MODULES; do
+	for file in $(library_files "$module"); do
+		cp "$BUILD_DIR/$file" "$RELEASE_DIR/lib/"
+	done
+done
+
+# Windows: bundle every DLL the libraries load from MSYS2's ucrt64 (compiler runtime, SDL3,
+# FluidSynth and all of their own dependencies; ldd lists them recursively). System DLLs are
+# left out, and so are our own libraries, which ldd may resolve to an older installed copy.
+if [[ "$PLATFORM" == "windows" ]]; then
+	[[ -n "$MSYS2_ROOT" ]] || MSYS2_ROOT="$(cygpath -m /)"
+	ucrt_bin="$(cygpath -u "${MSYS2_ROOT%/}/ucrt64/bin" | tr '[:upper:]' '[:lower:]')"
+	[[ -d "$ucrt_bin" ]] || die "$MSYS2_ROOT/ucrt64/bin doesn't exist (set MSYS2_ROOT)"
+	own_dlls=""
+	for module in $MODULES; do
+		own_dlls="$own_dlls lib$module.dll"
+	done
+
+	dlls=""
+	for module in $MODULES; do
+		# ldd lines look like: "	SDL3.dll => /ucrt64/bin/SDL3.dll (0x7ff...)"
+		dlls="$dlls $(ldd "$RELEASE_DIR/lib/lib$module.dll" | awk '$2 == "=>" { print $3 }')"
+	done
+	count=0
+	for dll in $(printf '%s\n' $dlls | sort -u); do
+		lower="$(printf '%s' "$dll" | tr '[:upper:]' '[:lower:]')"
+		[[ "$lower" == "$ucrt_bin"/* ]] || continue
+		name="$(basename "$lower")"
+		[[ " $own_dlls " == *" $name "* ]] && continue
+		cp "$dll" "$RELEASE_DIR/lib/"
+		count=$((count + 1))
+	done
+	[[ $count -gt 0 ]] || die "ldd found no DLLs from $ucrt_bin; is MSYS2_ROOT right?"
+	echo "Bundled $count runtime DLLs from $ucrt_bin"
 fi
-cp -r ../licences $RELEASE_DIR
-cp ../LICENSE $RELEASE_DIR/licences/OmniaFramework-LICENCE.txt
-
-# OSTD
-mkdir -p $RELEASE_DIR/include/ostd/vendor/midifile
-mkdir -p $RELEASE_DIR/include/ostd/data
-mkdir -p $RELEASE_DIR/include/ostd/io
-mkdir -p $RELEASE_DIR/include/ostd/math
-mkdir -p $RELEASE_DIR/include/ostd/string
-mkdir -p $RELEASE_DIR/include/ostd/utils
-find ../src/ostd  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ostd \;
-find ../src/ostd/data  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ostd/data \;
-find ../src/ostd/io  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ostd/io \;
-find ../src/ostd/math  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ostd/math \;
-find ../src/ostd/string  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ostd/string \;
-find ../src/ostd/utils  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ostd/utils \;
-find ../src/ostd/vendor  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ostd/vendor \;
-find ../src/ostd/vendor/midifile  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ostd/vendor/midifile \;
-cp -r ../src/ostd/vendor/nlohmann $RELEASE_DIR/include/ostd/vendor/
+# ===================================================== LIBRARIES =====================================================
 
 
-# OGFX
-mkdir -p $RELEASE_DIR/include/ogfx/gui
-mkdir -p $RELEASE_DIR/include/ogfx/gui/widgets
-mkdir -p $RELEASE_DIR/include/ogfx/gui/menu
-mkdir -p $RELEASE_DIR/include/ogfx/gui/menu/linux
-mkdir -p $RELEASE_DIR/include/ogfx/gui/menu/linux/protocols
-mkdir -p $RELEASE_DIR/include/ogfx/gui/menu/macos
-mkdir -p $RELEASE_DIR/include/ogfx/render
-mkdir -p $RELEASE_DIR/include/ogfx/resources
-mkdir -p $RELEASE_DIR/include/ogfx/utils
-find ../src/ogfx  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx \;
-find ../src/ogfx/gui  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/gui \;
-find ../src/ogfx/gui/widgets  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/gui/widgets \;
-find ../src/ogfx/gui/menu  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/gui/menu \;
-find ../src/ogfx/gui/menu/linux  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/gui/menu/linux \;
-find ../src/ogfx/gui/menu/linux/protocols  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/gui/menu/linux/protocols \;
-find ../src/ogfx/gui/menu/macos  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/gui/menu/macos \;
-find ../src/ogfx/render  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/render \;
-find ../src/ogfx/resources  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/resources \;
-find ../src/ogfx/utils  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/ogfx/utils \;
 
 
-# OSND
-mkdir -p $RELEASE_DIR/include/osnd
-mkdir -p $RELEASE_DIR/include/osnd/audio
-mkdir -p $RELEASE_DIR/include/osnd/midi
-mkdir -p $RELEASE_DIR/include/osnd/resources
-mkdir -p $RELEASE_DIR/include/osnd/vendor
-find ../src/osnd  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/osnd \;
-find ../src/osnd/audio  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/osnd/audio \;
-find ../src/osnd/midi  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/osnd/midi \;
-find ../src/osnd/resources  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/osnd/resources \;
-find ../src/osnd/vendor  -maxdepth 1 -name "*.h*" -exec cp {} $RELEASE_DIR/include/osnd/vendor \;
+
+# ===================================================== HEADERS =====================================================
+# Every header under src/<module>/, keeping the directory structure.
+cd "$REPO_ROOT/src"
+for module in $MODULES; do
+	find "$module" -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.inl' \) | while IFS= read -r header; do
+		mkdir -p "$RELEASE_DIR/include/$(dirname "$header")"
+		cp "$header" "$RELEASE_DIR/include/$header"
+	done
+done
+cd "$REPO_ROOT"
+# ===================================================== HEADERS =====================================================
+
+
+
+
+
+# ===================================================== LICENCES =====================================================
+cp -r "$REPO_ROOT/licences" "$RELEASE_DIR/"
+cp "$REPO_ROOT/LICENSE" "$RELEASE_DIR/licences/OmniaFramework-LICENCE.txt"
+# ===================================================== LICENCES =====================================================
+
+echo "Release package: ${RELEASE_DIR#"$REPO_ROOT"/}"

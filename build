@@ -1,73 +1,463 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# OmniaFramework build script. Run ./build --help for usage.
+#
+# Must stay compatible with bash 3.2 (macOS's /bin/bash): no associative arrays,
+# no ${var,,}, no mapfile.
 
-set -e
+set -euo pipefail
 
-MAKE_COMMAND=make
-MAKEFILE_TYPE="Unix Makefiles"
+ORIGINAL_PWD="$PWD"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$REPO_ROOT"
 
-if [[ "$(uname)" == "Darwin" ]]; then
-	NJOBS=-j"$(sysctl -n hw.ncpu)"
+BUILD_DIR="bin"
+TEST_TARGET="ostd_test"
+BUILD_TARGETS="release debug dbg dependencies shaders run"
+PATH_VARIABLES="INSTALL_DIR MSYS2_ROOT SHADERCROSS DXC_LIB_DIR"
+BOOL_VARIABLES="NO_DXIL SKIP_TABS_FIX SKIP_SHADER_TOOLS"
+SHADER_TOOLS_ENV="tools/shader-tools.env"
+
+# ===================================================== HELPERS =====================================================
+info() { printf '\n\033[0;32m%s\n\n\033[0m' "$*"; }
+note() { printf '\033[1;33mnote: %s\033[0m\n' "$*" >&2; }
+die()  { printf '\033[1;31merror: %s\033[0m\n' "$*" >&2; exit 1; }
+
+contains() { # contains <word> <space separated list>
+	local word
+	for word in $2; do
+		[[ "$word" == "$1" ]] && return 0
+	done
+	return 1
+}
+
+usage() {
+	cat <<'EOF'
+Usage: ./build [-i] [-c cmake-target] [-t build-target | build-target] [-v VARIABLE=VALUE ...]
+
+With no build target, only what changed is rebuilt (needs an existing configuration in bin/).
+
+Options:
+  -i, --install                 also install the libraries and headers (into INSTALL_DIR, or the
+                                platform default); works with no build target, release and debug
+  -c, --cmake-target <target>   build only this CMake target instead of all of them
+  -t, --build-target <target>   what to do (see below); can also be given without -t
+  -v, --variables VAR=VALUE...  variable overrides; every following VAR=VALUE word belongs to them
+  -h, --help                    show this help
+
+Build targets:
+  release        clean configure + build of the Release configuration, then package bin/OmniaFramework_*
+  debug          same, for the Debug configuration
+  run            incremental build, then run the test application (or the -c target, if executable)
+  dbg            incremental build, then run it under the debugger (gdb; lldb on macOS)
+  dependencies   install the build dependencies (scripts/build_dependencies.sh)
+  shaders        regenerate the embedded shaders (scripts/build_shaders.py), setting up tools/ if needed
+
+Variables (each is only read by the targets that use it):
+  INSTALL_DIR=path          install prefix (headers in <path>/include, libraries in <path>/lib)
+  MSYS2_ROOT=path           Windows only: MSYS2's root (default: the running MSYS2, usually C:/msys64)
+  SHADERCROSS=path          shadercross executable (default: from tools/shader-tools.env)
+  DXC_LIB_DIR=path          DXC's library directory (default: from tools/shader-tools.env)
+  NO_DXIL=bool              leave DXIL out of the embedded shaders
+  SKIP_TABS_FIX=bool        don't run scripts/fix_tabs.py before building
+  SKIP_SHADER_TOOLS=bool    'dependencies' won't set up the shader tools
+  Booleans accept true/false, yes/no, on/off, 1/0.
+
+Examples:
+  ./build release                 ./build -i debug
+  ./build run                     ./build -c blur_example run
+  ./build shaders -v NO_DXIL=true ./build -i release -v INSTALL_DIR=~/.local
+EOF
+}
+
+# Variables are stored as VAR_<name> (bash 3.2 has no associative arrays).
+SET_VARIABLES=""
+var_is_set() { local name="VAR_$1"; [[ -n "${!name+x}" ]]; }
+var() { local name="VAR_$1"; printf '%s' "${!name-}"; }
+var_true() {
+	local value
+	value="$(var "$1" | tr '[:upper:]' '[:lower:]')"
+	case "$value" in
+		1|true|yes|on) return 0 ;;
+		*) return 1 ;;
+	esac
+}
+
+# Relative paths given on the command line are relative to where ./build was run from.
+resolve_user_path() {
+	local value="$1"
+	case "$value" in
+		"~") value="$HOME" ;;
+		"~/"*) value="$HOME/${value#"~/"}" ;;
+	esac
+	if [[ "$value" == /* || "$value" =~ ^[A-Za-z]:[/\\] ]]; then
+		printf '%s' "$value"
+	else
+		printf '%s' "$ORIGINAL_PWD/$value"
+	fi
+}
+
+parse_variable() {
+	local name="${1%%=*}" value="${1#*=}"
+	[[ "$name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || die "invalid variable assignment '$1'"
+	if contains "$name" "$BOOL_VARIABLES"; then
+		case "$(printf '%s' "$value" | tr '[:upper:]' '[:lower:]')" in
+			1|true|yes|on|0|false|no|off) ;;
+			*) die "$name must be a boolean (true/false, yes/no, on/off, 1/0), got '$value'" ;;
+		esac
+	elif contains "$name" "$PATH_VARIABLES"; then
+		[[ -n "$value" ]] || die "$name needs a path"
+		# A bare command name (no slash) is looked up on PATH, so leave it alone.
+		if [[ "$name" != "SHADERCROSS" || "$value" == */* || "$value" == "~" ]]; then
+			value="$(resolve_user_path "$value")"
+		fi
+	else
+		die "unknown variable '$name' (known: $PATH_VARIABLES $BOOL_VARIABLES)"
+	fi
+	printf -v "VAR_$name" '%s' "$value"
+	contains "$name" "$SET_VARIABLES" || SET_VARIABLES="$SET_VARIABLES $name"
+}
+
+set_build_target() {
+	if [[ "$1" == "install" ]]; then
+		die "the 'install' target was replaced by -i: use ./build -i (incremental) or ./build -i release"
+	fi
+	contains "$1" "$BUILD_TARGETS" || die "unknown build target '$1' (valid: $BUILD_TARGETS)"
+	[[ -z "$BUILD_TARGET" ]] || die "more than one build target given ('$BUILD_TARGET' and '$1')"
+	BUILD_TARGET="$1"
+}
+# ===================================================== HELPERS =====================================================
+
+
+
+
+
+# ===================================================== ARGUMENTS =====================================================
+INSTALL=0
+CMAKE_TARGET=""
+BUILD_TARGET=""
+while (($#)); do
+	case "$1" in
+		-h|--help)
+			usage
+			exit 0
+			;;
+		-i|--install)
+			INSTALL=1
+			shift
+			;;
+		-c|--cmake-target)
+			[[ $# -ge 2 && "$2" != -* ]] || die "$1 needs a CMake target name"
+			CMAKE_TARGET="$2"
+			shift 2
+			;;
+		--cmake-target=*)
+			CMAKE_TARGET="${1#*=}"
+			shift
+			;;
+		-t|--build-target)
+			[[ $# -ge 2 && "$2" != -* ]] || die "$1 needs a build target ($BUILD_TARGETS)"
+			set_build_target "$2"
+			shift 2
+			;;
+		--build-target=*)
+			set_build_target "${1#*=}"
+			shift
+			;;
+		-v|--variables)
+			shift
+			[[ $# -ge 1 && "$1" == *=* ]] || die "-v needs at least one VARIABLE=VALUE"
+			while (($#)) && [[ "$1" == *=* && "$1" != -* ]]; do
+				parse_variable "$1"
+				shift
+			done
+			;;
+		-*)
+			die "unknown option '$1' (see ./build --help)"
+			;;
+		*=*)
+			die "variable '$1' must follow -v (e.g. ./build ${BUILD_TARGET:-release} -v $1)"
+			;;
+		*)
+			set_build_target "$1"
+			shift
+			;;
+	esac
+done
+
+if [[ $INSTALL -eq 1 ]]; then
+	case "$BUILD_TARGET" in
+		""|release|debug) ;;
+		*) die "-i only works with no build target, 'release' or 'debug'" ;;
+	esac
+	[[ -z "$CMAKE_TARGET" ]] || die "-i installs the whole framework, so it can't be combined with -c"
+fi
+if [[ -n "$CMAKE_TARGET" ]] && contains "$BUILD_TARGET" "dependencies shaders"; then
+	note "-c is not used by '$BUILD_TARGET', ignoring it"
+	CMAKE_TARGET=""
+fi
+# ===================================================== ARGUMENTS =====================================================
+
+
+
+
+
+# ===================================================== PLATFORM =====================================================
+case "$(uname -s)" in
+	Darwin)
+		PLATFORM="macos"
+		NJOBS="-j$(sysctl -n hw.ncpu)"
+		;;
+	Linux*)
+		PLATFORM="linux"
+		NJOBS="-j$(nproc)"
+		;;
+	MINGW64_NT*)
+		PLATFORM="windows"
+		NJOBS="-j$(nproc)"
+		;;
+	*)
+		die "unsupported platform: $(uname -s)"
+		;;
+esac
+if [[ "$PLATFORM" == "windows" ]]; then
+	MAKE_COMMAND="mingw32-make.exe"
+	MAKEFILE_TYPE="MinGW Makefiles"
 else
-	NJOBS=-j$(nproc)
+	MAKE_COMMAND="make"
+	MAKEFILE_TYPE="Unix Makefiles"
 fi
 
-if [[ "$(uname -s)" == MINGW64_NT* ]]; then
-    MAKE_COMMAND=mingw32-make.exe
-    MAKEFILE_TYPE="MinGW Makefiles"
-fi
+# Which variables the chosen target reads; anything else that was set gets a note.
+PACKAGES=0
+case "$BUILD_TARGET" in
+	release|debug) PACKAGES=1 ;;
+	"") PACKAGES=$INSTALL ;;
+esac
+[[ -z "$CMAKE_TARGET" ]] || PACKAGES=0
+case "$BUILD_TARGET" in
+	dependencies) USED_VARIABLES="SKIP_SHADER_TOOLS" ;;
+	shaders) USED_VARIABLES="SHADERCROSS DXC_LIB_DIR NO_DXIL" ;;
+	*) USED_VARIABLES="SKIP_TABS_FIX" ;;
+esac
+[[ $INSTALL -eq 0 ]] || USED_VARIABLES="$USED_VARIABLES INSTALL_DIR"
+[[ $PACKAGES -eq 0 || "$PLATFORM" != "windows" ]] || USED_VARIABLES="$USED_VARIABLES MSYS2_ROOT"
+for name in $SET_VARIABLES; do
+	if [[ "$name" == "MSYS2_ROOT" && "$PLATFORM" != "windows" ]]; then
+		note "MSYS2_ROOT is Windows-only, ignoring it"
+	elif ! contains "$name" "$USED_VARIABLES"; then
+		note "$name is not used by '${BUILD_TARGET:-incremental build}', ignoring it"
+	fi
+done
+# ===================================================== PLATFORM =====================================================
 
-if [[ "$1" == "debug" || "$1" == "release" ]]; then
-	python3 scripts/fix_tabs.py
-    BUILD_TYPE="$(tr '[:lower:]' '[:upper:]' <<< ${1:0:1})${1:1}"
-    rm -rf bin
-    cmake -B bin -S ./ -G "$MAKEFILE_TYPE" -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-    $MAKE_COMMAND -C bin $NJOBS --no-print-directory
-    mkdir -p extra
-    find extra -mindepth 1 -maxdepth 1 -exec cp -r {} bin/ \;
-    build_number=$(cat other/build.nr)
-    build_number=$((build_number + 1))
-    truncate -s 0 other/build.nr
-    echo $build_number >> other/build.nr
-    cd scripts
-    chmod +x create_release.sh
-    ./create_release.sh
-    cd ..
-elif [[ "$1" == "install" ]]; then
-	cd scripts
-	chmod +x install_release.sh
-    ./install_release.sh
-    cd ..
-elif [[ "$1" == "dependencies" ]]; then
-    cd scripts
-    chmod +x build_dependencies.sh
-    ./build_dependencies.sh
-    cd ..
-else
-    find extra -mindepth 1 -maxdepth 1 -exec cp -r {} bin/ \;
-    printf "\n\033[0;32mBuilding Changes...\n\n\033[0m"
-    python3 scripts/fix_tabs.py
-    $MAKE_COMMAND -C bin $NJOBS --no-print-directory
-    if [[ "$1" == "run" ]]; then
-        printf "\n\033[0;32mRunning Test Application...\n\n\033[0m"
-        cd bin
-        ./ostd_test
-        cd ..
-	elif [[ "$1" == "dbg" ]]; then
-		printf "\n\033[0;32mDebugging Test Application...\n\n\033[0m"
-		cd bin
+
+
+
+
+# ===================================================== STEPS =====================================================
+fix_tabs() {
+	if var_true SKIP_TABS_FIX; then
+		note "SKIP_TABS_FIX is set, not fixing tabs"
+	else
+		python3 scripts/fix_tabs.py
+	fi
+}
+
+copy_extra() {
+	mkdir -p extra
+	find extra -mindepth 1 -maxdepth 1 -exec cp -r {} "$BUILD_DIR"/ \;
+}
+
+compile() {
+	if [[ -n "$CMAKE_TARGET" ]]; then
+		"$MAKE_COMMAND" -C "$BUILD_DIR" $NJOBS --no-print-directory "$CMAKE_TARGET"
+	else
+		"$MAKE_COMMAND" -C "$BUILD_DIR" $NJOBS --no-print-directory
+	fi
+}
+
+require_configured() {
+	[[ -f "$BUILD_DIR/CMakeCache.txt" && -f "$BUILD_DIR/Makefile" ]] \
+		|| die "nothing is configured in $BUILD_DIR/ yet: run ./build debug or ./build release first"
+}
+
+bump_build_number() {
+	local build_number
+	build_number="$(tr -d '[:space:]' < other/build.nr)"
+	[[ "$build_number" =~ ^[0-9]+$ ]] || die "other/build.nr doesn't contain a number"
+	echo $((build_number + 1)) > other/build.nr
+}
+
+package() {
+	if [[ $PACKAGES -eq 0 ]]; then
+		if [[ -n "$CMAKE_TARGET" ]] && contains "$BUILD_TARGET" "release debug"; then
+			note "only '$CMAKE_TARGET' was built, so no release package is made"
+		fi
+		return 0
+	fi
+	local args=()
+	var_is_set MSYS2_ROOT && args+=(--msys2-root "$(var MSYS2_ROOT)")
+	bash scripts/create_release.sh ${args[@]+"${args[@]}"}
+}
+
+install_release() {
+	[[ $INSTALL -eq 1 ]] || return 0
+	local args=()
+	var_is_set INSTALL_DIR && args+=(--prefix "$(var INSTALL_DIR)")
+	var_is_set MSYS2_ROOT && args+=(--msys2-root "$(var MSYS2_ROOT)")
+	bash scripts/install_release.sh ${args[@]+"${args[@]}"}
+}
+
+# The executable 'run' and 'dbg' start: the -c target when it is one, otherwise the test app.
+executable_name() {
+	local name="$TEST_TARGET"
+	if [[ -n "$CMAKE_TARGET" && ( -x "$BUILD_DIR/$CMAKE_TARGET" || -f "$BUILD_DIR/$CMAKE_TARGET.exe" ) && ! -d "$BUILD_DIR/$CMAKE_TARGET" ]]; then
+		name="$CMAKE_TARGET"
+	fi
+	[[ -x "$BUILD_DIR/$name" || -f "$BUILD_DIR/$name.exe" ]] || die "$BUILD_DIR/$name hasn't been built"
+	printf '%s' "$name"
+}
+
+run_executable() {
+	local name
+	name="$(executable_name)"
+	info "Running $name..."
+	(cd "$BUILD_DIR" && "./$name")
+}
+
+debug_executable() {
+	local name
+	name="$(executable_name)"
+	info "Debugging $name..."
+	cd "$BUILD_DIR"
+	if [[ "$PLATFORM" == "macos" ]]; then
+		command -v lldb >/dev/null 2>&1 || die "lldb not found (install the Xcode command line tools)"
+		lldb --batch \
+			-o 'settings set auto-confirm true' \
+			-o run \
+			-k 'bt all' \
+			-k 'frame variable' \
+			-k quit \
+			-- "./$name" 2>&1 | tee lldb-last.log
+	else
+		command -v gdb >/dev/null 2>&1 || die "gdb not found (./build dependencies installs it)"
 		gdb -batch \
-		    -ex 'set pagination off' \
-		    -ex 'set print pretty on' \
-		    -ex 'set logging file gdb-last.log' \
-		    -ex 'set logging overwrite on' \
-		    -ex 'set logging on' \
-		    -ex 'handle SIGPIPE nostop noprint pass' \
-		    -ex run \
-		    -ex 'bt full' \
-		    -ex 'info locals' \
-		    -ex 'info args' \
-		    -ex quit \
-		    --args ./ostd_test
-        cd ..
-    fi
-fi
+			-ex 'set pagination off' \
+			-ex 'set print pretty on' \
+			-ex 'set logging file gdb-last.log' \
+			-ex 'set logging overwrite on' \
+			-ex 'set logging on' \
+			-ex 'handle SIGPIPE nostop noprint pass' \
+			-ex run \
+			-ex 'bt full' \
+			-ex 'info locals' \
+			-ex 'info args' \
+			-ex quit \
+			--args "./$name"
+	fi
+	cd "$REPO_ROOT"
+}
+
+# Reads SHADERCROSS / DXC_LIB_DIR / PLATFORM from tools/shader-tools.env (KEY=value lines).
+load_shader_tools_env() {
+	ENV_SHADERCROSS=""
+	ENV_DXC_LIB_DIR=""
+	ENV_PLATFORM=""
+	[[ -f "$SHADER_TOOLS_ENV" ]] || return 1
+	local key value
+	while IFS='=' read -r key value || [[ -n "$key" ]]; do
+		value="${value%$'\r'}"
+		case "$key" in
+			SHADERCROSS) ENV_SHADERCROSS="$value" ;;
+			DXC_LIB_DIR) ENV_DXC_LIB_DIR="$value" ;;
+			PLATFORM) ENV_PLATFORM="$value" ;;
+		esac
+	done < "$SHADER_TOOLS_ENV"
+	[[ -n "$ENV_SHADERCROSS" && -f "$ENV_SHADERCROSS" && "$ENV_PLATFORM" == "$PLATFORM" ]]
+}
+
+build_shaders() {
+	local shadercross dxc_lib_dir
+	shadercross="$(var SHADERCROSS)"
+	dxc_lib_dir="$(var DXC_LIB_DIR)"
+
+	if [[ -z "$shadercross" ]]; then
+		[[ "$PLATFORM" != "macos" ]] || die "regenerating shaders is not supported on macOS (Microsoft ships no DXC for it); the compiled shaders are committed, so normal builds don't need this"
+		if ! load_shader_tools_env; then
+			info "Setting up the shader tools in tools/..."
+			bash scripts/setup-shader-tools.sh
+			load_shader_tools_env || die "scripts/setup-shader-tools.sh didn't produce a usable $SHADER_TOOLS_ENV"
+		fi
+		shadercross="$ENV_SHADERCROSS"
+		[[ -n "$dxc_lib_dir" ]] || dxc_lib_dir="$ENV_DXC_LIB_DIR"
+	elif [[ -z "$dxc_lib_dir" ]] && load_shader_tools_env; then
+		dxc_lib_dir="$ENV_DXC_LIB_DIR"
+	fi
+
+	local args=(scripts/build_shaders.py --shadercross "$shadercross")
+	if var_true NO_DXIL; then
+		args+=(--no-dxil)
+	elif [[ -n "$dxc_lib_dir" ]]; then
+		args+=(--dxc-lib-dir "$dxc_lib_dir")
+	else
+		note "no DXC_LIB_DIR: DXIL is compiled with whatever DXC shadercross finds, which may not sign it"
+	fi
+	info "Building shaders..."
+	python3 "${args[@]}"
+}
+
+full_build() { # full_build <Release|Debug>
+	fix_tabs
+	rm -rf "$BUILD_DIR"
+	cmake -B "$BUILD_DIR" -S ./ -G "$MAKEFILE_TYPE" -DCMAKE_BUILD_TYPE="$1"
+	compile
+	copy_extra
+	bump_build_number
+	package
+	install_release
+}
+
+incremental_build() {
+	require_configured
+	copy_extra
+	info "Building Changes..."
+	fix_tabs
+	compile
+}
+# ===================================================== STEPS =====================================================
+
+
+
+
+
+# ===================================================== MAIN =====================================================
+case "$BUILD_TARGET" in
+	release)
+		full_build Release
+		;;
+	debug)
+		full_build Debug
+		;;
+	dependencies)
+		args=()
+		var_true SKIP_SHADER_TOOLS && args+=(--skip-shader-tools)
+		bash scripts/build_dependencies.sh ${args[@]+"${args[@]}"}
+		;;
+	shaders)
+		build_shaders
+		;;
+	run)
+		incremental_build
+		run_executable
+		;;
+	dbg)
+		incremental_build
+		debug_executable
+		;;
+	"")
+		incremental_build
+		package
+		install_release
+		;;
+esac
+# ===================================================== MAIN =====================================================
