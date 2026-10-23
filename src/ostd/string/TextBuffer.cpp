@@ -513,7 +513,7 @@ namespace ostd
 	// ============================================================
 
 	void TextBuffer::replace_range(u32 start_byte, u32 end_byte, const String& with,
-	                               EditKind kind)
+								   EditKind kind)
 	{
 		// Defensive clamping. In normal usage the public methods already
 		// produce well-formed boundaries, but we want the chokepoint itself

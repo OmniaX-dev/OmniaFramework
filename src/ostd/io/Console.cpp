@@ -48,9 +48,9 @@ void BasicConsole::setConsoleCursorPosition(i32 x, i32 y)
 
 IPoint BasicConsole::getConsoleCursorPosition(void)
 {
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-    return { csbi.dwCursorPosition.X, csbi.dwCursorPosition.Y };
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+	return { csbi.dwCursorPosition.X, csbi.dwCursorPosition.Y };
 }
 
 #elif defined (__LINUX__) || defined(__gnu_linux__) || defined(__linux__)
@@ -74,7 +74,7 @@ void BasicConsole::clearConsole(void)
 void BasicConsole::getConsoleSize(i32& outColumns, i32& outRows)
 {
 	struct winsize w;
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 	outRows = w.ws_row;
 	outColumns = w.ws_col;
 }
@@ -87,30 +87,30 @@ void BasicConsole::setConsoleCursorPosition(i32 x, i32 y)
 IPoint BasicConsole::getConsoleCursorPosition(void)
 {
 	// Save terminal settings
-    termios oldt, newt;
-    tcgetattr(STDIN_FILENO, &oldt);
-    newt = oldt;
+	termios oldt, newt;
+	tcgetattr(STDIN_FILENO, &oldt);
+	newt = oldt;
 
-    // Disable canonical mode and echo
-    newt.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+	// Disable canonical mode and echo
+	newt.c_lflag &= ~(ICANON | ECHO);
+	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 
-    // Request cursor position
-    std::printf("\033[6n");
-    std::fflush(stdout);
+	// Request cursor position
+	std::printf("\033[6n");
+	std::fflush(stdout);
 
-    // Read response: ESC [ row ; col R
-    i32 row = 0, col = 0;
-    if (std::scanf("\033[%d;%dR", &row, &col) != 2) {
-        // Failed to parse
-        row = col = -1;
-    }
+	// Read response: ESC [ row ; col R
+	i32 row = 0, col = 0;
+	if (std::scanf("\033[%d;%dR", &row, &col) != 2) {
+		// Failed to parse
+		row = col = -1;
+	}
 
-    // Restore terminal settings
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+	// Restore terminal settings
+	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 
-    // Convert to 0-based like Windows
-    return { col - 1, row - 1 };
+	// Convert to 0-based like Windows
+	return { col - 1, row - 1 };
 }
 
 #elif defined(__APPLE__)
@@ -121,53 +121,53 @@ IPoint BasicConsole::getConsoleCursorPosition(void)
 
 void BasicConsole::clearConsole(void)
 {
-    // ANSI escape sequence: clear screen + move cursor to top-left
-    std::printf("\033[2J\033[H");
-    std::fflush(stdout);
+	// ANSI escape sequence: clear screen + move cursor to top-left
+	std::printf("\033[2J\033[H");
+	std::fflush(stdout);
 }
 
 void BasicConsole::getConsoleSize(i32& outColumns, i32& outRows)
 {
-    struct winsize w;
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-    outRows = w.ws_row;
-    outColumns = w.ws_col;
+	struct winsize w;
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+	outRows = w.ws_row;
+	outColumns = w.ws_col;
 }
 
 void BasicConsole::setConsoleCursorPosition(i32 x, i32 y)
 {
-    // ANSI escape sequence: move cursor to (y+1, x+1)
-    std::printf("\033[%d;%dH", y + 1, x + 1);
-    std::fflush(stdout);
+	// ANSI escape sequence: move cursor to (y+1, x+1)
+	std::printf("\033[%d;%dH", y + 1, x + 1);
+	std::fflush(stdout);
 }
 
 IPoint BasicConsole::getConsoleCursorPosition(void)
 {
 	// Save terminal settings
-    termios oldt, newt;
-    tcgetattr(STDIN_FILENO, &oldt);
-    newt = oldt;
+	termios oldt, newt;
+	tcgetattr(STDIN_FILENO, &oldt);
+	newt = oldt;
 
-    // Disable canonical mode and echo
-    newt.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+	// Disable canonical mode and echo
+	newt.c_lflag &= ~(ICANON | ECHO);
+	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 
-    // Request cursor position
-    std::printf("\033[6n");
-    std::fflush(stdout);
+	// Request cursor position
+	std::printf("\033[6n");
+	std::fflush(stdout);
 
-    // Read response: ESC [ row ; col R
-    i32 row = 0, col = 0;
-    if (std::scanf("\033[%d;%dR", &row, &col) != 2) {
-        // Failed to parse
-        row = col = -1;
-    }
+	// Read response: ESC [ row ; col R
+	i32 row = 0, col = 0;
+	if (std::scanf("\033[%d;%dR", &row, &col) != 2) {
+		// Failed to parse
+		row = col = -1;
+	}
 
-    // Restore terminal settings
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+	// Restore terminal settings
+	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 
-    // Convert to 0-based like Windows
-    return { col - 1, row - 1 };
+	// Convert to 0-based like Windows
+	return { col - 1, row - 1 };
 }
 
 #endif
