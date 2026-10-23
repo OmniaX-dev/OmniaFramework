@@ -37,8 +37,8 @@ SHADERCROSS_REF=""   # optional tag/commit to pin shadercross; empty = latest ma
 DXC_TAG="v1.9.2609"
 DXC_LINUX_FILE="linux_dxc_2026_09_28.x86_x64.tar.gz"
 DXC_LINUX_SHA256="96faadc7f5c282d2ffda49804beb4c3ee38127bc252b723234e3c5cdf7aa39a1"
-DXC_WINDOWS_FILE="dxc_2026_09_28.zip"   # check the exact asset name on the release page
-DXC_WINDOWS_SHA256=""                   # empty: the script prints the hash and stops
+DXC_WINDOWS_FILE="dxc_2026_09_29.zip"   # check the exact asset name on the release page
+DXC_WINDOWS_SHA256="ad31b1fc8443175d204f77a611fdb3ef2ec42759bdc2f1167368de24a4a7e7f1"                   # empty: the script prints the hash and stops
 # Optional PRIVATE mirror base URL (e.g. homelab behind auth; never public).
 # The file name is appended. Downloads from it are checked against the same hash.
 DXC_FALLBACK_BASE_URL=""
