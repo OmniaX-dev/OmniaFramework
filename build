@@ -29,11 +29,18 @@ if [[ "$1" == "debug" || "$1" == "release" ]]; then
     truncate -s 0 other/build.nr
     echo $build_number >> other/build.nr
     cd scripts
+    chmod +x create_release.sh
     ./create_release.sh
     cd ..
 elif [[ "$1" == "install" ]]; then
 	cd scripts
+	chmod +x install_release.sh
     ./install_release.sh
+    cd ..
+elif [[ "$1" == "dependencies" ]]; then
+    cd scripts
+    chmod +x build_dependencies.sh
+    ./build_dependencies.sh
     cd ..
 else
     find extra -mindepth 1 -maxdepth 1 -exec cp -r {} bin/ \;

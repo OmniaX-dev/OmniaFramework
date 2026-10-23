@@ -86,21 +86,21 @@ Installs the library MSYS2's UCRT64 profile.
 - **<u>Arch Linux</u>**
 
 ```bash
-sudo pacman -S --needed base-devel clang gdb cmake make boost sdl3 sdl3_image sdl3_ttf fluidsynth pkgconf
+sudo pacman -S --needed base-devel clang gdb cmake make boost sdl3 sdl3_image sdl3_ttf fluidsynth pkgconf libxcb ncurses
 ```
 
 - **<u>Ubuntu</u>**
 
 ```bash
 sudo apt update && sudo apt upgrade
-sudo apt install build-essential dkms linux-headers-$(uname -r) clang gdb make cmake libssl-dev libboost-all-dev libsdl3-dev libsdl3-image-dev libsdl3-ttf-dev libxcb-randr0-dev libfluidsynth-dev pkg-config
+sudo apt install build-essential dkms clang gdb make cmake libssl-dev libboost-all-dev libsdl3-dev libsdl3-image-dev libsdl3-ttf-dev libxcb-randr0-dev libfluidsynth-dev pkg-config libxcb1-dev libncurses-dev
 ```
 
 - **<u>Fedora</u>**
 
 ```bash
 sudo dnf update
-sudo dnf install gcc gcc-c++ make clang gdb cmake clang-tools-extra boost boost-devel SDL3 SDL3_image SDL3_ttf SDL3-devel SDL3_image-devel SDL3_ttf-devel fluidsynth-devel pkg-config
+sudo dnf install gcc gcc-c++ make clang gdb cmake clang-tools-extra boost boost-devel SDL3 SDL3_image SDL3_ttf SDL3-devel SDL3_image-devel SDL3_ttf-devel fluidsynth-devel pkg-config libxcb-devel ncurses-devel
 ```
 
 > **NOTE**: For other Linux distros, you need to install the same dependencies through your package manager.
@@ -148,6 +148,9 @@ eval "$(/usr/local/bin/brew shellenv)"
 brew install git llvm gdb cmake make boost sdl3 sdl3_image sdl3_ttf pkg-config fluidsynth
 ```
 
+
+
+d
 ##### Step 4: Build OmniaFramework
 
 ```bash
