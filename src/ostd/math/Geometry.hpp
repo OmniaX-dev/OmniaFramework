@@ -44,7 +44,7 @@
 
 namespace ostd
 {
-	struct Vec2 : public I_stringeable
+	struct Vec2 final : public I_stringeable
 	{
 		//======================== Data ========================
 		f32 x { 0.0f };

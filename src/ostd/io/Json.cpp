@@ -13,239 +13,239 @@ namespace ostd
 		// ----- bool ---------------------------------------------------------
 		template<> struct Getter<bool>
 		{
-		    static bool exec_impl(const std::string& p, const json& root)
-		    {
-		        try { return root.at(p).get<bool>(); }
-		        catch (const json::exception&) { return false; }
-		    }
+			static bool exec_impl(const std::string& p, const json& root)
+			{
+				try { return root.at(p).get<bool>(); }
+				catch (const json::exception&) { return false; }
+			}
 		};
 		// ----- i32 ----------------------------------------------------------
 		template<> struct Getter<i32>
 		{
-		    static i32 exec_impl(const std::string& p, const json& root)
-		    {
-		        try { return root.at(p).get<i32>(); }
-		        catch (const json::exception&) { return 0; }
-		    }
+			static i32 exec_impl(const std::string& p, const json& root)
+			{
+				try { return root.at(p).get<i32>(); }
+				catch (const json::exception&) { return 0; }
+			}
 		};
 		// ----- f64 -------------------------------------------------------
 		template<> struct Getter<f64>
 		{
-		    static f64 exec_impl(const std::string& p, const json& root)
-		    {
-		        try { return root.at(p).get<f64>(); }
-		        catch (const json::exception&) { return 0.0; }
-		    }
+			static f64 exec_impl(const std::string& p, const json& root)
+			{
+				try { return root.at(p).get<f64>(); }
+				catch (const json::exception&) { return 0.0; }
+			}
 		};
 		// ----- String -------------------------------------------------
 		template<> struct Getter<String>
 		{
-		    static String exec_impl(const std::string& p, const json& root)
-		    {
-		        try { return String(root.at(p).get<std::string>().c_str()); }
-		        catch (const json::exception&) { return String(""); }
-		    }
+			static String exec_impl(const std::string& p, const json& root)
+			{
+				try { return String(root.at(p).get<std::string>().c_str()); }
+				catch (const json::exception&) { return String(""); }
+			}
 		};
 		// ----- Color -------------------------------------------------
 		template<> struct Getter<Color>
 		{
-		    static Color exec_impl(const std::string& p, const json& root)
-		    {
-		        try {
+			static Color exec_impl(const std::string& p, const json& root)
+			{
+				try {
 					const json& node = root.at(p);
 
-		            // Case 1: Hex string ("#RRGGBBAA")
-		            if (node.is_string())
-		            {
-		                const std::string& hex = node.get<std::string>();
-		                if (hex.starts_with("#") && hex.size() == 9)  // 9 for #RRGGBBAA
-			                return Color(hex);
-		                return Color();  // Not a valid hex format
-		            }
+					// Case 1: Hex string ("#RRGGBBAA")
+					if (node.is_string())
+					{
+						const std::string& hex = node.get<std::string>();
+						if (hex.starts_with("#") && hex.size() == 9)  // 9 for #RRGGBBAA
+							return Color(hex);
+						return Color();  // Not a valid hex format
+					}
 
 					// Case 2: Array of integers
-		            if (node.is_array() && !node.empty())
-		            {
-		                stdvec<i32> vals;
-		                for (const auto& v : node)
-		                {
-		                    if (!v.is_number_integer()) return Color();
-		                    i32 iv = v.get<i32>();
-		                    if (iv < 0 || iv > 255) return Color();
-		                    vals.push_back(iv);
-		                }
+					if (node.is_array() && !node.empty())
+					{
+						stdvec<i32> vals;
+						for (const auto& v : node)
+						{
+							if (!v.is_number_integer()) return Color();
+							i32 iv = v.get<i32>();
+							if (iv < 0 || iv > 255) return Color();
+							vals.push_back(iv);
+						}
 
-		                switch (vals.size())
-		                {
-		                    case 1: return Color(vals[0], vals[0], vals[0]);
-		                    case 3: return Color(vals[0], vals[1], vals[2]);
-		                    case 4: return Color(vals[0], vals[1], vals[2], vals[3]);
-		                    default: return Color();
-		                }
-		            }
+						switch (vals.size())
+						{
+							case 1: return Color(vals[0], vals[0], vals[0]);
+							case 3: return Color(vals[0], vals[1], vals[2]);
+							case 4: return Color(vals[0], vals[1], vals[2], vals[3]);
+							default: return Color();
+						}
+					}
 
-		            // Anything else → default color
-		            return Color();
-		        }
-		        catch (...) { return Color(); }
-		    }
+					// Anything else → default color
+					return Color();
+				}
+				catch (...) { return Color(); }
+			}
 		};
 		// ----- Rectangle -------------------------------------------------
 		template<> struct Getter<Rectangle>
 		{
-		    static Rectangle exec_impl(const std::string& p, const json& root)
-		    {
-		        try
-		        {
-		            const json& node = root.at(p);
-		            if (node.is_array() && node.size() == 4)
-		            {
-		                stdvec<f32> vals;
-		                vals.reserve(4);
-		                for (const auto& v : node)
-		                {
-		                    if (!v.is_number_float() && !v.is_number_integer())
-		                        return Rectangle();
-		                    vals.push_back(v.get<f32>());
-		                }
-		                return Rectangle(vals[0], vals[1], vals[2], vals[3]);
-		            }
-		            return Rectangle();
-		        }
-		        catch (...)
-		        {
-		            return Rectangle();
-		        }
-		    }
+			static Rectangle exec_impl(const std::string& p, const json& root)
+			{
+				try
+				{
+					const json& node = root.at(p);
+					if (node.is_array() && node.size() == 4)
+					{
+						stdvec<f32> vals;
+						vals.reserve(4);
+						for (const auto& v : node)
+						{
+							if (!v.is_number_float() && !v.is_number_integer())
+								return Rectangle();
+							vals.push_back(v.get<f32>());
+						}
+						return Rectangle(vals[0], vals[1], vals[2], vals[3]);
+					}
+					return Rectangle();
+				}
+				catch (...)
+				{
+					return Rectangle();
+				}
+			}
 		};
 		// ----- stdvec<i32> ----------------------------------------
 		template<> struct Getter<stdvec<i32>>
 		{
-		    static stdvec<i32> exec_impl(const std::string& p, const json& root)
-		    {
-		        stdvec<i32> result;
-		        try
+			static stdvec<i32> exec_impl(const std::string& p, const json& root)
+			{
+				stdvec<i32> result;
+				try
 				{
-		            const json& arr = root.at(p);
-		            if (!arr.is_array()) return result;
-		            for (const auto& v : arr)
+					const json& arr = root.at(p);
+					if (!arr.is_array()) return result;
+					for (const auto& v : arr)
 					{
-		                if (v.is_number_integer())
-		                    result.push_back(v.get<i32>());
-		            }
-		        } catch (...) {}
-		        return result;
-		    }
+						if (v.is_number_integer())
+							result.push_back(v.get<i32>());
+					}
+				} catch (...) {}
+				return result;
+			}
 		};
 		// ----- stdvec<f64> -----------------------------------------
 		template<> struct Getter<stdvec<f64>>
 		{
-		    static stdvec<f64> exec_impl(const std::string& p, const json& root)
-		    {
-		        stdvec<f64> result;
-		        try
+			static stdvec<f64> exec_impl(const std::string& p, const json& root)
+			{
+				stdvec<f64> result;
+				try
 				{
-		            const json& arr = root.at(p);
-		            if (!arr.is_array()) return result;
-		            for (const auto& v : arr)
+					const json& arr = root.at(p);
+					if (!arr.is_array()) return result;
+					for (const auto& v : arr)
 					{
-		                if (v.is_number())
-		                    result.push_back(v.get<f64>());
-		            }
-		        } catch (...) {}
-		        return result;
-		    }
+						if (v.is_number())
+							result.push_back(v.get<f64>());
+					}
+				} catch (...) {}
+				return result;
+			}
 		};
 		// ----- stdvec<String> -----------------------------------
 		template<> struct Getter<stdvec<String>>
 		{
-		    static stdvec<String> exec_impl(const std::string& p, const json& root)
-		    {
-		        stdvec<String> result;
-		        try
+			static stdvec<String> exec_impl(const std::string& p, const json& root)
+			{
+				stdvec<String> result;
+				try
 				{
-		            const json& arr = root.at(p);
-		            if (!arr.is_array()) return result;
-		            for (const auto& v : arr)
+					const json& arr = root.at(p);
+					if (!arr.is_array()) return result;
+					for (const auto& v : arr)
 					{
-		                if (v.is_string())
-		                    result.emplace_back(v.get<std::string>().c_str());
-		            }
-		        } catch (...) {}
-		        return result;
-		    }
+						if (v.is_string())
+							result.emplace_back(v.get<std::string>().c_str());
+					}
+				} catch (...) {}
+				return result;
+			}
 		};
 		// ----- stdvec<Color> -----------------------------------
 		template<> struct Getter<stdvec<Color>>
 		{
-		    static stdvec<Color> exec_impl(const std::string& p, const json& root)
-		    {
-		        stdvec<Color> result;
-		        try
-		        {
-		            const json& node = root.at(p);
-		            if (!node.is_array() || node.empty())
-		                return result;
-		            result.reserve(node.size());
-		            for (const auto& element : node)
-		            {
-		                // We temporarily create a fake "sub-root" that only contains one key "color"
-		                // This lets us call the existing Getter<Color> without modifying it
-		                json fake_root = { { "color", element } };
-		                Color color = Getter<Color>::exec_impl("color", fake_root);
-		                result.push_back(color);
-		            }
-		            return result;
-		        }
-		        catch (...)
-		        {
-		            return {};
-		        }
-		    }
+			static stdvec<Color> exec_impl(const std::string& p, const json& root)
+			{
+				stdvec<Color> result;
+				try
+				{
+					const json& node = root.at(p);
+					if (!node.is_array() || node.empty())
+						return result;
+					result.reserve(node.size());
+					for (const auto& element : node)
+					{
+						// We temporarily create a fake "sub-root" that only contains one key "color"
+						// This lets us call the existing Getter<Color> without modifying it
+						json fake_root = { { "color", element } };
+						Color color = Getter<Color>::exec_impl("color", fake_root);
+						result.push_back(color);
+					}
+					return result;
+				}
+				catch (...)
+				{
+					return {};
+				}
+			}
 		};
 		// ----- stdvec<Vec2> -----------------------------------
 		template<> struct Getter<Vec2>
 		{
-		    static Vec2 exec_impl(const std::string& p, const json& root)
-		    {
-		        try
+			static Vec2 exec_impl(const std::string& p, const json& root)
+			{
+				try
 				{
-		            const json& arr = root.at(p);
-		            if (!arr.is_array() || arr.size() != 2)
-		                return Vec2();
-		            return Vec2(arr[0].get<f32>(), arr[1].get<f32>());
-		        }
-		        catch (...)
+					const json& arr = root.at(p);
+					if (!arr.is_array() || arr.size() != 2)
+						return Vec2();
+					return Vec2(arr[0].get<f32>(), arr[1].get<f32>());
+				}
+				catch (...)
 				{
-		            return Vec2();
-		        }
-		    }
+					return Vec2();
+				}
+			}
 		};
 		// ----- stdvec<Rectangle> -----------------------------------
 		template<> struct Getter<stdvec<Rectangle>>
 		{
-		    static stdvec<Rectangle> exec_impl(const std::string& p, const json& root)
-		    {
-		        stdvec<Rectangle> result;
-		        try
-		        {
-		            const json& node = root.at(p);
-		            if (!node.is_array() || node.empty())
-		                return result;
-		            result.reserve(node.size());
-		            for (const auto& element : node)
-		            {
-		                json fake_root = { { "rect", element } };
-		                Rectangle rect = Getter<Rectangle>::exec_impl("rect", fake_root);
-		                result.push_back(rect);
-		            }
-		            return result;
-		        }
-		        catch (...)
-		        {
-		            return {};
-		        }
-		    }
+			static stdvec<Rectangle> exec_impl(const std::string& p, const json& root)
+			{
+				stdvec<Rectangle> result;
+				try
+				{
+					const json& node = root.at(p);
+					if (!node.is_array() || node.empty())
+						return result;
+					result.reserve(node.size());
+					for (const auto& element : node)
+					{
+						json fake_root = { { "rect", element } };
+						Rectangle rect = Getter<Rectangle>::exec_impl("rect", fake_root);
+						result.push_back(rect);
+					}
+					return result;
+				}
+				catch (...)
+				{
+					return {};
+				}
+			}
 		};
 
 
@@ -258,233 +258,233 @@ namespace ostd
 		// ----- bool ---------------------------------------------------------
 		template<> struct Setter<bool>
 		{
-		    static bool exec_impl(const std::string& p, json& root, bool value)
-		    {
-		        try
+			static bool exec_impl(const std::string& p, json& root, bool value)
+			{
+				try
 				{
 					root[p] = value;
-		            return true;
-		        }
+					return true;
+				}
 				catch (...) { return false; }
-		    }
+			}
 		};
 
 		// ----- i32 ----------------------------------------------------------
 		template<> struct Setter<i32>
 		{
-		    static bool exec_impl(const std::string& p, json& root, i32 value)
-		    {
-		        try
+			static bool exec_impl(const std::string& p, json& root, i32 value)
+			{
+				try
 				{
 					root[p] = value;
-		            return true;
-		        }
+					return true;
+				}
 				catch (...) { return false; }
-		    }
+			}
 		};
 
 		// ----- f64 -------------------------------------------------------
 		template<> struct Setter<f64>
 		{
-		    static bool exec_impl(const std::string& p, json& root, f64 value)
-		    {
-		        try
+			static bool exec_impl(const std::string& p, json& root, f64 value)
+			{
+				try
 				{
 					root[p] = value;
-		            return true;
-		        }
+					return true;
+				}
 				catch (...) { return false; }
-		    }
+			}
 		};
 
 		// ----- String -------------------------------------------------
 		template<> struct Setter<String>
 		{
-		    static bool exec_impl(const std::string& p, json& root, const String& value)
-		    {
-		        try
+			static bool exec_impl(const std::string& p, json& root, const String& value)
+			{
+				try
 				{
 					root[p] = value;
-		            return true;
-		        }
+					return true;
+				}
 				catch (...) { return false; }
-		    }
+			}
 		};
 		// ----- Color -------------------------------------------------
 		template<> struct Setter<Color>
 		{
-		    // "#RRGGBBAA", matching Setter<stdvec<Color>> below and what Getter<Color> above
-		    // already preferred reading - a plain integer array was the only thing this one
-		    // actually wrote, out of sync with both of those.
-		    static bool exec_impl(const std::string& p, json& root, const Color& value)
-		    {
-		        try
+			// "#RRGGBBAA", matching Setter<stdvec<Color>> below and what Getter<Color> above
+			// already preferred reading - a plain integer array was the only thing this one
+			// actually wrote, out of sync with both of those.
+			static bool exec_impl(const std::string& p, json& root, const Color& value)
+			{
+				try
 				{
-		            root[p] = value.hexString(true, "#").cpp_str();
-		            return true;
-		        } catch (...) { return false; }
-		    }
+					root[p] = value.hexString(true, "#").cpp_str();
+					return true;
+				} catch (...) { return false; }
+			}
 		};
 		// ----- stdvec<Vec2> -----------------------------------
 		template<> struct Setter<Vec2>
 		{
-		    static bool exec_impl(const std::string& p, json& root, const Vec2& value)
-		    {
-		        try
+			static bool exec_impl(const std::string& p, json& root, const Vec2& value)
+			{
+				try
 				{
-		            json arr = json::array();
-		            arr.push_back(value.x);
-		            arr.push_back(value.y);
-		            root[p] = arr;
-		            return true;
-		        }
-		        catch (...)
+					json arr = json::array();
+					arr.push_back(value.x);
+					arr.push_back(value.y);
+					root[p] = arr;
+					return true;
+				}
+				catch (...)
 				{
-		            return false;
-		        }
-		    }
+					return false;
+				}
+			}
 		};
 		// ----- Rectangle -------------------------------------------------
 		template<> struct Setter<Rectangle>
 		{
-		    static bool exec_impl(const std::string& p, json& root, const Rectangle& value)
-		    {
-		        try
-		        {
-		            json arr = json::array();
-		            arr.push_back(value.x);
-		            arr.push_back(value.y);
-		            arr.push_back(value.w);
-		            arr.push_back(value.h);
-		            root[p] = arr;
-		            return true;
-		        }
-		        catch (...)
-		        {
-		            return false;
-		        }
-		    }
+			static bool exec_impl(const std::string& p, json& root, const Rectangle& value)
+			{
+				try
+				{
+					json arr = json::array();
+					arr.push_back(value.x);
+					arr.push_back(value.y);
+					arr.push_back(value.w);
+					arr.push_back(value.h);
+					root[p] = arr;
+					return true;
+				}
+				catch (...)
+				{
+					return false;
+				}
+			}
 		};
 		// ----- stdvec<i32> ----------------------------------------
 		template<> struct Setter<stdvec<i32>>
 		{
-		    static bool exec_impl(const std::string& p, json& root, const stdvec<i32>& value)
-		    {
-		        try
+			static bool exec_impl(const std::string& p, json& root, const stdvec<i32>& value)
+			{
+				try
 				{
-		            json arr = json::array();
-		            for (i32 v : value) arr.push_back(v);
-		            root[p] = arr;
-		            return true;
-		        } catch (...) { return false; }
-		    }
+					json arr = json::array();
+					for (i32 v : value) arr.push_back(v);
+					root[p] = arr;
+					return true;
+				} catch (...) { return false; }
+			}
 		};
 		// ----- stdvec<f64> -----------------------------------------
 		template<> struct Setter<stdvec<f64>>
 		{
-		    static bool exec_impl(const std::string& p, json& root, const stdvec<f64>& value)
-		    {
-		        try
+			static bool exec_impl(const std::string& p, json& root, const stdvec<f64>& value)
+			{
+				try
 				{
-		            json arr = json::array();
-		            for (f64 v : value) arr.push_back(v);
-		            root[p] = arr;
-		            return true;
-		        } catch (...) { return false; }
-		    }
+					json arr = json::array();
+					for (f64 v : value) arr.push_back(v);
+					root[p] = arr;
+					return true;
+				} catch (...) { return false; }
+			}
 		};
 		// ----- stdvec<String> -----------------------------------
 		template<> struct Setter<stdvec<String>>
 		{
-		    static bool exec_impl(const std::string& p, json& root, const stdvec<String>& value)
-		    {
-		        try
+			static bool exec_impl(const std::string& p, json& root, const stdvec<String>& value)
+			{
+				try
 				{
-		            json arr = json::array();
-		            for (const auto& s : value) arr.push_back(s.cpp_str());
-		            root[p] = arr;
-		            return true;
-		        } catch (...) { return false; }
-		    }
+					json arr = json::array();
+					for (const auto& s : value) arr.push_back(s.cpp_str());
+					root[p] = arr;
+					return true;
+				} catch (...) { return false; }
+			}
 		};
 		// ----- stdvec<Color> -----------------------------------
 		template<> struct Setter<stdvec<Color>>
 		{
-		    static bool exec_impl(const std::string& p, json& root, const stdvec<Color>& value)
-		    {
-		        try
-		        {
-		            json arr = json::array();
-		            for (const auto& color : value)
-		                arr.push_back(color.hexString(true, "#").cpp_str());
-		            root[p] = arr;
-		            return true;
-		        }
-		        catch (...)
-		        {
-		            return false;
-		        }
-		    }
+			static bool exec_impl(const std::string& p, json& root, const stdvec<Color>& value)
+			{
+				try
+				{
+					json arr = json::array();
+					for (const auto& color : value)
+						arr.push_back(color.hexString(true, "#").cpp_str());
+					root[p] = arr;
+					return true;
+				}
+				catch (...)
+				{
+					return false;
+				}
+			}
 		};
 		// ----- stdvec<Rectangle> -----------------------------------
 		template<> struct Setter<stdvec<Rectangle>>
 		{
-		    static bool exec_impl(const std::string& p, json& root, const stdvec<Rectangle>& value)
-		    {
-		        try
-		        {
-		            json arr = json::array();
-		            for (const auto& rect : value)
-		            {
-		                json rect_arr = json::array();
-		                rect_arr.push_back(rect.x);
-		                rect_arr.push_back(rect.y);
-		                rect_arr.push_back(rect.w);
-		                rect_arr.push_back(rect.h);
-		                arr.push_back(rect_arr);
-		            }
-		            root[p] = arr;
-		            return true;
-		        }
-		        catch (...)
-		        {
-		            return false;
-		        }
-		    }
+			static bool exec_impl(const std::string& p, json& root, const stdvec<Rectangle>& value)
+			{
+				try
+				{
+					json arr = json::array();
+					for (const auto& rect : value)
+					{
+						json rect_arr = json::array();
+						rect_arr.push_back(rect.x);
+						rect_arr.push_back(rect.y);
+						rect_arr.push_back(rect.w);
+						rect_arr.push_back(rect.h);
+						arr.push_back(rect_arr);
+					}
+					root[p] = arr;
+					return true;
+				}
+				catch (...)
+				{
+					return false;
+				}
+			}
 		};
 	}
 
 
 	static inline bool __navigate_json_path(const String& path, json*& outSource, String& outName)
 	{
-	    auto tokens = path.tokenize(".");
-	    if (tokens.count() <= 1)
-	    {
-		    if (!outSource->contains(path))
-		        return false; // path broken
-	   		outName = path;
-	        return true;
-	    }
+		auto tokens = path.tokenize(".");
+		if (tokens.count() <= 1)
+		{
+			if (!outSource->contains(path))
+				return false; // path broken
+			outName = path;
+			return true;
+		}
 
-	    String key = "";
-	    while (tokens.hasNext())
-	    {
-	        key = tokens.next();
-	        if (!outSource->contains(key))
-	            return false; // path broken
+		String key = "";
+		while (tokens.hasNext())
+		{
+			key = tokens.next();
+			if (!outSource->contains(key))
+				return false; // path broken
 
-	        if (!tokens.hasNext())
-	        {
-	       		outName = key;
-	            return true;
-	        }
+			if (!tokens.hasNext())
+			{
+				outName = key;
+				return true;
+			}
 
-	        const json& child = (*outSource)[key];
-	        if (!child.is_object())
-	            return false; // path broken
-	        outSource = const_cast<json*>(&child);
-	    }
-	    return false;
+			const json& child = (*outSource)[key];
+			if (!child.is_object())
+				return false; // path broken
+			outSource = const_cast<json*>(&child);
+		}
+		return false;
 	}
 
 	template<class T>
@@ -496,7 +496,7 @@ namespace ostd
 			return detail::Getter<T>::exec_impl(settingName, *source);
 		else
 			OX_ERROR("Setting not found: %s", name.c_str());
-	    return detail::Getter<T>::exec_impl(settingName, *source);
+		return detail::Getter<T>::exec_impl(settingName, *source);
 	}
 	template<class T>
 	bool JsonFile::set(const String& name, T value)
@@ -504,28 +504,28 @@ namespace ostd
 		if (!m_loaded) return false;
 		if (!m_writeable) return false;
 
-	    auto tokens = name.tokenize(".");
-	    if (tokens.count() == 0) return false;
+		auto tokens = name.tokenize(".");
+		if (tokens.count() == 0) return false;
 
-	    json* current = &m_json;
-	    String key;
+		json* current = &m_json;
+		String key;
 
-	    while (tokens.hasNext())
-	    {
-	        key = tokens.next();
-	        if (!tokens.hasNext()) break;
+		while (tokens.hasNext())
+		{
+			key = tokens.next();
+			if (!tokens.hasNext()) break;
 
-	        if (!current->contains(key.cpp_str()) || !(*current)[key.cpp_str()].is_object())
-	            (*current)[key.cpp_str()] = json::object();
-	        current = &(*current)[key.cpp_str()];
-	    }
+			if (!current->contains(key.cpp_str()) || !(*current)[key.cpp_str()].is_object())
+				(*current)[key.cpp_str()] = json::object();
+			current = &(*current)[key.cpp_str()];
+		}
 
-	    // Set the leaf value
-	    if (detail::Setter<T>::exec_impl(key.cpp_str(), *current, value))
-	        return __write_to_file();
+		// Set the leaf value
+		if (detail::Setter<T>::exec_impl(key.cpp_str(), *current, value))
+			return __write_to_file();
 
-	    OX_ERROR("Failed to set value for: %s", name.c_str());
-	    return false;
+		OX_ERROR("Failed to set value for: %s", name.c_str());
+		return false;
 	}
 
 	bool JsonFile::get_bool(const String& name) { return get<bool>(name); }
@@ -582,8 +582,8 @@ namespace ostd
 		}
 		catch (const json::parse_error& e)
 		{
-		    OX_ERROR("JSON parse failed: %s", e.what());
-		    return false;
+			OX_ERROR("JSON parse failed: %s", e.what());
+			return false;
 		}
 		m_rawJson = jsonFile.rawContent();
 		m_loaded = true;
@@ -603,7 +603,7 @@ namespace ostd
 			file << obj->dump(4);
 			if (file.fail()) throw std::runtime_error("Failed to write to file");
 			file.flush();
-	    	if (file.fail()) throw std::runtime_error("Failed to flush");
+			if (file.fail()) throw std::runtime_error("Failed to flush");
 		}
 		catch (const std::exception& e)
 		{

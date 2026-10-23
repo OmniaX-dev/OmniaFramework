@@ -464,7 +464,6 @@ namespace ogfx
 	MouseEventData WindowCore::get_mouse_state(SDL_Event& event)
 	{
 		f32 mx = 0, my = 0, _mx = 0, _my = 0;
-		u32 btn = SDL_GetMouseState(&_mx, &_my);
 		f32 scale = getScaleFactor();
 		switch (event.type)
 		{
@@ -476,7 +475,6 @@ namespace ogfx
 			case SDL_EVENT_MOUSE_BUTTON_UP:
 				mx = event.button.x / scale;
 				my = event.button.y / scale;
-				btn = event.button.button;
 				break;
 			case SDL_EVENT_MOUSE_WHEEL:
 				mx = event.wheel.mouse_x / scale;

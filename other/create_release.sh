@@ -27,16 +27,15 @@ elif [[ "$(uname -s)" == MINGW64_NT* ]]; then
     cp ../bin/libostd.dll.a $RELEASE_DIR/lib
     cp ../bin/libogfx.dll $RELEASE_DIR/lib
     cp ../bin/libogfx.dll.a $RELEASE_DIR/lib
-    cp ../bin/liosnd.dll $RELEASE_DIR/lib
-    cp ../bin/liosnd.dll.a $RELEASE_DIR/lib
+    cp ../bin/libosnd.dll $RELEASE_DIR/lib
+    cp ../bin/libosnd.dll.a $RELEASE_DIR/lib
 
     cp $MSYS_ROOT/ucrt64/bin/libgcc_s_seh-1.dll $RELEASE_DIR/lib
     cp $MSYS_ROOT/ucrt64/bin/libstdc++-6.dll $RELEASE_DIR/lib
     cp $MSYS_ROOT/ucrt64/bin/libwinpthread-1.dll $RELEASE_DIR/lib
-    cp $MSYS_ROOT/ucrt64/bin/SDL2.dll $RELEASE_DIR/lib
-    cp $MSYS_ROOT/ucrt64/bin/SDL2_image.dll $RELEASE_DIR/lib
-    cp $MSYS_ROOT/ucrt64/bin/SDL2_ttf.dll $RELEASE_DIR/lib
-    cp $MSYS_ROOT/ucrt64/bin/libSDL2_gfx-1-0-0.dll $RELEASE_DIR/lib
+    cp $MSYS_ROOT/ucrt64/bin/SDL3.dll $RELEASE_DIR/lib
+    cp $MSYS_ROOT/ucrt64/bin/SDL3_image.dll $RELEASE_DIR/lib
+    cp $MSYS_ROOT/ucrt64/bin/SDL3_ttf.dll $RELEASE_DIR/lib
 fi
 cp -r ../licences $RELEASE_DIR
 cp ../LICENSE $RELEASE_DIR/licences/OmniaFramework-LICENCE.txt

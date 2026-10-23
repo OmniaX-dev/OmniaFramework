@@ -212,6 +212,7 @@ namespace ostd
 
 	struct I_stringeable
 	{
+		virtual ~I_stringeable() = default;
 		virtual String toString(void) const = 0;
 		friend std::ostream& operator<<(std::ostream& out, const I_stringeable& val);
 		inline operator String() const { return toString(); }

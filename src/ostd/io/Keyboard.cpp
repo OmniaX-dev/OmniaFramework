@@ -110,8 +110,8 @@ namespace ostd
 
 	eKeys KeyboardController::getPressedKey(void)
 	{
-		i32 k1 = 0, k2 = 0, k3 = 0;
-		eKeys key;
+		i32 k1 = 0, k2 = 0;
+		eKeys key = eKeys::NoKeyPressed;
 		if(kbhit())
 		{
 			k1 = getch();
@@ -151,6 +151,7 @@ namespace ostd
 #ifndef WINDOWS_OS
 			else if (k1 == 27)
 			{
+				i32 k3 = 0;
 				if (!kbhit())
 				{
 					key = eKeys::Escape;

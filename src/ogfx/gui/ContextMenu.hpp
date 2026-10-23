@@ -165,7 +165,6 @@ namespace ogfx
 				Window& m_window;
 				bool m_visible { false };
 				Instance m_data;
-				f32 m_entryHeight { 0 };
 				Vec2 m_mousePos { 0, 0 };
 				ostd::Counter m_animClock;
 
@@ -195,7 +194,7 @@ namespace ogfx
 
 				static constexpr u64 SubmenuCloseDelayMs { 50 };
 				static constexpr u64 OpenAnimDurationMs { 120 };
-				friend class Instance;
+				friend struct Instance;
 		};
 	}
 }

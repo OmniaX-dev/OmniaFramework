@@ -118,7 +118,6 @@ namespace ogfx
 			i32 m_fontSize { 20 };
 			Vec2 m_charSize;
 			IPoint m_consoleSize { 0, 0 };
-			bool m_ready { false };
 			Vec2 m_consolePosition { 0.0f, 0.0f };
 			eWrapMode m_wrapMode { eWrapMode::TripleDots };
 			Rectangle m_padding { 10, 10, 10, 10 };

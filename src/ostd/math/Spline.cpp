@@ -95,7 +95,6 @@ namespace ostd
 		t = t - (i32)t;
 
 		f32 tt = t * t;
-		f32 ttt = tt * t;
 
 		f32 q1 = -3.0f * tt + 4.0f*t - 1;
 		f32 q2 = 9.0f*tt - 10.0f*t;

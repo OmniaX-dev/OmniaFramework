@@ -170,7 +170,7 @@ namespace ogfx
 				}
 				if (event.isHandled() || w->m_stopEvents)
 				{
-					bool mouseOut = false;
+					// bool mouseOut = false;
 					for (i32 j = i - 1; j >= 0; j--)
 					{
 						Widget* ww = m_widgetList[j];

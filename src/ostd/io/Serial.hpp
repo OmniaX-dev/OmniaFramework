@@ -306,8 +306,8 @@ namespace ostd
 		};
 
 		public:
-			inline Serial(void) : read(*this), write(*this) { }
-			inline Serial(u64 size, serial::Endianness endianness = serial::Endianness::LittleEndian, bool preInitialize = false, i8 initialValue = 0) : read(*this), write(*this) { construct(size, endianness, preInitialize, initialValue); }
+			inline Serial(void) : write(*this), read(*this) { }
+			inline Serial(u64 size, serial::Endianness endianness = serial::Endianness::LittleEndian, bool preInitialize = false, i8 initialValue = 0) : write(*this), read(*this) { construct(size, endianness, preInitialize, initialValue); }
 			Serial(StreamView copyData, serial::Endianness endianness = serial::Endianness::LittleEndian);
 			bool construct(u64 size, serial::Endianness endianness = serial::Endianness::LittleEndian, bool preInitialize = false, i8 initialValue = 0);
 			bool isValidAddress(u64 addr, u32 size = 1) const;

@@ -22,7 +22,7 @@ Once you have the **MSYS2 UCRT64 terminal** open, run theese two commands to pre
 
 ```bash
 pacman -Syuu
-pacman -S --needed base-devel mingw-w64-ucrt-x86_64-clang mingw-w64-ucrt-x86_64-gdb mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-make mingw-w64-ucrt-x86_64-boost mingw-w64-ucrt-x86_64-sdl3 mingw-w64-ucrt-x86_64-sdl3-image mingw-w64-ucrt-x86_64-sdl3-ttf
+pacman -S --needed base-devel mingw-w64-ucrt-x86_64-clang mingw-w64-ucrt-x86_64-gdb mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-make mingw-w64-ucrt-x86_64-boost mingw-w64-ucrt-x86_64-sdl3 mingw-w64-ucrt-x86_64-sdl3-image mingw-w64-ucrt-x86_64-sdl3-ttf mingw-w64-ucrt-x86_64-fluidsynth
 ```
 
 #### Step 3: build OmniaFramework
@@ -86,7 +86,7 @@ Installs the library MSYS2's UCRT64 profile.
 - **<u>Arch Linux</u>**
 
 ```bash
-sudo pacman -S --needed base-devel clang  gdb cmake make boost sdl3 sdl3_image sdl3_ttf
+sudo pacman -S --needed base-devel clang gdb cmake make boost sdl3 sdl3_image sdl3_ttf
 ```
 
 - **<u>Ubuntu</u>**

@@ -212,7 +212,7 @@ namespace ogfx
 		void RawTextInput::render(ogfx::BasicRenderer2D& gfx)
 		{
 			m_gfx = &gfx;
-			f64 text_size_scale = 0.66666666666666;
+			// f64 text_size_scale = 0.66666666666666;
 			m_paddingX = (4.0f * geth()) / 30.0f;
 			m_fontSize = (i32)(geth() * 0.66);
 			f32 cursor_height_scale = 0.75f;
@@ -289,7 +289,7 @@ namespace ogfx
 		{
 			if (signal.ID == ostd::BuiltinSignals::MouseMoved)
 			{
-				auto& data = *(ogfx::MouseEventData*)signal.userData;
+				// auto& data = *(ogfx::MouseEventData*)signal.userData;
 				if (getParent().isMouseInside())
 				{
 					if (!m_ibeamCursorSet)

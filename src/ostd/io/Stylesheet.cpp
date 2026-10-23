@@ -58,12 +58,10 @@ namespace ostd
 			if (!parseThemeFileLine(line, variables))
 				l_warn("Error");
 		};
-		u8 lineNumberMaxWidth = String("").add(cast<u32>(lines.size())).len();
 		String groupSelector = "";
 		bool groupLines = true;
 		stdvec<String> group;
 		u32 groupSelectorCount = 0;
-		bool debug_print = false;
 		bool brokenLine = false;
 		String brokenLineBuffer =  "";
 		String macroCode = "";
@@ -276,7 +274,7 @@ namespace ostd
 
 	bool Stylesheet::parseThemeFileLine(const String& line, const VariableList& variables, bool exitCondition)
 	{
-		auto l_isVec2 = [this](String& value) -> bool {
+		auto l_isVec2 = [](String& value) -> bool {
 			value.trim();
 			if (value.new_toLower().startsWith("vec2(") && value.new_toLower().endsWith(")"))
 			{
@@ -285,7 +283,7 @@ namespace ostd
 			}
 			return false;
 		};
-		auto l_isRect = [this](String& value) -> bool {
+		auto l_isRect = [](String& value) -> bool {
 			value.trim();
 			if (value.new_toLower().startsWith("rect(") && value.new_toLower().endsWith(")"))
 			{
@@ -294,7 +292,7 @@ namespace ostd
 			}
 			return false;
 		};
-		auto l_isColor = [this](String& value) -> bool {
+		auto l_isColor = [](String& value) -> bool {
 			value.trim();
 			if (value.new_toLower().startsWith("color(") && value.new_toLower().endsWith(")"))
 			{
@@ -309,7 +307,7 @@ namespace ostd
 			}
 			return false;
 		};
-		auto l_isColorGradientValue = [this](const String& _value) -> bool {
+		auto l_isColorGradientValue = [](const String& _value) -> bool {
 			String value = _value.new_toLower().trim();
 			if (value.startsWith("gradienth(") && value.endsWith(")"))
 				return true;
@@ -321,7 +319,7 @@ namespace ostd
 				return true;
 			return false;
 		};
-		auto l_isFile = [this](String& value) -> bool {
+		auto l_isFile = [](String& value) -> bool {
 			value.trim();
 			if (value.new_toLower().startsWith("file(") && value.endsWith(")"))
 			{
@@ -334,7 +332,7 @@ namespace ostd
 			}
 			return false;
 		};
-		auto l_isAnim = [this](String& value) -> bool {
+		auto l_isAnim = [](String& value) -> bool {
 			value.trim();
 			if (value.new_toLower().startsWith("anim(") && value.endsWith(")"))
 			{

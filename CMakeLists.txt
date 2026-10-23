@@ -229,28 +229,23 @@ set(BLUR_EXAMPLE_TARGET blur_example)
 add_executable(${BLUR_EXAMPLE_TARGET} ${CMAKE_CURRENT_LIST_DIR}/src/test/BlurExample.cpp)
 target_include_directories(${BLUR_EXAMPLE_TARGET} PUBLIC ${INCLUDE_DIRS})
 
-if (WIN32)
-	set(MSYS2_UCRT64 "C:/msys64/ucrt64")
-	target_include_directories(${OMNIA_STD_LIB} PRIVATE
-								"${MSYS2_UCRT64}/include"
-								"${MSYS2_UCRT64}/include/c++/13.2.0"
-								"${MSYS2_UCRT64}/include/c++/13.2.0/x86_64-w64-mingw32"
-				)
-	set(MSYS2_UCRT64 "C:/msys64/ucrt64")
-	target_include_directories(${OMNIA_GFX_LIB} PRIVATE
-								"${MSYS2_UCRT64}/include"
-								"${MSYS2_UCRT64}/include/c++/13.2.0"
-								"${MSYS2_UCRT64}/include/c++/13.2.0/x86_64-w64-mingw32"
-
-				)
-endif()
+set(OMNIA_TARGETS ${OMNIA_STD_LIB} ${OMNIA_SND_LIB} ${OMNIA_GFX_LIB} ${TEST_TARGET})
+option(OMNIA_ASAN "Build Debug with AddressSanitizer" OFF)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	add_compile_options(-O3 -MMD -MP -Wall -ggdb -fsanitize=address)
+	foreach(t IN LISTS OMNIA_TARGETS)
+		target_compile_options(${t} PRIVATE -Wall -Wno-reorder-ctor -ggdb -O0)
+		if(OMNIA_ASAN)
+			target_compile_options(${t} PRIVATE -fsanitize=address)
+			target_link_options(${t} PRIVATE -fsanitize=address)
+		endif()
+	endforeach()
 	target_compile_definitions(${OMNIA_STD_LIB} PUBLIC OX_DEBUG_BUILD)
 	target_compile_definitions(${OMNIA_GFX_LIB} PUBLIC OX_DEBUG_BUILD)
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
-	add_compile_options(-MMD -MP -Wall -latomic)
+	foreach(t IN LISTS OMNIA_TARGETS)
+		target_compile_options(${t} PRIVATE -Wall -Wno-reorder-ctor)
+	endforeach()
 	target_compile_definitions(${OMNIA_STD_LIB} PUBLIC OX_RELEASE_BUILD)
 	target_compile_definitions(${OMNIA_GFX_LIB} PUBLIC OX_RELEASE_BUILD)
 endif()

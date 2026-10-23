@@ -240,7 +240,7 @@ namespace ogfx
 			// a field is fully entered.
 			u32 dayVal = 0,   dayChars = 0;
 			u32 monthVal = 0, monthChars = 0;
-			u32 yearVal = 0,  yearChars = 0;
+			// u32 yearVal = 0,  yearChars = 0;
 
 			for (u32 i = 0; i < bytes.size(); i++) {
 				const char c = bytes[i];
@@ -257,7 +257,7 @@ namespace ogfx
 					const u32 d = cast<u32>(c - '0');
 					if (expected == eSlot::Day)   { dayVal   = dayVal   * 10 + d; dayChars++;   }
 					if (expected == eSlot::Month) { monthVal = monthVal * 10 + d; monthChars++; }
-					if (expected == eSlot::Year)  { yearVal  = yearVal  * 10 + d; yearChars++;  }
+					// if (expected == eSlot::Year)  { yearVal  = yearVal  * 10 + d; yearChars++;  }
 				}
 
 				// Range validation as soon as a field is fully populated.

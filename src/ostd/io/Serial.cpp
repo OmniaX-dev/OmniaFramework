@@ -42,7 +42,7 @@ namespace ostd
 
 
 
-	Serial::Serial(StreamView copyData, serial::Endianness endianness) : read(*this), write(*this)
+	Serial::Serial(StreamView copyData, serial::Endianness endianness) : write(*this), read(*this) 
 	{
 		if (construct(copyData.size(), endianness, false) && isValid())
 		{
