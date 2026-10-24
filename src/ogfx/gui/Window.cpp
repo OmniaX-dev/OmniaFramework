@@ -72,15 +72,20 @@ namespace ogfx
 		m_title = title;
 		setBlockingEventsRefreshFPS(DefaultBlockingEventsFPS);
 
-		m_window = SDL_CreateWindow("", m_windowWidth, m_windowHeight, SDL_WINDOW_RESIZABLE);
+		// Created hidden: the display scale is only known once the window exists, and the
+		// requested size is logical, so the window is resized to width * scale pixels first.
+		m_window = SDL_CreateWindow("", m_windowWidth, m_windowHeight, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN);
 		m_renderer = RenderContext::get().createRenderer(m_window);
+		m_systemScale = SDL_GetWindowDisplayScale(m_window);
+		m_userScale = 1.0f;
+		const f32 scale = getScaleFactor();
+		SDL_SetWindowSize(m_window, cast<i32>(std::lround(width * scale)), cast<i32>(std::lround(height * scale)));
+		SDL_GetWindowSize(m_window, &m_windowWidth, &m_windowHeight);
+		SDL_SetRenderScale(m_renderer, scale, scale);
 		// SDL_SetWindowMinimumSize(m_window, m_windowWidth, m_windowHeight);
 		setPosition(WindowsPositionCenter);
 		SDL_SetWindowTitle(m_window, m_title.c_str());
 		SDL_StartTextInput(m_window);
-
-		m_systemScale = SDL_GetWindowDisplayScale(m_window);
-		setUserScale(1.0f);
 
 		SDL_ShowWindow(m_window);
 
@@ -118,7 +123,7 @@ namespace ogfx
 		setTypeName("ogfx::WindowCore");
 		enableSignals(true);
 		validate();
-		setSize(m_windowWidth, m_windowHeight);
+		setSize(getWindowWidth(), getWindowHeight());
 
 		connectSignal(ostd::BuiltinSignals::KeyPressed);
 		connectSignal(ostd::BuiltinSignals::KeyReleased);
@@ -138,7 +143,7 @@ namespace ogfx
 		setCursor(eCursor::Default);
 
 		__on_window_init(width, height, title);
-		setSize(m_windowWidth, m_windowHeight);
+		setSize(getWindowWidth(), getWindowHeight());
 	}
 
 	void WindowCore::mainLoop(void)
@@ -157,11 +162,17 @@ namespace ogfx
 	void WindowCore::setSize(i32 width, i32 height)
 	{
 		if (!isInitialized()) return;
-		WindowResizedData wrd(*this, m_windowWidth, m_windowHeight, 0, 0);
-		SDL_SetWindowSize(m_window, width, height);
+		const i32 oldWidth = getWindowWidth(), oldHeight = getWindowHeight();
+		const f32 scale = getScaleFactor();
+		SDL_SetWindowSize(m_window, cast<i32>(std::lround(width * scale)), cast<i32>(std::lround(height * scale)));
 		SDL_GetWindowSize(m_window, &m_windowWidth, &m_windowHeight); // SDL may clamp the requested size
-		wrd.new_width = m_windowWidth;
-		wrd.new_height = m_windowHeight;
+		emit_resized(oldWidth, oldHeight);
+	}
+
+	void WindowCore::emit_resized(i32 oldWidth, i32 oldHeight)
+	{
+		// Sizes in the signal are logical, like everything widgets lay out with.
+		WindowResizedData wrd(*this, oldWidth, oldHeight, getWindowWidth(), getWindowHeight());
 		ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::WindowResized, ostd::Signal::Priority::RealTime, &wrd);
 	}
 
@@ -245,12 +256,39 @@ namespace ogfx
 
 	void WindowCore::setUserScale(f32 scale)
 	{
+		const f32 previousScale = getScaleFactor();
 		m_userScale = std::clamp(scale, 0.1f, 10.0f); //TODO: Handle min and  max scale better
-		f32 s = getScaleFactor();
+		apply_scale_factor(previousScale);
+	}
+
+	void WindowCore::updateScalleFactor(void)
+	{
+		const f32 previousScale = getScaleFactor();
+		m_systemScale = SDL_GetWindowDisplayScale(m_window);
+		apply_scale_factor(previousScale);
+	}
+
+	void WindowCore::apply_scale_factor(f32 previousScale)
+	{
+		const f32 scale = getScaleFactor();
+		if (!m_window || previousScale <= 0.0f || scale == previousScale)
+			return;
+		const i32 oldWidth = cast<i32>(std::round(m_windowWidth / previousScale));
+		const i32 oldHeight = cast<i32>(std::round(m_windowHeight / previousScale));
+		SDL_SetRenderScale(m_renderer, scale, scale);
+		// Keep the logical size: the pixel size changes by the ratio between the scales. SDL
+		// itself keeps the pixel size when the display scale changes (WM_DPICHANGED), so this
+		// is the only resize. A maximized or fullscreen window keeps its size, and only its
+		// logical size changes.
 		auto state = getWindowState();
 		if (!state.maximized && !state.fullscreen)
-			setSize(getWindowWidth(false) * s, getWindowHeight(false) * s);
-		SDL_SetRenderScale(m_renderer, s, s);
+		{
+			const f32 ratio = scale / previousScale;
+			SDL_SetWindowSize(m_window, cast<i32>(std::lround(m_windowWidth * ratio)), cast<i32>(std::lround(m_windowHeight * ratio)));
+			SDL_GetWindowSize(m_window, &m_windowWidth, &m_windowHeight);
+		}
+		if (isInitialized())
+			emit_resized(oldWidth, oldHeight);
 	}
 
 	void WindowCore::setPosition(const IPoint& pos)
@@ -554,7 +592,6 @@ namespace ogfx
 		}
 		else if (event.type == SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED)
 		{
-			m_systemScale = SDL_GetWindowDisplayScale(m_window);
 			updateScalleFactor();
 		}
 		else if (event.type == SDL_EVENT_DROP_FILE)
@@ -579,11 +616,9 @@ namespace ogfx
 		}
 		else if (event.type == SDL_EVENT_WINDOW_RESIZED)
 		{
-			WindowResizedData wrd(*this, m_windowWidth, m_windowHeight, 0, 0);
+			const i32 oldWidth = getWindowWidth(), oldHeight = getWindowHeight();
 			SDL_GetWindowSize(m_window, &m_windowWidth, &m_windowHeight);
-			wrd.new_width = m_windowWidth;
-			wrd.new_height = m_windowHeight;
-			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::WindowResized, ostd::Signal::Priority::RealTime, &wrd);
+			emit_resized(oldWidth, oldHeight);
 		}
 		else if (event.type == SDL_EVENT_MOUSE_MOTION)
 		{
@@ -857,8 +892,8 @@ namespace ogfx
 
 		void Window::updateRootWidgetBounds(i32 width, i32 height)
 		{
-			if (width < 0) width = getWindowWidth(false);
-			if (height < 0) height = getWindowHeight(false);
+			if (width < 0) width = getWindowWidth();
+			if (height < 0) height = getWindowHeight();
 			m_toolbar.updateBounds();
 			m_statusbar.updateBounds();
 			f32 offset_y = 0;

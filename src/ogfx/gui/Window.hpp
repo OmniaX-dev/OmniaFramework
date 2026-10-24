@@ -97,6 +97,8 @@ namespace ogfx
 			void initialize(i32 width, i32 height, const String& title);
 			void mainLoop(void);
 			void close(void);
+			// Logical size (the units everything is drawn and laid out in): the window is
+			// width * getScaleFactor() by height * getScaleFactor() physical pixels.
 			void setSize(i32 width, i32 height);
 			void setTitle(const String& title);
 			void setCursor(eCursor cursor);
@@ -130,8 +132,10 @@ namespace ogfx
 			inline void hide(void) { SDL_HideWindow(m_window); m_visible = false; }
 			inline void show(void) { SDL_ShowWindow(m_window); m_visible = true; }
 			inline String getTitle(void) const { return m_title; }
-			inline i32 getWindowWidth(bool scaled = true) const { return scaled ? cast<f32>(m_windowWidth) / getScaleFactor() : m_windowWidth; }
-			inline i32 getWindowHeight(bool scaled = true) const { return scaled ? cast<f32>(m_windowHeight) / getScaleFactor() : m_windowHeight; }
+			// Logical size by default; scaled = false gives the size in SDL window coordinates
+			// (physical pixels on Windows).
+			inline i32 getWindowWidth(bool scaled = true) const { return scaled ? cast<i32>(std::round(cast<f32>(m_windowWidth) / getScaleFactor())) : m_windowWidth; }
+			inline i32 getWindowHeight(bool scaled = true) const { return scaled ? cast<i32>(std::round(cast<f32>(m_windowHeight) / getScaleFactor())) : m_windowHeight; }
 			inline Color getClearColor(void) const { return m_clearColor; }
 			inline void setClearColor(const Color& color) { m_clearColor = color; }
 			inline SDL_Renderer* getSDLRenderer(void) { return m_renderer; }
@@ -140,7 +144,8 @@ namespace ogfx
 			inline ostd::ConsoleOutputHandler& out(void) { return m_out; }
 			inline GraphicsWindowOutputHandler& wout(void) { return m_wout; }
 			inline f32 getScaleFactor(void) const { return m_systemScale * m_userScale; }
-			inline void updateScalleFactor(void) { setUserScale(m_userScale); }
+			// Re-reads the display scale from the OS (done automatically when it changes).
+			void updateScalleFactor(void);
 			inline Vec2 getMousePosition(void) const { return m_mousePosition; }
 			inline void startTooltipTimer(const String& text) { m_tooltipText = text; m_tooltipTimer.startCount(ostd::eTimeUnits::Seconds); }
 			inline void stopTooltipTimer(void) { m_tooltipText = ""; m_tooltipTimer.endCount(); }
@@ -167,6 +172,8 @@ namespace ogfx
 			void __handle_event(SDL_Event& event);
 			void __load_default_stylesheet_variables(void);
 			void __store_file_dialog_filters(const FileDialogFilterList& filters) const;
+			void apply_scale_factor(f32 previousScale);
+			void emit_resized(i32 oldWidth, i32 oldHeight);
 
 		protected:
 			SDL_Window* m_window { nullptr };

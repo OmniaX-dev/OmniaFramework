@@ -41,6 +41,7 @@ namespace ogfx
 			}
 
 		public:
+			// Logical sizes (see WindowCore::getWindowWidth()).
 			i32 new_width;
 			i32 new_height;
 			i32 old_width;
