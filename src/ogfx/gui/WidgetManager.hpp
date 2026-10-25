@@ -41,6 +41,10 @@ namespace ogfx
 				bool hasWidget(Widget& widget);
 				bool addWidget(Widget& widget);
 				bool removeWidget(Widget& widget);
+				// Moves the widget above every sibling of the same z-layer.
+				bool bringToFront(Widget& widget);
+				// Restores the layer order after a child's getZLayer() changed.
+				void sortByLayer(void);
 
 				void draw(ogfx::BasicRenderer2D& gfx);
 				void update(void);
@@ -65,6 +69,12 @@ namespace ogfx
 				// where children are visible (so content scrolled out of view, or
 				// hidden behind the owner's scrollbars, can't be hit).
 				bool hit_test(Widget* widget, f32 x, f32 y) const;
+				// Index of the topmost visible child that blocks input to the
+				// children below it (0 when there is none).
+				i32 input_floor(void) const;
+				// Index at which a widget of the given layer is inserted (after
+				// every child of the same or a lower layer).
+				i32 layer_insert_index(i32 layer) const;
 
 			private:
 				Window& m_window;

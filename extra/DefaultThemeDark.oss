@@ -65,6 +65,89 @@ macro set_common_values(_borderColor = $borderColor, _fontSize = 18, _showBorder
 
 
 
+% ====== SubWindow ======
+% Floating windows (ogfx::gui::SubWindow). (subwindow:active) is the topmost one.
+% Blurred windows want a translucent backgroundColor and borderRadius = 0 (the
+% blurred area is rectangular).
+(subwindow) {
+	set_common_values($borderColor, 18, true)
+	backgroundColor = $backgroundColor
+	textColor = $textColor
+	borderRadius = 0
+	borderWidth = 1
+	showBackground = true
+	padding = rect(10, 10, 10, 10)
+	margin = rect(0, 0, 0, 0)
+	titlebarHeight = 32.0
+	titlebarColor = $darkColor
+	titlebarBorderColor = $borderColor
+	titlebarBorderWidth = 1
+	titleColor = #889988FF
+	titlebarFontSize = 17
+	titlebarTextAlign = text_left
+	resizeGripSize = 6.0
+	minWidth = 160.0
+	minHeight = 80.0
+	minimizedWidth = 220.0
+	modalOverlayColor = rgba(0, 0, 0, 110)
+	(button) {
+		size = 22.0
+		spacing = 4.0
+		borderRadius = 4.0
+		glyphThickness = 2.0
+		color = rgba(0, 0, 0, 0)
+		hoverColor = rgba(255, 255, 255, 35)
+		pressedColor = rgba(255, 255, 255, 70)
+		activeColor = $accentColorDark
+		glyphColor = #889988FF
+		glyphHoverColor = $accentColorLight
+	}
+	(closeButton) {
+		hoverColor = rgba(200, 30, 40, 255)
+		pressedColor = rgba(150, 20, 30, 255)
+	}
+	(blur) {
+		enabled = false
+		radius = 16.0
+		tint = rgba(255, 255, 255, 255)
+	}
+	(shadow) {
+		enabled = true
+		size = 12
+		color = rgba(0, 0, 0, 110)
+		offsetX = 0.0
+		offsetY = 3.0
+	}
+}
+(subwindow:active) {
+	borderColor = $accentColorDark
+	titleColor = $accentColorLight
+	(button) {
+		glyphColor = $textColor
+	}
+}
+(@messagebox subwindow) {
+	padding = rect(16, 16, 16, 16)
+	(messageBox) {
+		iconSize = 48.0
+		spacing = 16.0
+		lineSpacing = 4.0
+		minWidth = 280.0
+	}
+}
+% Opt-in frosted glass: subWindow.addThemeID("frosted")
+(@frosted subwindow) {
+	backgroundColor = rgba(10, 10, 25, 80)
+	titlebarColor = rgba(10, 10, 25, 120)
+	(blur) {
+		enabled = true
+		radius = 16.0
+	}
+}
+% =======================
+
+
+
 % ====== TabPanel ======
 (tabPanel) {
 	set_common_values()

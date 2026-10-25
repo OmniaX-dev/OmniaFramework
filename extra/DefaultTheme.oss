@@ -48,6 +48,63 @@ const $accentColorDark = #6B0A1DFF
 
 
 
+% ====== SubWindow ======
+% Floating windows (ogfx::gui::SubWindow). (subwindow:active) is the topmost one.
+(subwindow) {
+	backgroundColor = #AAAAAAFF
+	borderColor = #909090FF
+	textColor = $textColor
+	fontSize = 18
+	borderRadius = 0
+	borderWidth = 1
+	showBorder = true
+	showBackground = true
+	padding = rect(10, 10, 10, 10)
+	margin = rect(0, 0, 0, 0)
+	titlebarHeight = 30.0
+	titlebarColor = #999999FF
+	titlebarBorderColor = #909090FF
+	titlebarBorderWidth = 1
+	titleColor = #555555FF
+	titlebarFontSize = 17
+	titlebarTextAlign = text_left
+	modalOverlayColor = rgba(0, 0, 0, 70)
+	(button) {
+		size = 20.0
+		spacing = 4.0
+		borderRadius = 3.0
+		color = rgba(0, 0, 0, 0)
+		hoverColor = rgba(255, 255, 255, 80)
+		pressedColor = rgba(255, 255, 255, 140)
+		activeColor = $accentColor
+		glyphColor = #444444FF
+		glyphHoverColor = #111111FF
+	}
+	(shadow) {
+		enabled = true
+		size = 10
+		color = rgba(0, 0, 0, 70)
+	}
+}
+(subwindow:active) {
+	borderColor = $accentColorDark
+	titleColor = #111111FF
+}
+(@messagebox subwindow) {
+	padding = rect(16, 16, 16, 16)
+}
+(@frosted subwindow) {
+	backgroundColor = rgba(200, 200, 200, 110)
+	titlebarColor = rgba(160, 160, 160, 140)
+	(blur) {
+		enabled = true
+		radius = 16.0
+	}
+}
+% =======================
+
+
+
 % ====== TabPanel ======
 (tabPanel) {
 	backgroundColor = #AAAAAAFF

@@ -38,6 +38,7 @@
 #include <ogfx/gui/widgets/PianoRoll.hpp>
 #include <ogfx/gui/widgets/PixelCanvas.hpp>
 #include <ogfx/gui/widgets/TextConsoleCanvas.hpp>
+#include <ogfx/gui/widgets/SubWindow.hpp>
 
 namespace ogfx
 {

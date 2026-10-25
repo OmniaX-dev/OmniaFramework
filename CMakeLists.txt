@@ -123,6 +123,7 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/ColorPickerSkins.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/PixelCanvas.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/TextConsoleCanvas.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/SubWindow.cpp
 
 	# render
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/BasicRenderer.cpp
@@ -255,6 +256,11 @@ set(CONSOLE_EXAMPLE_TARGET console_example)
 add_executable(${CONSOLE_EXAMPLE_TARGET} ${CMAKE_CURRENT_LIST_DIR}/src/test/ConsoleExample.cpp)
 target_include_directories(${CONSOLE_EXAMPLE_TARGET} PUBLIC ${INCLUDE_DIRS})
 
+# Floating SubWindows + message boxes demo (src/test/SubWindowExample.cpp).
+set(SUBWINDOW_EXAMPLE_TARGET subwindow_example)
+add_executable(${SUBWINDOW_EXAMPLE_TARGET} ${CMAKE_CURRENT_LIST_DIR}/src/test/SubWindowExample.cpp)
+target_include_directories(${SUBWINDOW_EXAMPLE_TARGET} PUBLIC ${INCLUDE_DIRS})
+
 set(OMNIA_TARGETS ${OMNIA_STD_LIB} ${OMNIA_SND_LIB} ${OMNIA_GFX_LIB} ${TEST_TARGET})
 option(OMNIA_ASAN "Build Debug with AddressSanitizer" OFF)
 
@@ -362,6 +368,7 @@ target_link_libraries(${TEST_TARGET} PUBLIC ${OMNIA_STD_LIB})
 target_link_libraries(${TEST_TARGET} PUBLIC ${OMNIA_GFX_LIB})
 target_link_libraries(${BLUR_EXAMPLE_TARGET} PUBLIC ${OMNIA_GFX_LIB})
 target_link_libraries(${CONSOLE_EXAMPLE_TARGET} PUBLIC ${OMNIA_GFX_LIB})
+target_link_libraries(${SUBWINDOW_EXAMPLE_TARGET} PUBLIC ${OMNIA_GFX_LIB})
 
 if (APPLE)
 	cmake_policy(SET CMP0167 OLD)

@@ -890,6 +890,196 @@ namespace ogfx
 			return true;
 		}
 
+		static bool is_inside(const Widget* widget, const Widget& ancestor)
+		{
+			for (const Widget* w = widget; w != nullptr; w = w->getParent())
+			{
+				if (w == &ancestor)
+					return true;
+			}
+			return false;
+		}
+
+		void Window::addSubWindow(SubWindow& subWindow)
+		{
+			if (m_rootWidget.getChildren().hasWidget(subWindow))
+				return;
+			addWidget(subWindow);
+			subWindow.__clampToParent();
+		}
+
+		void Window::removeSubWindow(SubWindow& subWindow)
+		{
+			clear_focus_inside(subWindow);
+			m_rootWidget.removeWidget(subWindow);
+			if (std::erase(m_minimizedSubWindows, &subWindow) > 0)
+				layout_minimized_subwindows();
+		}
+
+		MessageDialog& Window::messageBox(const String& title, const String& text)
+		{
+			return show_message_dialog(std::make_unique<MessageDialog>(*this, title, text));
+		}
+
+		MessageDialog& Window::messageBox(const String& title, const String& text, const Icon& icon)
+		{
+			return show_message_dialog(std::make_unique<MessageDialog>(*this, title, text, icon));
+		}
+
+		SubWindow* Window::getActiveSubWindow(void)
+		{
+			const auto& children = m_rootWidget.getChildren().getWidgets();
+			for (i32 i = children.size() - 1; i >= 0; i--)
+			{
+				auto* sw = dynamic_cast<SubWindow*>(children[i]);
+				if (sw && !sw->isInvalid() && sw->isVisible() && !sw->isMinimized())
+					return sw;
+			}
+			return nullptr;
+		}
+
+		SubWindow* Window::getModalSubWindow(void)
+		{
+			const auto& children = m_rootWidget.getChildren().getWidgets();
+			for (i32 i = children.size() - 1; i >= 0; i--)
+			{
+				auto* sw = dynamic_cast<SubWindow*>(children[i]);
+				if (sw && !sw->isInvalid() && sw->isVisible() && sw->isModal())
+					return sw;
+			}
+			return nullptr;
+		}
+
+		void Window::__onSubWindowClosed(SubWindow& subWindow)
+		{
+			clear_focus_inside(subWindow);
+			if (std::erase(m_minimizedSubWindows, &subWindow) > 0)
+				layout_minimized_subwindows();
+			// Owned windows are destroyed at the start of the next frame: this usually
+			// runs from inside one of their own event handlers.
+			if (subWindow.__isOwnedByWindow() && std::ranges::find(m_closedOwnedSubWindows, &subWindow) == m_closedOwnedSubWindows.end())
+				m_closedOwnedSubWindows.push_back(&subWindow);
+		}
+
+		void Window::__onSubWindowStateChanged(SubWindow& subWindow)
+		{
+			std::erase(m_minimizedSubWindows, &subWindow);
+			if (subWindow.isMinimized())
+			{
+				m_minimizedSubWindows.push_back(&subWindow);
+				clear_focus_inside(subWindow);
+			}
+			layout_minimized_subwindows();
+		}
+
+		void Window::__forgetSubWindow(SubWindow& subWindow)
+		{
+			std::erase(m_closedOwnedSubWindows, &subWindow);
+			if (std::erase(m_minimizedSubWindows, &subWindow) > 0)
+				layout_minimized_subwindows();
+			if (m_rootWidget.getChildren().hasWidget(subWindow))
+			{
+				clear_focus_inside(subWindow);
+				m_rootWidget.removeWidget(subWindow);
+			}
+		}
+
+		void Window::update_subwindows(void)
+		{
+			// Destroy the owned windows closed during the last frame (unless reopened).
+			if (!m_closedOwnedSubWindows.empty())
+			{
+				auto closed = std::move(m_closedOwnedSubWindows);
+				m_closedOwnedSubWindows.clear();
+				for (auto* sw : closed)
+				{
+					if (sw->isVisible())
+						continue;
+					m_rootWidget.removeWidget(*sw);
+					std::erase_if(m_ownedSubWindows, [sw](const std::unique_ptr<SubWindow>& p) { return p.get() == sw; });
+				}
+			}
+			SubWindow* active = getActiveSubWindow();
+			for (auto* w : m_rootWidget.getChildren().getWidgets())
+			{
+				if (auto* sw = dynamic_cast<SubWindow*>(w))
+					sw->setThemeQualifier("active", sw == active);
+			}
+		}
+
+		bool Window::needs_backdrop(void)
+		{
+			if (!m_gfx.areShadersSupported())
+				return false;
+			for (auto* w : m_rootWidget.getChildren().getWidgets())
+			{
+				auto* sw = dynamic_cast<SubWindow*>(w);
+				if (sw && sw->__needsBackdrop())
+					return true;
+			}
+			return false;
+		}
+
+		bool Window::draw_subwindows(bool useBackdrop)
+		{
+			const Rectangle area { m_rootWidget.getGlobalPosition(), m_rootWidget.getSize() };
+			SubWindow* modal = getModalSubWindow();
+			for (auto* w : m_rootWidget.getChildren().getWidgets())
+			{
+				if (w == nullptr || w->isInvalid() || !w->isVisible() || w->isManualDrawEnabled() || w->getZLayer() <= 0)
+					continue;
+				auto* sw = dynamic_cast<SubWindow*>(w);
+				if (sw && sw == modal)
+				{
+					m_gfx.pushClippingRect(area);
+					m_gfx.fillRect(area, sw->getModalOverlayColor());
+					m_gfx.popClippingRect();
+				}
+				// A blurred window needs everything drawn so far (lower windows included):
+				// the backdrop can't be sampled while bound, so it is unbound for the copy.
+				if (sw && useBackdrop && sw->__needsBackdrop())
+				{
+					m_gfx.endRenderTarget();
+					sw->__captureBackdrop(m_gfx, m_backdrop);
+					if (!m_gfx.beginRenderTarget(m_backdrop, false))
+						useBackdrop = false;
+				}
+				m_gfx.pushClippingRect(area);
+				if (sw)
+					sw->__drawShadow(m_gfx);
+				m_gfx.pushClippingRect({ w->getGlobalPosition(), w->getSize() }, true);
+				w->__draw(m_gfx);
+				m_gfx.popClippingRect();
+				m_gfx.popClippingRect();
+			}
+			return useBackdrop;
+		}
+
+		void Window::layout_minimized_subwindows(void)
+		{
+			for (i32 i = 0; i < cast<i32>(m_minimizedSubWindows.size()); i++)
+				m_minimizedSubWindows[i]->__setMinimizedSlot(i);
+		}
+
+		void Window::clear_focus_inside(Widget& widget)
+		{
+			if (is_inside(m_focusManager.getFocused(), widget))
+				m_focusManager.clearFocus();
+		}
+
+		MessageDialog& Window::show_message_dialog(std::unique_ptr<MessageDialog> dialog)
+		{
+			MessageDialog& box = *dialog;
+			box.__setOwnedByWindow();
+			m_ownedSubWindows.push_back(std::move(dialog));
+			addSubWindow(box);
+			box.fitToContent();
+			box.centerInParent();
+			box.open();
+			m_focusManager.requestFocus(box.getOkButton());
+			return box;
+		}
+
 		void Window::updateRootWidgetBounds(i32 width, i32 height)
 		{
 			if (width < 0) width = getWindowWidth();
@@ -905,6 +1095,11 @@ namespace ogfx
 			if (m_statusbar.isVisible())
 				height_reduction += m_statusbar.geth();
 			m_rootWidget.setBounds(0, offset_y, cast<f32>(width), cast<f32>(height) - height_reduction);
+			for (auto* w : m_rootWidget.getChildren().getWidgets())
+			{
+				if (auto* sw = dynamic_cast<SubWindow*>(w))
+					sw->__clampToParent();
+			}
 		}
 
 		void Window::setTheme(const ostd::Stylesheet& theme)
@@ -958,8 +1153,26 @@ namespace ogfx
 
 			before_render();
 			m_rootWidget.__update();
+			update_subwindows();
+			// While a blurred SubWindow is visible, everything below the bars is drawn
+			// offscreen first, so the SubWindows can sample (and blur) what's behind them.
+			bool useBackdrop = needs_backdrop();
+			if (useBackdrop)
+			{
+				const Vec2 size { cast<f32>(getWindowWidth()), cast<f32>(getWindowHeight()) };
+				if (!m_backdrop.isCreated())
+					m_backdrop.create(m_gfx, size);
+				else
+					m_backdrop.resize(size);
+				useBackdrop = m_gfx.beginRenderTarget(m_backdrop, true, getClearColor());
+			}
 			m_rootWidget.__draw(m_gfx);
 			onRedraw(m_gfx);
+			if (draw_subwindows(useBackdrop))
+			{
+				m_gfx.endRenderTarget();
+				m_gfx.drawRenderTarget(m_backdrop, { 0, 0 });
+			}
 			if (m_menubar.isVisible())
 				m_menubar.draw(m_gfx);
 			m_toolbar.__update();
@@ -997,6 +1210,13 @@ namespace ogfx
 		{
 			Event evt(*this);
 			evt.__original_signal_id = ostd::BuiltinSignals::NoSignal;
+			// A modal SubWindow gets all the input: the bars are skipped, the root widget
+			// only lets it through to the modal window, and keys reach the focused widget
+			// only if it's inside it.
+			SubWindow* modal = getModalSubWindow();
+			auto l_focusedAcceptsKeys = [&](void) {
+				return modal == nullptr || is_inside(m_focusManager.getFocused(), *modal);
+			};
 			if (signal.ID == ostd::BuiltinSignals::WindowClosed)
 			{
 				evt.__original_signal_id = ostd::BuiltinSignals::WindowClosed;
@@ -1054,77 +1274,106 @@ namespace ogfx
 			{
 				evt.mouse = (ogfx::MouseEventData*)signal.userData;
 				evt.__original_signal_id = ostd::BuiltinSignals::MouseMoved;
-				if (m_menubar.isVisible())
-					m_menubar.onMouseMoved(evt);
-				if (m_cmenu.isVisible())
-					m_cmenu.onMouseMoved(evt);
-				m_toolbar.__onMouseMoved(evt);
-				m_statusbar.__onMouseMoved(evt);
+				if (!modal)
+				{
+					if (m_menubar.isVisible())
+						m_menubar.onMouseMoved(evt);
+					if (m_cmenu.isVisible())
+						m_cmenu.onMouseMoved(evt);
+					m_toolbar.__onMouseMoved(evt);
+					m_statusbar.__onMouseMoved(evt);
+				}
 				m_rootWidget.__onMouseMoved(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::MouseScrolled)
 			{
 				evt.mouse = (ogfx::MouseEventData*)signal.userData;
 				evt.__original_signal_id = ostd::BuiltinSignals::MouseScrolled;
-				if (m_cmenu.isVisible())
-					m_cmenu.onMouseScrolled(evt);
-				m_toolbar.__onMouseScrolled(evt);
-				m_statusbar.__onMouseScrolled(evt);
+				if (!modal)
+				{
+					if (m_cmenu.isVisible())
+						m_cmenu.onMouseScrolled(evt);
+					m_toolbar.__onMouseScrolled(evt);
+					m_statusbar.__onMouseScrolled(evt);
+				}
 				m_rootWidget.__onMouseScrolled(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::MousePressed)
 			{
 				evt.mouse = (ogfx::MouseEventData*)signal.userData;
 				evt.__original_signal_id = ostd::BuiltinSignals::MousePressed;
-				if (m_cmenu.isVisible())
-					m_cmenu.onMousePressed(evt);
-				if (m_menubar.isVisible())
-					m_menubar.onMousePressed(evt);
-				m_toolbar.__onMousePressed(evt);
-				m_statusbar.__onMousePressed(evt);
+				if (!modal)
+				{
+					if (m_cmenu.isVisible())
+						m_cmenu.onMousePressed(evt);
+					if (m_menubar.isVisible())
+						m_menubar.onMousePressed(evt);
+					m_toolbar.__onMousePressed(evt);
+					m_statusbar.__onMousePressed(evt);
+				}
 				m_rootWidget.__onMousePressed(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::MouseReleased)
 			{
 				evt.mouse = (ogfx::MouseEventData*)signal.userData;
 				evt.__original_signal_id = ostd::BuiltinSignals::MouseReleased;
-				if (m_cmenu.isVisible())
-					m_cmenu.onMouseReleased(evt);
-				m_toolbar.__onMouseReleased(evt);
-				m_statusbar.__onMouseReleased(evt);
+				if (!modal)
+				{
+					if (m_cmenu.isVisible())
+						m_cmenu.onMouseReleased(evt);
+					m_toolbar.__onMouseReleased(evt);
+					m_statusbar.__onMouseReleased(evt);
+				}
 				m_rootWidget.__onMouseReleased(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::KeyPressed)
 			{
 				evt.keyboard = (ogfx::KeyEventData*)signal.userData;
 				evt.__original_signal_id = ostd::BuiltinSignals::KeyPressed;
-				m_toolbar.__onKeyPressed(evt);
-				m_statusbar.__onKeyPressed(evt);
+				if (!modal)
+				{
+					m_toolbar.__onKeyPressed(evt);
+					m_statusbar.__onKeyPressed(evt);
+				}
 				auto focused = m_focusManager.getFocused();
-				if (focused)
+				if (focused && l_focusedAcceptsKeys())
 					focused->__onKeyPressed(evt);
 			}
 			else if (signal.ID == ostd::BuiltinSignals::KeyReleased)
 			{
 				evt.keyboard = (ogfx::KeyEventData*)signal.userData;
 				evt.__original_signal_id = ostd::BuiltinSignals::KeyReleased;
-				m_focusManager.onKeyReleased(evt);
-				m_toolbar.__onKeyReleased(evt);
-				m_statusbar.__onKeyReleased(evt);
+				// Tab could move the focus out of a modal window.
+				if (l_focusedAcceptsKeys() && !(modal && evt.keyboard->keyCode == KeyCode::Tab))
+					m_focusManager.onKeyReleased(evt);
+				if (!modal)
+				{
+					m_toolbar.__onKeyReleased(evt);
+					m_statusbar.__onKeyReleased(evt);
+				}
 				auto focused = m_focusManager.getFocused();
-				if (focused)
+				if (focused && l_focusedAcceptsKeys())
 					focused->__onKeyReleased(evt);
 				if (evt.keyboard->keyCode == KeyCode::Escape)
-					close();
+				{
+					// Escape closes the modal window first (it may have closed itself already).
+					if (modal)
+						modal->close();
+					else
+						close();
+				}
 			}
 			else if (signal.ID == ostd::BuiltinSignals::TextEntered)
 			{
 				evt.keyboard = (ogfx::KeyEventData*)signal.userData;
 				evt.__original_signal_id = ostd::BuiltinSignals::TextEntered;
-				m_toolbar.__onTextEntered(evt);
-				m_statusbar.__onTextEntered(evt);
+				if (!modal)
+				{
+					m_toolbar.__onTextEntered(evt);
+					m_statusbar.__onTextEntered(evt);
+				}
 				auto focused = m_focusManager.getFocused();
-				if (focused)
+				if (focused && l_focusedAcceptsKeys())
 					focused->__onTextEntered(evt);
 			}
 			onSignal(signal);

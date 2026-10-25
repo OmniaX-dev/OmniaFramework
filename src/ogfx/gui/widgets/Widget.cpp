@@ -70,6 +70,16 @@ namespace ogfx
 			return result;
 		}
 
+		MessageDialog& Widget::messageBox(const String& title, const String& text)
+		{
+			return getWindow().messageBox(title, text);
+		}
+
+		MessageDialog& Widget::messageBox(const String& title, const String& text, const Icon& icon)
+		{
+			return getWindow().messageBox(title, text, icon);
+		}
+
 		bool Widget::removeWidget(Widget& child)
 		{
 			bool result = m_widgets.removeWidget(child);

@@ -33,9 +33,11 @@
 
 namespace ogfx
 {
+	struct Icon;
 	namespace gui
 	{
 		class Window;
+		class MessageDialog;
 		class Widget : public ostd::Object, public Rectangle
 		{
 			private: struct ThemeOverride
@@ -86,6 +88,10 @@ namespace ogfx
 				bool setTabIndex(i32 index);
 				virtual void setCallback(eCallback type, EventCallback callback);
 				using Rectangle::contains; bool contains(Vec2 p, bool includeBounds = false) const override;
+				// Shows a modal message box (a SubWindow owned by the window) with an OK
+				// button. The icon overload draws the icon left of the text.
+				MessageDialog& messageBox(const String& title, const String& text);
+				MessageDialog& messageBox(const String& title, const String& text, const Icon& icon);
 				template<typename T>
 				inline T getThemeValue(const ostd::Stylesheet &theme, const String& key, const T& fallback)
 				{
@@ -213,6 +219,16 @@ namespace ogfx
 				// Converts a content-area size into the matching widget size (adds
 				// padding and content offset, mirroring getContentBounds()).
 				Vec2 contentToWidgetSize(const Vec2& contentSize) const;
+
+				// Z-layer among siblings: a parent keeps its children sorted by layer
+				// (stable), so a higher layer is always drawn above and hit-tested
+				// before a lower one. Regular widgets are 0; SubWindows use 1 and up
+				// (see eZLayer in SubWindow.hpp). Call the parent's
+				// getChildren().sortByLayer() when the value returned changes.
+				inline virtual i32 getZLayer(void) const { return 0; }
+				// True for widgets that swallow mouse input aimed at the siblings
+				// below them (modal SubWindows).
+				inline virtual bool blocksInputBelow(void) const { return false; }
 				// ====================================================================
 
 
@@ -268,7 +284,7 @@ namespace ogfx
 				inline void disable(void) { enable(false); }
 				inline bool isFocused(void) const { return m_focused; }
 				inline bool isMouseInside(void) const { return m_mouseInside; }
-				inline bool hasChildren(void) const { return m_allowChildren && m_widgets.widgetCount() > 0; }
+				inline bool hasChildren(void) const { return m_allowChildren && !m_childrenSuspended && m_widgets.widgetCount() > 0; }
 				inline bool isRootChild(void) const { return m_rootChild; }
 				inline void setRootChild(void) { m_rootChild = true; }
 				inline virtual bool isInvalid(void) const override { return ostd::Object::isInvalid() || (m_parent == nullptr && !m_rootChild); }
@@ -306,6 +322,10 @@ namespace ogfx
 			protected:
 				void apply_common_theme_values(const ostd::Stylesheet& theme);
 				inline void disableChildren(void) { m_allowChildren = false; }
+				// Suspended children stay attached but are neither drawn nor sent
+				// events (used by minimized SubWindows).
+				inline void suspendChildren(bool suspend = true) { m_childrenSuspended = suspend; }
+				inline bool areChildrenSuspended(void) const { return m_childrenSuspended; }
 				inline void setStylesheetCategoryName(const String& name) { m_stylesheetCategoryName = name; }
 				inline String property(const ostd::String& prop) const { return m_stylesheetCategoryName +  "." + prop; }
 
@@ -341,6 +361,7 @@ namespace ogfx
 
 				// ======= BOOL =======
 				bool m_allowChildren { true };
+				bool m_childrenSuspended { false };
 				bool m_mouseInside { false };
 				bool m_allowFocus { true };
 				bool m_enabled { true };

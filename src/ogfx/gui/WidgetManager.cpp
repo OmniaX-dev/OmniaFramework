@@ -43,7 +43,7 @@ namespace ogfx
 		{
 			if (hasWidget(widget)) return false;
 			widget.m_parent = &m_owner;
-			m_widgetList.push_back(&widget);
+			m_widgetList.insert(m_widgetList.begin() + layer_insert_index(widget.getZLayer()), &widget);
 			widget.refresh();
 			return true;
 		}
@@ -51,17 +51,38 @@ namespace ogfx
 		bool WidgetManager::removeWidget(Widget& widget)
 		{
 			STDVEC_REMOVE(m_widgetList, &widget);
+			if (m_mousePressedOnWidget == &widget)
+				m_mousePressedOnWidget = nullptr;
 			return true;
+		}
+
+		bool WidgetManager::bringToFront(Widget& widget)
+		{
+			auto it = std::ranges::find(m_widgetList, &widget);
+			if (it == m_widgetList.end())
+				return false;
+			m_widgetList.erase(it);
+			m_widgetList.insert(m_widgetList.begin() + layer_insert_index(widget.getZLayer()), &widget);
+			return true;
+		}
+
+		void WidgetManager::sortByLayer(void)
+		{
+			std::ranges::stable_sort(m_widgetList, {}, [](const Widget* w) { return w ? w->getZLayer() : 0; });
 		}
 
 		void WidgetManager::draw(ogfx::BasicRenderer2D& gfx)
 		{
+			// The window draws the layered children of its root itself (SubWindows,
+			// above everything else and with the blurred backdrop they may need).
+			const bool skipLayered = (&m_owner == &m_window.getRootWidget());
 			for (auto& w : m_widgetList)
 			{
 				if (w == nullptr) continue;
 				if (w->isInvalid()) continue;
 				if (!w->isVisible()) continue;
 				if (w->isManualDrawEnabled()) continue;
+				if (skipLayered && w->getZLayer() > 0) continue;
 				gfx.pushClippingRect({ w->getGlobalPosition(), w->getSize() }, true);
 				w->__draw(gfx);
 				gfx.popClippingRect();
@@ -92,7 +113,8 @@ namespace ogfx
 
 		void WidgetManager::onMousePressed(const Event& event)
 		{
-			for (i32 i = m_widgetList.size() - 1; i >= 0; i--)
+			const i32 floor = input_floor();
+			for (i32 i = m_widgetList.size() - 1; i >= floor; i--)
 			{
 				Widget* w = m_widgetList[i];
 				if (w == nullptr) continue;
@@ -104,6 +126,12 @@ namespace ogfx
 				m_window.getFocusManager().requestFocus(*w);
 				w->__onMousePressed(event);
 				m_mousePressedOnWidget = w;
+				// Clicking a layered widget (a SubWindow) raises it within its layer.
+				if (w->getZLayer() > 0)
+				{
+					bringToFront(*w);
+					break;
+				}
 				if (event.isHandled() || w->m_stopEvents)
 					break;
 			}
@@ -117,7 +145,8 @@ namespace ogfx
 				m_mousePressedOnWidget->__onMouseReleased(event);
 				// processDragAndDrop(m_mousePressedOnWidget, event);
 			}
-			for (i32 i = m_widgetList.size() - 1; i >= 0; i--)
+			const i32 floor = input_floor();
+			for (i32 i = m_widgetList.size() - 1; i >= floor; i--)
 			{
 				Widget* w = m_widgetList[i];
 				if (w == nullptr) continue;
@@ -141,13 +170,15 @@ namespace ogfx
 			{
 				m_mousePressedOnWidget->__onMouseDragged(event);
 			}
+			// Children below a modal one are treated as not hovered.
+			const i32 floor = input_floor();
 			for (i32 i = m_widgetList.size() - 1; i >= 0; i--)
 			{
 				Widget* w = m_widgetList[i];
 				if (w == nullptr) continue;
 				if (w->isInvalid()) continue;
 				if (!w->isVisible()) continue;
-				if (!hit_test(w, event.mouse->position_x, event.mouse->position_y))
+				if (i < floor || !hit_test(w, event.mouse->position_x, event.mouse->position_y))
 				{
 					if (w->m_mouseInside)
 					{
@@ -187,7 +218,8 @@ namespace ogfx
 
 		void WidgetManager::onMouseScrolled(const Event& event)
 		{
-			for (i32 i = m_widgetList.size() - 1; i >= 0; i--)
+			const i32 floor = input_floor();
+			for (i32 i = m_widgetList.size() - 1; i >= floor; i--)
 			{
 				Widget* w = m_widgetList[i];
 				if (w == nullptr) continue;
@@ -203,7 +235,8 @@ namespace ogfx
 
 		void WidgetManager::onMouseDragged(const Event& event)
 		{
-			for (i32 i = m_widgetList.size() - 1; i >= 0; i--)
+			const i32 floor = input_floor();
+			for (i32 i = m_widgetList.size() - 1; i >= floor; i--)
 			{
 				Widget* w = m_widgetList[i];
 				if (w == nullptr) continue;
@@ -274,6 +307,30 @@ namespace ogfx
 			if (m_owner.isRootChild() || widget->isIgnoreScrollEnabled())
 				return true;
 			return m_owner.getGlobalPureContentBounds().contains({ x, y }, true);
+		}
+
+		i32 WidgetManager::input_floor(void) const
+		{
+			for (i32 i = m_widgetList.size() - 1; i >= 0; i--)
+			{
+				const Widget* w = m_widgetList[i];
+				if (w && !w->isInvalid() && w->isVisible() && w->blocksInputBelow())
+					return i;
+			}
+			return 0;
+		}
+
+		i32 WidgetManager::layer_insert_index(i32 layer) const
+		{
+			i32 index = m_widgetList.size();
+			while (index > 0)
+			{
+				const Widget* w = m_widgetList[index - 1];
+				if ((w ? w->getZLayer() : 0) <= layer)
+					break;
+				index--;
+			}
+			return index;
 		}
 
 		void WidgetManager::processDragAndDrop(Widget* widget, const Event& event)

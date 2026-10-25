@@ -27,6 +27,8 @@
 #include <ogfx/gui/Events.hpp>
 #include <ogfx/gui/widgets/Widget.hpp>
 #include <ogfx/gui/widgets/RootWidget.hpp>
+#include <ogfx/gui/widgets/SubWindow.hpp>
+#include <ogfx/render/RenderTarget.hpp>
 #include <ogfx/render/BasicRenderer.hpp>
 #include <ogfx/gui/WindowOutputHandler.hpp>
 #include <ogfx/gui/ContextMenu.hpp>
@@ -302,6 +304,23 @@ namespace ogfx
 				// "use the current window size".
 				void updateRootWidgetBounds(i32 width = -1, i32 height = -1);
 				inline FocusManager& getFocusManager(void) { return m_focusManager; }
+				inline RootWidget& getRootWidget(void) { return m_rootWidget; }
+
+				// ===== SubWindows (see ogfx/gui/widgets/SubWindow.hpp) =====
+				// Adds a SubWindow to the window (SubWindow::open() does this for you).
+				void addSubWindow(SubWindow& subWindow);
+				void removeSubWindow(SubWindow& subWindow);
+				// Shows a modal message box owned by the window (destroyed once closed).
+				MessageDialog& messageBox(const String& title, const String& text);
+				MessageDialog& messageBox(const String& title, const String& text, const Icon& icon);
+				// Topmost visible, non-minimized SubWindow (the one with the "active" qualifier).
+				SubWindow* getActiveSubWindow(void);
+				// Topmost visible modal SubWindow, if any.
+				SubWindow* getModalSubWindow(void);
+
+				void __onSubWindowClosed(SubWindow& subWindow);
+				void __onSubWindowStateChanged(SubWindow& subWindow);
+				void __forgetSubWindow(SubWindow& subWindow);
 
 				// Mirrors the in-widget MenuBar into the desktop's native global menu (Plasma's
 				// panel on Linux, the system menu bar on macOS) when one is available, hiding the
@@ -337,6 +356,15 @@ namespace ogfx
 
 				void __main_loop_cycle(void);
 
+			private:
+				void update_subwindows(void);
+				// Returns false if the backdrop target could not be re-bound.
+				bool draw_subwindows(bool useBackdrop);
+				bool needs_backdrop(void);
+				void layout_minimized_subwindows(void);
+				void clear_focus_inside(Widget& widget);
+				MessageDialog& show_message_dialog(std::unique_ptr<MessageDialog> dialog);
+
 			protected:
 				RootWidget m_rootWidget { *this };
 				FocusManager m_focusManager { *this };
@@ -350,6 +378,13 @@ namespace ogfx
 				NativeMenu m_nativeMenu { *this };
 				u64 m_nativeMenuLastPushedGeneration { (u64)-1 }; // mismatched on purpose - forces a push the first time
 				bool m_menuBarVisibleBeforeNative { false };
+
+				stdvec<SubWindow*> m_closedOwnedSubWindows;
+				stdvec<SubWindow*> m_minimizedSubWindows;
+				// Everything below the SubWindows, rendered offscreen while a blurred one is visible.
+				RenderTarget m_backdrop;
+				// Declared last so it is destroyed first: ~SubWindow() still uses the members above.
+				stdvec<std::unique_ptr<SubWindow>> m_ownedSubWindows;
 
 				friend class RootWidget;
 				friend class FocusManager;
