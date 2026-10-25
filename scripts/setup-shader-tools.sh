@@ -84,7 +84,13 @@ install_deps() {
     step "Installing dependencies"
     if [[ "$PLATFORM" == "linux" ]]; then
         if command -v pacman >/dev/null 2>&1; then
-            sudo pacman -S --needed --noconfirm base-devel git cmake ninja curl sdl3 spirv-cross
+            local packages=(base-devel git cmake ninja curl sdl3 spirv-cross)
+            # pacman -T lists what isn't installed: only ask for sudo when something is missing.
+            if pacman -T "${packages[@]}" >/dev/null 2>&1; then
+                echo "    already installed"
+            else
+                sudo pacman -S --needed --noconfirm "${packages[@]}"
+            fi
         else
             warn "pacman not found; make sure these are installed: a C compiler, git, cmake, ninja, curl, SDL3 (dev), SPIRV-Cross (with spirv-cross-c-shared)"
         fi

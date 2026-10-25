@@ -40,6 +40,20 @@ namespace ogfx
 			Image& operator=(Image&& other) noexcept;
 			void destroy(void);
 			Image& loadFromFile(const String& filePath, BasicRenderer2D& gfx);
+			// Creates a blank width x height image whose pixels are set from memory with
+			// updatePixels() (a streaming texture; 32-bit 0xAARRGGBB pixels, straight alpha).
+			Image& create(BasicRenderer2D& gfx, i32 width, i32 height);
+			// Uploads `area` (all of the image when empty) from `pixels`, a buffer covering the
+			// whole image (getSize().x pixels per row). Only for images made with create().
+			bool updatePixels(const u32* pixels, const IRect& area = { 0, 0, 0, 0 });
+			// Filtering when the image is drawn scaled: smooth (bilinear, the default) or
+			// nearest-neighbour (pixel art).
+			void setSmoothFiltering(bool smooth);
+			inline bool isSmoothFiltering(void) const { return m_smoothFiltering; }
+			// True for an image made with create() whose pixels were lost (a GPU device reset
+			// re-created its texture blank): upload all of them again. Cleared by a full
+			// updatePixels().
+			inline bool contentsLost(void) const { return m_contentsLost; }
 			inline Vec2 getSize(void) const { return { m_width, m_height }; }
 			inline bool isLoaded(void) const { return m_loaded; }
 			inline SDL_Texture* getSDLTexture(void) const { return m_sdl_texture; }
@@ -50,6 +64,7 @@ namespace ogfx
 			void __reload(void);              // device reset: the texture is gone, load it again
 			void __release_texture(void);     // the SDL renderer is about to be destroyed
 			void __detach_from_renderer(void); // the BasicRenderer2D itself is being destroyed
+			bool create_streaming_texture(void);
 
 		private:
 			BasicRenderer2D* m_renderer { nullptr };
@@ -58,6 +73,9 @@ namespace ogfx
 			f32 m_width { 0 };
 			f32 m_height { 0 };
 			bool m_loaded { false };
+			bool m_streaming { false };
+			bool m_smoothFiltering { true };
+			bool m_contentsLost { false };
 
 			friend class BasicRenderer2D;
 	};

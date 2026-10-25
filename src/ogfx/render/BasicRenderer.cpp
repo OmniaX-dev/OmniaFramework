@@ -1734,28 +1734,12 @@ namespace ogfx
 	{
 		if (m_blurShaderH && m_blurShaderV)
 			return m_blurShaderH->isLoaded() && m_blurShaderV->isLoaded();
-		using namespace embedded_shaders;
-		ShaderBytecode bytecode;
-		if constexpr (HasFormat_SPV)
-		{
-			bytecode.spirv = blur_frag_spv_data;
-			bytecode.spirvSize = blur_frag_spv_size;
-		}
-		if constexpr (HasFormat_MSL)
-		{
-			bytecode.msl = blur_frag_msl_data;
-			bytecode.mslSize = blur_frag_msl_size;
-		}
-		if constexpr (HasFormat_DXIL)
-		{
-			bytecode.dxil = blur_frag_dxil_data;
-			bytecode.dxilSize = blur_frag_dxil_size;
-		}
-		const ShaderLayout layout { blur_frag_num_samplers, blur_frag_num_uniform_buffers, blur_frag_num_storage_textures, blur_frag_num_storage_buffers };
 		// One shader per direction: each keeps its own uniforms, so the two passes don't force
 		// a uniform update (and a GPU flush) between them. They share the compiled GPU shader.
 		m_blurShaderH = std::make_unique<Shader>();
 		m_blurShaderV = std::make_unique<Shader>();
+		const ShaderBytecode bytecode = OGFX_EMBEDDED_SHADER_BYTECODE(blur_frag);
+		const ShaderLayout layout = OGFX_EMBEDDED_SHADER_LAYOUT(blur_frag);
 		return m_blurShaderH->loadFromMemory(bytecode, layout) && m_blurShaderV->loadFromMemory(bytecode, layout);
 	}
 

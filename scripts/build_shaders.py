@@ -158,8 +158,24 @@ def main():
 			if ext in available:
 				hpp.append(f"\t\textern const u32 {base}_{ext}_size;")
 				hpp.append(f"\t\textern const ostd::UByte {base}_{ext}_data[];")
+			else:
+				# Declared anyway, so code using every format compiles whatever was embedded.
+				hpp.append(f"\t\tinline constexpr u32 {base}_{ext}_size {{ 0 }};")
+				hpp.append(f"\t\tinline constexpr const ostd::UByte* {base}_{ext}_data {{ nullptr }};")
 		hpp.append("")
 	hpp += ["\t}", "}", ""]
+	hpp += [
+		"// ogfx::ShaderBytecode / ogfx::ShaderLayout of an embedded shader, e.g.",
+		"// shader.loadFromMemory(OGFX_EMBEDDED_SHADER_BYTECODE(blur_frag), OGFX_EMBEDDED_SHADER_LAYOUT(blur_frag));",
+		"#define OGFX_EMBEDDED_SHADER_BYTECODE(name) ::ogfx::ShaderBytecode { \\",
+		"	::ogfx::embedded_shaders::name##_spv_data, ::ogfx::embedded_shaders::name##_spv_size, \\",
+		"	::ogfx::embedded_shaders::name##_msl_data, ::ogfx::embedded_shaders::name##_msl_size, \\",
+		"	::ogfx::embedded_shaders::name##_dxil_data, ::ogfx::embedded_shaders::name##_dxil_size }",
+		"#define OGFX_EMBEDDED_SHADER_LAYOUT(name) ::ogfx::ShaderLayout { \\",
+		"	::ogfx::embedded_shaders::name##_num_samplers, ::ogfx::embedded_shaders::name##_num_uniform_buffers, \\",
+		"	::ogfx::embedded_shaders::name##_num_storage_textures, ::ogfx::embedded_shaders::name##_num_storage_buffers }",
+		"",
+	]
 
 	cpp = [LICENSE, '#include "EmbeddedShaders.hpp"\n', "namespace ogfx::embedded_shaders", "{"]
 	for base, layout, blobs in shaders:

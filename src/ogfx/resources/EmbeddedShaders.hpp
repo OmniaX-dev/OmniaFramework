@@ -32,6 +32,18 @@ namespace ogfx
 		inline constexpr bool HasFormat_MSL { true };
 		inline constexpr bool HasFormat_DXIL { true };
 
+		// bloom.frag.hlsl
+		inline constexpr u32 bloom_frag_num_samplers { 1 };
+		inline constexpr u32 bloom_frag_num_uniform_buffers { 1 };
+		inline constexpr u32 bloom_frag_num_storage_textures { 0 };
+		inline constexpr u32 bloom_frag_num_storage_buffers { 0 };
+		extern const u32 bloom_frag_spv_size;
+		extern const ostd::UByte bloom_frag_spv_data[];
+		extern const u32 bloom_frag_msl_size;
+		extern const ostd::UByte bloom_frag_msl_data[];
+		extern const u32 bloom_frag_dxil_size;
+		extern const ostd::UByte bloom_frag_dxil_data[];
+
 		// blur.frag.hlsl
 		inline constexpr u32 blur_frag_num_samplers { 1 };
 		inline constexpr u32 blur_frag_num_uniform_buffers { 1 };
@@ -44,5 +56,27 @@ namespace ogfx
 		extern const u32 blur_frag_dxil_size;
 		extern const ostd::UByte blur_frag_dxil_data[];
 
+		// crt.frag.hlsl
+		inline constexpr u32 crt_frag_num_samplers { 1 };
+		inline constexpr u32 crt_frag_num_uniform_buffers { 1 };
+		inline constexpr u32 crt_frag_num_storage_textures { 0 };
+		inline constexpr u32 crt_frag_num_storage_buffers { 0 };
+		extern const u32 crt_frag_spv_size;
+		extern const ostd::UByte crt_frag_spv_data[];
+		extern const u32 crt_frag_msl_size;
+		extern const ostd::UByte crt_frag_msl_data[];
+		extern const u32 crt_frag_dxil_size;
+		extern const ostd::UByte crt_frag_dxil_data[];
+
 	}
 }
+
+// ogfx::ShaderBytecode / ogfx::ShaderLayout of an embedded shader, e.g.
+// shader.loadFromMemory(OGFX_EMBEDDED_SHADER_BYTECODE(blur_frag), OGFX_EMBEDDED_SHADER_LAYOUT(blur_frag));
+#define OGFX_EMBEDDED_SHADER_BYTECODE(name) ::ogfx::ShaderBytecode { \
+	::ogfx::embedded_shaders::name##_spv_data, ::ogfx::embedded_shaders::name##_spv_size, \
+	::ogfx::embedded_shaders::name##_msl_data, ::ogfx::embedded_shaders::name##_msl_size, \
+	::ogfx::embedded_shaders::name##_dxil_data, ::ogfx::embedded_shaders::name##_dxil_size }
+#define OGFX_EMBEDDED_SHADER_LAYOUT(name) ::ogfx::ShaderLayout { \
+	::ogfx::embedded_shaders::name##_num_samplers, ::ogfx::embedded_shaders::name##_num_uniform_buffers, \
+	::ogfx::embedded_shaders::name##_num_storage_textures, ::ogfx::embedded_shaders::name##_num_storage_buffers }
