@@ -107,15 +107,23 @@ namespace ogfx
 			return true;
 		}
 
+		// Callers don't switch the font size up front (that flushes SDL_ttf's glyph cache),
+		// so it's switched here, only for glyphs that aren't in the atlas yet.
+		const f32 oldSize = TTF_GetFontSize(font);
+		const bool switchSize = (oldSize != cast<f32>(fontSize));
+		if (switchSize)
+			TTF_SetFontSize(font, cast<f32>(fontSize));
 		SDL_Surface* surf = TTF_RenderText_Blended(font, glyphStr.c_str(), glyphStr.len(), SDL_Color{255, 255, 255, 255});
+		i32 minx = 0, maxx = 0, miny = 0, maxy = 0, advance = 0;
+		if (surf)
+			TTF_GetGlyphMetrics(font, codepoint, &minx, &maxx, &miny, &maxy, &advance);
+		if (switchSize)
+			TTF_SetFontSize(font, oldSize);
 		if (!surf)
 			return false;
 
 		i32 gw = surf->w;
 		i32 gh = surf->h;
-
-		i32 minx, maxx, miny, maxy, advance;
-		TTF_GetGlyphMetrics(font, codepoint, &minx, &maxx, &miny, &maxy, &advance);
 
 		GlyphInfo glyph;
 		glyph.advance = advance;

@@ -148,6 +148,100 @@ macro set_common_values(_borderColor = $borderColor, _fontSize = 18, _showBorder
 
 
 
+% ====== HexEditor ======
+% ogfx::gui::HexEditor. The size/endian buttons (and the edit window's format
+% buttons) use the "hex_toggle" theme ID; the selected one gets ":active".
+(hexEditor) {
+	set_common_values($borderColor, 16, true)
+	backgroundColor = $backgroundColor
+	textColor = $textColor
+	borderWidth = 1
+	showBackground = true
+	padding = rect(4, 4, 4, 4)
+	set_focus_border($blueAccent)
+	gridFontSize = 16
+	rowSpacing = 4.0
+	groupSpacing = 8.0
+	groupSize = 8
+	scrollbarWidth = 14.0
+	changeFadeTime = 1.0
+	topBarColor = $darkColor
+	gridBackgroundColor = rgba(18, 20, 18, 255)
+	addressColor = rgba(90, 170, 255, 255)
+	headerColor = $accentColor
+	titleColor = rgba(220, 120, 230, 255)
+	hexColor = rgba(225, 230, 225, 255)
+	zeroColor = rgba(105, 110, 105, 255)
+	asciiColor = rgba(240, 220, 90, 255)
+	asciiDotColor = rgba(85, 90, 85, 255)
+	selectionColor = rgba(0, 117, 199, 170)
+	selectionTextColor = rgba(255, 255, 255, 255)
+	hoverColor = rgba(255, 255, 255, 35)
+	hoverBorderColor = $accentColorLight
+	highlightColor = rgba(220, 20, 60, 150)
+	changedColor = rgba(255, 150, 0, 170)
+	watchColor = rgba(0, 220, 180, 255)
+	crosshairColor = rgba(255, 255, 255, 12)
+	rowStripeColor = rgba(255, 255, 255, 6)
+	separatorColor = rgba(60, 70, 60, 255)
+	(statusBar) {
+		backgroundColor = $darkColor
+		textColor = $textColor
+		labelColor = $accentColorDark
+	}
+	(search) {
+		matchColor = rgba(230, 200, 40, 110)
+		currentColor = rgba(255, 230, 60, 200)
+		borderColor = rgba(255, 240, 120, 255)
+	}
+	(scrollbar) {
+		trackColor = rgba(12, 14, 12, 255)
+		thumbColor = rgba(70, 90, 70, 255)
+		markerColor = rgba(220, 20, 60, 255)
+	}
+}
+(hexWatchList) {
+	fontSize = 16
+	showBackground = true
+	backgroundColor = rgba(18, 20, 18, 255)
+	showBorder = true
+	borderColor = $borderColor
+	borderWidth = 1
+}
+(@hex_bar label) {
+	fontSize = 16
+	padding = rect(4, 0, 4, 0)
+}
+(@hex_bar button) {
+	fontSize = 16
+	padding = rect(8, 1, 8, 1)
+}
+(@hex_bar checkbox) {
+	fontSize = 16
+	padding = rect(2, 1, 2, 1)
+}
+(@hex_bar textEdit) {
+	fontSize = 16
+	padding = rect(2, 1, 2, 1)
+}
+(@hex_toggle button) {
+	useBackgroundGradient = false
+	showBackground = true
+	backgroundColor = $backgroundColor
+	padding = rect(8, 1, 8, 1)
+}
+(@hex_toggle button:hover) {
+	borderColor = $accentColorLight
+}
+(@hex_toggle button:active) {
+	backgroundColor = $accentColorDark
+	borderColor = $accentColorLight
+	textColor = #FFFFFFFF
+}
+% =======================
+
+
+
 % ====== TabPanel ======
 (tabPanel) {
 	set_common_values()

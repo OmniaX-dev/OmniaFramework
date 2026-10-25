@@ -259,7 +259,22 @@ namespace ogfx
 			if (m_visible == v)
 				return;
 			m_visible = v;
+			if (!v)
+				reset_mouse_state();
 			parent_child_list_changed();
+		}
+
+		void Widget::reset_mouse_state(void)
+		{
+			m_mouseInside = false;
+			m_pressedButton = MouseEventData::eButton::None;
+			setThemeQualifier("hover", false);
+			setThemeQualifier("pressed", false);
+			for (auto* child : m_widgets.getWidgets())
+			{
+				if (child && !child->isInvalid())
+					child->reset_mouse_state();
+			}
 		}
 
 		bool Widget::setTabIndex(i32 index)

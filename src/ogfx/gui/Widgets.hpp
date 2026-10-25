@@ -39,6 +39,7 @@
 #include <ogfx/gui/widgets/PixelCanvas.hpp>
 #include <ogfx/gui/widgets/TextConsoleCanvas.hpp>
 #include <ogfx/gui/widgets/SubWindow.hpp>
+#include <ogfx/gui/widgets/HexEditor.hpp>
 
 namespace ogfx
 {

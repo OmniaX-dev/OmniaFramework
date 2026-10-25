@@ -5,6 +5,7 @@
 */
 
 #include "ColorPickerSkins.hpp"
+#include "SubWindow.hpp"
 #include "../../render/BasicRenderer.hpp"
 #include "../Window.hpp"
 #include <cmath>
@@ -14,6 +15,15 @@ namespace ogfx
 {
 	namespace gui
 	{
+		// The ColorButton popup: drawn by the window on the popup layer, above
+		// every SubWindow (the window draws layered root children itself).
+		class PopupColorPicker : public ColorPicker
+		{
+			public:
+				inline PopupColorPicker(Window& window) : ColorPicker(window) {  }
+				inline i32 getZLayer(void) const override { return cast<i32>(SubWindow::eZLayer::Popup); }
+		};
+
 		// ===================================================================
 		// ColorPickerPanel — RGBA slider skin
 		// ===================================================================
@@ -297,9 +307,7 @@ namespace ogfx
 		{
 			if (m_popup) close_popup();
 
-			m_popup = new ColorPicker(getWindow());
-			m_popup->setRootChild();
-			// m_popup->setTopMost(true); // TODO: Implement
+			m_popup = new PopupColorPicker(getWindow());
 			m_popup->setSize({ 240, 200 });
 			m_popup->setColor(m_color);
 
@@ -309,17 +317,16 @@ namespace ogfx
 					callback_onColorChanged(m_color);
 			});
 
-			// Position just below this button. Flip up if it would overflow
-			// the bottom of the window.
+			// Position just below this button, in the root widget's space (the area
+			// between the bars). Flip up if it would overflow the bottom.
+			const Rectangle area { getWindow().getRootWidget().getGlobalPosition(), getWindow().getRootWidget().getSize() };
 			const Rectangle b = getGlobalBounds();
-			f32 px = b.x;
-			f32 py = b.y + b.h + 4.0f;
-			const f32 winH = static_cast<f32>(getWindow().getWindowHeight());
-			const f32 winW = static_cast<f32>(getWindow().getWindowWidth());
-			if (py + m_popup->geth() > winH)
-				py = b.y - 4.0f - m_popup->geth();
-			if (px + m_popup->getw() > winW)
-				px = winW - m_popup->getw() - 4.0f;
+			f32 px = b.x - area.x;
+			f32 py = b.y + b.h + 4.0f - area.y;
+			if (py + m_popup->geth() > area.h)
+				py = b.y - area.y - 4.0f - m_popup->geth();
+			if (px + m_popup->getw() > area.w)
+				px = area.w - m_popup->getw() - 4.0f;
 			if (px < 0) px = 4.0f;
 			if (py < 0) py = 4.0f;
 			m_popup->setPosition({ px, py });

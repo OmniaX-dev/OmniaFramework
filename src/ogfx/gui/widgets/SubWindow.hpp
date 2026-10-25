@@ -63,7 +63,9 @@ namespace ogfx
 			{
 				Normal = 1,
 				AlwaysOnTop = 2,
-				Modal = 3
+				Modal = 3,
+				// Popups (e.g. ColorButton's picker) float above everything else.
+				Popup = 4
 			};
 			public: enum class eState : u8
 			{

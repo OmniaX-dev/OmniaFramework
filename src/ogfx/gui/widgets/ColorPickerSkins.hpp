@@ -76,8 +76,9 @@ namespace ogfx
 		//
 		// Behaves like a button: shows the current color (over a checkerboard so
 		// alpha is visible), and clicking it opens a floating ColorPicker just
-		// below the swatch. The popup is a TopMost root widget added to the
-		// window; it closes when the user clicks outside it.
+		// below the swatch. The popup is a root widget on the popup z-layer (above
+		// every SubWindow, modal ones included); it closes when the user clicks
+		// outside it.
 		// ===========================================================================
 		class ColorButton : public Widget
 		{
@@ -96,6 +97,9 @@ namespace ogfx
 
 				inline void setColorChangedCallback(std::function<void(const Color&)> cb)
 				{ callback_onColorChanged = std::move(cb); }
+				// Opens the picker popup (as a click on the swatch does).
+				inline void openPopup(void) { open_popup(); }
+				inline bool isPopupOpen(void) const { return m_popupOpen; }
 
 				OSTD_PARAM_GETSET(f32, CheckerSize, m_checkerSize);
 

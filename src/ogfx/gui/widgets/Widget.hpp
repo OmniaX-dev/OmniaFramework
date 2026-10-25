@@ -338,6 +338,11 @@ namespace ogfx
 				void begin_size_batch(void);
 				void end_size_batch(void);
 				void parent_child_list_changed(void);
+				// Forgets hover/press state (recursively). Hidden widgets get no mouse-exit
+				// events, so without this a widget hidden under the cursor would still think
+				// the mouse is over it when shown again (and e.g. a Button would react to the
+				// next mouse release anywhere).
+				void reset_mouse_state(void);
 
 			private:
 				// ======= CORE =======

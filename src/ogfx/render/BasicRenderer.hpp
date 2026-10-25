@@ -211,6 +211,24 @@ namespace ogfx
 			std::unique_ptr<RenderTarget> result;
 			u64 lastUsedFrame { 0 };
 		};
+		private: struct KernKey
+		{
+			u64 font { 0 };
+			u32 size { 0 };
+			u32 left { 0 };
+			u32 right { 0 };
+			inline bool operator==(const KernKey& other) const noexcept { return font == other.font && size == other.size && left == other.left && right == other.right; }
+		};
+		private: struct KernKeyHasher
+		{
+			inline size_t operator()(const KernKey& k) const noexcept
+			{
+				size_t h = std::hash<u64>()(k.font);
+				h ^= std::hash<u64>()((cast<u64>(k.left) << 32) | k.right) + 0x9e3779b9 + (h << 6) + (h >> 2);
+				h ^= std::hash<u32>()(k.size) + 0x9e3779b9 + (h << 6) + (h >> 2);
+				return h;
+			}
+		};
 		private: struct TargetBinding
 		{
 			RenderTarget* target { nullptr };
@@ -249,6 +267,8 @@ namespace ogfx
 			void mesh_filled_arc(FlatMesh& mesh, const Vec2& center, f32 radiusX, f32 radiusY, f32 startAngle, f32 endAngle, i32 segments, const SDL_FColor& color);
 			void mesh_arc_stroke(FlatMesh& mesh, const Vec2& center, f32 radiusX, f32 radiusY, f32 thickness, f32 startAngle, f32 endAngle, i32 segments, const SDL_FColor& color);
 			void print_ttf_error(const String& funcName);
+			// Cached TTF_GetGlyphKerning(); the font size is only switched on a cache miss.
+			i32 get_kerning(TTF_Font* font, i32 fontSize, u32 left, u32 right);
 			inline i32 set_error_state(i32 err) { m_errorState = err; return m_errorState; }
 
 		public:
@@ -288,6 +308,9 @@ namespace ogfx
 			SignalHandler m_sigHandler { *this };
 
 			ostd::StaticHashMap<String, stdvec<Vec2>> m_strDimsCache;
+			// Kerning per (font, size, pair): asking SDL_ttf every draw makes FreeType reload
+			// and re-hint both glyphs each time, which dominated text-heavy frames.
+			std::unordered_map<KernKey, i32, KernKeyHasher> m_kernCache;
 			i32 m_cacheHitCount { 0 };
 			i32 m_cacheMissCount { 0 };
 
@@ -306,6 +329,7 @@ namespace ogfx
 
 			inline static constexpr i32 DefaultFontSize { 16 };
 			inline static constexpr i32 MaxStringDimsCacheSize { 512 };
+			inline static constexpr size_t MaxKernCacheSize { 1 << 16 };
 
 			friend class RenderContext;
 			friend class RenderTarget;

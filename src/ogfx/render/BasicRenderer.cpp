@@ -503,6 +503,7 @@ namespace ogfx
 		}
 		m_font = nullptr;
 		m_fontOpen = false;
+		m_kernCache.clear();
 		m_fontSize = DefaultFontSize;
 		m_fontFromMemory = false;
 		set_error_state(tErrors::NoError);
@@ -594,9 +595,8 @@ namespace ogfx
 			return it->second;
 		}
 
-		FontSizeGuard fontSizeGuard(*this);
-		setFontSize(fontSize);
-
+		// No font size switch here: the atlas and get_kerning() switch it only when they have
+		// to ask SDL_ttf (switching flushes SDL_ttf's glyph cache).
 		auto glyphs = m_fontGlyphAtlas.processString(message, font, fontSize);
 		if (glyphs.empty()) return {  };
 
@@ -609,9 +609,7 @@ namespace ogfx
 			charWidth += glyphs[i]->advance;
 			if (i > 0)
 			{
-				i32 kern = 0;
-				TTF_GetGlyphKerning(font, glyphs[i - 1]->codepoint, glyphs[i]->codepoint, &kern);
-				charWidth += kern;
+				charWidth += get_kerning(font, fontSize, glyphs[i - 1]->codepoint, glyphs[i]->codepoint);
 			}
 			dimensions.push_back({ charWidth, glyphs[0]->size.y });
 			charWidth = 0;
@@ -754,9 +752,6 @@ namespace ogfx
 		if (!isValid()) return;
 		if (fontSize <= 0)
 			fontSize = m_fontSize;
-		FontSizeGuard fontSizeGuard(*this);
-		setFontSize(fontSize);
-
 		auto glyphs = m_fontGlyphAtlas.processString(str, m_font, fontSize);
 		if (glyphs.empty()) return;
 
@@ -770,9 +765,7 @@ namespace ogfx
 
 			if (i > 0)
 			{
-				int kern = 0;
-				TTF_GetGlyphKerning(m_font, glyphs[i - 1]->codepoint, g->codepoint, &kern);
-				x += (kern * scale);
+				x += (get_kerning(m_font, fontSize, glyphs[i - 1]->codepoint, g->codepoint) * scale);
 			}
 
 			Vec2 verts[4] = {
@@ -1772,6 +1765,25 @@ namespace ogfx
 		entry->lastUsedFrame = m_frameIndex;
 		m_blurCache.push_back(std::move(entry));
 		return *m_blurCache.back();
+	}
+
+	i32 BasicRenderer2D::get_kerning(TTF_Font* font, i32 fontSize, u32 left, u32 right)
+	{
+		const KernKey key { cast<u64>(reinterpret_cast<uintptr_t>(font)), cast<u32>(fontSize), left, right };
+		auto it = m_kernCache.find(key);
+		if (it != m_kernCache.end())
+			return it->second;
+		i32 kern = 0;
+		const f32 oldSize = TTF_GetFontSize(font);
+		if (oldSize != cast<f32>(fontSize))
+			TTF_SetFontSize(font, cast<f32>(fontSize));
+		TTF_GetGlyphKerning(font, left, right, &kern);
+		if (oldSize != cast<f32>(fontSize))
+			TTF_SetFontSize(font, oldSize);
+		if (m_kernCache.size() >= MaxKernCacheSize)
+			m_kernCache.clear();
+		m_kernCache[key] = kern;
+		return kern;
 	}
 
 	void BasicRenderer2D::print_ttf_error(const String& funcName)

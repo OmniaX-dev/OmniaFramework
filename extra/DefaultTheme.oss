@@ -105,6 +105,85 @@ const $accentColorDark = #6B0A1DFF
 
 
 
+% ====== HexEditor ======
+(hexEditor) {
+	backgroundColor = #AAAAAAFF
+	borderColor = #909090FF
+	showBorder = true
+	borderWidth = 1
+	showBackground = true
+	padding = rect(4, 4, 4, 4)
+	gridFontSize = 16
+	topBarColor = #999999FF
+	gridBackgroundColor = #F4F4F4FF
+	addressColor = #1050A0FF
+	headerColor = $accentColorDark
+	titleColor = #8020A0FF
+	hexColor = #202020FF
+	zeroColor = #A0A0A0FF
+	asciiColor = #806000FF
+	asciiDotColor = #B0B0B0FF
+	selectionColor = rgba(30, 110, 220, 170)
+	selectionTextColor = #FFFFFFFF
+	hoverColor = rgba(0, 0, 0, 25)
+	hoverBorderColor = #202020FF
+	highlightColor = rgba(220, 20, 60, 110)
+	changedColor = rgba(255, 150, 0, 150)
+	watchColor = rgba(0, 150, 120, 255)
+	crosshairColor = rgba(0, 0, 0, 10)
+	rowStripeColor = rgba(0, 0, 0, 8)
+	separatorColor = #C0C0C0FF
+	(statusBar) {
+		backgroundColor = #999999FF
+		textColor = #111111FF
+		labelColor = $accentColorDark
+	}
+	(search) {
+		matchColor = rgba(240, 190, 0, 120)
+		currentColor = rgba(255, 150, 0, 190)
+		borderColor = #202020FF
+	}
+	(scrollbar) {
+		trackColor = #DDDDDDFF
+		thumbColor = #A0A0A0FF
+		markerColor = $accentColor
+	}
+}
+(hexWatchList) {
+	fontSize = 16
+	showBackground = true
+	backgroundColor = #F4F4F4FF
+}
+(@hex_bar label) {
+	fontSize = 16
+	padding = rect(4, 0, 4, 0)
+}
+(@hex_bar button) {
+	fontSize = 16
+	padding = rect(8, 1, 8, 1)
+}
+(@hex_bar checkbox) {
+	fontSize = 16
+	padding = rect(2, 1, 2, 1)
+}
+(@hex_bar textEdit) {
+	fontSize = 16
+	padding = rect(2, 1, 2, 1)
+}
+(@hex_toggle button) {
+	useBackgroundGradient = false
+	showBackground = true
+	backgroundColor = #BBBBBBFF
+	padding = rect(8, 1, 8, 1)
+}
+(@hex_toggle button:active) {
+	backgroundColor = $accentColor
+	textColor = #FFFFFFFF
+}
+% =======================
+
+
+
 % ====== TabPanel ======
 (tabPanel) {
 	backgroundColor = #AAAAAAFF
