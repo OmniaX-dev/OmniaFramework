@@ -47,8 +47,13 @@ namespace ogfx
 {
 	RenderContext& RenderContext::get(void)
 	{
-		static RenderContext s_context;
-		return s_context;
+		// Never destroyed: windows (and their renderers) may be static objects themselves, and
+		// static objects are destroyed in reverse order of construction. This one is created
+		// by the first window's initialize(), after such a window, so as a plain static it would
+		// be gone by the time that window's destructor releases its renderer. The GPU device
+		// is still released on BeforeSDLShutdown, when the last window shuts SDL down.
+		static RenderContext* s_context = new RenderContext();
+		return *s_context;
 	}
 
 	RenderContext::RenderContext(void)
