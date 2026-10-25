@@ -29,6 +29,8 @@
 namespace ogfx
 {
 	class WindowCore;
+	// Superseded by gui::PixelCanvas / gui::TextConsoleCanvas and ogfx::PixelFont, which work
+	// inside the GUI and the BasicRenderer2D pipeline. Kept for existing code.
 	class PixelRenderer : public ostd::Object
 	{
 		public: class TextRenderer

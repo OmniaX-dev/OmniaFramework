@@ -121,6 +121,8 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/Text.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/ColorPicker.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/ColorPickerSkins.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/PixelCanvas.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/TextConsoleCanvas.cpp
 
 	# render
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/BasicRenderer.cpp
@@ -129,6 +131,8 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/RenderContext.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/RenderTarget.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/Shader.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/PixelFont.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/PostEffects.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/resources/EmbeddedShaders.cpp
 
 	# resources
@@ -246,6 +250,11 @@ set(BLUR_EXAMPLE_TARGET blur_example)
 add_executable(${BLUR_EXAMPLE_TARGET} ${CMAKE_CURRENT_LIST_DIR}/src/test/BlurExample.cpp)
 target_include_directories(${BLUR_EXAMPLE_TARGET} PUBLIC ${INCLUDE_DIRS})
 
+# Text console demo (src/test/ConsoleExample.cpp): TextConsoleCanvas + CRT and bloom effects.
+set(CONSOLE_EXAMPLE_TARGET console_example)
+add_executable(${CONSOLE_EXAMPLE_TARGET} ${CMAKE_CURRENT_LIST_DIR}/src/test/ConsoleExample.cpp)
+target_include_directories(${CONSOLE_EXAMPLE_TARGET} PUBLIC ${INCLUDE_DIRS})
+
 set(OMNIA_TARGETS ${OMNIA_STD_LIB} ${OMNIA_SND_LIB} ${OMNIA_GFX_LIB} ${TEST_TARGET})
 option(OMNIA_ASAN "Build Debug with AddressSanitizer" OFF)
 
@@ -352,6 +361,7 @@ target_link_libraries(${OMNIA_GFX_LIB} PUBLIC ${OMNIA_SND_LIB})
 target_link_libraries(${TEST_TARGET} PUBLIC ${OMNIA_STD_LIB})
 target_link_libraries(${TEST_TARGET} PUBLIC ${OMNIA_GFX_LIB})
 target_link_libraries(${BLUR_EXAMPLE_TARGET} PUBLIC ${OMNIA_GFX_LIB})
+target_link_libraries(${CONSOLE_EXAMPLE_TARGET} PUBLIC ${OMNIA_GFX_LIB})
 
 if (APPLE)
 	cmake_policy(SET CMP0167 OLD)

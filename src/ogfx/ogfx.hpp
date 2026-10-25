@@ -31,6 +31,8 @@
 #include <ogfx/render/PixelRenderer.hpp>
 #include <ogfx/render/RenderTarget.hpp>
 #include <ogfx/render/Shader.hpp>
+#include <ogfx/render/PixelFont.hpp>
+#include <ogfx/render/PostEffects.hpp>
 
 #include <ogfx/resources/Image.hpp>
 

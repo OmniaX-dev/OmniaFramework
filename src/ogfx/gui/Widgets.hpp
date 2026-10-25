@@ -36,6 +36,8 @@
 #include <ogfx/gui/widgets/Text.hpp>
 #include <ogfx/gui/widgets/PianoRollStyle.hpp>
 #include <ogfx/gui/widgets/PianoRoll.hpp>
+#include <ogfx/gui/widgets/PixelCanvas.hpp>
+#include <ogfx/gui/widgets/TextConsoleCanvas.hpp>
 
 namespace ogfx
 {
