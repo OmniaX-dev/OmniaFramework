@@ -115,7 +115,7 @@ namespace ogfx
 
 		// ============================================================================
 		// RichTextView — a scrollable, read-only view of a RichTextBuffer, drawn with a
-		// monospace font (the renderer's default mono font).
+		// monospace font (the renderer's default mono font, at the widget's font size).
 		//
 		// The view owns a buffer (getBuffer()), but can show any other one (setBuffer(),
 		// e.g. to switch between documents without rebuilding them). The easiest way to

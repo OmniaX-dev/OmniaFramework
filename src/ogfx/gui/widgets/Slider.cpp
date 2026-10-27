@@ -110,9 +110,12 @@ namespace ogfx
 
 			if (isHorizontal())
 			{
-				if (m_step > 0.0f && m_drawTicks)
+				// Ticks closer than MinTickSpacing pixels are not drawn (a fine step, e.g. a
+				// timeline, would otherwise mean thousands of rectangles per frame).
+				const f32 tickSteps = (m_step > 0.0f ? (m_max - m_min) / m_step : 0.0f);
+				if (m_step > 0.0f && m_drawTicks && tickSteps * MinTickSpacing <= bounds.w)
 				{
-					int tickCount = (int)std::round((m_max - m_min) / m_step) + 1;
+					int tickCount = (int)std::round(tickSteps) + 1;
 					for (int i = 0; i < tickCount; i++)
 					{
 						f32 v = m_min + i * m_step;
@@ -131,9 +134,10 @@ namespace ogfx
 			}
 			else
 			{
-				if (m_step > 0.0f && m_drawTicks)
+				const f32 tickSteps = (m_step > 0.0f ? (m_max - m_min) / m_step : 0.0f);
+				if (m_step > 0.0f && m_drawTicks && tickSteps * MinTickSpacing <= bounds.h)
 				{
-					int tickCount = (int)std::round((m_max - m_min) / m_step) + 1;
+					int tickCount = (int)std::round(tickSteps) + 1;
 					for (int i = 0; i < tickCount; i++)
 					{
 						f32 v = m_min + i * m_step;

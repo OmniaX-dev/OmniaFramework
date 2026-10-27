@@ -399,7 +399,7 @@ namespace ogfx
 		{
 			if (m_metricsFontSize == getFontSize() || !gfx.isValid())
 				return;
-			TTF_Font* font = gfx.getDefaultMonoFont();
+			TTF_Font* font = gfx.getDefaultMonoFont(getFontSize());
 			if (font == nullptr)
 				return;
 			const Vec2 size = gfx.getStringDimensions("MMMMMMMMMM", getFontSize(), font);
@@ -482,7 +482,7 @@ namespace ogfx
 		void RichTextView::onDraw(ogfx::BasicRenderer2D& gfx)
 		{
 			update_metrics(gfx);
-			TTF_Font* font = gfx.getDefaultMonoFont();
+			TTF_Font* font = gfx.getDefaultMonoFont(getFontSize());
 			if (font == nullptr)
 				return;
 			const Rectangle view = getGlobalContentBounds();

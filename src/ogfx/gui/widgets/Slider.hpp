@@ -92,6 +92,7 @@ namespace ogfx
 				Color m_trackProgressColor { "#AA0000FF" };
 
 				bool m_drawTicks { true };
+				inline static constexpr f32 MinTickSpacing { 4.0f };
 				f32 m_tickHeight { 4 };
 				Color m_tickColor { Colors::Crimson };
 
