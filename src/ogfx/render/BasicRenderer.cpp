@@ -349,6 +349,7 @@ namespace ogfx
 		if (signal.ID == ostd::BuiltinSignals::BeforeSDLShutdown)
 		{
 			m_parent.closeFont();
+			m_parent.close_mono_font();
 		}
 	}
 	// ===================================================== SIGNAL HANDLER =====================================================
@@ -371,6 +372,7 @@ namespace ogfx
 		if (m_initialized)
 			__release_device_resources();
 		closeFont();
+		close_mono_font();
 		for (auto* target : stdvec<RenderTarget*>(m_targets))
 			target->detach_from_renderer();
 		for (auto* image : stdvec<Image*>(m_images))
@@ -492,6 +494,48 @@ namespace ogfx
 	i32 BasicRenderer2D::loadDefaultFont(i32 fontSize)
 	{
 		return openFont(ubuntu_regular_ttf_data, ubuntu_regular_ttf_size, fontSize);
+	}
+
+	TTF_Font* BasicRenderer2D::getDefaultMonoFont(void)
+	{
+		if (m_monoFont != nullptr || !m_initialized)
+			return m_monoFont;
+		SDL_IOStream* rw = SDL_IOFromConstMem(ubuntu_mono_regular_ttf_data, ubuntu_mono_regular_ttf_size);
+		m_monoFont = TTF_OpenFontIO(rw, true, cast<f32>(m_fontSize));
+		if (m_monoFont == nullptr)
+			print_ttf_error("TTF_OpenFontIO");
+		return m_monoFont;
+	}
+
+	void BasicRenderer2D::pushFont(TTF_Font* font)
+	{
+		m_fontStack.push_back(m_font);
+		if (font != nullptr)
+			m_font = font;
+	}
+
+	void BasicRenderer2D::popFont(void)
+	{
+		if (m_fontStack.empty())
+			return;
+		m_font = m_fontStack.back();
+		m_fontStack.pop_back();
+	}
+
+	void BasicRenderer2D::close_mono_font(void)
+	{
+		if (m_monoFont == nullptr)
+			return;
+		// A font still pushed must not be left dangling.
+		for (auto& font : m_fontStack)
+		{
+			if (font == m_monoFont)
+				font = nullptr;
+		}
+		if (m_font == m_monoFont)
+			m_font = m_fontStack.empty() ? nullptr : m_fontStack.front();
+		TTF_CloseFont(m_monoFont);
+		m_monoFont = nullptr;
 	}
 
 	void BasicRenderer2D::closeFont(void)

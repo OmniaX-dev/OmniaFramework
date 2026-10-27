@@ -125,6 +125,7 @@ list(APPEND OGFX_SOURCE_FILES
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/TextConsoleCanvas.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/SubWindow.cpp
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/HexEditor.cpp
+	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/gui/widgets/RichTextView.cpp
 
 	# render
 	${CMAKE_CURRENT_LIST_DIR}/src/ogfx/render/BasicRenderer.cpp

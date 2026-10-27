@@ -530,3 +530,21 @@ const $accentColorDark = #6B0A1DFF
 	}
 }
 % ========================
+
+
+% ====== RichTextView ======
+% ogfx::gui::RichTextView: monospace styled text (consoles, logs, disassembly).
+(richTextView) {
+	borderColor = $accentColorDark
+	fontSize = 16
+	showBorder = true
+	borderWidth = 1
+	backgroundColor = rgba(250, 250, 250, 255)
+	textColor = $textColor
+	showBackground = true
+	padding = rect(6, 4, 6, 4)
+	hoverColor = rgba(0, 0, 0, 14)
+	selectionColor = rgba(220, 20, 60, 60)
+	linePadding = 2.0
+}
+% ==========================

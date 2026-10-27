@@ -40,6 +40,7 @@
 #include <ogfx/gui/widgets/TextConsoleCanvas.hpp>
 #include <ogfx/gui/widgets/SubWindow.hpp>
 #include <ogfx/gui/widgets/HexEditor.hpp>
+#include <ogfx/gui/widgets/RichTextView.hpp>
 
 namespace ogfx
 {

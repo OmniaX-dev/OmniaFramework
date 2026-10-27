@@ -108,6 +108,14 @@ namespace ogfx
 			i32 setFontSize(i32 fontSize);
 			Vec2 getStringDimensions(const String& message, i32 fontSize = 0, TTF_Font* font = nullptr);
 			stdvec<Vec2> getStringDimensionsPerCharacter(const String& message, i32 fontSize = 0, TTF_Font* font = nullptr);
+			// The embedded Ubuntu Mono, opened once next to the current font (the current font is
+			// left alone). nullptr if it can't be opened.
+			TTF_Font* getDefaultMonoFont(void);
+			// Makes the string functions (drawString(), getStringDimensions(), ...) use `font`
+			// until the matching popFont(), e.g. to draw monospace text with the same renderer
+			// (and in the same batch) as everything else. The font must stay open meanwhile.
+			void pushFont(TTF_Font* font);
+			void popFont(void);
 
 			inline u32 getDrawCallCount(void) { return m_lastFrameDrawCallCount; }
 			inline u32 getCacheHitCount(void) { return m_cacheHitCount; }
@@ -240,6 +248,7 @@ namespace ogfx
 			// Called by RenderContext right before the SDL renderer is destroyed.
 			void __release_device_resources(void);
 			void discard_batch(void);
+			void close_mono_font(void);
 			void apply_clip_rect(void);
 			void bind_sdl_target(RenderTarget* target);
 			void clear_texture(SDL_Texture* texture);
@@ -300,6 +309,8 @@ namespace ogfx
 			bool m_fontOpen { false };
 
 			TTF_Font* m_font { nullptr };
+			TTF_Font* m_monoFont { nullptr };
+			stdvec<TTF_Font*> m_fontStack;
 			i32 m_errorState { tErrors::NoError };
 			i32 m_fontSize { DefaultFontSize };
 			bool m_fontFromMemory { false };

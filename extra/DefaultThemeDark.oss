@@ -674,3 +674,22 @@ macro set_common_values(_borderColor = $borderColor, _fontSize = 18, _showBorder
 	margin = rect(0, 0, 0, 0)
 }
 % =======================
+
+
+% ====== RichTextView ======
+% ogfx::gui::RichTextView: monospace styled text (consoles, logs, disassembly).
+(richTextView) {
+	set_common_values($borderColor, 16, true)
+	borderWidth = 1
+	backgroundColor = rgba(18, 20, 18, 255)
+	textColor = $textColor
+	showBackground = true
+	padding = rect(6, 4, 6, 4)
+	set_focus_border($blueAccent)
+	hoverColor = rgba(255, 255, 255, 14)
+	selectionColor = rgba(0, 117, 199, 110)
+	linePadding = 2.0
+	scrollSpeed = 1.2
+	scrollSmoothFactor = 0.7
+}
+% ==========================
