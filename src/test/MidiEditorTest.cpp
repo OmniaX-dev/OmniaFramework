@@ -65,7 +65,7 @@ class TestWindow : public Window
 				btn.setTabIndex(i + 100);
 			}
 
-			ostd::SignalHandler::connect(*this, PianoRoll::NoteOnSignal, [this](ostd::Signal& signal) -> void {
+			ostd::SignalHandler::connect(*this, PianoRoll::NoteOnSignal, [](ostd::Signal& signal) -> void {
 				// if (auto* data = dynamic_cast<PianoRollNoteEventData*>(signal.userData))
 				//     m_pianoLastNoteLbl.setText(String("Last note: ").add(data->noteInfo.name).add(data->noteInfo.octave));
 			});
