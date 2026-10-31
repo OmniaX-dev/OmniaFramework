@@ -94,6 +94,13 @@ namespace ogfx
 				bool isMouseInsideTabBar(const Vec2& mousePos);
 				inline void refreshCurrentTab(void) { setCurrentTab(m_currentTabIndex, true); }
 
+				// The shown page (nullptr when there are no tabs) and its index (-1).
+				inline Panel* getCurrentTab(void) const { return m_currentTab; }
+				inline i32 getCurrentTabIndex(void) const { return m_currentTabIndex; }
+				inline i32 getTabCount(void) const { return cast<i32>(m_tabs.size()); }
+				// Called after the shown page changed (by a click or setCurrentTab()).
+				inline void setTabChangedCallback(std::function<void(TabPanel&, Panel&)> callback) { m_onTabChanged = std::move(callback); }
+
 				inline f32 getTabBarHeight(void) const { return m_tabBarHeight; }
 				OSTD_PARAM_GETSET(Color, TabBarBackgroundColor, m_tabBarBackgroundColor);
 				OSTD_PARAM_GETSET(Color, TabBarBorderColor, m_tabBarBorderColor);
@@ -112,6 +119,7 @@ namespace ogfx
 				f32 m_tabScrollOffset { 0.0f };
 				f32 m_totalTabWidth { 0.0f };
 				Rectangle m_tabBarBorderRadii { 0, 0, 0, 0 };
+				std::function<void(TabPanel&, Panel&)> m_onTabChanged { nullptr };
 
 				f32 m_tabBarHeight { 35 };
 				Color m_tabBarBackgroundColor { 120, 120, 120 };

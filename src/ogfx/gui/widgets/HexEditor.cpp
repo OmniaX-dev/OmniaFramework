@@ -978,7 +978,8 @@ namespace ogfx
 		{
 			if (index >= m_data.size())
 				return 0;
-			const u32 n = cast<u32>(std::min<u64>(size, m_data.size() - index));
+			// Values are 64-bit: longer ranges (e.g. a watched string) read their first 8 bytes.
+			const u32 n = cast<u32>(std::min<u64>(std::min<u8>(size, 8), m_data.size() - index));
 			u64 value = 0;
 			for (u32 i = 0; i < n; i++)
 			{

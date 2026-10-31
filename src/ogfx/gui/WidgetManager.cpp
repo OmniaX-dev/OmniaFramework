@@ -53,6 +53,10 @@ namespace ogfx
 			STDVEC_REMOVE(m_widgetList, &widget);
 			if (m_mousePressedOnWidget == &widget)
 				m_mousePressedOnWidget = nullptr;
+			// A removed widget has no parent anymore (getParent() == nullptr tells whether it is
+			// in a tree, e.g. which page of a TabPanel is shown).
+			if (widget.m_parent == &m_owner)
+				widget.m_parent = nullptr;
 			return true;
 		}
 

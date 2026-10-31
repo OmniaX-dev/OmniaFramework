@@ -244,6 +244,13 @@ namespace ogfx
 				m_hoveredButton = button;
 				return;
 			}
+			const i32 custom = custom_button_at(pos);
+			if (custom >= 0)
+			{
+				m_pressedCustom = custom;
+				m_hoveredCustom = custom;
+				return;
+			}
 			if (!titlebar_rect().contains(pos, true))
 				return;
 			const u64 now = now_ms();
@@ -271,6 +278,18 @@ namespace ogfx
 				if (button_at(pos) == pressed)
 					activate_button(pressed);
 			}
+			if (m_pressedCustom >= 0)
+			{
+				const i32 pressed = m_pressedCustom;
+				m_pressedCustom = -1;
+				if (custom_button_at(pos) == pressed && pressed < cast<i32>(m_customButtons.size()))
+				{
+					// The callback may change the buttons (or close the window): call a copy.
+					auto callback = m_customButtons[pressed].callback;
+					if (callback)
+						callback(*this);
+				}
+			}
 			m_dragging = false;
 			m_resizing = { };
 			if (isVisible() && contains(pos, true))
@@ -283,6 +302,14 @@ namespace ogfx
 		{
 			const Vec2 pos { event.mouse->position_x, event.mouse->position_y };
 			m_hoveredButton = button_at(pos);
+			const i32 custom = custom_button_at(pos);
+			if (custom != m_hoveredCustom)
+			{
+				m_hoveredCustom = custom;
+				if (custom >= 0 && m_customButtons[custom].tooltip != "")
+					setTooltipText(m_customButtons[custom].tooltip);
+				enableTooltip(custom >= 0 && m_customButtons[custom].tooltip != "");
+			}
 			update_cursor(pos);
 		}
 
@@ -329,6 +356,7 @@ namespace ogfx
 		void SubWindow::onMouseExited(const Event& event)
 		{
 			m_hoveredButton = eButtonId::None;
+			m_hoveredCustom = -1;
 			if (!m_dragging && !m_resizing.any())
 				set_cursor(cast<u8>(eCursor::Default));
 		}
@@ -434,6 +462,111 @@ namespace ogfx
 			return { 0, 0, 0, 0 };
 		}
 
+		i32 SubWindow::addTitlebarButton(const String& text, TitlebarButtonCallback callback, const String& tooltip)
+		{
+			CustomButton button;
+			button.id = m_nextCustomButtonId++;
+			button.text = text;
+			button.tooltip = tooltip;
+			button.callback = std::move(callback);
+			m_customButtons.push_back(button);
+			return button.id;
+		}
+
+		bool SubWindow::setTitlebarButtonText(i32 id, const String& text)
+		{
+			for (auto& button : m_customButtons)
+			{
+				if (button.id != id)
+					continue;
+				button.text = text;
+				button.width = 0;
+				return true;
+			}
+			return false;
+		}
+
+		bool SubWindow::removeTitlebarButton(i32 id)
+		{
+			for (auto it = m_customButtons.begin(); it != m_customButtons.end(); ++it)
+			{
+				if (it->id != id)
+					continue;
+				m_customButtons.erase(it);
+				m_hoveredCustom = m_pressedCustom = -1;
+				return true;
+			}
+			return false;
+		}
+
+		Rectangle SubWindow::custom_button_rect(i32 index) const
+		{
+			if (index < 0 || index >= cast<i32>(m_customButtons.size()))
+				return { 0, 0, 0, 0 };
+			const Rectangle tb = titlebar_rect();
+			const f32 size = std::max(0.0f, std::min(m_buttonSize, tb.h - 4.0f));
+			const f32 inset = std::floor((tb.h - size) * 0.5f);
+			f32 right = tb.x + tb.w - inset;
+			for (i32 i = 0; i < cast<i32>(eButtonId::Count); i++)
+			{
+				const Rectangle r = button_rect(cast<eButtonId>(i));
+				if (r.w > 0)
+					right = std::min(right, r.x - m_buttonSpacing);
+			}
+			for (i32 i = 0; i <= index; i++)
+			{
+				const f32 w = (m_customButtons[i].width > 0 ? m_customButtons[i].width : size * 3.0f);
+				right -= w;
+				if (i == index)
+				{
+					// Leaves some room for the title.
+					if (right < tb.x + 40)
+						return { 0, 0, 0, 0 };
+					return { right, tb.y + inset, w, size };
+				}
+				right -= m_buttonSpacing;
+			}
+			return { 0, 0, 0, 0 };
+		}
+
+		i32 SubWindow::custom_button_at(const Vec2& pos) const
+		{
+			for (i32 i = 0; i < cast<i32>(m_customButtons.size()); i++)
+			{
+				const Rectangle r = custom_button_rect(i);
+				if (r.w > 0 && r.contains(pos, true))
+					return i;
+			}
+			return -1;
+		}
+
+		void SubWindow::draw_custom_button(ogfx::BasicRenderer2D& gfx, i32 index)
+		{
+			const CustomButton& button = m_customButtons[index];
+			const i32 fontSize = std::max(8, m_titlebarFontSize - 4);
+			const f32 width = std::ceil(gfx.getStringDimensions(button.text, fontSize).x) + 16.0f;
+			if (width != button.width)
+			{
+				// Measured: placed for real from the next frame.
+				button.width = width;
+				return;
+			}
+			const Rectangle b = custom_button_rect(index);
+			if (b.w <= 0)
+				return;
+			const bool hovered = (m_hoveredCustom == index);
+			const bool pressed = hovered && (m_pressedCustom == index);
+			Color bg = m_buttonColor;
+			if (pressed)
+				bg = m_buttonPressedColor;
+			else if (hovered)
+				bg = m_buttonHoverColor;
+			if (bg.a > 0)
+				gfx.fillRoundRect(b, bg, m_buttonBorderRadius);
+			gfx.drawRoundRect(b, hovered ? m_buttonGlyphHoverColor : m_buttonGlyphColor, m_buttonBorderRadius, 1);
+			gfx.drawCenteredString(button.text, b, hovered ? m_buttonGlyphHoverColor : m_buttonGlyphColor, fontSize);
+		}
+
 		SubWindow::eButtonId SubWindow::button_at(const Vec2& pos) const
 		{
 			for (i32 i = 0; i < cast<i32>(eButtonId::Count); i++)
@@ -520,6 +653,12 @@ namespace ogfx
 				if (r.w > 0)
 					textRight = std::min(textRight, r.x);
 			}
+			for (i32 i = 0; i < cast<i32>(m_customButtons.size()); i++)
+			{
+				const Rectangle r = custom_button_rect(i);
+				if (r.w > 0)
+					textRight = std::min(textRight, r.x);
+			}
 			const Rectangle textArea { tb.x + 10, tb.y, textRight - tb.x - 14, tb.h };
 			if (textArea.w > 0)
 			{
@@ -533,6 +672,8 @@ namespace ogfx
 
 			for (i32 i = 0; i < cast<i32>(eButtonId::Count); i++)
 				draw_button(gfx, cast<eButtonId>(i));
+			for (i32 i = 0; i < cast<i32>(m_customButtons.size()); i++)
+				draw_custom_button(gfx, i);
 		}
 
 		void SubWindow::draw_button(ogfx::BasicRenderer2D& gfx, eButtonId id)

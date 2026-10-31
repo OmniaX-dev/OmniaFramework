@@ -50,6 +50,9 @@ namespace ogfx
 		// Dragging the title bar moves the window, double-clicking it maximizes /
 		// restores, and the edges and corners resize it.
 		//
+		// Custom title bar buttons (addTitlebarButton()): text buttons placed left of
+		// the standard ones, e.g. "Attach" on a window holding a detached panel.
+		//
 		// Blur: with blurEnabled (theme or enableBlur()) the window draws whatever is
 		// behind it, blurred, under its (ideally translucent) background, like the
 		// frosted panel in the blur example. It needs shader support; the blurred
@@ -85,6 +88,7 @@ namespace ogfx
 			// Return false to keep the window open.
 			public: using CloseCallback = std::function<bool(SubWindow&)>;
 			public: using StateChangedCallback = std::function<void(SubWindow&, eState)>;
+			public: using TitlebarButtonCallback = std::function<void(SubWindow&)>;
 			public:
 				inline SubWindow(Window& window) : Widget({ 60, 60, 400, 300 }, window) { create("Window"); }
 				inline SubWindow(Window& window, const String& title) : Widget({ 60, 60, 400, 300 }, window) { create(title); }
@@ -122,6 +126,13 @@ namespace ogfx
 				inline void setCloseCallback(CloseCallback callback) { m_closeCallback = std::move(callback); }
 				inline void setStateChangedCallback(StateChangedCallback callback) { m_stateChangedCallback = std::move(callback); }
 				inline f32 getTitlebarHeight(void) const { return m_titlebarHeight; }
+
+				// A text button in the title bar, left of the standard buttons (the first one
+				// added is the rightmost). Returns its id.
+				i32 addTitlebarButton(const String& text, TitlebarButtonCallback callback, const String& tooltip = "");
+				bool setTitlebarButtonText(i32 id, const String& text);
+				bool removeTitlebarButton(i32 id);
+				inline void clearTitlebarButtons(void) { m_customButtons.clear(); m_hoveredCustom = m_pressedCustom = -1; }
 				inline Color getModalOverlayColor(void) const { return m_modalOverlayColor; }
 
 				OSTD_BOOL_PARAM_GETSET_E(Resizable, m_resizable);
@@ -182,8 +193,22 @@ namespace ogfx
 				inline bool any(void) const { return left || top || right || bottom; }
 			};
 
+			protected: struct CustomButton
+			{
+				i32 id { -1 };
+				String text { "" };
+				String tooltip { "" };
+				TitlebarButtonCallback callback { nullptr };
+				// Measured when drawn (button_rect() has no renderer).
+				mutable f32 width { 0 };
+			};
+
 			protected:
 				Rectangle titlebar_rect(void) const;
+				// Global rect of a custom title bar button (by index); empty if it doesn't fit.
+				Rectangle custom_button_rect(i32 index) const;
+				i32 custom_button_at(const Vec2& pos) const;
+				void draw_custom_button(ogfx::BasicRenderer2D& gfx, i32 index);
 				// Global rect of a title bar button; empty when the button isn't shown.
 				Rectangle button_rect(eButtonId id) const;
 				eButtonId button_at(const Vec2& pos) const;
@@ -210,6 +235,10 @@ namespace ogfx
 				bool m_draggable { true };
 				bool m_ownedByWindow { false };
 				CloseCallback m_closeCallback { nullptr };
+				stdvec<CustomButton> m_customButtons;
+				i32 m_nextCustomButtonId { 0 };
+				i32 m_hoveredCustom { -1 };
+				i32 m_pressedCustom { -1 };
 				StateChangedCallback m_stateChangedCallback { nullptr };
 
 				// Normal-state layout, kept while maximized/minimized.

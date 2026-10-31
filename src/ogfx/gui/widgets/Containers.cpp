@@ -297,7 +297,8 @@ namespace ogfx
 			if (!ignore_same_tab && curr == m_currentTab && m_currentTab != nullptr)
 				return false;
 			getWindow().getFocusManager().clearFocus();
-			removeWidget(*m_currentTab);
+			if (m_currentTab != nullptr)
+				removeWidget(*m_currentTab);
 			m_currentTabIndex = index;
 			m_currentTab = curr;
 			m_currentTab->setMargin({ 0, 0, 0, 0 });
@@ -309,6 +310,8 @@ namespace ogfx
 			// The page always fills the area below the tab bar, following the
 			// TabPanel when it is resized.
 			m_currentTab->setAnchorPreset(eAnchorPreset::FullRect);
+			if (m_onTabChanged)
+				m_onTabChanged(*this, *m_currentTab);
 			return true;
 		}
 
