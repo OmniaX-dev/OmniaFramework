@@ -431,6 +431,18 @@ namespace ogfx
 				void refresh_edit_window(void);
 				void set_edit_format(eFormat format);
 				void apply_edit(void);
+				void set_edit_unlimited(bool unlimited);
+				void set_edit_ascii(void);
+				void apply_edit_filter(void);
+				void fit_edit_window(bool recenter);
+				// The input as bytes, in the current mode (+ the null terminator if asked).
+				bool get_edit_bytes(stdvec<u8>& out, String* error = nullptr) const;
+				static bool parse_ascii(const String& text, stdvec<u8>& out, String* error = nullptr);
+				static String format_ascii(const stdvec<u8>& bytes);
+				// Unlimited edit: the input is a byte stream, written in the order it's typed.
+				static bool parse_byte_stream(const String& text, eFormat format, stdvec<u8>& out, String* error = nullptr);
+				static String format_byte_stream(const stdvec<u8>& bytes, eFormat format);
+				stdvec<u8> read_bytes(StreamIndex index, u64 count) const;
 				void set_data(std::span<const i8> data, i8* mutableData);
 				void notify_selection(void);
 				void push_history(StreamIndex index);
@@ -553,7 +565,10 @@ namespace ogfx
 				Label m_editInfo;
 				Label m_editCurrent;
 				HBoxContainer m_editFormatRow;
-				Button m_editFormatButtons[3];
+				Button m_editFormatButtons[4];		// Dec, Hex, Bin, ASCII
+				HBoxContainer m_editOptionRow;
+				CheckBox m_editUnlimitedCheck;
+				CheckBox m_editNullCheck;
 				TextEdit m_editInput;
 				Label m_editStatus;
 				HBoxContainer m_editButtonRow;
@@ -564,6 +579,9 @@ namespace ogfx
 				eFormat m_editFormat { eFormat::Hex };
 				String m_lastEditText { "" };
 				std::unique_ptr<TextEdit::CharacterFilter> m_binaryFilter;
+				std::unique_ptr<TextEdit::CharacterFilter> m_streamFilter;
+				bool m_editUnlimited { false };	// input is a byte stream of any length
+				bool m_editAscii { false };		// input is text (always unlimited)
 
 				// ===== Watch window =====
 				SubWindow m_watchWindow;

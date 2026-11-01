@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <cctype>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -105,6 +106,35 @@ namespace ogfx
 				i32 m_maxDigits;
 		};
 
+		// Unlimited edit input: the digits of the current format, plus spaces and
+		// underscores as separators; or printable ASCII in text mode. No length limit.
+		class ByteStreamFilter : public TextEdit::CharacterFilter
+		{
+			public:
+				inline bool isValidChar(const String& utf8, const ostd::TextBuffer& buffer) override
+				{
+					for (char c : predictResult(utf8, buffer).cpp_str())
+					{
+						if (m_ascii)
+						{
+							if (cast<unsigned char>(c) < 32 || cast<unsigned char>(c) > 126)
+								return false;
+							continue;
+						}
+						if (c == ' ' || c == '_') continue;
+						if (m_format == HexEditor::eFormat::Hex && std::isxdigit(cast<unsigned char>(c))) continue;
+						if (m_format == HexEditor::eFormat::Dec && c >= '0' && c <= '9') continue;
+						if (m_format == HexEditor::eFormat::Bin && (c == '0' || c == '1')) continue;
+						return false;
+					}
+					return true;
+				}
+				inline void setMode(HexEditor::eFormat format, bool ascii) { m_format = format; m_ascii = ascii; }
+			private:
+				HexEditor::eFormat m_format { HexEditor::eFormat::Hex };
+				bool m_ascii { false };
+		};
+
 		// Space releases trigger ActionPerformed on the focused widget too; text fields
 		// only want Return.
 		static bool is_space_action(const Event& event)
@@ -126,8 +156,8 @@ namespace ogfx
 			m_endianButton(window, "LE"), m_alignCheck(window), m_followCheck(window), m_flashCheck(window),
 			m_watchButton(window, "+ Watch"), m_watchListButton(window, "Watchlist (0)"), m_regionsButton(window, "Regions"), m_aliasesButton(window, "Aliases"), m_searchButton(window, "Search"),
 			m_editWindow(window, "Edit value"), m_editBox(window), m_editInfo(window), m_editCurrent(window), m_editFormatRow(window),
-			m_editFormatButtons { { window, "Dec" }, { window, "Hex" }, { window, "Bin" } },
-			m_editInput(window), m_editStatus(window), m_editButtonRow(window), m_editApply(window, "Apply"), m_editCancel(window, "Cancel"),
+			m_editFormatButtons { { window, "Dec" }, { window, "Hex" }, { window, "Bin" }, { window, "ASCII" } },
+			m_editOptionRow(window), m_editUnlimitedCheck(window), m_editNullCheck(window), m_editInput(window), m_editStatus(window), m_editButtonRow(window), m_editApply(window, "Apply"), m_editCancel(window, "Cancel"),
 			m_watchWindow(window, "Watchlist"), m_watchBox(window), m_watchList(window, *this),
 			m_watchEditRow(window), m_watchNameLabel(window, "Name"), m_watchNameInput(window), m_watchRename(window, "Rename"),
 			m_watchColorLabel(window, "Color"), m_watchColorButton(window), m_watchButtonRow(window),
@@ -269,13 +299,26 @@ namespace ogfx
 			m_editBox.addWidget(m_editCurrent);
 			m_editBox.addWidget(m_editFormatRow);
 			m_editFormatRow.setSpacing(4);
-			for (i32 i = 0; i < 3; i++)
+			for (i32 i = 0; i < 4; i++)
 			{
 				m_editFormatButtons[i].addThemeID("hex_toggle");
 				m_editFormatButtons[i].setMinSize(60, 0);
-				m_editFormatButtons[i].setCallback(Widget::eCallback::ActionPerformed, [this, i](const Event&) { set_edit_format(cast<eFormat>(i)); });
+				m_editFormatButtons[i].setCallback(Widget::eCallback::ActionPerformed, [this, i](const Event&) {
+					if (i == 3)
+						set_edit_ascii();
+					else
+						set_edit_format(cast<eFormat>(i));
+				});
 				m_editFormatRow.addWidget(m_editFormatButtons[i]);
 			}
+			m_editOptionRow.setSpacing(12);
+			m_editUnlimitedCheck.setText("Unlimited (overwrite bytes)");
+			m_editUnlimitedCheck.setStateChangedCallback([this](CheckBox&, bool checked) { set_edit_unlimited(checked); });
+			m_editOptionRow.addWidget(m_editUnlimitedCheck);
+			m_editNullCheck.setText("Null terminated");
+			m_editNullCheck.setStateChangedCallback([this](CheckBox&, bool) { refresh_edit_window(); });
+			m_editOptionRow.addWidget(m_editNullCheck);
+			m_editBox.addWidget(m_editOptionRow);
 			m_editInput.setCallback(Widget::eCallback::ActionPerformed, [this](const Event& event) { if (!is_space_action(event)) apply_edit(); });
 			m_editBox.addWidget(m_editInput);
 			m_editBox.addWidget(m_editStatus);
@@ -289,6 +332,7 @@ namespace ogfx
 			m_editButtonRow.addWidget(m_editCancel);
 			m_editBox.addWidget(m_editButtonRow);
 			m_binaryFilter = std::make_unique<BinaryFilter>(8);
+			m_streamFilter = std::make_unique<ByteStreamFilter>();
 		}
 
 		void HexEditor::build_watch_window(void)
@@ -1158,14 +1202,16 @@ namespace ogfx
 			m_editSize = cast<u8>(std::min<u64>(m_unitSize, m_data.size() - m_editIndex));
 			m_editWindow.setTitle(String("Edit ").add(formatAddress(m_baseAddress + m_editIndex)));
 			m_editWindow.open();
-			set_edit_format(m_editFormat);
-			m_editInput.setText(formatValue(readValue(m_editIndex, m_editSize), m_editFormat, m_editSize));
+			apply_edit_filter();
+			if (m_editAscii)
+				m_editInput.setText(format_ascii(read_bytes(m_editIndex, m_editSize)));
+			else if (m_editUnlimited)
+				m_editInput.setText(format_byte_stream(read_bytes(m_editIndex, m_editSize), m_editFormat));
+			else
+				m_editInput.setText(formatValue(readValue(m_editIndex, m_editSize), m_editFormat, m_editSize));
 			m_editInput.selectAll();
 			refresh_edit_window();
-			// Fit the window to its content (it depends on the theme's fonts and paddings).
-			const Vec2 needed = m_editWindow.contentToWidgetSize(m_editBox.getCombinedMinSize());
-			m_editWindow.setSize(std::max(560.0f, std::ceil(needed.x)), std::ceil(needed.y) + 4.0f);
-			m_editWindow.centerInParent();
+			fit_edit_window(true);
 			getWindow().getFocusManager().requestFocus(m_editInput);
 		}
 
@@ -1450,27 +1496,139 @@ namespace ogfx
 		void HexEditor::set_edit_format(eFormat format)
 		{
 			// Converts what's typed so far to the new format.
-			u64 value = 0;
-			const bool valid = parseValue(m_editInput.getText(), m_editFormat, m_editSize, value);
-			m_editFormat = format;
-			switch (format)
+			const String text = m_editInput.getText();
+			String converted = "";
+			bool valid = false;
+			if (m_editUnlimited)
 			{
-				case eFormat::Dec: m_editInput.useIntegerFilter(true, 20); break;
-				case eFormat::Hex: m_editInput.useHexadecimalFilter(m_editSize * 2); break;
-				case eFormat::Bin:
-					static_cast<BinaryFilter*>(m_binaryFilter.get())->setMaxDigits(m_editSize * 8);
-					m_editInput.useCustomFilter(m_binaryFilter.get());
-					break;
+				stdvec<u8> bytes;
+				valid = m_editAscii ? parse_ascii(text, bytes) : parse_byte_stream(text, m_editFormat, bytes);
+				if (valid)
+					converted = format_byte_stream(bytes, format);
 			}
+			else
+			{
+				u64 value = 0;
+				valid = parseValue(text, m_editFormat, m_editSize, value);
+				if (valid)
+					converted = formatValue(value, format, m_editSize);
+			}
+			m_editAscii = false;
+			m_editFormat = format;
+			apply_edit_filter();
 			if (valid)
-				m_editInput.setText(formatValue(value, format, m_editSize));
-			for (i32 i = 0; i < 3; i++)
-				m_editFormatButtons[i].setThemeQualifier("active", i == cast<i32>(format));
+				m_editInput.setText(converted);
 			refresh_edit_window();
+		}
+
+		void HexEditor::set_edit_ascii(void)
+		{
+			if (m_editAscii)
+				return;
+			// Text is always unlimited: go through the byte stream form first.
+			if (!m_editUnlimited)
+				set_edit_unlimited(true);
+			stdvec<u8> bytes;
+			const bool valid = parse_byte_stream(m_editInput.getText(), m_editFormat, bytes);
+			m_editAscii = true;
+			apply_edit_filter();
+			if (valid)
+				m_editInput.setText(format_ascii(bytes));
+			m_editInput.selectAll();
+			refresh_edit_window();
+		}
+
+		void HexEditor::apply_edit_filter(void)
+		{
+			if (m_editAscii || m_editUnlimited)
+			{
+				auto* filter = static_cast<ByteStreamFilter*>(m_streamFilter.get());
+				filter->setMode(m_editFormat, m_editAscii);
+				m_editInput.useCustomFilter(filter);
+			}
+			else
+			{
+				switch (m_editFormat)
+				{
+					case eFormat::Dec: m_editInput.useIntegerFilter(true, 20); break;
+					case eFormat::Hex: m_editInput.useHexadecimalFilter(m_editSize * 2); break;
+					case eFormat::Bin:
+						static_cast<BinaryFilter*>(m_binaryFilter.get())->setMaxDigits(m_editSize * 8);
+						m_editInput.useCustomFilter(m_binaryFilter.get());
+						break;
+				}
+			}
+			for (i32 i = 0; i < 3; i++)
+				m_editFormatButtons[i].setThemeQualifier("active", !m_editAscii && i == cast<i32>(m_editFormat));
+			m_editFormatButtons[3].setThemeQualifier("active", m_editAscii);
+			m_editUnlimitedCheck.enable(!m_editAscii);
+			m_editNullCheck.enable(m_editAscii);
+		}
+
+		void HexEditor::fit_edit_window(bool recenter)
+		{
+			// The labels' texts change with the mode and the input: the window isn't
+			// resizable, so it follows its content. While open it only grows wider,
+			// so it doesn't jitter while typing.
+			const Vec2 needed = m_editWindow.contentToWidgetSize(m_editBox.getCombinedMinSize());
+			const f32 w = std::max({ 560.0f, std::ceil(needed.x), recenter ? 0.0f : m_editWindow.getSize().x });
+			const f32 h = std::ceil(needed.y) + 4.0f;
+			const Vec2 size = m_editWindow.getSize();
+			if (w != size.x || h != size.y)
+				m_editWindow.setSize(w, h);
+			if (recenter)
+				m_editWindow.centerInParent();
+		}
+
+		bool HexEditor::get_edit_bytes(stdvec<u8>& out, String* error) const
+		{
+			const String text = m_editInput.getText();
+			if (!(m_editAscii ? parse_ascii(text, out, error) : parse_byte_stream(text, m_editFormat, out, error)))
+				return false;
+			if (m_editAscii && m_editNullCheck.isChecked())
+				out.push_back(0);
+			if (out.empty())
+			{
+				if (error != nullptr)
+					*error = "empty";
+				return false;
+			}
+			return true;
 		}
 
 		void HexEditor::refresh_edit_window(void)
 		{
+			if (m_editUnlimited)
+			{
+				const u64 room = m_data.size() - std::min<u64>(m_editIndex, m_data.size());
+				m_editInfo.setText(String("Overwrites from ").add(formatAddress(m_baseAddress + m_editIndex))
+					.add(", in typed order (").add(std::to_string(room)).add(" byte(s) to the end)")
+					.add(isEditable() || m_writeCallback ? "" : " - read only"));
+				m_lastEditText = m_editInput.getText();
+				stdvec<u8> bytes;
+				String error;
+				// Preview up to 16 bytes of the old/new content.
+				auto preview = [](const stdvec<u8>& b) {
+					String out = format_byte_stream(stdvec<u8>(b.begin(), b.begin() + std::min<size_t>(b.size(), 16)), eFormat::Hex);
+					return b.size() > 16 ? out + " ..." : out;
+				};
+				const bool valid = get_edit_bytes(bytes, &error);
+				const u64 shown = valid ? std::min<u64>(bytes.size(), room) : std::min<u64>(m_editSize, room);
+				m_editCurrent.setText(String("Current: ").add(preview(read_bytes(m_editIndex, shown))));
+				if (m_editAscii ? (m_lastEditText == "" && !m_editNullCheck.isChecked()) : m_lastEditText.new_trim() == "")
+					m_editStatus.setText(m_editAscii ? "Type text (escapes: \\n \\r \\t \\0 \\xNN \\\\)" : "Type the bytes to write (spaces are ignored)");
+				else if (!valid)
+					m_editStatus.setText(String("Invalid: ") + error);
+				else
+				{
+					String status = String("New: ").add(preview(bytes)).add("  (").add(std::to_string(bytes.size())).add(" byte(s)");
+					if (bytes.size() > room)
+						status.add(", only ").add(std::to_string(room)).add(" fit");
+					m_editStatus.setText(status.add(")"));
+				}
+				fit_edit_window(false);
+				return;
+			}
 			const u64 current = readValue(m_editIndex, m_editSize);
 			m_editInfo.setText(String("").add(cast<i32>(m_editSize)).add(" byte(s) at ").add(formatAddress(m_baseAddress + m_editIndex))
 				.add(m_bigEndian ? " (big endian)" : " (little endian)").add(isEditable() || m_writeCallback ? "" : " - read only"));
@@ -1485,10 +1643,35 @@ namespace ogfx
 			else
 				m_editStatus.setText(String("New: 0x").add(hex_string(value, m_editSize * 2)).add("  =  ").add(std::to_string(value))
 					.add(m_editSize <= 2 ? String("  =  0b") + binary_string(value, m_editSize, false) : String("")));
+			fit_edit_window(false);
 		}
 
 		void HexEditor::apply_edit(void)
 		{
+			if (m_editUnlimited)
+			{
+				stdvec<u8> bytes;
+				if (!get_edit_bytes(bytes))
+				{
+					refresh_edit_window();
+					return;
+				}
+				const u64 room = m_data.size() - std::min<u64>(m_editIndex, m_data.size());
+				const u64 count = std::min<u64>(bytes.size(), room);
+				bool written = count > 0;
+				for (u64 i = 0; i < count && written; i++)
+					written = writeValue(m_editIndex + i, bytes[i], 1);
+				if (!written)
+				{
+					m_editStatus.setText("The data is read only (no write callback)");
+					return;
+				}
+				show_message(String("Wrote ").add(std::to_string(count)).add(" byte(s)")
+					.add(count < bytes.size() ? String(", ").add(std::to_string(bytes.size() - count)).add(" past the end were dropped") : String("")));
+				m_editWindow.close();
+				getWindow().getFocusManager().requestFocus(*this);
+				return;
+			}
 			u64 value = 0;
 			if (!parseValue(m_editInput.getText(), m_editFormat, m_editSize, value))
 			{
@@ -1502,6 +1685,224 @@ namespace ogfx
 			}
 			m_editWindow.close();
 			getWindow().getFocusManager().requestFocus(*this);
+		}
+
+		void HexEditor::set_edit_unlimited(bool unlimited)
+		{
+			if (m_editUnlimited == unlimited)
+				return;
+			if (!unlimited && m_editAscii)
+			{
+				// Text is always unlimited.
+				m_editUnlimitedCheck.setChecked(true);
+				return;
+			}
+			// Carries the typed value over: value <-> its bytes as they sit in memory.
+			const String text = m_editInput.getText();
+			String converted = "";
+			if (unlimited)
+			{
+				u64 value = 0;
+				if (parseValue(text, m_editFormat, m_editSize, value))
+				{
+					stdvec<u8> bytes(m_editSize);
+					for (u32 i = 0; i < m_editSize; i++)
+						bytes[i] = cast<u8>((value >> (m_bigEndian ? 8 * (m_editSize - 1 - i) : 8 * i)) & 0xFF);
+					converted = format_byte_stream(bytes, m_editFormat);
+				}
+			}
+			else
+			{
+				stdvec<u8> bytes;
+				if (parse_byte_stream(text, m_editFormat, bytes) && bytes.size() <= m_editSize)
+				{
+					u64 value = readValue(m_editIndex, m_editSize);
+					for (u32 i = 0; i < bytes.size(); i++)
+					{
+						const u32 shift = m_bigEndian ? 8 * (m_editSize - 1 - i) : 8 * i;
+						value = (value & ~(0xFFull << shift)) | (cast<u64>(bytes[i]) << shift);
+					}
+					converted = formatValue(value, m_editFormat, m_editSize);
+				}
+				else
+					converted = formatValue(readValue(m_editIndex, m_editSize), m_editFormat, m_editSize);
+			}
+			m_editUnlimited = unlimited;
+			if (m_editUnlimitedCheck.isChecked() != unlimited)
+				m_editUnlimitedCheck.setChecked(unlimited);
+			m_editInput.setText("");	// so the new filter doesn't judge the old text
+			apply_edit_filter();
+			m_editInput.setText(converted);
+			m_editInput.selectAll();
+			refresh_edit_window();
+		}
+
+		bool HexEditor::parse_ascii(const String& text, stdvec<u8>& out, String* error)
+		{
+			auto fail = [error](const char* message) { if (error != nullptr) *error = message; return false; };
+			out.clear();
+			const ostd::cpp_string& s = text.cpp_str();
+			for (size_t i = 0; i < s.size(); i++)
+			{
+				const u8 c = cast<u8>(s[i]);
+				if (c != '\\')
+				{
+					if (c < 32 || c > 126)
+						return fail("only printable ASCII characters");
+					out.push_back(c);
+					continue;
+				}
+				if (++i >= s.size())
+					return fail("unfinished escape (\\\\ for a backslash)");
+				switch (s[i])
+				{
+					case '\\': out.push_back('\\'); break;
+					case '0': out.push_back(0); break;
+					case 'n': out.push_back(10); break;
+					case 'r': out.push_back(13); break;
+					case 't': out.push_back(9); break;
+					case 'x':
+						if (i + 2 >= s.size() || !std::isxdigit(cast<unsigned char>(s[i + 1])) || !std::isxdigit(cast<unsigned char>(s[i + 2])))
+							return fail("\\x needs two hex digits");
+						out.push_back(cast<u8>(std::stoul(s.substr(i + 1, 2), nullptr, 16)));
+						i += 2;
+						break;
+					default:
+						return fail("unknown escape (\\n \\r \\t \\0 \\xNN \\\\)");
+				}
+			}
+			return true;
+		}
+
+		String HexEditor::format_ascii(const stdvec<u8>& bytes)
+		{
+			String out = "";
+			for (u8 b : bytes)
+			{
+				switch (b)
+				{
+					case '\\': out += "\\\\"; break;
+					case 0: out += "\\0"; break;
+					case 10: out += "\\n"; break;
+					case 13: out += "\\r"; break;
+					case 9: out += "\\t"; break;
+					default:
+						if (b >= 32 && b <= 126)
+							out.addChar(cast<char>(b));
+						else
+							out += String("\\x") + hex_string(b, 2);
+						break;
+				}
+			}
+			return out;
+		}
+
+		bool HexEditor::parse_byte_stream(const String& text, eFormat format, stdvec<u8>& out, String* error)
+		{
+			auto fail = [error](const char* message) { if (error != nullptr) *error = message; return false; };
+			out.clear();
+			ostd::cpp_string s = text.cpp_str();
+			std::erase(s, '_');
+			std::erase(s, ' ');
+			if (s.empty())
+				return fail("empty");
+			switch (format)
+			{
+				case eFormat::Hex:
+				{
+					if (s.size() % 2 != 0)
+						return fail("odd number of hex digits (2 per byte)");
+					for (size_t i = 0; i < s.size(); i += 2)
+					{
+						if (!std::isxdigit(cast<unsigned char>(s[i])) || !std::isxdigit(cast<unsigned char>(s[i + 1])))
+							return fail("not a hex digit");
+						out.push_back(cast<u8>(std::stoul(s.substr(i, 2), nullptr, 16)));
+					}
+					return true;
+				}
+				case eFormat::Bin:
+				{
+					if (s.size() % 8 != 0)
+						return fail("the number of bits must be a multiple of 8");
+					for (size_t i = 0; i < s.size(); i += 8)
+					{
+						u8 b = 0;
+						for (size_t j = 0; j < 8; j++)
+						{
+							if (s[i + j] != '0' && s[i + j] != '1')
+								return fail("not a binary digit");
+							b = cast<u8>((b << 1) | (s[i + j] - '0'));
+						}
+						out.push_back(b);
+					}
+					return true;
+				}
+				case eFormat::Dec:
+				{
+					// Arbitrary size number, stored big endian (most significant byte first).
+					out.push_back(0);
+					for (char c : s)
+					{
+						if (c < '0' || c > '9')
+							return fail("not a decimal digit");
+						u32 carry = cast<u32>(c - '0');
+						for (size_t i = out.size(); i-- > 0; )
+						{
+							const u32 v = cast<u32>(out[i]) * 10 + carry;
+							out[i] = cast<u8>(v & 0xFF);
+							carry = v >> 8;
+						}
+						if (carry != 0)
+							out.insert(out.begin(), cast<u8>(carry));
+					}
+					return true;
+				}
+			}
+			return fail("unknown format");
+		}
+
+		String HexEditor::format_byte_stream(const stdvec<u8>& bytes, eFormat format)
+		{
+			String out = "";
+			if (format == eFormat::Dec)
+			{
+				if (bytes.empty())
+					return out;
+				// Repeated division by 10 of the big endian number.
+				stdvec<u8> num = bytes;
+				ostd::cpp_string digits;
+				size_t first = 0;
+				while (first < num.size())
+				{
+					u32 rem = 0;
+					for (size_t i = first; i < num.size(); i++)
+					{
+						const u32 v = (rem << 8) | num[i];
+						num[i] = cast<u8>(v / 10);
+						rem = v % 10;
+					}
+					digits.push_back(cast<char>('0' + rem));
+					while (first < num.size() && num[first] == 0)
+						first++;
+				}
+				std::reverse(digits.begin(), digits.end());
+				return String(digits);
+			}
+			for (size_t i = 0; i < bytes.size(); i++)
+			{
+				if (i > 0)
+					out.addChar(' ');
+				out += (format == eFormat::Hex ? hex_string(bytes[i], 2) : binary_string(bytes[i], 1, false));
+			}
+			return out;
+		}
+
+		stdvec<u8> HexEditor::read_bytes(StreamIndex index, u64 count) const
+		{
+			stdvec<u8> out;
+			for (u64 i = 0; i < count && index + i < m_data.size(); i++)
+				out.push_back(cast<u8>(m_data[index + i]));
+			return out;
 		}
 
 		// ============================ HELPERS ============================
