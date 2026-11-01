@@ -35,12 +35,19 @@ namespace ogfx
 				i32 addMenuItem(const String& text);
 				bool removeMenuItem(const String& text);
 				bool removeMenuItem(i32 id);
+				// Removes every item; the ids of the next ones start from 0 again.
+				void clearMenuItems(void);
+				// Shows the item as the selected one (the item callback isn't called).
+				// Returns false if there is no item with that id.
+				bool setSelectedItem(i32 id);
+				inline i32 getItemCount(void) const { return cast<i32>(m_menu.entries.size()); }
 				void setItemCallback(ContextMenu::Instance::Callback callback);
 				void setw(f32 w) override;
 				Vec2 getContentMinSize(void) const override;
 				void applyTheme(const ostd::Stylesheet& theme) override;
 				void onDraw(ogfx::BasicRenderer2D& gfx) override;
 				void onMouseReleased(const Event& event) override;
+				void onUpdate(void) override;
 				void handleSignal(ostd::Signal& signal) override;
 				inline ContextMenu::Entry getSelectedEntry(void) const { return m_selectedEntry; }
 
@@ -49,6 +56,8 @@ namespace ogfx
 
 			private:
 				String get_display_text(const String& entry);
+				// Selects the first item (or none, when empty).
+				void select_first(void);
 
 			private:
 				bool m_dropDownShown { false };

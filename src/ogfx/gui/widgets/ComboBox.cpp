@@ -53,12 +53,38 @@ namespace ogfx
 
 		bool ComboBox::removeMenuItem(const String& text)
 		{
-			return m_menu.removeByText(text, false);
+			const bool removed = m_menu.removeByText(text, false);
+			if (removed && m_selectedEntry.text == text)
+				select_first();
+			return removed;
 		}
 
 		bool ComboBox::removeMenuItem(i32 id)
 		{
-			return m_menu.removeById(id, false);
+			const bool removed = m_menu.removeById(id, false);
+			if (removed && m_selectedEntry.id == id)
+				select_first();
+			return removed;
+		}
+
+		void ComboBox::clearMenuItems(void)
+		{
+			m_menu.entries.clear();
+			m_nextItemID = 0;
+			select_first();
+		}
+
+		bool ComboBox::setSelectedItem(i32 id)
+		{
+			for (const auto& entry : m_menu.entries)
+			{
+				if (entry.id != id)
+					continue;
+				m_selectedEntry = entry;
+				m_selectedEntryText = get_display_text(entry.text);
+				return true;
+			}
+			return false;
 		}
 
 		void ComboBox::setItemCallback(ContextMenu::Instance::Callback callback)
@@ -114,8 +140,10 @@ namespace ogfx
 		{
 			if (contains(event.mouse->position_x, event.mouse->position_y))
 			{
-				if (m_dropDownShown)
+				// The menu may have been closed by a click that it consumed (on this box too).
+				if (m_dropDownShown && getWindow().isContextMenuVisible())
 				{
+					getWindow().hideContextMenu();
 					setThemeQualifier("active", false);
 					m_dropDownShown = false;
 					return;
@@ -124,6 +152,17 @@ namespace ogfx
 				m_dropDownShown = true;
 				Vec2 anchor = getGlobalPosition() + Vec2 { 0, geth() };
 				getWindow().showContextMenu(m_menu, anchor);
+			}
+		}
+
+		void ComboBox::onUpdate(void)
+		{
+			// Closed without a release reaching us (an item picked, a click elsewhere).
+			if (m_dropDownShown && !getWindow().isContextMenuVisible())
+			{
+				m_dropDownShown = false;
+				setThemeQualifier("active", false);
+				reloadTheme();
 			}
 		}
 
@@ -153,6 +192,18 @@ namespace ogfx
 					return;
 				setThemeQualifier("hover", false);
 			}
+		}
+
+		void ComboBox::select_first(void)
+		{
+			if (m_menu.entries.empty())
+			{
+				m_selectedEntry = ContextMenu::Entry { "", -1 };
+				m_selectedEntryText = "";
+				return;
+			}
+			m_selectedEntry = m_menu.entries.front();
+			m_selectedEntryText = get_display_text(m_selectedEntry.text);
 		}
 
 		String ComboBox::get_display_text(const String& entry)
