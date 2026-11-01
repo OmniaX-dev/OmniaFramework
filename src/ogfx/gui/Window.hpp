@@ -149,8 +149,12 @@ namespace ogfx
 			// Re-reads the display scale from the OS (done automatically when it changes).
 			void updateScalleFactor(void);
 			inline Vec2 getMousePosition(void) const { return m_mousePosition; }
-			inline void startTooltipTimer(const String& text) { m_tooltipText = text; m_tooltipTimer.startCount(ostd::eTimeUnits::Seconds); }
-			inline void stopTooltipTimer(void) { m_tooltipText = ""; m_tooltipTimer.endCount(); }
+			// owner: who shows the tooltip (a widget); stopTooltipTimer(owner) only stops the
+			// tooltip if it's still that owner's (another one may have taken it meanwhile).
+			inline void startTooltipTimer(const String& text, const void* owner = nullptr) { m_tooltipText = text; m_tooltipOwner = owner; m_tooltipTimer.startCount(ostd::eTimeUnits::Seconds); }
+			inline void stopTooltipTimer(void) { m_tooltipText = ""; m_tooltipOwner = nullptr; m_tooltipTimer.endCount(); }
+			inline void stopTooltipTimer(const void* owner) { if (owner == m_tooltipOwner) stopTooltipTimer(); }
+			inline const void* getTooltipOwner(void) const { return m_tooltipOwner; }
 			inline void restartTooltipTimer(void) { m_tooltipTimer.restart(ostd::eTimeUnits::Seconds); }
 			inline u64 readTooltipTimer(void) { return m_tooltipTimer.read(); }
 			inline bool isTooltipShown(void) { return m_tooltipText.new_trim() != "" && m_tooltipTimer.read() >= 2; }
@@ -196,6 +200,7 @@ namespace ogfx
 			Vec2 m_mousePosition { 0, 0 };
 			ostd::Counter m_tooltipTimer;
 			String m_tooltipText { "" };
+			const void* m_tooltipOwner { nullptr };
 
 			bool m_running { false };
 			bool m_initialized { false };
@@ -357,6 +362,12 @@ namespace ogfx
 				void __main_loop_cycle(void);
 
 			private:
+				// A context menu took a mouse event: the widgets mustn't keep a press (or a
+				// hover) they won't see the end of.
+				void cancel_mouse_presses(void);
+				void clear_hover(const Event& event);
+				// The tooltip's widget is still shown, and under the mouse.
+				bool is_tooltip_owner_shown(void);
 				void update_subwindows(void);
 				// Returns false if the backdrop target could not be re-bound.
 				bool draw_subwindows(bool useBackdrop);
@@ -372,6 +383,8 @@ namespace ogfx
 				ostd::StepTimer::TimePoint m_lastFrameTime;
 				ostd::StepTimer m_mainLoopTimer;
 				ContextMenu m_cmenu { *this };
+				// The press was taken by the context menu (closing it): so is its release.
+				bool m_swallowMouseRelease { false };
 				MenuBar m_menubar { *this };
 				ToolBar m_toolbar { *this };
 				ToolBar m_statusbar { *this, true };

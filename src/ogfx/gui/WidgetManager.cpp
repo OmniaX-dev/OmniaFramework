@@ -220,6 +220,27 @@ namespace ogfx
 			}
 		}
 
+		void WidgetManager::cancelMousePress(void)
+		{
+			if (m_mousePressedOnWidget == nullptr)
+				return;
+			Widget* pressed = m_mousePressedOnWidget;
+			m_mousePressedOnWidget = nullptr;
+			if (!pressed->isInvalid())
+				pressed->__cancelMousePress();
+		}
+
+		void WidgetManager::clearHover(const Event& event)
+		{
+			for (Widget* w : m_widgetList)
+			{
+				if (w == nullptr || w->isInvalid() || !w->m_mouseInside)
+					continue;
+				w->m_mouseInside = false;
+				w->__onMouseExited(event);
+			}
+		}
+
 		void WidgetManager::onMouseScrolled(const Event& event)
 		{
 			const i32 floor = input_floor();

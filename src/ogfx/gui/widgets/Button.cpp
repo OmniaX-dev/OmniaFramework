@@ -74,7 +74,9 @@ namespace ogfx
 
 		void Button::onMouseReleased(const Event& event)
 		{
-			if (!isMouseInside())
+			// A click is a press and a release on the button (a release alone, of a press
+			// that started elsewhere or that a context menu took, isn't).
+			if (!isMouseInside() || event.mouse->mousePressedOnWidget != this)
 				return;
 			if (event.mouse->button == MouseEventData::eButton::Left && callback_onActionPerformed)
 				callback_onActionPerformed(event);

@@ -157,6 +157,7 @@ namespace ogfx
 				void pop_to_depth(size_t depth);
 				void compute_panel_size(Panel& panel);
 				i32  entry_index_at(const Panel& panel, const Vec2& mousePos) const;
+				bool is_over_panel(const Vec2& mousePos) const;
 				Rectangle entry_rect(const Panel& panel, i32 index) const;
 				void draw_panel(BasicRenderer2D& gfx, const Panel& panel);
 				void relayout_panels(void);
@@ -167,6 +168,11 @@ namespace ogfx
 				Instance m_data;
 				Vec2 m_mousePos { 0, 0 };
 				ostd::Counter m_animClock;
+				// The mouse when the menu was shown: the release of the click that opened it
+				// lands there, and must not activate the entry under it (it would, with the
+				// menu shown at the mouse). Dragging onto an entry and releasing still does.
+				Vec2 m_openMousePos { 0, 0 };
+				bool m_waitingOpeningRelease { false };
 
 				stdvec<Panel> m_panels;
 
@@ -193,6 +199,7 @@ namespace ogfx
 				u64 m_animationDelayMS  { 300 };
 
 				static constexpr u64 SubmenuCloseDelayMs { 50 };
+				static constexpr f32 OpeningReleaseDistance { 6.0f };
 				static constexpr u64 OpenAnimDurationMs { 120 };
 				friend struct Instance;
 		};

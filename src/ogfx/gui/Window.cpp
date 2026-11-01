@@ -1184,6 +1184,8 @@ namespace ogfx
 				stopTooltipTimer();
 				m_cmenu.draw(m_gfx);
 			}
+			else if (getTooltipOwner() != nullptr && !is_tooltip_owner_shown())
+				stopTooltipTimer();
 			else if (isTooltipShown())
 			{
 				auto textSize = m_gfx.getStringDimensions(getTooltipText(), m_rootWidget.getTooltipFontSize());
@@ -1279,7 +1281,11 @@ namespace ogfx
 					if (m_menubar.isVisible())
 						m_menubar.onMouseMoved(evt);
 					if (m_cmenu.isVisible())
+					{
 						m_cmenu.onMouseMoved(evt);
+						if (evt.isHandled())
+							clear_hover(evt);
+					}
 					m_toolbar.__onMouseMoved(evt);
 					m_statusbar.__onMouseMoved(evt);
 				}
@@ -1305,7 +1311,10 @@ namespace ogfx
 				if (!modal)
 				{
 					if (m_cmenu.isVisible())
+					{
 						m_cmenu.onMousePressed(evt);
+						m_swallowMouseRelease = evt.isHandled();
+					}
 					if (m_menubar.isVisible())
 						m_menubar.onMousePressed(evt);
 					m_toolbar.__onMousePressed(evt);
@@ -1319,8 +1328,18 @@ namespace ogfx
 				evt.__original_signal_id = ostd::BuiltinSignals::MouseReleased;
 				if (!modal)
 				{
+					const bool swallow = m_swallowMouseRelease;
+					m_swallowMouseRelease = false;
 					if (m_cmenu.isVisible())
 						m_cmenu.onMouseReleased(evt);
+					// The release of a press the menu took, or one it took itself (the release
+					// of the click that opened it, an entry clicked): not for the widgets.
+					if (swallow || evt.isHandled())
+					{
+						cancel_mouse_presses();
+						onSignal(signal);
+						return;
+					}
 					m_toolbar.__onMouseReleased(evt);
 					m_statusbar.__onMouseReleased(evt);
 				}
@@ -1377,6 +1396,39 @@ namespace ogfx
 					focused->__onTextEntered(evt);
 			}
 			onSignal(signal);
+		}
+
+		void Window::cancel_mouse_presses(void)
+		{
+			m_rootWidget.__cancelMousePress();
+			m_toolbar.__cancelMousePress();
+			m_statusbar.__cancelMousePress();
+		}
+
+		void Window::clear_hover(const Event& event)
+		{
+			m_rootWidget.__clearHover(event);
+			m_toolbar.__clearHover(event);
+			m_statusbar.__clearHover(event);
+		}
+
+		bool Window::is_tooltip_owner_shown(void)
+		{
+			const Widget* owner = static_cast<const Widget*>(getTooltipOwner());
+			if (owner == nullptr)
+				return true;
+			if (!owner->getGlobalBounds().contains(getMousePosition(), true))
+				return false;
+			// Visible all the way up to the window (a page taken out of a TabPanel, or a
+			// closed SubWindow, isn't).
+			const Widget* widget = owner;
+			while (widget->getParent() != nullptr)
+			{
+				if (!widget->isVisible())
+					return false;
+				widget = widget->getParent();
+			}
+			return widget == &m_rootWidget || widget == &m_toolbar || widget == &m_statusbar;
 		}
 
 		void Window::__on_update(f64 delta)

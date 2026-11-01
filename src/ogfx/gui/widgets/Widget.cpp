@@ -45,6 +45,8 @@ namespace ogfx
 			auto& fm = m_window->getFocusManager();
 			if (fm.getFocused() == this)
 				fm.clearFocus();  // you'd add this method
+			if (m_window)
+				m_window->stopTooltipTimer(this);
 		}
 
 		bool Widget::addWidget(Widget& child, const Vec2& position, bool __skip_callback)
@@ -802,8 +804,7 @@ namespace ogfx
 					callback_onMouseMoved(event);
 				onMouseMoved(event);
 			}
-			if (isTooltipEnabled() && isMouseInside())
-				getWindow().restartTooltipTimer();
+			update_tooltip();
 		}
 
 		void Widget::__onMouseScrolled(const Event& event)
@@ -827,7 +828,7 @@ namespace ogfx
 				callback_onMouseEntered(event);
 			onMouseEntered(event);
 			if (isTooltipEnabled())
-				getWindow().startTooltipTimer(getTooltipText());
+				getWindow().startTooltipTimer(getTooltipText(), this);
 		}
 
 		void Widget::__onMouseExited(const Event& event)
@@ -841,13 +842,38 @@ namespace ogfx
 				child->m_mouseInside = false;
 				child->__onMouseExited(event);
 			}
-			if (event.isHandled() || !isMouseExitedEventEnabled()) return;
+			// Not skipped for a handled event: the exits of the widgets below the one that
+			// handled a move come with it, and they must lose their hover / tooltip.
 			setThemeQualifier("hover", false);
+			getWindow().stopTooltipTimer(this);
+			if (!isMouseExitedEventEnabled()) return;
 			if (callback_onMouseExited)
 				callback_onMouseExited(event);
 			onMouseExited(event);
-			if (isTooltipEnabled())
-				getWindow().stopTooltipTimer();
+		}
+
+		void Widget::__cancelMousePress(void)
+		{
+			m_pressedButton = ogfx::MouseEventData::eButton::None;
+			setThemeQualifier("pressed", false);
+			if (hasChildren())
+				m_widgets.cancelMousePress();
+		}
+
+		void Widget::__clearHover(const Event& event)
+		{
+			if (hasChildren())
+				m_widgets.clearHover(event);
+		}
+
+		void Widget::update_tooltip(void)
+		{
+			if (!isTooltipEnabled() || !isMouseInside())
+				return;
+			if (getWindow().getTooltipOwner() == nullptr)
+				getWindow().startTooltipTimer(getTooltipText(), this);
+			else if (getWindow().getTooltipOwner() == this)
+				getWindow().restartTooltipTimer();
 		}
 
 		void Widget::__onMouseDragged(const Event& event)
@@ -862,8 +888,7 @@ namespace ogfx
 					callback_onMouseDragged(event);
 				onMouseDragged(event);
 			}
-			if (isTooltipEnabled() && isMouseInside())
-				getWindow().restartTooltipTimer();
+			update_tooltip();
 		}
 
 		void Widget::__onKeyPressed(const Event& event)

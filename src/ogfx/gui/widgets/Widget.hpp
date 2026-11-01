@@ -112,6 +112,12 @@ namespace ogfx
 				void __onMouseEntered(const Event& event);
 				void __onMouseExited(const Event& event);
 				void __onMouseDragged(const Event& event);
+				// The press in progress won't get its release (an overlay, like a context
+				// menu, took it): clears the pressed state, down the pressed widgets.
+				void __cancelMousePress(void);
+				// The mouse is over something drawn above the widgets (a context menu): the
+				// hovered children get their exit event.
+				void __clearHover(const Event& event);
 				void __onKeyPressed(const Event& event);
 				void __onKeyReleased(const Event& event);
 				void __onTextEntered(const Event& event);
@@ -330,6 +336,8 @@ namespace ogfx
 				inline String property(const ostd::String& prop) const { return m_stylesheetCategoryName +  "." + prop; }
 
 			private:
+				// Moving over the widget: (re)starts its tooltip's delay.
+				void update_tooltip(void);
 				Vec2 parent_content_size(void) const;
 				void sync_offsets_h(void);
 				void sync_offsets_v(void);

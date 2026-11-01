@@ -149,6 +149,17 @@ namespace ogfx
 			if (!m_visible) return;
 			Vec2 mousePos { event.mouse->position_x, event.mouse->position_y };
 
+			if (m_waitingOpeningRelease)
+			{
+				m_waitingOpeningRelease = false;
+				const Vec2 moved = mousePos - m_openMousePos;
+				if (std::abs(moved.x) <= OpeningReleaseDistance && std::abs(moved.y) <= OpeningReleaseDistance)
+				{
+					event.handle();
+					return;
+				}
+			}
+
 			for (i32 i = (i32)m_panels.size() - 1; i >= 0; --i)
 			{
 				i32 idx = entry_index_at(m_panels[i], mousePos);
@@ -158,11 +169,12 @@ namespace ogfx
 					if (!e.enabled) { event.handle(); return; } // absorb the click; disabled entries never activate or open
 					if (e.submenus.empty())
 					{
-						if (m_data.onActivate && e.id >= 0)
-							m_data.onActivate(e);
+						// Hidden first: the callback may show another menu.
+						const Entry activated = e;
+						const auto onActivate = m_data.onActivate;
 						hide();
-						event.handle();
-						hide();
+						if (onActivate && activated.id >= 0)
+							onActivate(activated);
 					}
 					else
 					{
@@ -279,18 +291,11 @@ namespace ogfx
 		{
 			if (!m_visible) return;
 			Vec2 mousePos { event.mouse->position_x, event.mouse->position_y };
-
-			for (i32 i = (i32)m_panels.size() - 1; i >= 0; --i)
-			{
-				i32 idx = entry_index_at(m_panels[i], mousePos);
-				if (idx >= 0)
-				{
-					event.handle();
-					return;
-				}
-			}
-
-			hide();
+			// A new click: its release is a normal one.
+			m_waitingOpeningRelease = false;
+			// Anywhere on the menu (entries, separators, padding) keeps it open.
+			if (!is_over_panel(mousePos))
+				hide();
 			event.handle();
 		}
 
@@ -304,6 +309,8 @@ namespace ogfx
 			m_panels.clear();
 			push_panel(m_data.entries, pos, false);
 			m_visible = true;
+			m_openMousePos = m_window.getMousePosition();
+			m_waitingOpeningRelease = true;
 			m_animClock.startCount(ostd::eTimeUnits::Milliseconds);
 			m_window.getFocusManager().clearFocus();
 		}
@@ -318,6 +325,7 @@ namespace ogfx
 			m_pendingOpenPanelDepth = -1;
 			m_pendingOpenEntryIndex = -1;
 			m_animClock.endCount();
+			m_waitingOpeningRelease = false;
 			m_visible = false;
 		}
 
@@ -418,6 +426,16 @@ namespace ogfx
 					return i;
 			}
 			return -1;
+		}
+
+		bool ContextMenu::is_over_panel(const Vec2& mousePos) const
+		{
+			for (const auto& panel : m_panels)
+			{
+				if (Rectangle { panel.position, panel.size }.contains(mousePos, true))
+					return true;
+			}
+			return false;
 		}
 
 		void ContextMenu::relayout_panels(void)

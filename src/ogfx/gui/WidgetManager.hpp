@@ -54,6 +54,9 @@ namespace ogfx
 				void onMouseMoved(const Event& event);
 				void onMouseScrolled(const Event& event);
 				void onMouseDragged(const Event& event);
+				// See Widget::__cancelMousePress() / __clearHover().
+				void cancelMousePress(void);
+				void clearHover(const Event& event);
 				void onWindowClosed(const Event& event);
 				void onWindowResized(const Event& event);
 				void onWindowFocused(const Event& event);
