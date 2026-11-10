@@ -41,8 +41,10 @@ namespace ogfx
 	// (BMP, PNG, ...).
 	//
 	// The coverage of every glyph is extracted once when the font is loaded; scaled
-	// copies (nearest-neighbour, for other cell sizes) are made on first use and
-	// cached. Fonts don't need a window or renderer.
+	// copies (for other cell sizes) are made on first use and cached. Each axis is
+	// scaled on its own: averaged (box filter) when it shrinks, so big fonts stay
+	// smooth and keep their strokes; nearest neighbour when it grows, so pixel fonts
+	// stay sharp. Fonts don't need a window or renderer.
 	// ============================================================================
 	class PixelFont : public ostd::Object
 	{
@@ -71,7 +73,8 @@ namespace ogfx
 			// Coverage (0..255) of a glyph, getCharWidth() * getCharHeight() bytes, row by row.
 			// nullptr for characters the font doesn't have.
 			const u8* getGlyph(u8 c) const;
-			// Same, scaled to width x height (nearest neighbour). Scaled sets are cached.
+			// Same, scaled to width x height (averaged when shrinking, nearest neighbour when
+			// growing, per axis). Scaled sets are cached.
 			const u8* getGlyph(u8 c, i32 width, i32 height) const;
 
 		private:

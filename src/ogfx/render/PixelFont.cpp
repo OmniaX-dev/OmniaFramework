@@ -136,26 +136,77 @@ namespace ogfx
 		if (m_scaledGlyphs.size() >= MaxCachedSizes)
 			m_scaledGlyphs.erase(m_scaledGlyphs.begin());
 
-		// Nearest neighbour, all glyphs at once: the source row/column of each destination
-		// row/column is computed once and shared by every glyph.
+		// Per axis, the source pixels of each destination pixel and their weights (16.16 fixed
+		// point, summing to 1): growing (or the same size), the nearest source pixel; shrinking,
+		// every source pixel under the destination pixel, weighted by how much of it is covered.
+		// Computed once and shared by every glyph.
+		struct Tap { i32 source; u32 weight; };
+		auto l_taps = [](i32 sourceSize, i32 destSize, stdvec<u32>& first, stdvec<Tap>& taps) {
+			first.assign(cast<size_t>(destSize) + 1, 0);
+			taps.clear();
+			const f64 ratio = cast<f64>(sourceSize) / destSize;
+			for (i32 d = 0; d < destSize; d++)
+			{
+				first[d] = cast<u32>(taps.size());
+				if (destSize >= sourceSize)
+				{
+					taps.push_back({ std::min(cast<i32>((d + 0.5) * ratio), sourceSize - 1), 65536 });
+					continue;
+				}
+				const f64 from = d * ratio, to = (d + 1) * ratio;
+				u32 total = 0;
+				size_t largest = taps.size();
+				for (i32 s = cast<i32>(from); s < sourceSize && s < to; s++)
+				{
+					const f64 covered = std::min<f64>(s + 1, to) - std::max<f64>(s, from);
+					const u32 weight = cast<u32>(std::lround(covered / ratio * 65536.0));
+					if (weight == 0)
+						continue;
+					if (largest == taps.size() || weight > taps[largest].weight)
+						largest = taps.size();
+					taps.push_back({ s, weight });
+					total += weight;
+				}
+				taps[largest].weight += 65536 - total;	// (the rounding: the weights sum to exactly 1)
+			}
+			first[destSize] = cast<u32>(taps.size());
+		};
+		stdvec<u32> firstX, firstY;
+		stdvec<Tap> tapsX, tapsY;
+		l_taps(m_charWidth, width, firstX, tapsX);
+		l_taps(m_charHeight, height, firstY, tapsY);
+
+		// Horizontally into `rows` (source height x destination width, 16.16), then vertically.
 		auto set = std::make_unique<GlyphSet>();
 		set->width = width;
 		set->height = height;
 		set->coverage.resize(cast<size_t>(m_glyphCount) * width * height);
-		stdvec<i32> srcX(width), srcY(height);
-		for (i32 x = 0; x < width; x++)
-			srcX[x] = std::min(cast<i32>((x + 0.5f) * m_charWidth / width), m_charWidth - 1);
-		for (i32 y = 0; y < height; y++)
-			srcY[y] = std::min(cast<i32>((y + 0.5f) * m_charHeight / height), m_charHeight - 1);
+		stdvec<u32> rows(cast<size_t>(m_charHeight) * width);
 		u8* out = set->coverage.data();
 		for (u32 g = 0; g < m_glyphCount; g++)
 		{
 			const u8* glyph = m_glyphs.coverage.data() + cast<size_t>(g) * m_charWidth * m_charHeight;
+			for (i32 y = 0; y < m_charHeight; y++)
+			{
+				const u8* src = glyph + cast<size_t>(y) * m_charWidth;
+				u32* dst = rows.data() + cast<size_t>(y) * width;
+				for (i32 x = 0; x < width; x++)
+				{
+					u32 sum = 0;
+					for (u32 t = firstX[x]; t < firstX[x + 1]; t++)
+						sum += src[tapsX[t].source] * tapsX[t].weight;
+					dst[x] = sum;		// at most 255 * 65536
+				}
+			}
 			for (i32 y = 0; y < height; y++)
 			{
-				const u8* row = glyph + cast<size_t>(srcY[y]) * m_charWidth;
 				for (i32 x = 0; x < width; x++)
-					*out++ = row[srcX[x]];
+				{
+					u64 sum = 0;
+					for (u32 t = firstY[y]; t < firstY[y + 1]; t++)
+						sum += cast<u64>(rows[cast<size_t>(tapsY[t].source) * width + x]) * tapsY[t].weight;
+					*out++ = cast<u8>(std::min<u64>((sum + (1ull << 31)) >> 32, 255));
+				}
 			}
 		}
 		m_scaledGlyphs.push_back(std::move(set));
