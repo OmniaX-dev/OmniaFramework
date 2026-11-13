@@ -157,6 +157,9 @@ namespace ogfx
 			WindowCore& parentWindow;
 			String textOrFilePath { "" };
 			ostd::Object* userObject { nullptr };
+			// Files / text dropped from outside: where (as a mouse event: the widgets'
+			// hit test uses it). nullptr for in-app drags.
+			MouseEventData* mouse { nullptr };
 	};
 	namespace gui
 	{

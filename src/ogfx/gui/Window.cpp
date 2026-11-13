@@ -518,6 +518,14 @@ namespace ogfx
 				mx = event.wheel.mouse_x / scale;
 				my = event.wheel.mouse_y / scale;
 				break;
+			case SDL_EVENT_DROP_BEGIN:
+			case SDL_EVENT_DROP_POSITION:
+			case SDL_EVENT_DROP_FILE:
+			case SDL_EVENT_DROP_TEXT:
+			case SDL_EVENT_DROP_COMPLETE:
+				mx = event.drop.x / scale;
+				my = event.drop.y / scale;
+				break;
 			default:
 				mx = _mx / scale;
 				my = _my / scale;
@@ -594,17 +602,31 @@ namespace ogfx
 		{
 			updateScalleFactor();
 		}
-		else if (event.type == SDL_EVENT_DROP_FILE)
+		else if (event.type == SDL_EVENT_DROP_BEGIN)
 		{
-			DropEventData ded(*this, DropEventData::eDropType::File);
-			ded.textOrFilePath = event.drop.data;
-			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::FileDragAndDropped, ostd::Signal::Priority::RealTime, &ded);
+			m_fileDragActive = true;
 		}
-		else if (event.type == SDL_EVENT_DROP_TEXT)
+		else if (event.type == SDL_EVENT_DROP_POSITION)
 		{
-			DropEventData ded(*this, DropEventData::eDropType::Text);
-			ded.textOrFilePath = event.drop.data;
-			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::FileDragAndDropped, ostd::Signal::Priority::RealTime, &ded);
+			// The mouse doesn't move during a drag from outside: the drag position does it
+			// (hover effects; widgets can check isFileDragActive()).
+			m_fileDragActive = true;
+			MouseEventData mmd = get_mouse_state(event);
+			m_mousePosition = { mmd.position_x, mmd.position_y };
+			ostd::SignalHandler::emitSignal(ostd::BuiltinSignals::MouseMoved, ostd::Signal::Priority::RealTime, &mmd);
+		}
+		else if (event.type == SDL_EVENT_DROP_COMPLETE)
+		{
+			m_fileDragActive = false;
+		}
+		else if (event.type == SDL_EVENT_DROP_FILE || event.type == SDL_EVENT_DROP_TEXT)
+		{
+			const bool file = (event.type == SDL_EVENT_DROP_FILE);
+			MouseEventData mmd = get_mouse_state(event);
+			DropEventData ded(*this, file ? DropEventData::eDropType::File : DropEventData::eDropType::Text);
+			ded.textOrFilePath = (event.drop.data != nullptr ? event.drop.data : "");
+			ded.mouse = &mmd;
+			ostd::SignalHandler::emitSignal(file ? ostd::BuiltinSignals::FileDragAndDropped : ostd::BuiltinSignals::TextDragAndDropped, ostd::Signal::Priority::RealTime, &ded);
 		}
 		else if (event.type == SDL_EVENT_WINDOW_FOCUS_GAINED)
 		{
@@ -1242,23 +1264,22 @@ namespace ogfx
 				m_toolbar.__onWindowFocusLost(evt);
 				m_statusbar.__onWindowFocusLost(evt);
 			}
-			else if (signal.ID == ostd::BuiltinSignals::FileDragAndDropped)
+			else if (signal.ID == ostd::BuiltinSignals::FileDragAndDropped || signal.ID == ostd::BuiltinSignals::TextDragAndDropped)
 			{
-				// auto* ud = (ogfx::DropEventData*)signal.userData;
-				// evt.drop.dropType = ud.dropType;
-				// evt.drop.userObject = ud.userObject;
-				// evt.drop.textOrFilePath = ud.textOrFilePath;
-				// evt.__original_signal_id = ostd::BuiltinSignals::FileDragAndDropped;
-				// m_rootWidget.__onMouseReleased(evt);
-			}
-			else if (signal.ID == ostd::BuiltinSignals::TextDragAndDropped)
-			{
-				// auto* ud = (ogfx::DropEventData*)signal.userData;
-				// evt.drop.dropType = ud.dropType;
-				// evt.drop.userObject = ud.userObject;
-				// evt.drop.textOrFilePath = ud.textOrFilePath;
-				// evt.__original_signal_id = ostd::BuiltinSignals::TextDragAndDropped;
-				// m_rootWidget.__onMouseReleased(evt);
+				// To the topmost widget under the drop that accepts drops (enableDragAndDrop()).
+				auto* ud = (ogfx::DropEventData*)signal.userData;
+				if (ud != nullptr && ud->mouse != nullptr)
+				{
+					evt.drop.dropType = ud->dropType;
+					evt.drop.userObject = nullptr;
+					evt.drop.textOrFilePath = ud->textOrFilePath;
+					evt.drop.mouse = ud->mouse;
+					evt.mouse = ud->mouse;
+					evt.__original_signal_id = signal.ID;
+					if (m_cmenu.isVisible())
+						m_cmenu.hide();
+					m_rootWidget.__onExternalDrop(evt);
+				}
 			}
 			else if (signal.ID == ostd::BuiltinSignals::WindowResized)
 			{

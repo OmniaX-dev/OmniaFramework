@@ -792,6 +792,18 @@ namespace ogfx
 			onDragAndDrop(event);
 		}
 
+		void Widget::__onExternalDrop(const Event& event)
+		{
+			if (event.isHandled())
+				return;
+			if (hasChildren())
+				m_widgets.onExternalDrop(event);
+			if (event.isHandled() || !isDragAndDropEnabled())
+				return;
+			__onDragAndDrop(event);
+			event.handle();
+		}
+
 		void Widget::__onMouseMoved(const Event& event)
 		{
 			m_mouseInside = contains(event.mouse->position_x, event.mouse->position_y);

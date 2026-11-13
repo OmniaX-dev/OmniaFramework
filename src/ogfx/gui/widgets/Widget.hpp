@@ -107,6 +107,9 @@ namespace ogfx
 				void __onMousePressed(const Event& event);
 				void __onMouseReleased(const Event& event);
 				void __onDragAndDrop(const Event& event);
+				// Files / text dropped from another application (event.drop, event.mouse: where):
+				// the children first, then this widget if it accepts drops.
+				void __onExternalDrop(const Event& event);
 				void __onMouseMoved(const Event& event);
 				void __onMouseScrolled(const Event& event);
 				void __onMouseEntered(const Event& event);

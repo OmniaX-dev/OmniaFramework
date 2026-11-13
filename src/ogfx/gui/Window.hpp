@@ -115,6 +115,8 @@ namespace ogfx
 			void requestRedraw(void);
 			void handleSignal(ostd::Signal& signal) override;
 			stdvec<String> showOpenFileDialog(const FileDialogFilterList& filterList, bool multiselect, const String& defaultPath = "") const;
+			// A drag from another application (files, text) is over the window.
+			inline bool isFileDragActive(void) const { return m_fileDragActive; }
 			stdvec<String> showOpenFolderDialog(bool multiselect, const String& defaultPath = "") const;
 			String showSaveFileDialog(const FileDialogFilterList& filterList, const String& defaultPath = "") const;
 
@@ -198,6 +200,7 @@ namespace ogfx
 			String m_title { "" };
 			i32 m_blockingEventsDelay { 33 };
 			Vec2 m_mousePosition { 0, 0 };
+			bool m_fileDragActive { false };
 			ostd::Counter m_tooltipTimer;
 			String m_tooltipText { "" };
 			const void* m_tooltipOwner { nullptr };

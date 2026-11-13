@@ -166,6 +166,23 @@ namespace ogfx
 			m_mousePressedOnWidget = nullptr;
 		}
 
+		void WidgetManager::onExternalDrop(const Event& event)
+		{
+			const i32 floor = input_floor();
+			for (i32 i = m_widgetList.size() - 1; i >= floor; i--)
+			{
+				Widget* w = m_widgetList[i];
+				if (w == nullptr) continue;
+				if (w->isInvalid()) continue;
+				if (!w->isVisible()) continue;
+				if (!hit_test(w, event.mouse->position_x, event.mouse->position_y))
+					continue;
+				w->__onExternalDrop(event);
+				// Only the topmost widget there (what's under it is hidden).
+				break;
+			}
+		}
+
 		void WidgetManager::onMouseMoved(const Event& event)
 		{
 			if (m_mousePressedOnWidget != nullptr &&

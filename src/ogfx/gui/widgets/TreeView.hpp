@@ -56,6 +56,14 @@ namespace ogfx
 					inline void toggleExpanded(void) { setExpanded(!m_expanded); }
 					bool isVisible(void) const;
 					stdvec<String> getFullPath(void) const;
+					// A value of the application's (an id, an index...): not used by the tree.
+					inline void setUserData(i64 data) { m_userData = data; }
+					inline i64 getUserData(void) const { return m_userData; }
+					// The item's own text color (instead of the tree's).
+					inline void setTextColor(const Color& color) { m_textColor = color; m_hasTextColor = true; }
+					inline void clearTextColor(void) { m_hasTextColor = false; }
+					inline bool hasTextColor(void) const { return m_hasTextColor; }
+					inline const Color& getTextColor(void) const { return m_textColor; }
 
 					OSTD_BOOL_PARAM_GETSET_E(Icon, m_showIcon);
 
@@ -72,6 +80,9 @@ namespace ogfx
 					String m_text { "" };
 					Animation m_icon;
 					bool m_showIcon { false };
+					i64 m_userData { 0 };
+					Color m_textColor { 255, 255, 255 };
+					bool m_hasTextColor { false };
 
 					// Tree state
 					Item* m_parentItem { nullptr };
@@ -85,6 +96,9 @@ namespace ogfx
 			};
 			public:
 				using ChevronDrawCallback = std::function<void(TreeView& sender, const Item& item, const Rectangle& bounds, BasicRenderer2D& gfx)>;
+				using ItemCallback = std::function<void(Item& item)>;
+				// The item is nullptr when the click was under the last row.
+				using ItemContextCallback = std::function<void(Item* item, const Vec2& position)>;
 
 				inline TreeView(Window& window) : ScrollableWidget(window) { create(); }
 				TreeView& create(void);
@@ -93,6 +107,9 @@ namespace ogfx
 				void onUpdate(void) override;
 				void afterDraw(ogfx::BasicRenderer2D& gfx) override;
 				void onMouseReleased(const Event& event) override;
+				// Up / Down: the previous / next visible item, Left / Right: collapses / expands
+				// (or goes to the parent / first child), Home / End, Return: activates.
+				void onKeyPressed(const Event& event) override;
 				Rectangle getContentExtents(void) const override;
 				Item& getLine(const String& text);
 				Item& getLine(u32 index);
@@ -106,6 +123,23 @@ namespace ogfx
 				bool hasLine(u32 index);
 				void expandAll(void);
 				void collapseAll(void);
+				// Removes every item (the selection is cleared, the callback isn't called).
+				void clear(void);
+				inline u32 getItemCount(void) const { return cast<u32>(m_list.size()); }
+				// The visible item at a (global) position, or nullptr.
+				Item* getItemAt(const Vec2& position);
+				// Selects an item from code (its ancestors are expanded); notify calls the
+				// selection changed callback.
+				void selectItem(Item& item, bool notify = false);
+				// Scrolls so the item's row is visible.
+				void ensureItemVisible(const Item& item);
+				// An item drawn with an outline (e.g. a drop target), nullptr for none.
+				inline void setHighlightedItem(Item* item) { m_highlightedItem = item; }
+				inline Item* getHighlightedItem(void) const { return m_highlightedItem; }
+				// Double-click / Return on an item.
+				inline void setItemActivatedCallback(ItemCallback callback) { m_onItemActivated = std::move(callback); }
+				// Right-click (the item under the mouse is selected first).
+				inline void setItemContextCallback(ItemContextCallback callback) { m_onItemContext = std::move(callback); }
 				inline stdvec<Item*>& getSelection(void) { return m_selectedList; }
 				inline void setSelectionChangedCallback(std::function<void(stdvec<Item*>& selection)> callback) { callback_onSelectionChanged = std::move(callback); }
 				inline void setChevronDrawCallback(ChevronDrawCallback cb) { m_chevronDrawCallback = std::move(cb); }
@@ -128,6 +162,7 @@ namespace ogfx
 				OSTD_PARAM_GETSET(Color, BranchLineColor, m_branchLineColor);
 				OSTD_BOOL_PARAM_GETSET_E(BranchLines, m_showBranchLines);
 				OSTD_PARAM_GETSET(f32, BranchLineThickness, m_branchLineThickness);
+				OSTD_PARAM_GETSET(Color, HighlightColor, m_highlightColor);
 
 			private:
 				void draw_rows(ogfx::BasicRenderer2D& gfx);
@@ -136,6 +171,9 @@ namespace ogfx
 				void render_chevron(ogfx::BasicRenderer2D& gfx, const Item& item, const Rectangle& bounds);
 				void render_branch_lines(ogfx::BasicRenderer2D& gfx, const Item& item, const Rectangle& rowRect);
 				u32 get_last_descendant_index(u32 itemIndex) const;
+				// The visible items, in display order.
+				stdvec<Item*> visible_items(void) const;
+				void select_and_notify(Item& item);
 				void recompute_has_children_and_last_sibling(Item* parentItem);
 
 			private:
@@ -147,6 +185,13 @@ namespace ogfx
 				mutable Rectangle m_cachedExtents { 0, 0, 0, 0 };
 				mutable bool m_extentsDirty { true };
 				Item* m_lastRoot { nullptr };
+				Item* m_highlightedItem { nullptr };
+				ItemCallback m_onItemActivated { nullptr };
+				ItemContextCallback m_onItemContext { nullptr };
+				Item* m_lastClickedItem { nullptr };
+				u64 m_lastClickMs { 0 };
+				inline static constexpr u64 DoubleClickMs { 400 };
+				Color m_highlightColor { 70, 160, 255 };
 
 				bool m_showIcons { false };
 				f32 m_iconSpacing { 0 };

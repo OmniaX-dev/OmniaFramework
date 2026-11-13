@@ -23,6 +23,7 @@
 #include "../Window.hpp"
 #include "../../../ostd/io/Memory.hpp"
 #include <algorithm>
+#include <chrono>
 
 namespace ogfx
 {
@@ -152,6 +153,7 @@ namespace ogfx
 			setBranchLineColor(getThemeValue<Color>(theme, "branchLineColor", getBranchLineColor()));
 			enableBranchLines(getThemeValue<bool>(theme, "showBranchLines", isBranchLinesEnabled()));
 			setBranchLineThickness(getThemeValue<f32>(theme, "branchLineThickness", getBranchLineThickness()));
+			setHighlightColor(getThemeValue<Color>(theme, "highlightColor", getHighlightColor()));
 		}
 
 		void TreeView::onDraw(ogfx::BasicRenderer2D& gfx)
@@ -206,7 +208,7 @@ namespace ogfx
 				}
 				else
 				{
-					textColor = getTextColor();
+					textColor = (item.hasTextColor() ? item.getTextColor() : getTextColor());
 					if (isAlternatingBackgroundEnabled())
 					{
 						bool lineColorToggle = visibleRow % 2 == 0;
@@ -256,6 +258,8 @@ namespace ogfx
 				if (isShowSeparatorLineEnabled())
 					gfx.drawLine({ Vec2 { bounds.x, bounds.y + y + itemH + pad.h } + getScrollOffset(), Vec2 { bounds.x + lineW, bounds.y + y + itemH + pad.h } + getScrollOffset() }, getSeparatorLineColor(), 1);
 				gfx.drawVCenteredString(item, lineRect + Rectangle { textX, 0, -(textX * 2), 0 }, textColor, getFontSize());
+				if (&item == m_highlightedItem)
+					gfx.drawRect({ lineRect.x + 1, lineRect.y + 1, std::min(lineRect.w, getContentBounds().w) - 2, lineRect.h - 2 }, m_highlightColor, 2);
 				y += itemH;
 				visibleRow++;
 			}
@@ -302,47 +306,192 @@ namespace ogfx
 		{
 			if (!isMouseInside())
 				return;
-			if (event.mouse->button != ogfx::MouseEventData::eButton::Left)
+			const bool left = (event.mouse->button == ogfx::MouseEventData::eButton::Left);
+			const bool right = (event.mouse->button == ogfx::MouseEventData::eButton::Right);
+			if (!left && !right)
 				return;
 			if (isMouseInsideAnyScrollbar())
 				return;
 
-			const Vec2  mousePos   { event.mouse->position_x, event.mouse->position_y };
-			const Vec2  origin     = getGlobalBounds().getPosition();
-			const Vec2  scroll     = getScrollOffset();
-			const f32   localY     = mousePos.y - origin.y - scroll.y;
-			const f32   localX     = mousePos.x - origin.x - scroll.x;
-			const f32   indent     = getIndentWidth();
+			const Vec2 mousePos { event.mouse->position_x, event.mouse->position_y };
+			Item* hit = getItemAt(mousePos);
+			if (hit == nullptr)
+			{
+				if (right && m_onItemContext)
+				{
+					m_onItemContext(nullptr, mousePos);
+					event.handle();
+				}
+				return;
+			}
+			Item& item = *hit;
+			// Chevron hit-test takes priority over selection.
+			if (left && item.hasChildren())
+			{
+				const f32 localX = mousePos.x - getGlobalBounds().x - getScrollOffset().x;
+				const f32 chevronXLocal = item.getDepth() * getIndentWidth();
+				if (localX >= chevronXLocal && localX < chevronXLocal + getIndentWidth())
+				{
+					item.toggleExpanded();
+					event.handle();
+					return;
+				}
+			}
+			select_and_notify(item);
+			event.handle();
+			if (right)
+			{
+				if (m_onItemContext)
+					m_onItemContext(&item, mousePos);
+				return;
+			}
+			const u64 now = cast<u64>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count());
+			const bool doubleClick = (m_lastClickedItem == &item && now - m_lastClickMs <= DoubleClickMs);
+			m_lastClickedItem = (doubleClick ? nullptr : &item);
+			m_lastClickMs = now;
+			if (doubleClick)
+			{
+				if (m_onItemActivated)
+					m_onItemActivated(item);
+				else if (item.hasChildren())
+					item.toggleExpanded();
+			}
+		}
 
+		void TreeView::onKeyPressed(const Event& event)
+		{
+			if (!isFocused() || event.keyboard == nullptr)
+				return;
+			const i32 key = event.keyboard->keyCode;
+			const stdvec<Item*> items = visible_items();
+			if (items.empty())
+				return;
+			Item* current = (m_selectedList.empty() ? nullptr : m_selectedList.back());
+			i32 index = -1;
+			for (i32 i = 0; i < cast<i32>(items.size()); i++)
+			{
+				if (items[i] == current)
+					index = i;
+			}
+			Item* target = nullptr;
+			if (key == KeyCode::Up)
+				target = items[std::max(0, index - 1)];
+			else if (key == KeyCode::Down)
+				target = items[std::min(cast<i32>(items.size()) - 1, index + 1)];
+			else if (key == KeyCode::Home)
+				target = items.front();
+			else if (key == KeyCode::End)
+				target = items.back();
+			else if (key == KeyCode::Left && current != nullptr)
+			{
+				if (current->hasChildren() && current->isExpanded())
+					current->setExpanded(false);
+				else if (current->getParentItem() != nullptr)
+					target = current->getParentItem();
+			}
+			else if (key == KeyCode::Right && current != nullptr && current->hasChildren())
+			{
+				if (!current->isExpanded())
+					current->setExpanded(true);
+				else if (index + 1 < cast<i32>(items.size()))
+					target = items[index + 1];
+			}
+			else if ((key == KeyCode::Return || key == KeyCode::KpEnter) && current != nullptr)
+			{
+				if (m_onItemActivated)
+					m_onItemActivated(*current);
+				else if (current->hasChildren())
+					current->toggleExpanded();
+			}
+			else
+				return;
+			if (target != nullptr && target != current)
+			{
+				select_and_notify(*target);
+				ensureItemVisible(*target);
+			}
+			event.handle();
+		}
+
+		stdvec<TreeView::Item*> TreeView::visible_items(void) const
+		{
+			stdvec<Item*> items;
+			for (const auto& itemPtr : m_list)
+			{
+				if (itemPtr->isValid() && itemPtr->isVisible())
+					items.push_back(itemPtr.get());
+			}
+			return items;
+		}
+
+		void TreeView::select_and_notify(Item& item)
+		{
+			const bool wasSelected = item.isSelected() && m_selectedList.size() == 1;
+			item.set_selected(m_selectedList);
+			if (!wasSelected && callback_onSelectionChanged)
+				callback_onSelectionChanged(m_selectedList);
+		}
+
+		TreeView::Item* TreeView::getItemAt(const Vec2& position)
+		{
+			const Rectangle bounds = getGlobalBounds();
+			if (!getGlobalPureContentBounds().contains(position, true))
+				return nullptr;
+			const f32 localY = position.y - bounds.y - getScrollOffset().y;
 			f32 y = 0;
 			for (auto& itemPtr : m_list)
 			{
 				auto& item = *itemPtr;
-				if (!item.isValid()) continue;
-				if (!item.isVisible()) continue;
+				if (!item.isValid() || !item.isVisible())
+					continue;
 				const f32 itemH = item.getDimensions().y;
 				if (localY >= y && localY < y + itemH)
+					return &item;
+				y += itemH;
+			}
+			return nullptr;
+		}
+
+		void TreeView::selectItem(Item& item, bool notify)
+		{
+			for (Item* p = item.getParentItem(); p != nullptr; p = p->getParentItem())
+				p->setExpanded(true);
+			if (notify)
+				select_and_notify(item);
+			else
+				item.set_selected(m_selectedList);
+		}
+
+		void TreeView::ensureItemVisible(const Item& item)
+		{
+			f32 y = 0;
+			for (const auto& itemPtr : m_list)
+			{
+				if (!itemPtr->isValid() || !itemPtr->isVisible())
+					continue;
+				const f32 itemH = itemPtr->getDimensions().y;
+				if (itemPtr.get() == &item)
 				{
-					// Chevron hit-test takes priority over selection.
-					if (item.hasChildren())
-					{
-						const f32 chevronXLocal = item.getDepth() * indent;
-						if (localX >= chevronXLocal && localX < chevronXLocal + indent)
-						{
-							item.toggleExpanded();
-							event.handle();
-							return;
-						}
-					}
-					bool wasSelected = item.isSelected();
-					item.set_selected(m_selectedList);
-					if (!wasSelected && callback_onSelectionChanged)
-						callback_onSelectionChanged(m_selectedList);
-					event.handle();
-					break;
+					const f32 top = -getScrollOffset().y;
+					const f32 visibleH = getContentBounds().h;
+					if (y < top)
+						setScrollOffset({ getScrollOffset().x, -y });
+					else if (y + itemH > top + visibleH)
+						setScrollOffset({ getScrollOffset().x, -(y + itemH - visibleH) });
+					return;
 				}
 				y += itemH;
 			}
+		}
+
+		void TreeView::clear(void)
+		{
+			m_selectedList.clear();
+			m_list.clear();
+			m_lastRoot = nullptr;
+			m_highlightedItem = nullptr;
+			m_lastClickedItem = nullptr;
+			m_extentsDirty = true;
 		}
 
 		Rectangle TreeView::getContentExtents(void) const
@@ -521,6 +670,10 @@ namespace ogfx
 			{
 				Item* p = m_list[i].get();
 				STDVEC_REMOVE(m_selectedList, p);
+				if (p == m_highlightedItem)
+					m_highlightedItem = nullptr;
+				if (p == m_lastClickedItem)
+					m_lastClickedItem = nullptr;
 			}
 			m_list.erase(m_list.begin() + index, m_list.begin() + lastDesc + 1);
 

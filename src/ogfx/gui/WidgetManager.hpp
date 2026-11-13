@@ -54,6 +54,8 @@ namespace ogfx
 				void onMouseMoved(const Event& event);
 				void onMouseScrolled(const Event& event);
 				void onMouseDragged(const Event& event);
+				// A drop from another application: to the topmost child under it.
+				void onExternalDrop(const Event& event);
 				// See Widget::__cancelMousePress() / __clearHover().
 				void cancelMousePress(void);
 				void clearHover(const Event& event);
